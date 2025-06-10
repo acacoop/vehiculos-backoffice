@@ -20,12 +20,7 @@ export default function BentoHome({
       type="button"
     >
       <div className="bento-home-content">
-        <img
-          className="bento-home-icon"
-          src={icon}
-          alt="icono"
-          style={{ color: "inherit" }}
-        />
+        <img className="bento-home-icon" src={icon} alt="icono" />
         <p className="bento-home-text">{text}</p>
       </div>
     </button>

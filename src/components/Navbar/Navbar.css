@@ -7,7 +7,6 @@
   justify-content: center;
 }
 
-
 .navbar-logo img {
   height: 48px;
 }
@@ -27,16 +26,15 @@
   align-items: center;
   height: 30px;
   width: 30px;
-  gap: 6px; 
+  gap: 6px;
   transition: 0.3s ease-in-out;
-  
 }
 
 .icon-navbar {
   width: 24px;
   height: 24px;
   transition: filter 0.2s;
-}	
+}
 
 .navbar-icon:hover {
   cursor: pointer;
@@ -61,7 +59,6 @@
   font-size: 2rem;
   cursor: pointer;
   z-index: 102;
-
 }
 
 .navbar-sidebar {
@@ -75,7 +72,7 @@
   padding-top: 80px;
   transition: left 0.3s;
   z-index: 101;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-sidebar.open {
@@ -111,5 +108,6 @@
 }
 
 .navbar-sidebar li:hover img {
-  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%) hue-rotate(0deg) brightness(101%) contrast(104%);
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
 }

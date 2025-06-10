@@ -1,76 +1,64 @@
 .bento-home {
-    display: flex;
-    justify-content: center;
-    align-items: start;
-    flex-direction: column;
-    background-color: #fff;
-    cursor: pointer;
-    padding: 20px;
-    border-radius: 10px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 200px;
-    height: 200px;
-    color: #282D86;
-    transition: 0.3s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  background-color: #fff;
+  cursor: pointer;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  height: 200px;
+  color: #282d86;
+  transition: 0.3s ease-in-out;
 }
 
 .bento-home:hover {
-    background-color: #282D86;
-    box-shadow: 0 4px 8px rgba(21, 5, 110, 0.507);
-    color: #fff;
-    border: 1px solid #ffff;
+  background-color: #282d86;
+  box-shadow: 0 4px 8px rgba(21, 5, 110, 0.507);
+  color: #fff;
+  border: 1px solid #ffff;
 }
 
-
 .bento-home-content {
-    display: flex;
-    justify-content: center;
-    align-items: start;
-    flex-direction: column;
-    gap: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px; /* Adjusted gap for better centering */
 }
 
 .bento-home-icon {
-    width: 30px;
-    height: 30px;
-    transition: filter 0.2s;
+  width: 30px;
+  height: 30px;
+  transition: filter 0.2s;
 }
 
 .bento-home-text {
-    text-align: start;
-    font-size: large;
-    font-weight: 600;
-       
+  text-align: center; /* Centered text */
+  font-size: large;
+  font-weight: 600;
 }
-
-
 
 .bento-home:hover .bento-home-icon,
 .bento-home.selected .bento-home-icon {
   filter: brightness(0) invert(1);
 }
 
-
-
 @media screen and (min-width: 1500px) {
-    .bento-home {
-        width: 250px;
-        height: 250px;
+  .bento-home {
+    width: 250px;
+    height: 250px;
+  }
 
-    }
-
-    .bento-home-icon {
+  .bento-home-icon {
     width: 40px;
     height: 40px;
- 
-}
-.bento-home-text {
-   
+  }
+  .bento-home-text {
     font-size: x-large;
     font-weight: 600;
-       
-}
-
-   
+  }
 }

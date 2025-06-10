@@ -1,8 +1,8 @@
-.home{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+.home {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .home-content {
@@ -15,7 +15,7 @@
 
 .home-header {
   margin-bottom: 32px;
-  color: #282D86;
+  color: #282d86;
 }
 
 .bento-home-container {
@@ -23,7 +23,6 @@
   gap: 24px;
   flex-wrap: wrap;
 }
-
 
 @media (max-width: 900px) {
   .home-content {
@@ -35,8 +34,6 @@
     width: 100%;
   }
 }
-
-
 
 @media screen and (min-width: 1500px) {
   .home-header {
