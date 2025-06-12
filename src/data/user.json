@@ -1,0 +1,154 @@
+[
+  {
+    "id": 1,
+    "name": "Juan Pérez",
+    "email": "juan@acacoop.com.ar",
+    "active": false,
+    "car": "Toyota Corolla",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_juan.pdf" },
+      { "type": "Registro", "file": "registro_juan.pdf" }
+    ],
+    "reservas": [
+      { "id": 1, "fecha": "2024-06-01", "estado": "Finalizada" },
+      { "id": 2, "fecha": "2024-06-10", "estado": "Pendiente" }
+    ],
+    "mantenimientos": [
+      { "id": 1, "fecha": "2024-05-15", "descripcion": "Cambio de aceite" },
+      { "id": 2, "fecha": "2024-04-10", "descripcion": "Revisión general" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Ana López",
+    "email": "ana@acacoop.com.ar",
+    "active": true,
+    "car": "Ford Fiesta",
+    "role": "administrador",
+    "documents": [
+      { "type": "DNI", "file": "dni_ana.pdf" },
+      { "type": "Registro", "file": "registro_ana.pdf" }
+    ],
+    "reservas": [
+      { "id": 3, "fecha": "2024-05-20", "estado": "Finalizada" }
+    ],
+    "mantenimientos": [
+      { "id": 3, "fecha": "2024-03-12", "descripcion": "Cambio de neumáticos" }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Carlos Gómez",
+    "email": "carlos@acacoop.com.ar",
+    "active": true,
+    "car": "Renault Sandero",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_carlos.pdf" },
+      { "type": "Registro", "file": "registro_carlos.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 4,
+    "name": "María Torres",
+    "email": "maria@acacoop.com.ar",
+    "active": false,
+    "car": "Volkswagen Polo",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_maria.pdf" },
+      { "type": "Registro", "file": "registro_maria.pdf" }
+    ],
+    "reservas": [
+      { "id": 4, "fecha": "2024-04-15", "estado": "Cancelada" }
+    ],
+    "mantenimientos": []
+  },
+  {
+    "id": 5,
+    "name": "Lucía Fernández",
+    "email": "lucia@acacoop.com.ar",
+    "active": true,
+    "car": "Peugeot 208",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_lucia.pdf" },
+      { "type": "Registro", "file": "registro_lucia.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 6,
+    "name": "Pedro Sánchez",
+    "email": "pedro@acacoop.com.ar",
+    "active": true,
+    "car": "Chevrolet Onix",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_pedro.pdf" },
+      { "type": "Registro", "file": "registro_pedro.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 7,
+    "name": "Sofía Ramírez",
+    "email": "sofia@acacoop.com.ar",
+    "active": false,
+    "car": "Honda Fit",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_sofia.pdf" },
+      { "type": "Registro", "file": "registro_sofia.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 8,
+    "name": "Miguel Ruiz",
+    "email": "miguel@acacoop.com.ar",
+    "active": true,
+    "car": "Fiat Cronos",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_miguel.pdf" },
+      { "type": "Registro", "file": "registro_miguel.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 9,
+    "name": "Laura Díaz",
+    "email": "laura@acacoop.com.ar",
+    "active": true,
+    "car": "Nissan Versa",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_laura.pdf" },
+      { "type": "Registro", "file": "registro_laura.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  },
+  {
+    "id": 10,
+    "name": "Diego Herrera",
+    "email": "diego@acacoop.com.ar",
+    "active": false,
+    "car": "Citroën C3",
+    "role": "usuario",
+    "documents": [
+      { "type": "DNI", "file": "dni_diego.pdf" },
+      { "type": "Registro", "file": "registro_diego.pdf" }
+    ],
+    "reservas": [],
+    "mantenimientos": []
+  }
+]

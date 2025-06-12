@@ -1,0 +1,115 @@
+/* Mobile first */
+.user-edit-container {
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background: #f7f7fa;
+  min-height: 100vh;
+}
+
+.user-edit-container h1 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: #1a237e;
+  text-align: center;
+}
+
+.user-edit-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(60,60,100,0.07);
+}
+
+.user-edit-container label {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  color: #222;
+  gap: 4px;
+}
+
+.user-edit-container input,
+.user-edit-container select {
+  padding: 8px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f9f9fb;
+}
+
+.user-edit-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  accent-color: #1976d2;
+}
+
+.user-edit-container button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s;
+}
+
+.user-edit-container button:hover {
+  background: #0d47a1;
+}
+
+.user-edit-container section {
+  margin-top: 24px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(60,60,100,0.07);
+}
+
+.user-edit-container h2 {
+  font-size: 1.1rem;
+  color: #1976d2;
+  margin-bottom: 10px;
+}
+
+.user-edit-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-edit-container li {
+  padding: 6px 0;
+  border-bottom: 1px solid #ececec;
+  font-size: 0.98rem;
+}
+
+.user-edit-container li:last-child {
+  border-bottom: none;
+}
+
+/* Desktop styles */
+@media (min-width: 700px) {
+  .user-edit-container {
+    max-width: 700px;
+    margin: 32px auto;
+    padding: 32px;
+    border-radius: 16px;
+  }
+
+  .user-edit-container form,
+  .user-edit-container section {
+    padding: 24px 32px;
+    border-radius: 14px;
+  }
+
+  .user-edit-container h1 {
+    font-size: 2rem;
+  }
+}

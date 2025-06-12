@@ -36,7 +36,7 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/usuarios" onClick={() => setOpen(false)}>
+            <Link to="/user" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconUser} alt="Icono usuario" />
               Gestión de usuarios
             </Link>
