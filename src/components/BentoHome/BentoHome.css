@@ -1,7 +1,7 @@
 .bento-home {
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: center;
   flex-direction: column;
   background-color: #fff;
   cursor: pointer;
@@ -27,7 +27,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 20px; /* Adjusted gap for better centering */
+  gap: 20px;
 }
 
 .bento-home-icon {
@@ -37,7 +37,7 @@
 }
 
 .bento-home-text {
-  text-align: center; /* Centered text */
+  text-align: center;
   font-size: large;
   font-weight: 600;
 }
@@ -47,7 +47,7 @@
   filter: brightness(0) invert(1);
 }
 
-@media screen and (min-width: 1500px) {
+@media screen and (min-width: 1300px) {
   .bento-home {
     width: 250px;
     height: 250px;

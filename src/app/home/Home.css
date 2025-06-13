@@ -8,7 +8,7 @@
 .home-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   padding: 32px 0 0 32px;
   box-sizing: border-box;
 }
@@ -31,7 +31,6 @@
   .bento-home-container {
     flex-direction: column;
     gap: 16px;
-    width: 100%;
   }
 }
 
