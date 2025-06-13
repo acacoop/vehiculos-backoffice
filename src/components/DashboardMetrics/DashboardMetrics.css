@@ -1,6 +1,6 @@
 .dashboard-metrics-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: 1fr;
   gap: 24px;
   justify-content: center;
   margin: 32px 0;
@@ -15,14 +15,18 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  min-width: 390px;
+  min-width: 0;
+  width: 300px;
   min-height: 300px;
   transition: box-shadow 0.2s;
   border: 1px solid #e0e0e0;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .dashboard-metrics-card.wide {
-  grid-column: span 2;
+  width: 100%;
+  grid-column: span 1;
 }
 
 .dashboard-metrics-title {
@@ -44,11 +48,18 @@
   color: #555 !important;
 }
 
-@media (max-width: 900px) {
+@media (min-width: 900px) {
+  .dashboard-metrics-container {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
   .dashboard-metrics-card {
-    width: 300px;
+    width: 390px;
   }
   .dashboard-metrics-card.wide {
-    grid-column: span 1;
+    width: 100%;
+    grid-column: span 2;
   }
 }

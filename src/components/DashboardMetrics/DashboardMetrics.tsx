@@ -137,7 +137,7 @@ export default function DashboardMetrics() {
             <YAxis allowDecimals={false} stroke="#888" />
             <Tooltip />
             <Bar dataKey="count" fill="#FE9000">
-              {reservasPorMes.map((entry, index) => (
+              {reservasPorMes.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
@@ -153,7 +153,9 @@ export default function DashboardMetrics() {
 
       {/* Reservas por usuario (top 5) */}
       <div className="dashboard-metrics-card wide">
-        <h3 className="dashboard-metrics-title">Top 5 usuarios con más reservas</h3>
+        <h3 className="dashboard-metrics-title">
+          Top 5 usuarios con más reservas
+        </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart
             data={reservasPorUsuario
@@ -165,7 +167,7 @@ export default function DashboardMetrics() {
             <YAxis dataKey="name" type="category" width={120} stroke="#888" />
             <Tooltip />
             <Bar dataKey="reservas" fill="#282D86">
-              {reservasPorUsuario.map((entry, index) => (
+              {reservasPorUsuario.map((_, index) => (
                 <Cell
                   key={`cell-user-${index}`}
                   fill={COLORS[index % COLORS.length]}
