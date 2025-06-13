@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "mes": "Junio",
+    "dia": "13",
+    "horario": "09:00 - 11:00",
+    "usuario": "Juan Pérez",
+    "vehiculo": "Toyota Corolla"
+  },
+  {
+    "id": 2,
+    "mes": "Junio",
+    "dia": "14",
+    "horario": "14:00 - 16:00",
+    "usuario": "Ana Gómez",
+    "vehiculo": "Ford Fiesta"
+  },
+  {
+    "id": 3,
+    "mes": "Julio",
+    "dia": "01",
+    "horario": "10:00 - 12:00",
+    "usuario": "Carlos Ruiz",
+    "vehiculo": "Chevrolet Onix"
+  },
+  {
+    "id": 4,
+    "mes": "Julio",
+    "dia": "02",
+    "horario": "16:00 - 18:00",
+    "usuario": "Lucía Fernández",
+    "vehiculo": "Renault Sandero"
+  },
+  {
+    "id": 5,
+    "mes": "Agosto",
+    "dia": "05",
+    "horario": "08:00 - 10:00",
+    "usuario": "María López",
+    "vehiculo": "Volkswagen Gol"
+  },
+  {
+    "id": 6,
+    "mes": "Agosto",
+    "dia": "10",
+    "horario": "13:00 - 15:00",
+    "usuario": "Pedro Martínez",
+    "vehiculo": "Peugeot 208"
+  },
+  {
+    "id": 7,
+    "mes": "Septiembre",
+    "dia": "15",
+    "horario": "11:00 - 13:00",
+    "usuario": "Sofía Torres",
+    "vehiculo": "Honda Civic"
+  },
+  {
+    "id": 8,
+    "mes": "Septiembre",
+    "dia": "20",
+    "horario": "17:00 - 19:00",
+    "usuario": "Diego Ramírez",
+    "vehiculo": "Nissan Versa"
+  },
+  {
+    "id": 9,
+    "mes": "Octubre",
+    "dia": "03",
+    "horario": "09:00 - 11:00",
+    "usuario": "Valentina Castro",
+    "vehiculo": "Fiat Cronos"
+  },
+  {
+    "id": 10,
+    "mes": "Octubre",
+    "dia": "12",
+    "horario": "15:00 - 17:00",
+    "usuario": "Martín Herrera",
+    "vehiculo": "Kia Rio"
+  }
+]

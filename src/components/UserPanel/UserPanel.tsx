@@ -40,7 +40,7 @@ export default function UserPanel({ user, setUser }: Props) {
     <div className="user-panel">
       <div className="user-panel-header">
         <div className="user-panel-info">
-          <p>Nombre y apellido</p>
+          <p className="user-panel-label">Nombre y apellido</p>
           <input
             type="text"
             name="name"
@@ -49,7 +49,7 @@ export default function UserPanel({ user, setUser }: Props) {
           />
         </div>
         <div className="user-panel-info">
-          <p>Email</p>
+          <p className="user-panel-label">Email</p>
           <input
             type="email"
             name="email"
@@ -58,7 +58,7 @@ export default function UserPanel({ user, setUser }: Props) {
           />
         </div>
         <div className="user-panel-role">
-          <p>Estado</p>
+          <p className="user-panel-label">Estado</p>
           <select value={estado} disabled>
             <option value="activo">Usuario activo</option>
             <option value="bloqueado">Usuario bloqueado</option>

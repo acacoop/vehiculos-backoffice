@@ -37,11 +37,9 @@ export function Table<T extends GridValidRowModel>({
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
-  // Ajustar el ancho total de la tabla según las columnas
   const totalWidth =
-    columns.reduce((acc, col) => acc + (col.width || 120), 0) + 80; // 80 extra para columna edit
+    columns.reduce((acc, col) => acc + (col.width || 120), 0) + 80;
 
-  // Agregar columna de edición
   const columnsWithEdit: GridColDef<T>[] = [
     ...columns,
     {

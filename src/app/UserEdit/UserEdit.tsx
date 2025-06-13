@@ -3,6 +3,8 @@ import usersData from "../../data/user.json";
 import UserPanel from "../../components/UserPanel/UserPanel";
 import UserCarPanel from "../../components/UserCarPanel/UserCarPanel";
 import { useState } from "react";
+import DniLicense from "../../components/DniLicense/DniLicense";
+import ReservePanel from "../../components/ReservePanel/ReservePanel";
 import "./UserEdit.css";
 
 type UserType = {
@@ -36,6 +38,8 @@ export default function UserEdit() {
         <UserPanel user={userData} setUser={setUserData} />
         <UserCarPanel />
       </div>
+      <DniLicense />
+      <ReservePanel />
     </main>
   );
 }
