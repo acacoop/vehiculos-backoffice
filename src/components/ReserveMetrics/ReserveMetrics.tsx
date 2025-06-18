@@ -71,7 +71,7 @@ export default function ReserveMetrics() {
 
       <div className="dashboard-metrics-card wide">
         <h3 className="dashboard-metrics-title">
-          Top 5 usuarios con más reservas
+          Top usuarios con más reservas
         </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart
