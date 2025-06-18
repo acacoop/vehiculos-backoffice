@@ -55,10 +55,6 @@ export default tseslint.config({
 
 - Para los graficos y metricas se utilizó
 
-```
-
+```bash
 npm install recharts
-
-```
-
 ```
