@@ -1,0 +1,60 @@
+.dashboard-metrics-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px #0002;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  width: 300px;
+  min-height: 300px;
+  transition: box-shadow 0.2s;
+  border: 1px solid #e0e0e0;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 24px;
+}
+
+
+
+.dashboard-metrics-title {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #282d86;
+}
+
+.dashboard-metrics-footer {
+  text-align: center;
+  margin-top: 8px;
+  color: #555;
+  font-size: 1rem;
+}
+
+.recharts-legend-item-text {
+  color: #555 !important;
+}
+
+.dashboard-metrics-row {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .dashboard-metrics-row {
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .dashboard-metrics-card {
+    width: 390px;
+    min-width: 390px;
+    min-height: 340px;
+    height: 100%;
+  }
+}
