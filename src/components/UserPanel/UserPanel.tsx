@@ -59,10 +59,14 @@ export default function UserPanel({ user, setUser }: Props) {
         </div>
         <div className="user-panel-role">
           <p className="user-panel-label">Estado</p>
-          <select value={estado} disabled>
-            <option value="activo">Usuario activo</option>
-            <option value="bloqueado">Usuario bloqueado</option>
-          </select>
+          <span
+            style={{
+              fontWeight: 500,
+              color: estado === "activo" ? "#282d86" : "#d32f2f",
+            }}
+          >
+            {estado === "activo" ? "Usuario activo" : "Usuario bloqueado"}
+          </span>
           <button className="user-panel-block-button" onClick={handleBlock}>
             {estado === "activo" ? "Bloquear" : "Desbloquear"}
           </button>

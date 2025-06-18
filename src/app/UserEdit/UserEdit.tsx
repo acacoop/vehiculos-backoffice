@@ -36,6 +36,8 @@ export default function UserEdit() {
       </div>
       <div className="user-edit-body">
         <UserPanel user={userData} setUser={setUserData} />
+      </div>
+      <div className="user-edit-body">
         <UserCarPanel />
       </div>
       <DniLicense />

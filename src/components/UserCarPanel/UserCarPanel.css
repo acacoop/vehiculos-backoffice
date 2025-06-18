@@ -5,20 +5,21 @@
   padding: 20px;
   border-radius: 20px;
   flex-direction: column;
-  width: 400px;
+  width: 800px;
   height: 260px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
   background: #fff;
+ 
 }
 
 .user-car-panel-title {
-  font-size: 16px;
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
   color: #282d86;
   width: 100%;
-  text-align: left;
+  text-align: center;
 }
 
 .user-car-panel-input {
@@ -93,4 +94,45 @@
 .user-car-panel-add-btn:hover {
   transform: scale(1.05);
   background-color: #fe9000;
+}
+
+.user-car-panel-list {
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.user-car-panel-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 16px;
+}
+
+.user-car-panel-patente {
+  color: #888;
+  font-size: 15px;
+  margin-left: 8px;
+}
+
+.user-car-panel-remove-btn {
+  color: #fff;
+  background-color: #d32f2f;
+  border: 2px solid #d32f2f;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.user-car-panel-empty {
+  color: #888;
+  font-style: italic;
+  padding: 8px 0;
 }
