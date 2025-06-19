@@ -37,18 +37,23 @@ export function Table<T extends GridValidRowModel>({
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
-  const totalWidth =
-    columns.reduce((acc, col) => acc + (col.width || 120), 0) + 80;
-
   const columnsWithEdit: GridColDef<T>[] = [
-    ...columns,
+    ...columns.map((col) => ({
+      ...col,
+      flex: 1,
+      minWidth: 120,
+    })),
     {
       field: "edit",
       headerName: "Editar",
-      width: 60,
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
       sortable: false,
       filterable: false,
       align: "center",
+      headerAlign: "center",
+      disableColumnMenu: true,
       renderCell: (params: any) => (
         <span
           style={{ cursor: "pointer" }}
@@ -63,7 +68,6 @@ export function Table<T extends GridValidRowModel>({
   return (
     <div
       style={{
-        width: totalWidth,
         borderRadius: 20,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         overflow: "auto",
