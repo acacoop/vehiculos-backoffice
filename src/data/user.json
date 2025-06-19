@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Juan Pérez",
     "email": "juan@acacoop.com.ar",
-    "active": false,
+    "active": true,
     "car": "Toyota Corolla",
     "role": "usuario",
     "documents": [

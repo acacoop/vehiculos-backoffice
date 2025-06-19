@@ -48,7 +48,7 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/metricas" onClick={() => setOpen(false)}>
+            <Link to="/metrics" onClick={() => setOpen(false)}>
               <img
                 className="icon-navbar"
                 src={IconMetrics}
