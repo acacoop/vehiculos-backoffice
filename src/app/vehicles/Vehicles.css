@@ -1,14 +1,17 @@
-.metrics-container {
+ .vehicles-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 20px;
+  justify-content: center;    
+  color: #232d85;;
 }
 
-.metrics-title {
-  font-size: 30px;
+
+.vehicles-title{
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
   color: #232d85;
+  padding: 0.5rem;
 }

@@ -41,7 +41,7 @@ export function Table<T extends GridValidRowModel>({
     ...columns.map((col) => ({
       ...col,
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     })),
     {
       field: "edit",

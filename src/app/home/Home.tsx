@@ -21,7 +21,11 @@ export default function Home() {
             text="Gestión de Usuarios"
             onClick={() => navigate("/user")}
           />
-          <BentoHome icon={IconCarBlue} text="Gestión de Vehículos" />
+          <BentoHome
+            icon={IconCarBlue}
+            text="Gestión de Vehículos"
+            onClick={() => navigate("/vehicles")}
+          />
           <BentoHome icon={IconSettingsBlue} text="Gestión de Permisos" />
         </div>
         <div>

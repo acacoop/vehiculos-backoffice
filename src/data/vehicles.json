@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Toyota Corolla",
+    "patente": "AB123CD",
+    "usuarioAsignado": "Juan Pérez",
+    "reservas": [
+      { "fecha": "2024-07-01T09:00:00", "usuario": "Juan Pérez" },
+      { "fecha": "2024-07-02T14:00:00", "usuario": "Ana Gómez" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Ford Fiesta",
+    "patente": "CD456EF",
+    "usuarioAsignado": "Ana Gómez",
+    "reservas": [
+      { "fecha": "2024-07-03T10:00:00", "usuario": "Ana Gómez" },
+      { "fecha": "2024-07-04T16:00:00", "usuario": "Carlos Ruiz" }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Volkswagen Golf",
+    "patente": "EF789GH",
+    "usuarioAsignado": "Carlos Ruiz",
+    "reservas": [
+      { "fecha": "2024-07-05T08:00:00", "usuario": "Carlos Ruiz" }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Renault Sandero",
+    "patente": "GH012IJ",
+    "usuarioAsignado": "Lucía Fernández",
+    "reservas": [
+      { "fecha": "2024-07-06T13:00:00", "usuario": "Lucía Fernández" },
+      { "fecha": "2024-07-07T11:00:00", "usuario": "Juan Pérez" }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Chevrolet Onix",
+    "patente": "IJ345KL",
+    "usuarioAsignado": "María López",
+    "reservas": [
+      { "fecha": "2024-07-08T15:00:00", "usuario": "María López" }
+    ]
+  }
+]

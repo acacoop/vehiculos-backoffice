@@ -42,7 +42,7 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/vehiculos" onClick={() => setOpen(false)}>
+            <Link to="/vehicles" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconCar} alt="Icono Vehículo" />{" "}
               Gestión de vehículos
             </Link>
