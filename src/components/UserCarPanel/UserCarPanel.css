@@ -9,7 +9,6 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
   background: #fff;
- 
 }
 
 .user-car-panel-title {
@@ -128,6 +127,11 @@
   cursor: pointer;
   margin-left: 8px;
   transition: background 0.2s, color 0.2s;
+}
+
+.user-car-panel-remove-btn:hover {
+  background-color: white;
+  color: #d32f2f;
 }
 
 .user-car-panel-empty {
