@@ -1,3 +1,4 @@
+
 .user-panel {
   display: flex;
   justify-content: center;
@@ -8,12 +9,12 @@
   width: 800px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
-  height: 260px;
+  height: auto;
 }
 
 .user-panel-header {
   width: 100%;
-  margin-bottom: 20px;
+ 
 }
 
 .user-panel-info {
@@ -52,34 +53,6 @@ input:focus {
   width: 100%;
 }
 
-.user-panel-save-button {
-  padding: 5px 10px;
-  background-color: #282d86;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.3s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
-.user-panel-save-button:hover {
-  transform: scale(1.05);
-  background-color: #fe9000;
-}
 
-.user-panel-block-button {
-  padding: 5px 10px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.3s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
-.user-panel-block-button:hover {
-  transform: scale(1.05);
-  background-color: #d32f2f;
-}

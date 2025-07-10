@@ -2,6 +2,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap:50px;
+}
+
+
+.dni-section-block{
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+   padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 815px;
+  border: 1px solid #e0e0e0;
+}
+
+.license-section-block {
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   border-radius: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

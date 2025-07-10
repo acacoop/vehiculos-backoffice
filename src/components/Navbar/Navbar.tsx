@@ -58,7 +58,7 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/permisos" onClick={() => setOpen(false)}>
+            <Link to="/assignments" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconPermissions} alt="" />{" "}
               Permisos
             </Link>

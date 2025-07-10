@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { Table } from "../Table/table";
+import { getAssignmentsByUser } from "../../services/assignments";
+import { getVehicleById } from "../../services/vehicles";
 import usersData from "../../data/user.json";
 import "./UserCarPanel.css";
 
-const ACTIVE_USER_ID = 1;
+const ACTIVE_USER_ID = 1; // Simulación, reemplazar por el id real del usuario logueado
 
 type CarType = {
   name: string;
@@ -21,91 +24,79 @@ type UserType = {
 };
 
 export default function UserCarPanel() {
-  // Buscar usuario activo
+  // Buscar usuario activo (simulación)
   const user: UserType | undefined = (usersData as UserType[]).find(
     (u) => u.id === ACTIVE_USER_ID
   );
 
-  // Inicializar autos asignados desde user.json (si tiene cars, sino usar el campo car)
-  const initialCars: CarType[] =
-    user?.cars && user.cars.length > 0
-      ? user.cars
-      : user?.car
-      ? [{ name: user.car, patente: user.patente || "" }]
-      : [];
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [assignedCars, setAssignedCars] = useState<CarType[]>(initialCars);
-  const [newCarName, setNewCarName] = useState<string>("");
-  const [newCarPatente, setNewCarPatente] = useState<string>("");
-
-  // Si el usuario cambia, actualizar la lista de autos asignados
   useEffect(() => {
-    setAssignedCars(initialCars);
+    async function fetchAssignmentsAndVehicles() {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // Traer asignaciones del usuario
+        const assignmentsRes = await getAssignmentsByUser(String(user.id));
+        const assignments = assignmentsRes.data;
+        // Traer datos de cada vehículo asignado
+        const vehicles = await Promise.all(
+          assignments.map(async (a: any) => {
+            try {
+              const v = await getVehicleById(a.vehicleId);
+              return {
+                id: a.id,
+                licensePlate: v.licensePlate,
+                brand: v.brand,
+                model: v.model || "",
+                year: v.year || "",
+                startDate: a.startDate,
+                endDate: a.endDate,
+                active: a.active,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+        setRows(vehicles.filter(Boolean));
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAssignmentsAndVehicles();
   }, [user?.id]);
 
-  const handleAddCar = () => {
-    if (newCarName.trim() && newCarPatente.trim()) {
-      setAssignedCars([
-        ...assignedCars,
-        { name: newCarName.trim(), patente: newCarPatente.trim() },
-      ]);
-      setNewCarName("");
-      setNewCarPatente("");
-    }
-  };
-
-  const handleRemoveCar = (index: number) => {
-    setAssignedCars(assignedCars.filter((_, i) => i !== index));
-  };
+  const columns = [
+    { field: "licensePlate", headerName: "Patente", flex: 1 },
+    { field: "brand", headerName: "Marca", flex: 1 },
+    { field: "model", headerName: "Modelo", flex: 1 },
+    { field: "year", headerName: "Año", flex: 1 },
+    {
+      field: "startDate",
+      headerName: "Asignado desde",
+      flex: 1,
+    },
+    { field: "endDate", headerName: "Hasta", flex: 1 },
+    {
+      field: "active",
+      headerName: "Activo",
+      flex: 1,
+      renderCell: (params: any) => (params.value ? "Sí" : "No"),
+    },
+  ];
 
   return (
-    <div className="user-car-panel-container">
+    <div
+      className="user-car-panel-container"
+      style={{ width: 860, margin: "0 auto" }}
+    >
       <label className="user-car-panel-title">Vehículos asignados</label>
-      <ul className="user-car-panel-list">
-        {assignedCars.length === 0 && (
-          <li className="user-car-panel-empty">Sin vehículos asignados</li>
-        )}
-        {assignedCars.map((car, idx) => (
-          <li key={idx} className="user-car-panel-list-item">
-            <span>
-              {car.name}{" "}
-              <span className="user-car-panel-patente">{car.patente}</span>
-            </span>
-            <button
-              className="user-car-panel-remove-btn"
-              onClick={() => handleRemoveCar(idx)}
-              title="Quitar vehículo"
-            >
-              -
-            </button>
-          </li>
-        ))}
-      </ul>
-      <div className="user-car-panel-row">
-        <input
-          type="text"
-          placeholder="Nuevo vehículo"
-          value={newCarName}
-          onChange={(e) => setNewCarName(e.target.value)}
-          className="user-car-panel-new-input"
-        />
-        <input
-          type="text"
-          placeholder="Patente"
-          value={newCarPatente}
-          onChange={(e) => setNewCarPatente(e.target.value)}
-          className="user-car-panel-new-input"
-          style={{ maxWidth: 100 }}
-        />
-        <button
-          onClick={handleAddCar}
-          className="user-car-panel-plus-btn"
-          title="Asignar vehículo"
-          disabled={!newCarName.trim() || !newCarPatente.trim()}
-        >
-          +
-        </button>
+      <div style={{ width: "100%" }}>
+        <Table rows={rows} columns={columns} title="" />
       </div>
+      {loading && <div style={{ marginTop: 16 }}>Cargando...</div>}
     </div>
   );
 }

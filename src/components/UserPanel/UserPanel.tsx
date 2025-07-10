@@ -1,51 +1,37 @@
-import { useState } from "react";
 import "./UserPanel.css";
-
-type UserType = {
-  id: number;
-  name: string;
-  email: string;
-  active: boolean;
-  car: string;
-  role: string;
-};
+import type { User } from "../../types/user";
 
 type Props = {
-  user: UserType;
-  setUser: (u: UserType) => void;
+  user: User;
+  setUser?: (user: User) => void;
 };
 
-export default function UserPanel({ user, setUser }: Props) {
-  const [estado, setEstado] = useState<"activo" | "bloqueado">(
-    user.active ? "activo" : "bloqueado"
-  );
-
-  const handleBlock = () => {
-    const nuevoEstado = estado === "activo" ? "bloqueado" : "activo";
-    setEstado(nuevoEstado);
-    setUser({ ...user, active: nuevoEstado === "activo" });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
-
-  const handleSave = () => {
-    localStorage.setItem(`user_${user.id}`, JSON.stringify(user));
-    alert("Usuario guardado (simulado en localStorage)");
-  };
-
+export default function UserPanel({ user }: Props) {
   return (
     <div className="user-panel">
       <div className="user-panel-header">
         <div className="user-panel-info">
-          <p className="user-panel-label">Nombre y apellido</p>
+          <p className="user-panel-label">ID</p>
+          <input type="text" name="id" value={user.id} readOnly disabled />
+        </div>
+        <div className="user-panel-info">
+          <p className="user-panel-label">Nombre</p>
           <input
             type="text"
-            name="name"
-            value={user.name}
-            onChange={handleChange}
+            name="firstName"
+            value={user.firstName}
+            readOnly
+            disabled
+          />
+        </div>
+        <div className="user-panel-info">
+          <p className="user-panel-label">Apellido</p>
+          <input
+            type="text"
+            name="lastName"
+            value={user.lastName}
+            readOnly
+            disabled
           />
         </div>
         <div className="user-panel-info">
@@ -54,27 +40,15 @@ export default function UserPanel({ user, setUser }: Props) {
             type="email"
             name="email"
             value={user.email}
-            onChange={handleChange}
+            readOnly
+            disabled
           />
         </div>
-        <div className="user-panel-role">
-          <p className="user-panel-label">Estado</p>
-          <span
-            style={{
-              fontWeight: 500,
-              color: estado === "activo" ? "#282d86" : "#d32f2f",
-            }}
-          >
-            {estado === "activo" ? "Usuario activo" : "Usuario bloqueado"}
-          </span>
-          <button className="user-panel-block-button" onClick={handleBlock}>
-            {estado === "activo" ? "Bloquear" : "Desbloquear"}
-          </button>
+        <div className="user-panel-info">
+          <p className="user-panel-label">DNI</p>
+          <input type="text" name="dni" value={user.dni} readOnly disabled />
         </div>
       </div>
-      <button className="user-panel-save-button" onClick={handleSave}>
-        Guardar
-      </button>
     </div>
   );
 }

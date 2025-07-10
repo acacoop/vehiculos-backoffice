@@ -7,6 +7,8 @@ import UserEdit from "./app/UserEdit/UserEdit";
 import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
 
+import Assignaments from "./app/assignment/Assignment";
+
 function App() {
   return (
     <>
@@ -18,6 +20,8 @@ function App() {
           <Route path="/useredit" element={<UserEdit />} />
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/vehicles" element={<Vehicles />} />
+
+          <Route path="/assignments" element={<Assignaments />} />
         </Routes>
       </Router>
     </>

@@ -31,9 +31,10 @@
 }
 
 .icon-navbar {
-  width: 24px;
-  height: 24px;
+  width: 25px;
+  height: 25px;
   transition: filter 0.2s;
+  border-radius: 5px;
 }
 
 .navbar-icon:hover {
@@ -45,9 +46,10 @@
 
 .bar {
   width: 80%;
-  height: 3px;
+  height: 4px;
   background-color: #fff;
-  border-radius: 2px;
+  border-radius: 5px;
+  border: 1px solid #fff;
 }
 
 .navbar-toggle {

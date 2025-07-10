@@ -26,7 +26,11 @@ export default function Home() {
             text="Gestión de Vehículos"
             onClick={() => navigate("/vehicles")}
           />
-          <BentoHome icon={IconSettingsBlue} text="Gestión de Permisos" />
+          <BentoHome
+            icon={IconSettingsBlue}
+            text="Gestión de Permisos"
+            onClick={() => navigate("/assignments")}
+          />
         </div>
         <div>
           <DashboardMetrics />
