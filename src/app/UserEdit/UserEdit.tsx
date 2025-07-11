@@ -100,7 +100,6 @@ export default function UserEdit() {
           active={userData.active ?? false}
           onToggle={(newState) => {
             console.log("Usuario actualizado:", newState);
-            // Aquí puedes refrescar la lista de usuarios si es necesario
           }}
         />
       </div>
