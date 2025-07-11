@@ -1,28 +1,24 @@
-import type { User, UserFilterParams, UsersApiResponse } from '../types/user';
-import { httpService, transformParamsToKebabCase, type PaginationParams, type ApiResponse } from '../common';
+import type { User, UserFilterParams } from '../types/user';
+import { httpService, type ApiResponse } from '../common';
 
 export async function getUsers(
-  params?: UserFilterParams, 
-  pagination?: PaginationParams
-): Promise<UsersApiResponse> {
-  const queryParams = params ? transformParamsToKebabCase(params) : undefined;
+  params?: UserFilterParams & { includeInactive?: boolean }
+): Promise<ApiResponse<User[]>> { // <-- Cambiar aquí
+  const queryParams = new URLSearchParams();
   
-  const response: ApiResponse<User[]> = await httpService.get({
-    uri: '/users',
-    queryParams,
-    pagination,
+  if (params?.includeInactive) {
+    queryParams.append('includeInactive', 'true');
+  }
+  
+  const response: ApiResponse<User[]> = await httpService.get({ // <-- Y aquí
+    uri: `/users?${queryParams.toString()}`,
   });
 
   if (!response.success) {
     throw new Error(response.error?.detail || 'Error al obtener usuarios');
   }
 
-  // Retornamos los datos en el formato esperado por UsersApiResponse
-  return {
-    status: 'success',
-    message: 'Usuarios obtenidos exitosamente',
-    data: response.data,
-  } as UsersApiResponse;
+  return response;
 }
 
 export async function getUserById(id: string): Promise<User> {
@@ -32,6 +28,19 @@ export async function getUserById(id: string): Promise<User> {
 
   if (!response.success) {
     throw new Error(response.error?.detail || 'Error al obtener usuario');
+  }
+
+  return response.data;
+}
+
+export async function updateUserStatus(id: string, active: boolean): Promise<User> {
+  const response: ApiResponse<User> = await httpService.patch({
+    uri: `/users/${id}`,
+    body: { active },
+  });
+
+  if (!response.success) {
+    throw new Error(response.error?.detail || 'Error al actualizar el estado del usuario');
   }
 
   return response.data;

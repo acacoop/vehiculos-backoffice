@@ -13,7 +13,7 @@ const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
     height="20"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#1976d2"
+    stroke="#282D86"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"

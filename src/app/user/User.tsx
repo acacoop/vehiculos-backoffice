@@ -1,10 +1,9 @@
+import { useEffect } from "react";
 import { Chip, CircularProgress, Alert } from "@mui/material";
 import Table from "../../components/Table/table";
 import UserIconBlue from "../../assets/icons/user blue.svg";
 import "./User.css";
-import { getUsers } from "../../services/users";
-import { useAsyncData } from "../../hooks";
-import type { User as UserType, UsersApiResponse } from "../../types/user";
+import { useUserContext } from "../../contexts/UserContext";
 
 const userColumns = [
   { field: "dni", headerName: "DNI", width: 120 },
@@ -35,20 +34,18 @@ const userColumns = [
 ];
 
 export default function User() {
-  const fetchUsersData = async (): Promise<UserType[]> => {
-    const response: UsersApiResponse = await getUsers();
-    console.log("Respuesta completa:", response);
-    return response.data;
-  };
+  const { users, loading, error, refreshUsers } = useUserContext();
 
-  const { data: users, loading, error } = useAsyncData(fetchUsersData);
+  // Cargar usuarios al montar el componente
+  useEffect(() => {
+    refreshUsers();
+  }, [refreshUsers]);
 
   if (loading) {
     return (
       <main className="user-container">
         <div className="user-header">
-          <img src={UserIconBlue} alt="User Icon" className="user-icon" />
-          <h1 className="user-title">Gestión de usuarios</h1>
+          <h1 className="title">Gestión de usuarios</h1>
         </div>
         <div
           style={{
@@ -68,7 +65,7 @@ export default function User() {
       <main className="user-container">
         <div className="user-header">
           <img src={UserIconBlue} alt="User Icon" className="user-icon" />
-          <h1 className="user-title">Gestión de usuarios</h1>
+          <h1 className="title">Gestión de usuarios</h1>
         </div>
         <Alert severity="error" style={{ margin: "2rem" }}>
           {error}
@@ -80,8 +77,7 @@ export default function User() {
   return (
     <main className="user-container">
       <div className="user-header">
-        <img src={UserIconBlue} alt="User Icon" className="user-icon" />
-        <h1 className="user-title">Gestión de usuarios</h1>
+        <h1 className="title">Gestión de usuarios</h1>
       </div>
       <Table rows={users || []} columns={userColumns} title="" />
     </main>

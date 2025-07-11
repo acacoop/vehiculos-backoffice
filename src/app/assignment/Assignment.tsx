@@ -2,84 +2,26 @@ import { Chip, CircularProgress, Alert } from "@mui/material";
 import Table from "../../components/Table/table";
 import "./Assignment.css";
 import { getAssignments } from "../../services/assignments";
-
 import { useAsyncData } from "../../hooks";
 import type {
   Assignment,
   AssignmentListApiResponse,
 } from "../../types/assignment";
 
-const getRow = (params: any) => params?.row ?? params;
-
 const assignmentColumns = [
-  {
-    field: "id",
-    headerName: "ID",
-    width: 90,
-  },
-  {
-    field: "user",
-    headerName: "DNI Usuario",
-    width: 120,
-  },
-  {
-    field: "userName",
-    headerName: "Usuario",
-    width: 200,
-    valueGetter: (params: any) => {
-      const user = getRow(params)?.user;
-      return user
-        ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
-        : "";
-    },
-  },
-  {
-    field: "vehiclePlate",
-    headerName: "Patente",
-    width: 120,
-    valueGetter: (params: any) => getRow(params)?.vehicle?.licensePlate ?? "",
-  },
-  {
-    field: "vehicleInfo",
-    headerName: "Vehículo",
-    width: 200,
-    valueGetter: (params: any) => {
-      const vehicle = getRow(params)?.vehicle;
-      return vehicle
-        ? `${vehicle.brand ?? ""} ${vehicle.model ?? ""} (${
-            vehicle.year ?? ""
-          })`
-        : "";
-    },
-  },
-  {
-    field: "startDate",
-    headerName: "Fecha Inicio",
-    width: 130,
-    valueGetter: (params: any) => {
-      const row = getRow(params);
-      const date = row?.startDate ? new Date(row.startDate) : null;
-      return date ? date.toLocaleDateString("es-ES") : "";
-    },
-  },
-  {
-    field: "endDate",
-    headerName: "Fecha Fin",
-    width: 130,
-    valueGetter: (params: any) => {
-      const row = getRow(params);
-      if (!row?.endDate) return "Indefinido";
-      const date = new Date(row.endDate);
-      return date.toLocaleDateString("es-ES");
-    },
-  },
+  { field: "userDni", headerName: "DNI Usuario", width: 90 },
+  { field: "userName", headerName: "Usuario", width: 200 },
+  { field: "vehiclePlate", headerName: "Patente", width: 120 },
+  { field: "vehicleInfo", headerName: "Vehículo", width: 200 },
+  { field: "formattedStartDate", headerName: "Fecha Inicio", width: 130 },
+  { field: "formattedEndDate", headerName: "Fecha Fin", width: 130 },
   {
     field: "status",
     headerName: "Estado",
     width: 120,
     renderCell: (params: any) => {
-      const row = getRow(params);
-      const isActive = !row?.endDate || new Date(row.endDate) > new Date();
+      const isActive =
+        !params.row?.endDate || new Date(params.row.endDate) > new Date();
       return (
         <Chip
           label={isActive ? "Activo" : "Finalizado"}
@@ -110,7 +52,7 @@ export default function Assignment() {
     return (
       <main className="assignment-container">
         <div className="assignment-header">
-          <h1 className="assignment-title">Gestión de Asignaciones</h1>
+          <h2 className="assignment-title">Gestión de Asignaciones</h2>
         </div>
         <div
           style={{
@@ -138,12 +80,35 @@ export default function Assignment() {
     );
   }
 
+  const mappedAssignments =
+    assignments?.map((assignment) => ({
+      ...assignment,
+      userDni: assignment.user?.dni ?? "",
+      userName: assignment.user
+        ? `${assignment.user.firstName ?? ""} ${
+            assignment.user.lastName ?? ""
+          }`.trim()
+        : "",
+      vehiclePlate: assignment.vehicle?.licensePlate ?? "",
+      vehicleInfo: assignment.vehicle
+        ? `${assignment.vehicle.brand ?? ""} ${
+            assignment.vehicle.model ?? ""
+          } (${assignment.vehicle.year ?? ""})`
+        : "",
+      formattedStartDate: assignment.startDate
+        ? new Date(assignment.startDate).toLocaleDateString("es-ES")
+        : "",
+      formattedEndDate: assignment.endDate
+        ? new Date(assignment.endDate).toLocaleDateString("es-ES")
+        : "Indefinido",
+    })) ?? [];
+
   return (
     <main className="assignment-container">
       <div className="assignment-header">
-        <h1 className="assignment-title">Gestión de Asignaciones</h1>
+        <h1 className="title">Gestión de Asignaciones</h1>
       </div>
-      <Table rows={assignments || []} columns={assignmentColumns} title="" />
+      <Table rows={mappedAssignments} columns={assignmentColumns} title="" />
     </main>
   );
 }

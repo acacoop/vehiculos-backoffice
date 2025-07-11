@@ -1,3 +1,4 @@
+import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
@@ -11,7 +12,7 @@ import Assignaments from "./app/assignment/Assignment";
 
 function App() {
   return (
-    <>
+    <UserProvider>
       <Router>
         <Navbar />
         <Routes>
@@ -24,7 +25,7 @@ function App() {
           <Route path="/assignments" element={<Assignaments />} />
         </Routes>
       </Router>
-    </>
+    </UserProvider>
   );
 }
 

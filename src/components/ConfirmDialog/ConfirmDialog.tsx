@@ -1,0 +1,49 @@
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import { COLORS } from "../../common/colors";
+
+type Props = {
+  open: boolean;
+  title?: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
+};
+
+export default function ConfirmDialog({
+  open,
+  title = "Confirmar acción",
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+}: Props) {
+  return (
+    <Dialog open={open} onClose={onCancel}>
+      <DialogTitle style={{ color: COLORS.primary }}>{title}</DialogTitle>
+      <DialogContent>
+        <p>{message}</p>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel} color="inherit">
+          {cancelText}
+        </Button>
+        <Button
+          onClick={onConfirm}
+          style={{ backgroundColor: COLORS.primary, color: "#fff" }}
+          variant="contained"
+        >
+          {confirmText}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
