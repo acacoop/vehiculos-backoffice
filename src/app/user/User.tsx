@@ -36,7 +36,6 @@ const userColumns = [
 export default function User() {
   const { users, loading, error, refreshUsers } = useUserContext();
 
-  // Cargar usuarios al montar el componente
   useEffect(() => {
     refreshUsers();
   }, [refreshUsers]);

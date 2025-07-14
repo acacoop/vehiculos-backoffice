@@ -46,9 +46,9 @@ export function Table<T extends GridValidRowModel>({
     {
       field: "edit",
       headerName: "Editar",
-      width: 50,
-      minWidth: 50,
-      maxWidth: 50,
+      width: 150,
+      minWidth: 150,
+      maxWidth: 150,
       sortable: false,
       filterable: false,
       align: "center",
@@ -71,6 +71,8 @@ export function Table<T extends GridValidRowModel>({
         borderRadius: 20,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         overflow: "auto",
+        width: "100%",
+        maxWidth: "1400px",
       }}
     >
       <h2 style={{ textAlign: "start" }}>{title}</h2>
