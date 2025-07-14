@@ -38,8 +38,18 @@ export default function ConfirmDialog({
         </Button>
         <Button
           onClick={onConfirm}
-          style={{ backgroundColor: COLORS.primary, color: "#fff" }}
+          style={{
+            backgroundColor: COLORS.primary,
+            color: "#fff",
+            transition: "background-color 0.2s",
+          }}
           variant="contained"
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor = COLORS.secondary)
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor = COLORS.primary)
+          }
         >
           {confirmText}
         </Button>

@@ -77,6 +77,16 @@ export default function UserState({ userId, active = true, onToggle }: Props) {
               cursor: isLoading ? "not-allowed" : "pointer",
               transition: "background 0.2s",
             }}
+            onMouseOver={(e) => {
+              if (!isLoading)
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  COLORS.secondary;
+            }}
+            onMouseOut={(e) => {
+              if (!isLoading)
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  COLORS.primary;
+            }}
           >
             {isLoading
               ? "Procesando..."

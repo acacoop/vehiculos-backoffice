@@ -27,7 +27,7 @@
   height: 30px;
   width: 30px;
   gap: 6px;
-  transition: 0.3s ease-in-out;
+  transition: 0.3s;
 }
 
 .icon-navbar {
@@ -41,7 +41,6 @@
   cursor: pointer;
   background-color: #ff9800;
   border-radius: 5px;
-  border: 1px solid #df691fff;
 }
 
 .bar {
