@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 import { getUsers } from "../services/users";
 import type { User } from "../types/user";
 import type { ApiResponse } from "../common";
@@ -13,7 +19,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
+export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +31,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       const response: ApiResponse<User[]> = await getUsers({
         includeInactive: true,
+        limit: 1000, // o un número muy alto
+        // Si tu backend soporta "sin límite", usa:
+        // limit: -1
       });
       console.log("✅ Users loaded:", response.data.length, "users");
       console.log(
