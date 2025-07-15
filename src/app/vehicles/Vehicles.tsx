@@ -22,7 +22,6 @@ export default function Vehicles() {
       console.log("🚗 Vehicles - Respuesta de vehículos:", response);
 
       if (response.success) {
-        // Mapear los datos para asegurar compatibilidad con la tabla
         const mappedData = response.data.map((vehicle: any, index: number) => {
           const mappedItem = {
             id: vehicle.id || `vehicle-${Date.now()}-${index}`,

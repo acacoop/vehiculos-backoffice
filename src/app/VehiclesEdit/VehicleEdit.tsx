@@ -23,9 +23,16 @@ export default function VehicleEdit() {
       try {
         setLoading(true);
         console.log("🚗 Cargando vehículo con ID:", vehicleId);
-        const vehicleData = await getVehicleById(vehicleId);
-        console.log("✅ Vehículo cargado:", vehicleData);
-        setVehicle(vehicleData);
+        const response = await getVehicleById(vehicleId);
+        console.log("🔄 Respuesta del servicio:", response);
+
+        if (response.success) {
+          console.log("✅ Vehículo cargado:", response.data);
+          setVehicle(response.data);
+        } else {
+          console.error("❌ Error en respuesta:", response.message);
+          setError(response.message || "Error al cargar vehículo");
+        }
       } catch (err) {
         console.error("❌ Error al cargar vehículo:", err);
         setError(
@@ -80,19 +87,10 @@ export default function VehicleEdit() {
 
   return (
     <div className="vehicle-edit-container">
-      <h1>Editar Vehículo</h1>
+      <h2 className="title">Editar Vehículo</h2>
       <div className="vehicle-details">
         <h2>Detalles del Vehículo</h2>
-        <div
-          style={{
-            padding: "1rem",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "8px",
-          }}
-        >
-          <p>
-            <strong>ID:</strong> {vehicle.id}
-          </p>
+        <div className="vehicle-info">
           <p>
             <strong>Patente:</strong> {vehicle.licensePlate}
           </p>
