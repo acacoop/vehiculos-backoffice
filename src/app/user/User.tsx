@@ -78,7 +78,13 @@ export default function User() {
       <div className="user-header">
         <h1 className="title">Gestión de usuarios</h1>
       </div>
-      <Table rows={users || []} columns={userColumns} title="" />
+      <Table
+        rows={users || []}
+        columns={userColumns}
+        title=""
+        showEditColumn={true}
+        editRoute="/useredit"
+      />
     </main>
   );
 }

@@ -28,41 +28,50 @@ interface GenericTableProps<T extends GridValidRowModel> {
   rows: T[];
   columns: GridColDef<T>[];
   title: string;
+  showEditColumn?: boolean;
+  editRoute?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
   rows,
   columns,
   title,
+  showEditColumn = false,
+  editRoute = "/useredit",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
-  const columnsWithEdit: GridColDef<T>[] = [
+  const finalColumns: GridColDef<T>[] = [
     ...columns.map((col) => ({
       ...col,
       flex: 1,
       minWidth: 150,
     })),
-    {
-      field: "edit",
-      headerName: "Editar",
-      width: 150,
-      minWidth: 150,
-      maxWidth: 150,
-      sortable: false,
-      filterable: false,
-      align: "center",
-      headerAlign: "center",
-      disableColumnMenu: true,
-      renderCell: (params: any) => (
-        <span
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate(`/useredit?id=${params.row.id}`)}
-        >
-          <PencilIcon />
-        </span>
-      ),
-    } as GridColDef<T>,
+
+    ...(showEditColumn
+      ? [
+          {
+            field: "edit",
+            headerName: "Editar",
+            width: 150,
+            minWidth: 150,
+            maxWidth: 150,
+            sortable: false,
+            filterable: false,
+            align: "center" as const,
+            headerAlign: "center" as const,
+            disableColumnMenu: true,
+            renderCell: (params: any) => (
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate(`${editRoute}?id=${params.row.id}`)}
+              >
+                <PencilIcon />
+              </span>
+            ),
+          } as GridColDef<T>,
+        ]
+      : []),
   ];
 
   return (
@@ -78,7 +87,7 @@ export function Table<T extends GridValidRowModel>({
       <h2 style={{ textAlign: "start" }}>{title}</h2>
       <DataGrid
         rows={rows}
-        columns={columnsWithEdit}
+        columns={finalColumns}
         pageSizeOptions={[20, 50, 100]}
         showToolbar
         localeText={esES.components.MuiDataGrid.defaultProps.localeText}

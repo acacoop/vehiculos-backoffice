@@ -5,9 +5,9 @@ import "./App.css";
 import Home from "./app/home/Home";
 import User from "./app/user/User";
 import UserEdit from "./app/UserEdit/UserEdit";
+import VehicleEdit from "./app/VehiclesEdit/VehicleEdit";
 import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
-
 import Assignaments from "./app/assignment/Assignment";
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
           <Route path="/useredit" element={<UserEdit />} />
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/vehicles" element={<Vehicles />} />
-
+          <Route path="/vehicleedit" element={<VehicleEdit />} />
           <Route path="/assignments" element={<Assignaments />} />
         </Routes>
       </Router>

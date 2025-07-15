@@ -4,6 +4,7 @@ import Table from "../../components/Table/table";
 import { getVehicles } from "../../services/vehicles";
 import { useAsyncData } from "../../hooks";
 import type { Vehicle, VehiclesApiResponse } from "../../types/vehicle";
+import AddVehicle from "../../components/AddCar/AddVehicle";
 
 const columns = [
   { field: "licensePlate", headerName: "Patente", width: 120 },
@@ -51,7 +52,14 @@ export default function Vehicles() {
   return (
     <div className="vehicles-container">
       <h1 className="vehicles-title">Gestión de Vehículos</h1>
-      <Table rows={vehicles || []} columns={columns} title="" />
+      <Table
+        rows={vehicles || []}
+        columns={columns}
+        title=""
+        showEditColumn={true}
+        editRoute="/vehicleedit"
+      />
+      <AddVehicle />
     </div>
   );
 }
