@@ -4,13 +4,15 @@ export {
   camelToKebabCase, 
   kebabToCamelCase, 
   transformObjectKeys, 
-  transformParamsToKebabCase
+  transformParamsToKebabCase,
+  buildQueryParams
 } from './utils';
 export type { 
   RequestConfig, 
-  ApiResponse, 
   ApiError, 
   PaginationParams,
   Pagination,
-  BackendResponse
+  BackendResponse,
+  ServiceResponse,
+  PaginationData
 } from '../types/common';

@@ -27,8 +27,12 @@ export default function UserEdit() {
 
       try {
         setLoading(true);
-        const user = await getUserById(userId);
-        setUserData(user);
+        const response = await getUserById(userId);
+        if (response.success) {
+          setUserData(response.data);
+        } else {
+          setError(response.message || "Error al cargar usuario");
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Error al cargar usuario"
@@ -104,7 +108,7 @@ export default function UserEdit() {
         />
       </div>
       <div className="user-edit-body">
-        <UserCarPanel />
+        <UserCarPanel userId={userData.id} user={userData} />
       </div>
       <DniLicense />
       <ReservePanel />

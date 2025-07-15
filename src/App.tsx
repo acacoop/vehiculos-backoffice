@@ -1,4 +1,3 @@
-import { UserProvider } from "./contexts/UserContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
@@ -12,20 +11,18 @@ import Assignaments from "./app/assignment/Assignment";
 
 function App() {
   return (
-    <UserProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/user" element={<User />} />
-          <Route path="/useredit" element={<UserEdit />} />
-          <Route path="/metrics" element={<Metrics />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route path="/vehicleedit" element={<VehicleEdit />} />
-          <Route path="/assignments" element={<Assignaments />} />
-        </Routes>
-      </Router>
-    </UserProvider>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/user" element={<User />} />
+        <Route path="/useredit" element={<UserEdit />} />
+        <Route path="/metrics" element={<Metrics />} />
+        <Route path="/vehicles" element={<Vehicles />} />
+        <Route path="/vehicleedit" element={<VehicleEdit />} />
+        <Route path="/assignments" element={<Assignaments />} />
+      </Routes>
+    </Router>
   );
 }
 

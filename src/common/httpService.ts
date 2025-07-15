@@ -1,4 +1,5 @@
-import type { RequestConfig, ApiResponse, ApiError, PaginationParams, BackendResponse } from '../types/common';
+import type { RequestConfig, ApiError, PaginationParams, BackendResponse } from '../types/common';
+import { ResponseStatus } from '../types/common';
 import { API_CONFIG, DEFAULT_HEADERS, HTTP_METHODS, METHODS_WITH_BODY } from './constants';
 
 // Clase de error personalizada para errores de API
@@ -38,7 +39,7 @@ function buildParams(queryParams?: Record<string, any>, pagination?: PaginationP
 async function makeRequest<T>(
   method: string,
   config: RequestConfig
-): Promise<ApiResponse<T>> {
+): Promise<BackendResponse<T>> {
   try {
     const { uri, queryParams, pagination, body, headers } = config;
     
@@ -85,55 +86,49 @@ async function makeRequest<T>(
       throw new ApiException(apiError);
     }
     
-    const returnApiResponse: ApiResponse<T> = {
-      data: responseData.data, // Retornamos solo los datos del backend
-      success: true,
+    const returnApiResponse: BackendResponse<T> = {
+      status: responseData.status,
+      message: responseData.message || '',
+      data: responseData.data,
+      pagination: responseData.pagination,
     };
 
     console.log(`Successful response from ${method} ${url}:`, returnApiResponse);
 
     // Retornar la respuesta formateada
     return returnApiResponse;
-    
-  } catch (error) {
-    if (error instanceof ApiException) {
+    } catch (error) {
+      if (error instanceof ApiException) {
+        return {
+          status: ResponseStatus.ERROR,
+          message: error.apiError.detail || error.apiError.title,
+          data: {} as T,
+        };
+      }
+      
+      // Error de red u otro tipo
       return {
+        status: ResponseStatus.ERROR,
+        message: error instanceof Error ? error.message : 'Error desconocido',
         data: {} as T,
-        success: false,
-        error: error.apiError,
       };
     }
-    
-    // Error de red u otro tipo
-    const networkError: ApiError = {
-      type: 'network-error',
-      title: 'Error de conexión',
-      status: 0,
-      detail: error instanceof Error ? error.message : 'Error desconocido',
-    };
-    
-    return {
-      data: {} as T,
-      success: false,
-      error: networkError,
-    };
-  }
 }
 
 // Métodos HTTP específicos
 export const httpService = {
-  get: <T>(config: RequestConfig): Promise<ApiResponse<T>> => 
+  get: <T>(config: RequestConfig): Promise<BackendResponse<T>> => 
     makeRequest<T>(HTTP_METHODS.GET, config),
     
-  post: <T>(config: RequestConfig): Promise<ApiResponse<T>> => 
+  post: <T>(config: RequestConfig): Promise<BackendResponse<T>> => 
     makeRequest<T>(HTTP_METHODS.POST, config),
     
-  put: <T>(config: RequestConfig): Promise<ApiResponse<T>> => 
+  put: <T>(config: RequestConfig): Promise<BackendResponse<T>> => 
     makeRequest<T>(HTTP_METHODS.PUT, config),
     
-  patch: <T>(config: RequestConfig): Promise<ApiResponse<T>> => 
+  patch: <T>(config: RequestConfig): Promise<BackendResponse<T>> => 
     makeRequest<T>(HTTP_METHODS.PATCH, config),
     
-  delete: <T>(config: RequestConfig): Promise<ApiResponse<T>> => 
+  delete: <T>(config: RequestConfig): Promise<BackendResponse<T>> => 
     makeRequest<T>(HTTP_METHODS.DELETE, config),
 };

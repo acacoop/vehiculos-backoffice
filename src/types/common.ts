@@ -1,3 +1,8 @@
+export enum ResponseStatus {
+  SUCCESS = "success",
+  ERROR = "error",
+}
+
 // Configuración de paginación
 export interface PaginationParams {
   page?: number;
@@ -30,17 +35,27 @@ export interface RequestConfig {
   headers?: Record<string, string>;
 }
 
+// Datos de paginación para el frontend
+export interface PaginationData {
+  page: number;
+  pageSize: number;
+  total: number;
+  pages: number;
+}
+
 // Respuesta unificada del backend (según OpenAPI)
 export interface BackendResponse<T> {
-  status: 'success' | 'error';
-  message: string;
+  status: ResponseStatus;
+  message?: string;
   data: T;
   pagination?: Pagination;
 }
 
-// Respuesta interna de nuestro httpService
-export interface ApiResponse<T> {
-  data: T;
+// Respuesta de servicios con paginación para el frontend
+export interface ServiceResponse<T> {
   success: boolean;
+  data: T;
+  message?: string;
+  pagination?: PaginationData;
   error?: ApiError;
 }

@@ -5,7 +5,9 @@ import {
   type GridValidRowModel,
 } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import type { ServiceResponse, PaginationParams } from "../../common";
 
 const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -25,7 +27,7 @@ const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 interface GenericTableProps<T extends GridValidRowModel> {
-  rows: T[];
+  getRows(pagination: PaginationParams): Promise<ServiceResponse<T[]>>;
   columns: GridColDef<T>[];
   title: string;
   showEditColumn?: boolean;
@@ -33,13 +35,57 @@ interface GenericTableProps<T extends GridValidRowModel> {
 }
 
 export function Table<T extends GridValidRowModel>({
-  rows,
+  getRows,
   columns,
   title,
   showEditColumn = false,
   editRoute = "/useredit",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
+
+  const [rows, setRows] = useState<T[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 20,
+  });
+  const [rowCount, setRowCount] = useState(0);
+
+  const fetchData = async (page: number, pageSize: number) => {
+    setLoading(true);
+    try {
+      // MUI usa páginas base 0, pero el backend usa páginas base 1
+      const response = await getRows({ page: page + 1, limit: pageSize });
+
+      if (response.success) {
+        setRows(response.data);
+
+        // Actualizar información de paginación si está disponible
+        if (response.pagination) {
+          setRowCount(response.pagination.total);
+        }
+      } else {
+        console.error("Error fetching data:", response.message);
+        setRows([]);
+      }
+    } catch (error) {
+      console.error("Error in fetchData:", error);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(paginationModel.page, paginationModel.pageSize);
+  }, [paginationModel.page, paginationModel.pageSize]);
+
+  const handlePaginationChange = (model: any) => {
+    setPaginationModel({
+      page: model.page,
+      pageSize: model.pageSize,
+    });
+  };
 
   const finalColumns: GridColDef<T>[] = [
     ...columns.map((col) => ({
@@ -88,7 +134,16 @@ export function Table<T extends GridValidRowModel>({
       <DataGrid
         rows={rows}
         columns={finalColumns}
-        pageSizeOptions={[20, 50, 100]}
+        pagination
+        paginationMode="server"
+        rowCount={rowCount}
+        paginationModel={{
+          page: paginationModel.page,
+          pageSize: paginationModel.pageSize,
+        }}
+        onPaginationModelChange={handlePaginationChange}
+        pageSizeOptions={[10, 20, 50, 100]}
+        loading={loading}
         showToolbar
         localeText={esES.components.MuiDataGrid.defaultProps.localeText}
         sx={{
@@ -103,7 +158,6 @@ export function Table<T extends GridValidRowModel>({
           height: "80vh",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
-        autoHeight={false}
       />
     </div>
   );

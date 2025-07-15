@@ -1,66 +1,81 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Table } from "../Table/table";
 import { getAssignmentsByUser } from "../../services/assignments";
-import { getUserById } from "../../services/users"; // Agregar esto
+import type { ServiceResponse, PaginationParams } from "../../common";
+import type { User } from "../../types/user";
 import "./UserCarPanel.css";
 
-export default function UserCarPanel() {
-  const [searchParams] = useSearchParams();
-  const userId = searchParams.get("id");
+interface UserCarPanelProps {
+  userId: string;
+  user: User;
+}
 
-  const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null); // Estado para el usuario
-
-  useEffect(() => {
-    async function fetchUserAndAssignments() {
-      if (!userId) return;
-
-      setLoading(true);
-      try {
-        console.log("Buscando usuario y asignaciones para ID:", userId);
-
-        //  Traer usuario desde API
-        const userData = await getUserById(userId);
-        setUser(userData);
-
-        // Traer asignaciones del usuario específico
-        const assignmentsRes = await getAssignmentsByUser(userId);
-        const assignments = assignmentsRes.data;
-
-        console.log("Usuario encontrado:", userData);
-        console.log("Asignaciones recibidas:", assignments);
-
-        // Mapear los datos
-        const vehicles = assignments.map((assignment: any) => {
-          const vehicle = assignment.vehicle;
-
-          return {
-            id: assignment.id,
-            licensePlate: vehicle?.licensePlate || "N/A",
-            brand: vehicle?.brand || "N/A",
-            model: vehicle?.model || "N/A",
-            year: vehicle?.year || "N/A",
-            startDate: assignment.startDate || "N/A",
-            endDate: assignment.endDate || "Sin fecha",
-            active: assignment.active,
-            imageUrl: vehicle?.imageUrl || "",
-          };
-        });
-
-        setRows(vehicles);
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-        setRows([]);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+export default function UserCarPanel({ userId, user }: UserCarPanelProps) {
+  // Función para obtener asignaciones con paginación
+  const getAssignmentsData = async (
+    pagination: PaginationParams
+  ): Promise<ServiceResponse<any[]>> => {
+    if (!userId) {
+      return {
+        success: true,
+        data: [],
+      };
     }
 
-    fetchUserAndAssignments();
-  }, [userId]);
+    try {
+      const response = await getAssignmentsByUser(userId, pagination);
+
+      console.log("🚗 UserCarPanel - Respuesta de asignaciones:", response);
+
+      if (response.success) {
+        // Mapear los datos para la tabla
+        const mappedData = response.data.map(
+          (assignment: any, index: number) => {
+            const vehicle = assignment.vehicle;
+
+            const mappedItem = {
+              id: assignment.id || `assignment-${Date.now()}-${index}`, // Asegurar que siempre haya un ID único
+              licensePlate: vehicle?.licensePlate || "N/A",
+              brand: vehicle?.brand || "N/A",
+              model: vehicle?.model || "N/A",
+              year: vehicle?.year?.toString() || "N/A",
+              startDate: assignment.startDate || "N/A",
+              endDate: assignment.endDate || "Sin fecha",
+              active: Boolean(assignment.active),
+              imageUrl: vehicle?.imageUrl || "",
+            };
+
+            console.log("🔄 UserCarPanel - Item mapeado:", mappedItem);
+            return mappedItem;
+          }
+        );
+
+        console.log("✅ UserCarPanel - Datos finales mapeados:", mappedData);
+
+        return {
+          success: true,
+          data: mappedData,
+          pagination: response.pagination,
+        };
+      } else {
+        console.error(
+          "❌ UserCarPanel - Error en respuesta:",
+          response.message
+        );
+        return {
+          success: false,
+          data: [],
+          message: response.message,
+        };
+      }
+    } catch (error) {
+      console.error("❌ UserCarPanel - Error al cargar asignaciones:", error);
+      return {
+        success: false,
+        data: [],
+        message: "Error al cargar asignaciones",
+      };
+    }
+  };
 
   const columns = [
     { field: "licensePlate", headerName: "Patente", flex: 1 },
@@ -131,14 +146,13 @@ export default function UserCarPanel() {
         Vehículos asignados {user ? `a ${user.firstName} ${user.lastName}` : ""}
       </label>
       <div style={{ width: "100%" }}>
-        <Table rows={rows} columns={columns} title="" />
+        <Table
+          getRows={getAssignmentsData}
+          columns={columns}
+          title=""
+          showEditColumn={false}
+        />
       </div>
-      {loading && <div style={{ marginTop: 16 }}>Cargando...</div>}
-      {!loading && rows.length === 0 && (
-        <div style={{ marginTop: 16, textAlign: "center", color: "#666" }}>
-          No hay vehículos asignados a este usuario
-        </div>
-      )}
     </div>
   );
 }

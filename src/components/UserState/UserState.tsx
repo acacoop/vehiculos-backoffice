@@ -2,7 +2,6 @@ import { useState } from "react";
 import { COLORS } from "../../common/colors";
 import { updateUserStatus } from "../../services/users";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
-import { useUserContext } from "../../contexts/UserContext";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import "./UserState.css";
 
@@ -15,7 +14,6 @@ type Props = {
 export default function UserState({ userId, active = true, onToggle }: Props) {
   const [isActive, setIsActive] = useState(active);
   const [isLoading, setIsLoading] = useState(false);
-  const { updateUserInList } = useUserContext();
   const { isOpen, message, showConfirm, handleConfirm, handleCancel } =
     useConfirmDialog();
 
@@ -31,16 +29,16 @@ export default function UserState({ userId, active = true, onToggle }: Props) {
     console.log(`🔄 Updating user ${userId} to active: ${newState}`);
     setIsLoading(true);
     try {
-      const updatedUser = await updateUserStatus(userId, newState);
-      console.log("✅ User updated in backend:", updatedUser);
+      const response = await updateUserStatus(userId, newState);
 
-      setIsActive(newState);
-
-      // Actualizar en el context global
-      updateUserInList(userId, { active: newState });
-      console.log("✅ User updated in context");
-
-      if (onToggle) onToggle(newState);
+      if (response.success) {
+        console.log("✅ User updated in backend:", response.data);
+        setIsActive(newState);
+        if (onToggle) onToggle(newState);
+      } else {
+        console.error("❌ Error updating user:", response.message);
+        alert(response.message || "Error al actualizar el estado del usuario");
+      }
     } catch (error) {
       console.error("❌ Error updating user:", error);
       alert("Error al actualizar el estado del usuario");
