@@ -1,0 +1,84 @@
+.vehicle-details {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: start;
+  padding: 20px;
+  width: 800px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  height: auto;
+  border-radius: 20px;
+}
+
+.subtitle {
+  font-size: 20px;
+  margin: 1rem 0;
+  margin-left: 10px;
+}
+
+.vehicle-info {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.row-1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #eee8e8;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+strong {
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.row-2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  padding: 5px;
+}
+
+.no-spinner {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.vehicle-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.confirm-button {
+  padding: 10px 20px;
+  background-color: #282d86;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.confirm-button:hover {
+  background-color: #fe9000;
+}

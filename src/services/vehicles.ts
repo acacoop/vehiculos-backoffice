@@ -1,12 +1,12 @@
-import type { Vehicle, VehicleFilterParams } from '../types/vehicle';
-import { 
-  httpService, 
-  buildQueryParams, 
-  type PaginationParams, 
-  type ServiceResponse, 
-  type BackendResponse 
-} from '../common';
-import { ResponseStatus } from '../types/common';
+import type { Vehicle, VehicleFilterParams } from "../types/vehicle";
+import {
+  httpService,
+  buildQueryParams,
+  type PaginationParams,
+  type ServiceResponse,
+  type BackendResponse,
+} from "../common";
+import { ResponseStatus } from "../types/common";
 
 /**
  * Obtiene todos los vehículos (sin paginación)
@@ -24,7 +24,7 @@ export async function getAllVehicles(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener vehículos"
+        message: response.message || "Error al obtener vehículos",
       };
     }
 
@@ -37,7 +37,7 @@ export async function getAllVehicles(
       success: false,
       data: [],
       message: "Error al obtener vehículos",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -46,7 +46,7 @@ export async function getAllVehicles(
  * Obtiene vehículos con paginación
  */
 export async function getVehicles(
-  params?: VehicleFilterParams, 
+  params?: VehicleFilterParams,
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Vehicle[]>> {
   try {
@@ -59,31 +59,35 @@ export async function getVehicles(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener vehículos"
+        message: response.message || "Error al obtener vehículos",
       };
     }
 
     return {
       success: true,
       data: response.data,
-      pagination: response.pagination ? {
-        page: response.pagination.page,
-        pageSize: response.pagination.limit,
-        total: response.pagination.total,
-        pages: response.pagination.pages
-      } : undefined,
+      pagination: response.pagination
+        ? {
+            page: response.pagination.page,
+            pageSize: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages,
+          }
+        : undefined,
     };
   } catch (error) {
     return {
       success: false,
       data: [],
       message: "Error al obtener vehículos",
-      error: error as any
+      error: error as any,
     };
   }
 }
 
-export async function getVehicleById(id: string): Promise<ServiceResponse<Vehicle>> {
+export async function getVehicleById(
+  id: string
+): Promise<ServiceResponse<Vehicle>> {
   try {
     const response: BackendResponse<Vehicle> = await httpService.get({
       uri: `/vehicles/${id}`,
@@ -93,7 +97,7 @@ export async function getVehicleById(id: string): Promise<ServiceResponse<Vehicl
       return {
         success: false,
         data: {} as Vehicle,
-        message: response.message || "Error al obtener vehículo"
+        message: response.message || "Error al obtener vehículo",
       };
     }
 
@@ -106,7 +110,42 @@ export async function getVehicleById(id: string): Promise<ServiceResponse<Vehicl
       success: false,
       data: {} as Vehicle,
       message: "Error al obtener vehículo",
-      error: error as any
+      error: error as any,
+    };
+  }
+}
+
+export async function updateVehicle(
+  id: string,
+  vehicleData: Partial<Omit<Vehicle, "id" | "imgUrl">>
+): Promise<ServiceResponse<Vehicle>> {
+  try {
+    console.log(`🔄 Actualizando vehículo ${id} con:`, vehicleData);
+
+    const response: BackendResponse<Vehicle> = await httpService.patch({
+      uri: `/vehicles/${id}`,
+      body: vehicleData,
+    });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: {} as Vehicle,
+        message: response.message || "Error al actualizar vehículo",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Vehículo actualizado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Vehicle,
+      message: "Error al actualizar vehículo",
+      error: error as any,
     };
   }
 }

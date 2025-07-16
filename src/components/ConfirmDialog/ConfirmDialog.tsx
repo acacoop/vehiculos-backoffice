@@ -33,7 +33,11 @@ export default function ConfirmDialog({
         <p>{message}</p>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} color="inherit">
+        <Button
+          onClick={onCancel}
+          color="inherit"
+          style={{ textTransform: "none", color: COLORS.error }}
+        >
           {cancelText}
         </Button>
         <Button
@@ -42,6 +46,7 @@ export default function ConfirmDialog({
             backgroundColor: COLORS.primary,
             color: "#fff",
             transition: "background-color 0.2s",
+            textTransform: "none",
           }}
           variant="contained"
           onMouseOver={(e) =>
