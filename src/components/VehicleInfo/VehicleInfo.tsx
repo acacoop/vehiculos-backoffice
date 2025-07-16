@@ -157,6 +157,7 @@ export default function VehicleInfo() {
             onChange={(e) =>
               setVehicle({ ...vehicle, licensePlate: e.target.value })
             }
+            style={{ fontWeight: "bold" }}
           />
         </div>
         <div className="row-2">
@@ -165,6 +166,7 @@ export default function VehicleInfo() {
             type="text"
             value={vehicle.brand}
             onChange={(e) => setVehicle({ ...vehicle, brand: e.target.value })}
+            style={{ fontWeight: "bold" }}
           />
         </div>
         <div className="row-1">
@@ -173,6 +175,7 @@ export default function VehicleInfo() {
             type="text"
             value={vehicle.model}
             onChange={(e) => setVehicle({ ...vehicle, model: e.target.value })}
+            style={{ fontWeight: "bold" }}
           />
         </div>
         <div className="row-2">
@@ -184,6 +187,7 @@ export default function VehicleInfo() {
             onChange={(e) =>
               setVehicle({ ...vehicle, year: Number(e.target.value) })
             }
+            style={{ fontWeight: "bold" }}
           />
         </div>
       </div>
@@ -191,7 +195,7 @@ export default function VehicleInfo() {
         <button
           className="confirm-button"
           onClick={handleConfirmClick}
-          disabled={updating} // Solo deshabilitar durante la actualización
+          disabled={updating}
           style={{
             opacity: updating ? 0.5 : 1,
             cursor: updating ? "not-allowed" : "pointer",
