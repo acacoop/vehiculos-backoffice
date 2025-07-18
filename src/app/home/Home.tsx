@@ -28,7 +28,7 @@ export default function Home() {
           />
           <BentoHome
             icon={IconSettingsBlue}
-            text="Gestión de Permisos"
+            text="Gestión de Asignaciones"
             onClick={() => navigate("/assignments")}
           />
         </div>

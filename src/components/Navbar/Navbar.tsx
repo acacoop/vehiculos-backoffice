@@ -7,6 +7,7 @@ import IconCar from "../../assets/icons/car.svg";
 import IconUser from "../../assets/icons/user.svg";
 import IconMetrics from "../../assets/icons/metrics.svg";
 import IconPermissions from "../../assets/icons/security.svg";
+import IconMaintenance from "../../assets/icons/maintenance.svg";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -60,7 +61,13 @@ function Navbar() {
           <li>
             <Link to="/assignments" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconPermissions} alt="" />{" "}
-              Permisos
+              Asignaciones
+            </Link>
+          </li>
+          <li>
+            <Link to="/assignments" onClick={() => setOpen(false)}>
+              <img className="icon-navbar" src={IconMaintenance} alt="" />{" "}
+              Mantenimiento
             </Link>
           </li>
         </ul>

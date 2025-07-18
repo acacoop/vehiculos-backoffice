@@ -51,18 +51,6 @@ export default function VehicleInfo() {
     fetchVehicle();
   }, [vehicleId]);
 
-  // Función para verificar si hay cambios
-  const hasChanges = () => {
-    if (!vehicle || !originalVehicle) return false;
-    return (
-      vehicle.licensePlate !== originalVehicle.licensePlate ||
-      vehicle.brand !== originalVehicle.brand ||
-      vehicle.model !== originalVehicle.model ||
-      vehicle.year !== originalVehicle.year
-    );
-  };
-
-  // Función para manejar el click en confirmar
   const handleConfirmClick = () => {
     setShowDialog(true); // Siempre mostrar el dialog, sin verificar cambios
   };
@@ -147,48 +135,48 @@ export default function VehicleInfo() {
 
   return (
     <div className="vehicle-details">
-      <h2 className="subtitle">Detalles del Vehículo</h2>
-      <div className="vehicle-info">
-        <div className="row-1">
-          <strong>Patente:</strong>
-          <input
-            type="text"
-            value={vehicle.licensePlate}
-            onChange={(e) =>
-              setVehicle({ ...vehicle, licensePlate: e.target.value })
-            }
-            style={{ fontWeight: "bold" }}
-          />
-        </div>
-        <div className="row-2">
-          <strong>Marca:</strong>
-          <input
-            type="text"
-            value={vehicle.brand}
-            onChange={(e) => setVehicle({ ...vehicle, brand: e.target.value })}
-            style={{ fontWeight: "bold" }}
-          />
-        </div>
-        <div className="row-1">
-          <strong>Modelo:</strong>
-          <input
-            type="text"
-            value={vehicle.model}
-            onChange={(e) => setVehicle({ ...vehicle, model: e.target.value })}
-            style={{ fontWeight: "bold" }}
-          />
-        </div>
-        <div className="row-2">
-          <strong>Año:</strong>
-          <input
-            type="number"
-            className="no-spinner"
-            value={vehicle.year}
-            onChange={(e) =>
-              setVehicle({ ...vehicle, year: Number(e.target.value) })
-            }
-            style={{ fontWeight: "bold" }}
-          />
+      <div className="vehicle-details-header">
+        <div className="vehicle-info">
+          <h2 style={{ color: "#282d86", fontSize: 20 }}>
+            Detalles del Vehículo
+          </h2>
+          <div className="vehicle-field">
+            <p className="vehicle-label">Patente</p>
+            <input
+              type="text"
+              value={vehicle.licensePlate}
+              onChange={(e) =>
+                setVehicle({ ...vehicle, licensePlate: e.target.value })
+              }
+            />
+          </div>
+          <div className="vehicle-field">
+            <p className="vehicle-label">Marca</p>
+            <input
+              type="text"
+              value={vehicle.brand}
+              onChange={(e) => setVehicle({ ...vehicle, brand: e.target.value })}
+            />
+          </div>
+          <div className="vehicle-field">
+            <p className="vehicle-label">Modelo</p>
+            <input
+              type="text"
+              value={vehicle.model}
+              onChange={(e) => setVehicle({ ...vehicle, model: e.target.value })}
+            />
+          </div>
+          <div className="vehicle-field">
+            <p className="vehicle-label">Año</p>
+            <input
+              type="number"
+              className="no-spinner"
+              value={vehicle.year}
+              onChange={(e) =>
+                setVehicle({ ...vehicle, year: Number(e.target.value) })
+              }
+            />
+          </div>
         </div>
       </div>
       <div className="vehicle-actions">

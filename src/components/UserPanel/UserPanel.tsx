@@ -1,5 +1,6 @@
 import "./UserPanel.css";
 import type { User } from "../../types/user";
+import { COLORS } from "../../common/colors";
 
 type Props = {
   user: User;
@@ -11,10 +12,9 @@ export default function UserPanel({ user }: Props) {
     <div className="user-panel">
       <div className="user-panel-header">
         <div className="user-panel-info">
-          <p className="user-panel-label">ID</p>
-          <input type="text" name="id" value={user.id} readOnly disabled />
-        </div>
-        <div className="user-panel-info">
+          <h2 style={{ color: COLORS.primary, fontSize: 20 }}>
+            Detalles del usuario
+          </h2>
           <p className="user-panel-label">Nombre</p>
           <input
             type="text"
