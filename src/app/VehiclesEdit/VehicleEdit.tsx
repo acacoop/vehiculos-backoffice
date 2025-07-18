@@ -1,4 +1,5 @@
 import VehicleInfo from "../../components/VehicleInfo/VehicleInfo";
+import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
 import "./VehicleEdit.css";
 
 export default function VehicleEdit() {
@@ -6,6 +7,7 @@ export default function VehicleEdit() {
     <div className="vehicle-edit-container">
       <h2 className="title">Editar Vehículo</h2>
       <VehicleInfo />
+      <TechnicalSheet />
     </div>
   );
 }
