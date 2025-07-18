@@ -65,7 +65,7 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/assignments" onClick={() => setOpen(false)}>
+            <Link to="/maintenance" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconMaintenance} alt="" />{" "}
               Mantenimiento
             </Link>
