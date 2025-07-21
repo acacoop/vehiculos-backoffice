@@ -10,6 +10,11 @@ export type {
   MaintenancesApiResponse,
 } from "./maintenance";
 export type {
+  Reservation,
+  ReservationFilterParams,
+  ReservationsApiResponse,
+} from "./reservation";
+export type {
   Assignment,
   AssignmentInput,
   AssignmentFilterParams,
