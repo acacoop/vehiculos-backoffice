@@ -4,6 +4,7 @@ import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
 import Table from "../../components/Table/table";
 import { getMaintenances } from "../../services/maintenances";
 import type { Maintenance } from "../../types/maintenance";
+import Document from "../../components/Document/Document";
 import "./VehicleEdit.css";
 
 export default function VehicleEdit() {
@@ -40,6 +41,8 @@ export default function VehicleEdit() {
         title=""
         showEditColumn={false}
       />
+      <h2 className="title">Documentación</h2>
+      <Document />
     </div>
   );
 }

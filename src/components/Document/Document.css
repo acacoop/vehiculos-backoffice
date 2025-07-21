@@ -1,0 +1,250 @@
+.document {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  gap: 30px;
+}
+
+.document-header h2 {
+  color: #282d86;
+  font-size: 24px;
+  margin: 0;
+}
+
+.add-document-btn {
+  background-color: #282d86;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.add-document-btn:hover {
+  background-color: #fe9000;
+}
+
+.documents-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.document-item {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
+}
+
+.document-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.document-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.document-title {
+  color: #282d86;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.document-filename {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.document-upload-date {
+  color: #888;
+  font-size: 13px;
+  margin: 0;
+}
+
+.document-expiration {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.document-expiration.valid {
+  color: #28a745;
+  background-color: #d4edda;
+}
+
+.document-expiration.expiring-soon {
+  color: #ffc107;
+  background-color: #fff3cd;
+}
+
+.document-expiration.expired {
+  color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.document-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.document-form {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.document-form h3 {
+  color: #282d86;
+  font-size: 20px;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #282d86;
+  font-weight: 500;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cfd8dc;
+  border-radius: 8px;
+  background: #f9f9fb;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus {
+  border-color: #282d86;
+  outline: none;
+  background: #eef1fa;
+  box-shadow: 0 0 0 2px rgba(40, 45, 134, 0.1);
+}
+
+.selected-file {
+  margin-top: 8px;
+  color: #28a745;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background-color: #282d86;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #fe9000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .document {
+    padding: 15px;
+  }
+
+  .document-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .documents-list {
+    grid-template-columns: 1fr;
+  }
+
+  .document-form {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
