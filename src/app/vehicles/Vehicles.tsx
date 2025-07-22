@@ -62,7 +62,7 @@ export default function Vehicles() {
 
   return (
     <div className="vehicles-container">
-      <h1 className="vehicles-title">Gestión de Vehículos</h1>
+      <AddVehicle />
       <Table
         getRows={getVehiclesData}
         columns={columns}
@@ -70,7 +70,6 @@ export default function Vehicles() {
         showEditColumn={true}
         editRoute="/vehicleedit"
       />
-      <AddVehicle />
     </div>
   );
 }

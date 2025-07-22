@@ -149,3 +149,38 @@ export async function updateVehicle(
     };
   }
 }
+
+/**
+ * Crea un nuevo vehículo
+ */
+export async function createVehicle(
+  vehicleData: Omit<Vehicle, "id">
+): Promise<ServiceResponse<Vehicle>> {
+  try {
+    const response: BackendResponse<Vehicle> = await httpService.post({
+      uri: "/vehicles",
+      body: vehicleData,
+    });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: {} as Vehicle,
+        message: response.message || "Error al crear vehículo",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Vehículo creado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Vehicle,
+      message: "Error al crear vehículo",
+      error: error as any,
+    };
+  }
+}

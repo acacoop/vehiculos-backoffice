@@ -8,9 +8,13 @@ import "./VehicleInfo.css";
 
 type Props = {
   isVehicleActive?: boolean;
+  onVehicleChange?: (vehicle: Vehicle | null) => void;
 };
 
-export default function VehicleInfo({ isVehicleActive = true }: Props) {
+export default function VehicleInfo({
+  isVehicleActive = true,
+  onVehicleChange,
+}: Props) {
   const [searchParams] = useSearchParams();
   const vehicleId = searchParams.get("id");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
@@ -21,8 +25,17 @@ export default function VehicleInfo({ isVehicleActive = true }: Props) {
 
   useEffect(() => {
     const fetchVehicle = async () => {
+      // Si no hay vehicleId, estamos en modo registro
       if (!vehicleId) {
-        setError("ID de vehículo no encontrado");
+        console.log("🆕 Modo registro - inicializando vehículo vacío");
+        setVehicle({
+          id: "",
+          licensePlate: "",
+          brand: "",
+          model: "",
+          year: new Date().getFullYear(),
+          imgUrl: "",
+        });
         setLoading(false);
         return;
       }
@@ -53,32 +66,48 @@ export default function VehicleInfo({ isVehicleActive = true }: Props) {
     fetchVehicle();
   }, [vehicleId]);
 
+  // Notificar cambios en el vehículo al componente padre
+  useEffect(() => {
+    if (onVehicleChange) {
+      onVehicleChange(vehicle);
+    }
+  }, [vehicle, onVehicleChange]);
+
   const handleConfirmClick = () => {
     setShowDialog(true); // Siempre mostrar el dialog, sin verificar cambios
   };
 
   // Función para confirmar los cambios
   const handleConfirmSave = async () => {
-    if (!vehicle || !vehicleId) return;
+    if (!vehicle) return;
 
     try {
       setUpdating(true);
-      console.log("💾 Actualizando vehículo:", vehicle);
 
-      const response = await updateVehicle(vehicleId, {
-        licensePlate: vehicle.licensePlate,
-        brand: vehicle.brand,
-        model: vehicle.model,
-        year: vehicle.year,
-      });
+      if (vehicleId) {
+        // Modo edición - actualizar vehículo existente
+        console.log("💾 Actualizando vehículo:", vehicle);
+        const response = await updateVehicle(vehicleId, {
+          licensePlate: vehicle.licensePlate,
+          brand: vehicle.brand,
+          model: vehicle.model,
+          year: vehicle.year,
+        });
 
-      if (response.success) {
-        console.log("✅ Vehículo actualizado exitosamente");
-        setShowDialog(false);
-        // ❌ REMOVIDO: alert("Vehículo actualizado exitosamente");
+        if (response.success) {
+          console.log("✅ Vehículo actualizado exitosamente");
+          setShowDialog(false);
+        } else {
+          console.error("❌ Error al actualizar:", response.message);
+          setError(response.message || "Error al actualizar vehículo");
+        }
       } else {
-        console.error("❌ Error al actualizar:", response.message);
-        setError(response.message || "Error al actualizar vehículo");
+        // Modo registro - guardar datos localmente
+        console.log("💾 Guardando datos del nuevo vehículo:", vehicle);
+        setShowDialog(false);
+        alert(
+          "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
+        );
       }
     } catch (err) {
       console.error("❌ Error al actualizar vehículo:", err);
@@ -139,7 +168,9 @@ export default function VehicleInfo({ isVehicleActive = true }: Props) {
       <div className="vehicle-details-header">
         <div className="vehicle-info">
           <h2 style={{ color: "#282d86", fontSize: 20 }}>
-            Detalles del Vehículo
+            {vehicleId
+              ? "Detalles del Vehículo"
+              : "Información del Nuevo Vehículo"}
           </h2>
           <div className="vehicle-field">
             <p className="vehicle-label">Patente</p>
@@ -198,15 +229,19 @@ export default function VehicleInfo({ isVehicleActive = true }: Props) {
             cursor: updating ? "not-allowed" : "pointer",
           }}
         >
-          {updating ? "Guardando..." : "Confirmar"}
+          {updating ? "Guardando..." : vehicleId ? "Confirmar" : "Guardar"}
         </button>
       </div>
 
       {showDialog && (
         <ConfirmDialog
           open={showDialog}
-          title="Confirmar cambios"
-          message="¿Estás seguro de que quieres guardar los cambios en este vehículo?"
+          title={vehicleId ? "Confirmar cambios" : "Guardar información"}
+          message={
+            vehicleId
+              ? "¿Estás seguro de que quieres guardar los cambios en este vehículo?"
+              : "¿Estás seguro de que quieres guardar la información del vehículo?"
+          }
           onConfirm={handleConfirmSave}
           onCancel={handleCancel}
         />
