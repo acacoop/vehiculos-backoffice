@@ -6,11 +6,14 @@ import type { Vehicle } from "../../types/vehicle";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import "./VehicleInfo.css";
 
-export default function VehicleInfo() {
+type Props = {
+  isVehicleActive?: boolean;
+};
+
+export default function VehicleInfo({ isVehicleActive = true }: Props) {
   const [searchParams] = useSearchParams();
   const vehicleId = searchParams.get("id");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [originalVehicle, setOriginalVehicle] = useState<Vehicle | null>(null); // Para comparar cambios
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false); // Estado para el dialog
@@ -33,7 +36,6 @@ export default function VehicleInfo() {
         if (response.success) {
           console.log("✅ Vehículo cargado:", response.data);
           setVehicle(response.data);
-          setOriginalVehicle(response.data); // Guardar datos originales
         } else {
           console.error("❌ Error en respuesta:", response.message);
           setError(response.message || "Error al cargar vehículo");
@@ -72,7 +74,6 @@ export default function VehicleInfo() {
 
       if (response.success) {
         console.log("✅ Vehículo actualizado exitosamente");
-        setOriginalVehicle(vehicle); // Actualizar datos originales
         setShowDialog(false);
         // ❌ REMOVIDO: alert("Vehículo actualizado exitosamente");
       } else {
@@ -148,6 +149,7 @@ export default function VehicleInfo() {
               onChange={(e) =>
                 setVehicle({ ...vehicle, licensePlate: e.target.value })
               }
+              disabled={!isVehicleActive}
             />
           </div>
           <div className="vehicle-field">
@@ -155,7 +157,10 @@ export default function VehicleInfo() {
             <input
               type="text"
               value={vehicle.brand}
-              onChange={(e) => setVehicle({ ...vehicle, brand: e.target.value })}
+              onChange={(e) =>
+                setVehicle({ ...vehicle, brand: e.target.value })
+              }
+              disabled={!isVehicleActive}
             />
           </div>
           <div className="vehicle-field">
@@ -163,7 +168,10 @@ export default function VehicleInfo() {
             <input
               type="text"
               value={vehicle.model}
-              onChange={(e) => setVehicle({ ...vehicle, model: e.target.value })}
+              onChange={(e) =>
+                setVehicle({ ...vehicle, model: e.target.value })
+              }
+              disabled={!isVehicleActive}
             />
           </div>
           <div className="vehicle-field">
@@ -175,6 +183,7 @@ export default function VehicleInfo() {
               onChange={(e) =>
                 setVehicle({ ...vehicle, year: Number(e.target.value) })
               }
+              disabled={!isVehicleActive}
             />
           </div>
         </div>

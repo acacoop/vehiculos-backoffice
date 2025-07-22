@@ -92,12 +92,6 @@ export default function UserEdit() {
 
   return (
     <main className="user-edit-container">
-      <div className="user-edit-header">
-        <h1 className="user-edit-title">Editar usuario</h1>
-      </div>
-      <div className="user-edit-body">
-        <UserPanel user={userData} setUser={setUserData} />
-      </div>
       <div className="user-state">
         <UserState
           userId={userData.id}
@@ -107,6 +101,11 @@ export default function UserEdit() {
           }}
         />
       </div>
+
+      <div className="user-edit-body">
+        <UserPanel user={userData} setUser={setUserData} />
+      </div>
+
       <div className="user-edit-body">
         <UserCarPanel userId={userData.id} user={userData} />
       </div>

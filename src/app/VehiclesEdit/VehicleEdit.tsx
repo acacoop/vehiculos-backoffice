@@ -1,13 +1,22 @@
 import { type GridColDef } from "@mui/x-data-grid";
+import { useState } from "react";
 import VehicleInfo from "../../components/VehicleInfo/VehicleInfo";
 import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
 import Table from "../../components/Table/table";
 import { getMaintenances } from "../../services/maintenances";
 import type { Maintenance } from "../../types/maintenance";
 import Document from "../../components/Document/Document";
+import CarUnsubscribeButton from "../../components/CarUnsubscribeButton/CarUnsubscribeButton";
 import "./VehicleEdit.css";
 
 export default function VehicleEdit() {
+  const [isVehicleActive, setIsVehicleActive] = useState(true);
+
+  // Función para manejar el cambio de estado del vehículo
+  const handleVehicleStatusChange = (isActive: boolean) => {
+    setIsVehicleActive(isActive);
+    console.log(`Vehículo ${isActive ? "reactivado" : "dado de baja"}`);
+  };
   // Definir las columnas para la tabla de mantenimientos
   const maintenanceColumns: GridColDef<Maintenance>[] = [
     {
@@ -32,7 +41,11 @@ export default function VehicleEdit() {
   return (
     <div className="vehicle-edit-container">
       <h2 className="title">Editar Vehículo</h2>
-      <VehicleInfo />
+      <CarUnsubscribeButton
+        active={isVehicleActive}
+        onToggle={handleVehicleStatusChange}
+      />
+      <VehicleInfo isVehicleActive={isVehicleActive} />
       <TechnicalSheet />
       <h2 className="title">Mantenimientos</h2>
       <Table<Maintenance>
