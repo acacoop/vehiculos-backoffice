@@ -43,6 +43,7 @@ export default function Document() {
 
   // Estados para el formulario
   const [showForm, setShowForm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newExpirationDate, setNewExpirationDate] = useState("");
   const [hasExpiration, setHasExpiration] = useState(false);
@@ -95,30 +96,32 @@ export default function Document() {
 
     setDocuments((prev) => [...prev, newDocument]);
 
-    // Limpiar formulario
-    setNewTitle("");
-    setNewExpirationDate("");
-    setHasExpiration(false);
-    setSelectedFile(null);
-    setShowForm(false);
-
-    // Reset file input
-    const fileInput = document.getElementById("file-input") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
+    // Iniciar animación de cierre
+    handleCloseForm();
   };
 
   const handleCancel = () => {
-    setNewTitle("");
-    setNewExpirationDate("");
-    setHasExpiration(false);
-    setSelectedFile(null);
-    setShowForm(false);
-
-    // Reset file input
-    const fileInput = document.getElementById("file-input") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
+    handleCloseForm();
   };
 
+  const handleCloseForm = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      // Limpiar formulario
+      setNewTitle("");
+      setNewExpirationDate("");
+      setHasExpiration(false);
+      setSelectedFile(null);
+      setShowForm(false);
+      setIsClosing(false);
+
+      // Reset file input
+      const fileInput = document.getElementById(
+        "file-input"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+    }, 195); // Duración de la animación de salida
+  };
   return (
     <div className="document">
       <div className="document-header">
@@ -160,7 +163,14 @@ export default function Document() {
 
       {/* Formulario para agregar documento */}
       {showForm && (
-        <div className="document-form-overlay">
+        <div
+          className={`document-form-overlay ${isClosing ? "closing" : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCloseForm();
+            }
+          }}
+        >
           <div className="document-form">
             <h3>Agregar Nuevo Documento</h3>
             <form onSubmit={handleSubmit}>
