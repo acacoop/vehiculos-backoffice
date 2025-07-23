@@ -247,7 +247,7 @@
 
 .cancel-btn {
   padding: 10px 20px;
-  background-color: #6c757d;
+  background-color: #e53935;
   color: white;
   border: none;
   border-radius: 6px;
@@ -257,7 +257,7 @@
 }
 
 .cancel-btn:hover {
-  background-color: #5a6268;
+  background-color: #fe9000;
 }
 
 .submit-btn {

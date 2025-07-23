@@ -27,7 +27,15 @@ export default function ConfirmDialog({
   cancelText = "Cancelar",
 }: Props) {
   return (
-    <Dialog open={open} onClose={onCancel}>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      PaperProps={{
+        style: {
+          borderRadius: "12px",
+        },
+      }}
+    >
       <DialogTitle style={{ color: COLORS.primary }}>{title}</DialogTitle>
       <DialogContent>
         <p>{message}</p>
@@ -36,7 +44,22 @@ export default function ConfirmDialog({
         <Button
           onClick={onCancel}
           color="inherit"
-          style={{ textTransform: "none", color: COLORS.error }}
+          style={{
+            textTransform: "none",
+            padding: "8px 20px",
+            backgroundColor: "#e53935",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "14px",
+            transition: "background-color 0.3s",
+          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor = "#fe9000")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor = "#e53935")
+          }
         >
           {cancelText}
         </Button>
@@ -47,6 +70,8 @@ export default function ConfirmDialog({
             color: "#fff",
             transition: "background-color 0.2s",
             textTransform: "none",
+            padding: "8px 20px",
+            borderRadius: "6px",
           }}
           variant="contained"
           onMouseOver={(e) =>
