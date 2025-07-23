@@ -119,7 +119,7 @@ export function Table<T extends GridValidRowModel>({
             renderCell: (params: any) => (
               <span
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate(`${editRoute}?id=${params.row.id}`)}
+                onClick={() => navigate(`${editRoute}/${params.row.id}`)}
               >
                 <PencilIcon />
               </span>

@@ -24,7 +24,7 @@
 
 .register-button {
   padding: 12px 30px;
-  background-color: #4caf50;
+  background-color: #282d86;
   color: white;
   border: none;
   border-radius: 8px;
@@ -35,7 +35,7 @@
 }
 
 .register-button:hover {
-  background-color: #45a049;
+  background-color: #fe9000;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

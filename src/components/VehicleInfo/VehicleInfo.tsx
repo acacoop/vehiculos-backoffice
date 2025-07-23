@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CircularProgress, Alert } from "@mui/material";
 import { getVehicleById, updateVehicle } from "../../services/vehicles"; // Agregar updateVehicle
@@ -9,14 +9,19 @@ import "./VehicleInfo.css";
 type Props = {
   isVehicleActive?: boolean;
   onVehicleChange?: (vehicle: Vehicle | null) => void;
+  vehicleId?: string; // Prop opcional para pasar el ID directamente
 };
 
 export default function VehicleInfo({
   isVehicleActive = true,
   onVehicleChange,
+  vehicleId: propVehicleId,
 }: Props) {
   const [searchParams] = useSearchParams();
-  const vehicleId = searchParams.get("id");
+  const { id: paramId } = useParams<{ id: string }>();
+
+  // Determinar el ID del vehículo: prop > parámetro de ruta > query param
+  const vehicleId = propVehicleId || paramId || searchParams.get("id");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,7 +178,7 @@ export default function VehicleInfo({
               : "Información del Nuevo Vehículo"}
           </h2>
           <div className="vehicle-field">
-            <p className="vehicle-label">Patente</p>
+            <p className="vehicle-label">Dominio</p>
             <input
               type="text"
               value={vehicle.licensePlate}

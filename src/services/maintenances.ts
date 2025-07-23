@@ -1,163 +1,11 @@
 import type {
   Maintenance,
-  MaintenanceFilterParams,
 } from "../types/maintenance";
 import {
-  httpService,
-  buildQueryParams,
   type PaginationParams,
   type ServiceResponse,
-  type BackendResponse,
+  API_CONFIG,
 } from "../common";
-import { ResponseStatus } from "../types/common";
-
-/**
- * Obtiene todos los mantenimientos (sin paginación)
- */
-export async function getAllMaintenances(
-  params?: MaintenanceFilterParams
-): Promise<ServiceResponse<Maintenance[]>> {
-  try {
-    const queryParams = buildQueryParams(params);
-    const response: BackendResponse<Maintenance[]> = await httpService.get({
-      uri: `/maintenances?${queryParams.toString()}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener mantenimientos",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener mantenimientos",
-      error: error as any,
-    };
-  }
-}
-
-/**
- * Obtiene mantenimientos con paginación
- */
-export async function getMaintenances(
-  params?: MaintenanceFilterParams,
-  pagination?: PaginationParams
-): Promise<ServiceResponse<Maintenance[]>> {
-  try {
-    const queryParams = buildQueryParams(params, pagination);
-    const response: BackendResponse<Maintenance[]> = await httpService.get({
-      uri: `/maintenances?${queryParams.toString()}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener mantenimientos",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      pagination: response.pagination
-        ? {
-            page: response.pagination.page,
-            pageSize: response.pagination.limit,
-            total: response.pagination.total,
-            pages: response.pagination.pages,
-          }
-        : undefined,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener mantenimientos",
-      error: error as any,
-    };
-  }
-}
-
-/**
- * Obtiene un mantenimiento por ID
- */
-export async function getMaintenanceById(
-  id: string
-): Promise<ServiceResponse<Maintenance>> {
-  try {
-    const response: BackendResponse<Maintenance> = await httpService.get({
-      uri: `/maintenances/${id}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as Maintenance,
-        message: response.message || "Error al obtener mantenimiento",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as Maintenance,
-      message: "Error al obtener mantenimiento",
-      error: error as any,
-    };
-  }
-}
-
-/**
- * Actualiza un mantenimiento
- */
-export async function updateMaintenance(
-  id: string,
-  maintenanceData: Partial<Omit<Maintenance, "id">>
-): Promise<ServiceResponse<Maintenance>> {
-  try {
-    console.log(`🔄 Actualizando mantenimiento ${id} con:`, maintenanceData);
-
-    const response: BackendResponse<Maintenance> = await httpService.patch({
-      uri: `/maintenances/${id}`,
-      body: maintenanceData,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as Maintenance,
-        message: response.message || "Error al actualizar mantenimiento",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      message: "Mantenimiento actualizado exitosamente",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as Maintenance,
-      message: "Error al actualizar mantenimiento",
-      error: error as any,
-    };
-  }
-}
 
 /**
  * Obtiene todas las categorías de mantenimiento
@@ -247,3 +95,109 @@ export async function getMaintenanceCategories(
     };
   }
 }
+
+/**
+ * Obtener mantenimientos asignados a un vehículo específico
+ */
+export const getVehicleMaintenances = async (vehicleId: string) => {
+  try {
+    console.log(
+      `📍 [MAINTENANCE] Obteniendo mantenimientos del vehículo ${vehicleId}...`
+    );
+
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`
+    );
+    console.log("📡 [MAINTENANCE] Respuesta del servidor:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(
+      "✅ [MAINTENANCE] Mantenimientos del vehículo obtenidos:",
+      data
+    );
+
+    // Si el backend devuelve array directamente
+    if (Array.isArray(data)) {
+      return {
+        success: true,
+        data,
+        message: "Mantenimientos del vehículo obtenidos exitosamente",
+      };
+    }
+
+    // Si viene encapsulado en un objeto
+    return {
+      success: true,
+      data: data.data || [],
+      message: "Mantenimientos del vehículo obtenidos exitosamente",
+    };
+  } catch (error) {
+    console.error(
+      "💥 [MAINTENANCE] Error al obtener mantenimientos del vehículo:",
+      error
+    );
+    return {
+      success: false,
+      data: [],
+      message: "Error al obtener mantenimientos del vehículo",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Guardar mantenimientos de un vehículo en lote
+ */
+export const saveVehicleMaintenances = async (
+  vehicleId: string,
+  maintenanceIds: string[]
+) => {
+  try {
+    console.log(
+      `📍 [MAINTENANCE] Guardando mantenimientos del vehículo ${vehicleId}...`
+    );
+    console.log(`🔧 [MAINTENANCE] Mantenimientos a guardar:`, maintenanceIds);
+
+    const url = `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`;
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        maintenanceIds: maintenanceIds,
+      }),
+    });
+
+    console.log("📡 [MAINTENANCE] Respuesta del servidor:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(
+      `✅ [MAINTENANCE] Mantenimientos guardados exitosamente:`,
+      data
+    );
+
+    return {
+      success: true,
+      data,
+      message: "Mantenimientos guardados exitosamente",
+    };
+  } catch (error) {
+    console.error("💥 [MAINTENANCE] Error al guarrar mantenimientos:", error);
+    return {
+      success: false,
+      data: null,
+      message: "Error al guardar mantenimientos",
+      error: error as any,
+    };
+  }
+};

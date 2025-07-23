@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { CircularProgress, Alert } from "@mui/material";
 import UserPanel from "../../components/UserPanel/UserPanel";
 import UserCarPanel from "../../components/UserCarPanel/UserCarPanel";
@@ -11,8 +11,8 @@ import type { User } from "../../types/user";
 import "./UserEdit.css";
 
 export default function UserEdit() {
-  const [searchParams] = useSearchParams();
-  const userId = searchParams.get("id");
+  const { id } = useParams<{ id: string }>();
+  const userId = id;
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
