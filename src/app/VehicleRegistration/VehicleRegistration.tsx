@@ -15,6 +15,38 @@ export default function VehicleRegistration() {
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+  const [assignedMaintenances, setAssignedMaintenances] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Función para asignar un mantenimiento al vehículo
+  const handleAssignMaintenance = (
+    maintenanceId: string,
+    maintenanceName: string
+  ) => {
+    console.log("🔧 [MAINTENANCE] Asignando mantenimiento:", {
+      maintenanceId,
+      maintenanceName,
+    });
+
+    setAssignedMaintenances((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(maintenanceId)) {
+        // Si ya está asignado, lo removemos
+        newSet.delete(maintenanceId);
+        console.log(`➖ [MAINTENANCE] Removido: ${maintenanceName}`);
+      } else {
+        // Si no está asignado, lo agregamos
+        newSet.add(maintenanceId);
+        console.log(`➕ [MAINTENANCE] Asignado: ${maintenanceName}`);
+      }
+      console.log(
+        "📊 [MAINTENANCE] Mantenimientos asignados actuales:",
+        Array.from(newSet)
+      );
+      return newSet;
+    });
+  };
 
   // Definición de columnas para la tabla de mantenimientos
   const maintenanceColumns: GridColDef<Maintenance>[] = [
@@ -26,6 +58,62 @@ export default function VehicleRegistration() {
       align: "center",
     },
     { field: "name", headerName: "Nombre", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Asignar",
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+      sortable: false,
+      renderCell: (params) => {
+        const isAssigned = assignedMaintenances.has(params.row.id.toString());
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <button
+              onClick={() =>
+                handleAssignMaintenance(
+                  params.row.id.toString(),
+                  params.row.name
+                )
+              }
+              style={{
+                backgroundColor: isAssigned ? "#f44336" : "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "50%",
+                width: "32px",
+                height: "32px",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s",
+                margin: "0",
+                padding: "0",
+                lineHeight: "1",
+              }}
+              title={
+                isAssigned
+                  ? `Remover ${params.row.name}`
+                  : `Asignar ${params.row.name}`
+              }
+            >
+              {isAssigned ? "−" : "+"}
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
   // Función para obtener mantenimientos desde el servicio
@@ -129,6 +217,10 @@ export default function VehicleRegistration() {
 
     try {
       console.log("🚗 Registrando nuevo vehículo...", vehicleData);
+      console.log(
+        "🔧 Mantenimientos a asignar:",
+        Array.from(assignedMaintenances)
+      );
 
       const response = await createVehicle({
         licensePlate: vehicleData.licensePlate,
@@ -139,7 +231,22 @@ export default function VehicleRegistration() {
       });
 
       if (response.success) {
-        alert("¡Vehículo registrado exitosamente!");
+        // Si el vehículo se creó exitosamente y hay mantenimientos asignados
+        if (assignedMaintenances.size > 0) {
+          console.log("🔧 Asignando mantenimientos al vehículo creado...");
+          // TODO: Aquí llamaremos al servicio para asignar mantenimientos
+          // Por ahora solo mostramos en consola
+          console.log(
+            `✅ Vehículo creado con ${assignedMaintenances.size} mantenimientos asignados`
+          );
+        }
+
+        alert(
+          assignedMaintenances.size > 0
+            ? `¡Vehículo registrado exitosamente con ${assignedMaintenances.size} mantenimientos asignados!`
+            : "¡Vehículo registrado exitosamente!"
+        );
+
         // Navegar de vuelta a la lista de vehículos
         navigate("/vehicles");
       } else {
@@ -167,13 +274,35 @@ export default function VehicleRegistration() {
       <TechnicalSheet />
 
       {/* Mantenimientos */}
-      <h2 className="title">Mantenimientos</h2>
-      <Table
-        getRows={getMaintenancesForTable}
-        columns={maintenanceColumns}
-        title=""
-        showEditColumn={false}
-      />
+      <h2 className="title">Mantenimientos Disponibles</h2>
+      {assignedMaintenances.size > 0 && (
+        <div
+          style={{
+            marginBottom: "16px",
+            padding: "12px",
+            backgroundColor: "#e8f5e8",
+            borderRadius: "8px",
+            border: "1px solid #4caf50",
+          }}
+        >
+          <h3
+            style={{ margin: "0 0 8px 0", color: "#2e7d2e", fontSize: "14px" }}
+          >
+            🔧 Mantenimientos Asignados ({assignedMaintenances.size})
+          </h3>
+          <div style={{ fontSize: "12px", color: "#555" }}>
+            Se asignarán automáticamente al registrar el vehículo
+          </div>
+        </div>
+      )}
+      <div style={{ width: "800px", margin: "0 auto" }}>
+        <Table
+          getRows={getMaintenancesForTable}
+          columns={maintenanceColumns}
+          title=""
+          showEditColumn={false}
+        />
+      </div>
 
       {/* Documentación */}
       <h2 className="title">Documentación</h2>

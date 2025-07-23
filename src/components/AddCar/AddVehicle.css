@@ -9,11 +9,12 @@
   background: white;
   border-radius: 20px;
   padding: 3rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+
+  border: 1px solid #282d86;
   text-align: center;
   max-width: 500px;
   width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.212);
 }
 
 .add-vehicle-card h3 {
@@ -30,7 +31,7 @@
 }
 
 .add-vehicle-button {
-  background-color: #4caf50;
+  background-color: #282d86;
   color: white;
   border: none;
   border-radius: 8px;
@@ -42,7 +43,7 @@
 }
 
 .add-vehicle-button:hover {
-  background-color: #45a049;
+  background-color: #fe9000;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
