@@ -44,7 +44,9 @@ export default function Document() {
   // Estados para el formulario
   const [showForm, setShowForm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentItem | null>(null);
+  const [editingDocument, setEditingDocument] = useState<DocumentItem | null>(
+    null
+  );
   const [newTitle, setNewTitle] = useState("");
   const [newExpirationDate, setNewExpirationDate] = useState("");
   const [hasExpiration, setHasExpiration] = useState(false);
@@ -83,10 +85,10 @@ export default function Document() {
     // Simular descarga del archivo
     // En una aplicación real, esto haría una petición al servidor para obtener el archivo
     alert(`Descargando archivo: ${doc.fileName}`);
-    
+
     // Crear un enlace temporal para simular la descarga
-    const link = document.createElement('a');
-    link.href = '#'; // En una app real, sería la URL del archivo
+    const link = document.createElement("a");
+    link.href = "#"; // En una app real, sería la URL del archivo
     link.download = doc.fileName;
     link.click();
   };
@@ -101,13 +103,19 @@ export default function Document() {
   };
 
   const handleDelete = (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
+    const doc = documents.find((d) => d.id === docId);
     if (doc && (isExpired(doc.expirationDate) || !doc.expirationDate)) {
-      if (window.confirm(`¿Está seguro de que desea eliminar el documento "${doc.title}"?`)) {
-        setDocuments(prev => prev.filter(d => d.id !== docId));
+      if (
+        window.confirm(
+          `¿Está seguro de que desea eliminar el documento "${doc.title}"?`
+        )
+      ) {
+        setDocuments((prev) => prev.filter((d) => d.id !== docId));
       }
     } else {
-      alert("Solo se pueden eliminar documentos vencidos o sin fecha de vencimiento.");
+      alert(
+        "Solo se pueden eliminar documentos vencidos o sin fecha de vencimiento."
+      );
     }
   };
 
@@ -128,9 +136,11 @@ export default function Document() {
         fileName: selectedFile ? selectedFile.name : editingDocument.fileName,
       };
 
-      setDocuments(prev => prev.map(doc => 
-        doc.id === editingDocument.id ? updatedDocument : doc
-      ));
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === editingDocument.id ? updatedDocument : doc
+        )
+      );
     } else {
       // Crear nuevo documento
       const newDocument: DocumentItem = {
@@ -179,69 +189,73 @@ export default function Document() {
           + Agregar Documento
         </button>
       </div>
-
       {/* Lista de documentos existentes */}
       <div className="documents-list">
         {documents.map((doc) => (
           <div key={doc.id} className="document-item">
-            <div className="document-info">
+            <div className="document-content">
               <h3 className="document-title">{doc.title}</h3>
               <p className="document-filename">Archivo: {doc.fileName}</p>
               <p className="document-upload-date">
                 Subido: {formatDate(doc.uploadDate)}
               </p>
-              {doc.expirationDate && (
-                <p
-                  className={`document-expiration ${
-                    isExpired(doc.expirationDate)
-                      ? "expired"
-                      : isExpiringSoon(doc.expirationDate)
-                      ? "expiring-soon"
-                      : "valid"
-                  }`}
-                >
-                  Vencimiento: {formatDate(doc.expirationDate)}
-                  {isExpired(doc.expirationDate) && " (VENCIDO)"}
-                  {isExpiringSoon(doc.expirationDate) && " (Próximo a vencer)"}
-                </p>
-              )}
-              
-              {/* Botones de acción */}
-              <div className="document-actions">
-                <button
-                  className="action-btn download-btn"
-                  onClick={() => handleDownload(doc)}
-                  title="Descargar archivo"
-                >
-                  📥 Descargar
-                </button>
-                
-                <button
-                  className="action-btn edit-btn"
-                  onClick={() => handleEdit(doc)}
-                  title="Editar documento"
-                >
-                  ✏️ Editar
-                </button>
-                
-                <button
-                  className="action-btn delete-btn"
-                  onClick={() => handleDelete(doc.id)}
-                  disabled={!isExpired(doc.expirationDate) && !!doc.expirationDate}
-                  title={
-                    isExpired(doc.expirationDate) || !doc.expirationDate
-                      ? "Eliminar documento"
-                      : "Solo se pueden eliminar documentos vencidos"
-                  }
-                >
-                  🗑️ Eliminar
-                </button>
+
+              <div className="document-expiration-container">
+                {doc.expirationDate && (
+                  <p
+                    className={`document-expiration ${
+                      isExpired(doc.expirationDate)
+                        ? "expired"
+                        : isExpiringSoon(doc.expirationDate)
+                        ? "expiring-soon"
+                        : "valid"
+                    }`}
+                  >
+                    Vencimiento: {formatDate(doc.expirationDate)}
+                    {isExpired(doc.expirationDate) && " (VENCIDO)"}
+                    {isExpiringSoon(doc.expirationDate) &&
+                      " (Próximo a vencer)"}
+                  </p>
+                )}
               </div>
+            </div>
+
+            {/* Botones de acción */}
+            <div className="document-actions">
+              <button
+                className="action-btn download-btn"
+                onClick={() => handleDownload(doc)}
+                title="Descargar archivo"
+              >
+                📥 Descargar
+              </button>
+
+              <button
+                className="action-btn edit-btn"
+                onClick={() => handleEdit(doc)}
+                title="Editar documento"
+              >
+                ✏️ Editar
+              </button>
+
+              <button
+                className="action-btn delete-btn"
+                onClick={() => handleDelete(doc.id)}
+                disabled={
+                  !isExpired(doc.expirationDate) && !!doc.expirationDate
+                }
+                title={
+                  isExpired(doc.expirationDate) || !doc.expirationDate
+                    ? "Eliminar documento"
+                    : "Solo se pueden eliminar documentos vencidos"
+                }
+              >
+                🗑️ Eliminar
+              </button>
             </div>
           </div>
         ))}
-      </div>
-
+      </div>{" "}
       {/* Formulario para agregar documento */}
       {showForm && (
         <div
@@ -253,7 +267,9 @@ export default function Document() {
           }}
         >
           <div className="document-form">
-            <h3>{editingDocument ? 'Editar Documento' : 'Agregar Nuevo Documento'}</h3>
+            <h3>
+              {editingDocument ? "Editar Documento" : "Agregar Nuevo Documento"}
+            </h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="title">Título del Documento *</label>
@@ -292,7 +308,7 @@ export default function Document() {
 
               <div className="form-group">
                 <label htmlFor="file-input">
-                  Archivo del Documento {editingDocument ? '' : '*'}
+                  Archivo del Documento {editingDocument ? "" : "*"}
                 </label>
                 <input
                   type="file"
