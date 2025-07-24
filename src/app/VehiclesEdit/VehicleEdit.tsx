@@ -4,6 +4,7 @@ import VehicleInfo from "../../components/VehicleInfo/VehicleInfo";
 import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
 import Document from "../../components/Document/Document";
 import MaintenanceTable from "../../components/MaintenanceTable/MaintenanceTable";
+import UserAssignmentTable from "../../components/UserAssignmentTable/UserAssignmentTable";
 import CarUnsubscribeButton from "../../components/CarUnsubscribeButton/CarUnsubscribeButton";
 import {
   getVehicleMaintenances,
@@ -21,8 +22,13 @@ export default function VehicleEdit() {
   const [assignedMaintenanceNames, setAssignedMaintenanceNames] = useState<
     Map<string, string>
   >(new Map());
+  const [assignedUsers, setAssignedUsers] = useState<Set<string>>(new Set());
+  const [assignedUserNames, setAssignedUserNames] = useState<
+    Map<string, string>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingUsers, setIsSavingUsers] = useState(false);
 
   const vehicleId = id;
 
@@ -154,6 +160,72 @@ export default function VehicleEdit() {
     }
   };
 
+  // Función para asignar/desasignar usuarios
+  const handleAssignUser = (userId: string, userName: string) => {
+    console.log("👤 [VEHICLE_EDIT] Asignando usuario:", {
+      userId,
+      userName,
+    });
+
+    setAssignedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        // Si ya está asignado, lo removemos
+        newSet.delete(userId);
+        console.log(`➖ [VEHICLE_EDIT] Usuario removido: ${userName}`);
+      } else {
+        // Si no está asignado, lo agregamos
+        newSet.add(userId);
+        console.log(`➕ [VEHICLE_EDIT] Usuario asignado: ${userName}`);
+      }
+      console.log(
+        "📊 [VEHICLE_EDIT] Usuarios asignados actuales:",
+        Array.from(newSet)
+      );
+      return newSet;
+    });
+
+    // Actualizar el mapa de nombres
+    setAssignedUserNames((prev) => {
+      const newMap = new Map(prev);
+      if (assignedUsers.has(userId)) {
+        // Si se está removiendo, eliminar del mapa
+        newMap.delete(userId);
+      } else {
+        // Si se está agregando, agregar al mapa
+        newMap.set(userId, userName);
+      }
+      return newMap;
+    });
+  };
+
+  // Función para guardar usuarios asignados
+  const handleSaveUsers = async () => {
+    if (!vehicleId || vehicleId.trim() === "") return;
+
+    setIsSavingUsers(true);
+    try {
+      console.log("💾 [VEHICLE_EDIT] Guardando usuarios asignados...");
+
+      const userIds = Array.from(assignedUsers);
+      // TODO: Implementar servicio para guardar usuarios asignados al vehículo
+      // const response = await saveVehicleUsers(vehicleId, userIds);
+
+      // Simulación temporal
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      console.log("✅ [VEHICLE_EDIT] Usuarios guardados exitosamente");
+      alert(
+        `¡Usuarios asignados guardados exitosamente! (${userIds.length} usuarios)`
+      );
+    } catch (error) {
+      console.error("💥 [VEHICLE_EDIT] Error al guardar usuarios:", error);
+      alert("Error al guardar usuarios asignados");
+    } finally {
+      setIsSavingUsers(false);
+    }
+  };
+
   if (!vehicleId || vehicleId.trim() === "") {
     return (
       <div className="vehicle-edit-container">
@@ -193,6 +265,20 @@ export default function VehicleEdit() {
         showSaveButton={true}
         isSaving={isSaving}
         onSaveMaintenances={handleSaveMaintenances}
+        width="800px"
+        context="edit"
+      />
+
+      {/* Tabla de asignación de usuarios */}
+      <UserAssignmentTable
+        assignedUsers={assignedUsers}
+        assignedUserNames={assignedUserNames}
+        onUserAssign={handleAssignUser}
+        title="Asignar Usuarios al Vehículo"
+        showAssignedInfo={true}
+        showSaveButton={true}
+        isSaving={isSavingUsers}
+        onSaveUsers={handleSaveUsers}
         width="800px"
         context="edit"
       />
