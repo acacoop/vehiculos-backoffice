@@ -137,6 +137,7 @@ export function Table<T extends GridValidRowModel>({
         overflow: "auto",
         width: "100%",
         maxWidth: "1400px",
+        maxHeight: "1000px",
       }}
     >
       <h2 style={{ textAlign: "start" }}>{title}</h2>
@@ -164,7 +165,8 @@ export function Table<T extends GridValidRowModel>({
             backgroundColor: "#ffffff",
           },
           borderRadius: 5,
-          height: "80vh",
+          height: "calc(100% - 60px)",
+          minHeight: "400px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />

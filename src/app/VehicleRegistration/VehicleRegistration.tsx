@@ -133,10 +133,7 @@ export default function VehicleRegistration() {
         "🔧 Mantenimientos a asignar:",
         Array.from(assignedMaintenances)
       );
-      console.log(
-        "👤 Usuarios a asignar:",
-        Array.from(assignedUsers)
-      );
+      console.log("👤 Usuarios a asignar:", Array.from(assignedUsers));
 
       const response = await createVehicle({
         licensePlate: vehicleData.licensePlate,
@@ -149,7 +146,9 @@ export default function VehicleRegistration() {
       if (response.success) {
         // Si el vehículo se creó exitosamente y hay mantenimientos/usuarios asignados
         if (assignedMaintenances.size > 0 || assignedUsers.size > 0) {
-          console.log("🔧👤 Asignando mantenimientos y usuarios al vehículo creado...");
+          console.log(
+            "🔧👤 Asignando mantenimientos y usuarios al vehículo creado..."
+          );
           // TODO: Aquí llamaremos a los servicios para asignar mantenimientos y usuarios
           // Por ahora solo mostramos en consola
           console.log(
