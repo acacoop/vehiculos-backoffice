@@ -4,6 +4,7 @@ import VehicleInfo from "../../components/VehicleInfo/VehicleInfo";
 import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
 import Document from "../../components/Document/Document";
 import MaintenanceTable from "../../components/MaintenanceTable/MaintenanceTable";
+import UserAssignmentTable from "../../components/UserAssignmentTable/UserAssignmentTable";
 import { createVehicle } from "../../services/vehicles";
 import type { Vehicle } from "../../types/vehicle";
 import "./VehicleRegistration.css";
@@ -16,6 +17,10 @@ export default function VehicleRegistration() {
     new Set()
   );
   const [assignedMaintenanceNames, setAssignedMaintenanceNames] = useState<
+    Map<string, string>
+  >(new Map());
+  const [assignedUsers, setAssignedUsers] = useState<Set<string>>(new Set());
+  const [assignedUserNames, setAssignedUserNames] = useState<
     Map<string, string>
   >(new Map());
 
@@ -66,6 +71,45 @@ export default function VehicleRegistration() {
     setVehicleData(vehicle);
   };
 
+  // Función para asignar/desasignar usuarios
+  const handleAssignUser = (userId: string, userName: string) => {
+    console.log("👤 [USER_ASSIGNMENT] Asignando usuario:", {
+      userId,
+      userName,
+    });
+
+    setAssignedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        // Si ya está asignado, lo removemos
+        newSet.delete(userId);
+        console.log(`➖ [USER_ASSIGNMENT] Removido: ${userName}`);
+      } else {
+        // Si no está asignado, lo agregamos
+        newSet.add(userId);
+        console.log(`➕ [USER_ASSIGNMENT] Asignado: ${userName}`);
+      }
+      console.log(
+        "📊 [USER_ASSIGNMENT] Usuarios asignados actuales:",
+        Array.from(newSet)
+      );
+      return newSet;
+    });
+
+    // Actualizar el mapa de nombres
+    setAssignedUserNames((prev) => {
+      const newMap = new Map(prev);
+      if (assignedUsers.has(userId)) {
+        // Si se está removiendo, eliminar del mapa
+        newMap.delete(userId);
+      } else {
+        // Si se está agregando, agregar al mapa
+        newMap.set(userId, userName);
+      }
+      return newMap;
+    });
+  };
+
   // Función para manejar el registro del vehículo
   const handleVehicleRegistration = async () => {
     if (!vehicleData) {
@@ -89,6 +133,10 @@ export default function VehicleRegistration() {
         "🔧 Mantenimientos a asignar:",
         Array.from(assignedMaintenances)
       );
+      console.log(
+        "👤 Usuarios a asignar:",
+        Array.from(assignedUsers)
+      );
 
       const response = await createVehicle({
         licensePlate: vehicleData.licensePlate,
@@ -99,19 +147,20 @@ export default function VehicleRegistration() {
       });
 
       if (response.success) {
-        // Si el vehículo se creó exitosamente y hay mantenimientos asignados
-        if (assignedMaintenances.size > 0) {
-          console.log("🔧 Asignando mantenimientos al vehículo creado...");
-          // TODO: Aquí llamaremos al servicio para asignar mantenimientos
+        // Si el vehículo se creó exitosamente y hay mantenimientos/usuarios asignados
+        if (assignedMaintenances.size > 0 || assignedUsers.size > 0) {
+          console.log("🔧👤 Asignando mantenimientos y usuarios al vehículo creado...");
+          // TODO: Aquí llamaremos a los servicios para asignar mantenimientos y usuarios
           // Por ahora solo mostramos en consola
           console.log(
-            `✅ Vehículo creado con ${assignedMaintenances.size} mantenimientos asignados`
+            `✅ Vehículo creado con ${assignedMaintenances.size} mantenimientos y ${assignedUsers.size} usuarios asignados`
           );
         }
 
+        const totalAssignments = assignedMaintenances.size + assignedUsers.size;
         alert(
-          assignedMaintenances.size > 0
-            ? `¡Vehículo registrado exitosamente con ${assignedMaintenances.size} mantenimientos asignados!`
+          totalAssignments > 0
+            ? `¡Vehículo registrado exitosamente con ${assignedMaintenances.size} mantenimientos y ${assignedUsers.size} usuarios asignados!`
             : "¡Vehículo registrado exitosamente!"
         );
 
@@ -147,6 +196,18 @@ export default function VehicleRegistration() {
         assignedMaintenanceNames={assignedMaintenanceNames}
         onMaintenanceAssign={handleAssignMaintenance}
         title="Mantenimientos Disponibles"
+        showAssignedInfo={true}
+        showSaveButton={false}
+        width="800px"
+        context="registration"
+      />
+
+      {/* Tabla de asignación de usuarios */}
+      <UserAssignmentTable
+        assignedUsers={assignedUsers}
+        assignedUserNames={assignedUserNames}
+        onUserAssign={handleAssignUser}
+        title="Usuarios Disponibles"
         showAssignedInfo={true}
         showSaveButton={false}
         width="800px"
