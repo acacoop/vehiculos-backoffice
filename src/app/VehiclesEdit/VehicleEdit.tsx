@@ -160,45 +160,6 @@ export default function VehicleEdit() {
     }
   };
 
-  // Función para asignar/desasignar usuarios
-  const handleAssignUser = (userId: string, userName: string) => {
-    console.log("👤 [VEHICLE_EDIT] Asignando usuario:", {
-      userId,
-      userName,
-    });
-
-    setAssignedUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        // Si ya está asignado, lo removemos
-        newSet.delete(userId);
-        console.log(`➖ [VEHICLE_EDIT] Usuario removido: ${userName}`);
-      } else {
-        // Si no está asignado, lo agregamos
-        newSet.add(userId);
-        console.log(`➕ [VEHICLE_EDIT] Usuario asignado: ${userName}`);
-      }
-      console.log(
-        "📊 [VEHICLE_EDIT] Usuarios asignados actuales:",
-        Array.from(newSet)
-      );
-      return newSet;
-    });
-
-    // Actualizar el mapa de nombres
-    setAssignedUserNames((prev) => {
-      const newMap = new Map(prev);
-      if (assignedUsers.has(userId)) {
-        // Si se está removiendo, eliminar del mapa
-        newMap.delete(userId);
-      } else {
-        // Si se está agregando, agregar al mapa
-        newMap.set(userId, userName);
-      }
-      return newMap;
-    });
-  };
-
   // Función para guardar usuarios asignados
   const handleSaveUsers = async () => {
     if (!vehicleId || vehicleId.trim() === "") return;
@@ -251,9 +212,13 @@ export default function VehicleEdit() {
         onToggle={handleVehicleStatusChange}
       />
 
-      <VehicleInfo isVehicleActive={isVehicleActive} vehicleId={vehicleId} />
+      <VehicleInfo
+        isVehicleActive={isVehicleActive}
+        vehicleId={vehicleId}
+        showActions={true}
+      />
 
-      <TechnicalSheet />
+      <TechnicalSheet showActions={true} />
 
       {/* Usar el componente MaintenanceTable */}
       <MaintenanceTable
@@ -271,19 +236,11 @@ export default function VehicleEdit() {
 
       {/* Tabla de asignación de usuarios */}
       <UserAssignmentTable
-        assignedUsers={assignedUsers}
-        assignedUserNames={assignedUserNames}
-        onUserAssign={handleAssignUser}
         title="Asignar Usuarios al Vehículo"
-        showAssignedInfo={true}
-        showSaveButton={true}
-        isSaving={isSavingUsers}
-        onSaveUsers={handleSaveUsers}
-        width="800px"
-        context="edit"
+        width="900px"
+        vehicleId={vehicleId}
       />
 
-      <h2 className="title">Documentación</h2>
       <Document />
     </div>
   );

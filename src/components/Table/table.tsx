@@ -32,6 +32,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   title: string;
   showEditColumn?: boolean;
   editRoute?: string;
+  additionalRouteParams?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -40,6 +41,7 @@ export function Table<T extends GridValidRowModel>({
   title,
   showEditColumn = false,
   editRoute = "/useredit",
+  additionalRouteParams = "",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -119,7 +121,11 @@ export function Table<T extends GridValidRowModel>({
             renderCell: (params: any) => (
               <span
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate(`${editRoute}/${params.row.id}`)}
+                onClick={() =>
+                  navigate(
+                    `${editRoute}/${params.row.id}${additionalRouteParams}`
+                  )
+                }
               >
                 <PencilIcon />
               </span>

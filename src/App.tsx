@@ -4,6 +4,7 @@ import "./App.css";
 import Home from "./app/home/Home";
 import User from "./app/user/User";
 import UserEdit from "./app/UserEdit/UserEdit";
+import UserEditAssignment from "./app/UserEditAssignment/UserEditAssignment";
 import VehicleEdit from "./app/VehiclesEdit/VehicleEdit";
 import VehicleRegistration from "./app/VehicleRegistration/VehicleRegistration";
 import Vehicles from "./app/vehicles/Vehicles";
@@ -18,6 +19,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<User />} />
         <Route path="/useredit/:id" element={<UserEdit />} />
+        <Route
+          path="/userassignment/:userId/:vehicleId"
+          element={<UserEditAssignment />}
+        />
         <Route path="/metrics" element={<Metrics />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/vehicleedit/:id" element={<VehicleEdit />} />

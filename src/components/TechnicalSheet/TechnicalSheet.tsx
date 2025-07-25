@@ -6,13 +6,23 @@ interface TechnicalData {
   nroChasis: string;
   nroMotor: string;
   tipo: string;
+  transmicion?: string;
+  combustible?: string;
 }
 
-export default function TechnicalSheet() {
+interface TechnicalSheetProps {
+  showActions?: boolean; // Prop para controlar si se muestran las acciones
+}
+
+export default function TechnicalSheet({
+  showActions = true,
+}: TechnicalSheetProps) {
   const hardcodedData = {
     nroChasis: "1HGCM82633A123456",
     nroMotor: "K20A123456",
     tipo: "Sedán",
+    transmicion: "Automática",
+    combustible: "Gasolina",
   };
 
   const [technicalData, setTechnicalData] = useState<TechnicalData>({
@@ -94,31 +104,59 @@ export default function TechnicalSheet() {
               }
             />
           </div>
+          <div className="technical-field">
+            <p className="technical-label">Transmisión</p>
+            <input
+              type="text"
+              value={technicalData.transmicion || ""}
+              onChange={(e) =>
+                setTechnicalData({
+                  ...technicalData,
+                  transmicion: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="technical-field">
+            <p className="technical-label">Combustible</p>
+            <input
+              type="text"
+              value={technicalData.combustible || ""}
+              onChange={(e) =>
+                setTechnicalData({
+                  ...technicalData,
+                  combustible: e.target.value,
+                })
+              }
+            />
+          </div>
         </div>
-      </div>
-      <div className="technical-actions">
-        <button
-          className="confirm-button"
-          onClick={handleConfirmClick}
-          disabled={updating}
-          style={{
-            opacity: updating ? 0.5 : 1,
-            cursor: updating ? "not-allowed" : "pointer",
-          }}
-        >
-          {updating ? "Guardando..." : "Confirmar"}
-        </button>
-      </div>
+        {showActions && (
+          <div className="technical-actions">
+            <button
+              className="confirm-button"
+              onClick={handleConfirmClick}
+              disabled={updating}
+              style={{
+                opacity: updating ? 0.5 : 1,
+                cursor: updating ? "not-allowed" : "pointer",
+              }}
+            >
+              {updating ? "Guardando..." : "Confirmar"}
+            </button>
+          </div>
+        )}
 
-      {showDialog && (
-        <ConfirmDialog
-          open={showDialog}
-          title="Confirmar cambios"
-          message="¿Estás seguro de que quieres guardar los cambios en la ficha técnica?"
-          onConfirm={handleConfirmSave}
-          onCancel={handleCancel}
-        />
-      )}
+        {showDialog && (
+          <ConfirmDialog
+            open={showDialog}
+            title="Confirmar cambios"
+            message="¿Estás seguro de que quieres guardar los cambios en la ficha técnica?"
+            onConfirm={handleConfirmSave}
+            onCancel={handleCancel}
+          />
+        )}
+      </div>
     </div>
   );
 }

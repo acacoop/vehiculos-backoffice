@@ -10,12 +10,14 @@ type Props = {
   isVehicleActive?: boolean;
   onVehicleChange?: (vehicle: Vehicle | null) => void;
   vehicleId?: string; // Prop opcional para pasar el ID directamente
+  showActions?: boolean; // Prop para controlar si se muestran las acciones
 };
 
 export default function VehicleInfo({
   isVehicleActive = true,
   onVehicleChange,
   vehicleId: propVehicleId,
+  showActions = true,
 }: Props) {
   const [searchParams] = useSearchParams();
   const { id: paramId } = useParams<{ id: string }>();
@@ -224,19 +226,21 @@ export default function VehicleInfo({
           </div>
         </div>
       </div>
-      <div className="vehicle-actions">
-        <button
-          className="confirm-button"
-          onClick={handleConfirmClick}
-          disabled={updating}
-          style={{
-            opacity: updating ? 0.5 : 1,
-            cursor: updating ? "not-allowed" : "pointer",
-          }}
-        >
-          {updating ? "Guardando..." : vehicleId ? "Confirmar" : "Guardar"}
-        </button>
-      </div>
+      {showActions && (
+        <div className="vehicle-actions">
+          <button
+            className="confirm-button"
+            onClick={handleConfirmClick}
+            disabled={updating}
+            style={{
+              opacity: updating ? 0.5 : 1,
+              cursor: updating ? "not-allowed" : "pointer",
+            }}
+          >
+            {updating ? "Guardando..." : vehicleId ? "Confirmar" : "Guardar"}
+          </button>
+        </div>
+      )}
 
       {showDialog && (
         <ConfirmDialog
