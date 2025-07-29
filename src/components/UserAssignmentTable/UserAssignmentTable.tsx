@@ -1,7 +1,8 @@
 import { type GridColDef } from "@mui/x-data-grid";
+import { useNavigate } from "react-router-dom";
 import Table from "../Table/table";
-import { getUsers } from "../../services/users";
-import type { User } from "../../types/user";
+import { getAssignments } from "../../services/assignments";
+import type { Assignment } from "../../types/assignment";
 import "./UserAssignmentTable.css";
 
 interface UserAssignmentTableProps {
@@ -11,29 +12,45 @@ interface UserAssignmentTableProps {
 }
 
 export default function UserAssignmentTable({
-  title = "Usuarios",
+  title = "Asignaciones",
   width = "900px",
   vehicleId,
 }: UserAssignmentTableProps) {
-  // Definición de columnas para la tabla de usuarios
-  const userColumns: GridColDef<User>[] = [
+  const navigate = useNavigate();
+
+  // Definición de columnas para la tabla de asignaciones
+  const assignmentColumns: GridColDef<Assignment>[] = [
     {
-      field: "dni",
+      field: "user.dni",
       headerName: "DNI",
       width: 110,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => params.value?.toLocaleString() || "Sin DNI",
+      renderCell: (params) =>
+        params.row.user.dni?.toLocaleString() || "Sin DNI",
     },
-    { field: "lastName", headerName: "Apellido", width: 150 },
-    { field: "firstName", headerName: "Nombre", width: 150 },
+    {
+      field: "user.lastName",
+      headerName: "Apellido",
+      width: 150,
+      renderCell: (params) => params.row.user.lastName,
+    },
+    {
+      field: "user.firstName",
+      headerName: "Nombre",
+      width: 150,
+      renderCell: (params) => params.row.user.firstName,
+    },
     {
       field: "startDate",
       headerName: "Fecha Desde",
       width: 130,
       headerAlign: "center",
       align: "center",
-      renderCell: () => "01/01/2024", // Placeholder
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        return date.toLocaleDateString("es-ES");
+      },
     },
     {
       field: "endDate",
@@ -41,12 +58,16 @@ export default function UserAssignmentTable({
       width: 130,
       headerAlign: "center",
       align: "center",
-      renderCell: () => "31/12/2024", // Placeholder
+      renderCell: (params) => {
+        if (!params.value) return "Indefinida";
+        const date = new Date(params.value);
+        return date.toLocaleDateString("es-ES");
+      },
     },
   ];
 
-  // Función para obtener usuarios desde el servicio
-  const getUsersForTable = async (pagination: {
+  // Función para obtener asignaciones desde el servicio
+  const getAssignmentsForTable = async (pagination: {
     page: number;
     pageSize: number;
   }) => {
@@ -56,17 +77,17 @@ export default function UserAssignmentTable({
         limit: pagination.pageSize,
       };
 
-      const response = await getUsers(
-        { active: true }, // Solo usuarios activos
-        paginationParams
-      );
+      // Filtrar por vehicleId si se proporciona
+      const filterParams = vehicleId ? { vehicleId } : {};
+
+      const response = await getAssignments(filterParams, paginationParams);
 
       return response;
     } catch (error) {
       return {
         success: false,
         data: [],
-        message: `Error al obtener usuarios: ${(error as Error)?.message}`,
+        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
         error: error as any,
       };
     }
@@ -76,17 +97,27 @@ export default function UserAssignmentTable({
     <div className="user-assignment-table-container">
       <div className="user-assignment-table-header">
         <h2 className="title-user-assignment">{title}</h2>
-        <button className="add-document-btn">+ Agregar Usuario</button>
+        <button
+          className="add-document-btn"
+          onClick={() =>
+            navigate(
+              vehicleId
+                ? `/userassignment/create/${vehicleId}`
+                : "/userassignment/create"
+            )
+          }
+        >
+          + Agregar Asignación
+        </button>
       </div>
-      {/* Tabla de usuarios */}
+      {/* Tabla de asignaciones */}
       <div className="table-container" style={{ width, margin: "0 auto" }}>
-        <Table<User>
-          getRows={getUsersForTable}
-          columns={userColumns}
+        <Table<Assignment>
+          getRows={getAssignmentsForTable}
+          columns={assignmentColumns}
           title=""
           showEditColumn={true}
           editRoute="/userassignment"
-          additionalRouteParams={vehicleId ? `/${vehicleId}` : ""}
         />
       </div>
     </div>

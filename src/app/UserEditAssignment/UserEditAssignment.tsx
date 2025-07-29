@@ -1,123 +1,284 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getUserById } from "../../services/users";
+import { getAssignmentById } from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
-import type { User } from "../../types/user";
+import { getUsers } from "../../services/users";
+import { getVehicles } from "../../services/vehicles";
+import { getUserById } from "../../services/users";
+import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
+import type { User } from "../../types/user";
 import "./UserEditAssignment.css";
 
 export default function UserEditAssignment() {
-  const { userId, vehicleId } = useParams<{
-    userId: string;
-    vehicleId: string;
+  const { assignmentId, vehicleId } = useParams<{
+    assignmentId?: string;
+    vehicleId?: string;
   }>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const location = useLocation();
+
+  const isCreateMode = location.pathname.includes("/create");
+
+  // Obtener userId de los query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const userIdFromQuery = searchParams.get("userId");
+
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados para modo crear
+  const [preloadedVehicle, setPreloadedVehicle] = useState<Vehicle | null>(
+    null
+  );
+  const [preloadedUser, setPreloadedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  // Estados para búsqueda de usuarios
+  const [userSearchTerm, setUserSearchTerm] = useState<string>("");
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+  // Estados para búsqueda de vehículos
+  const [vehicleSearchTerm, setVehicleSearchTerm] = useState<string>("");
+  const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
+  const [showVehicleDropdown, setShowVehicleDropdown] = useState(false);
 
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!userId || !vehicleId) {
-        setError("ID de usuario o vehículo no proporcionado");
-        setLoading(false);
-        return;
-      }
-
+    const fetchAssignment = async () => {
       try {
-        console.log(
-          "🔍 [USER_EDIT_ASSIGNMENT] Cargando datos del usuario y vehículo:",
-          { userId, vehicleId }
-        );
+        const today = new Date().toISOString().split("T")[0];
+        setStartDate(today);
 
-        // Cargar datos del usuario y vehículo en paralelo
-        const [userResponse, vehicleResponse] = await Promise.all([
-          getUserById(userId),
-          getVehicleById(vehicleId),
-        ]);
+        if (isCreateMode) {
+          // Modo crear: cargar datos del vehículo si se proporciona vehicleId
+          if (vehicleId) {
+            const vehicleResponse = await getVehicleById(vehicleId);
+            if (vehicleResponse.success) {
+              setPreloadedVehicle(vehicleResponse.data);
+            }
+          }
 
-        if (userResponse.success && userResponse.data) {
-          setUser(userResponse.data);
+          // Modo crear: cargar datos del usuario si se proporciona userId en query params
+          if (userIdFromQuery) {
+            const userResponse = await getUserById(userIdFromQuery);
+            if (userResponse.success) {
+              setPreloadedUser(userResponse.data);
+            }
+          }
 
-          // Establecer fecha por defecto para "desde" (hoy)
-          const today = new Date().toISOString().split("T")[0];
-          setStartDate(today);
+          setLoading(false);
         } else {
-          setError(
-            userResponse.message ||
-              "No se pudieron cargar los datos del usuario"
-          );
-        }
+          if (!assignmentId) {
+            setError("ID de asignación no proporcionado");
+            setLoading(false);
+            return;
+          }
 
-        if (vehicleResponse.success && vehicleResponse.data) {
-          setVehicle(vehicleResponse.data);
-        } else {
-          setError(
-            vehicleResponse.message ||
-              "No se pudieron cargar los datos del vehículo"
-          );
+          const response = await getAssignmentById(assignmentId);
+
+          if (response.success && response.data) {
+            setAssignment(response.data);
+            setStartDate(response.data.startDate.split("T")[0]);
+            setEndDate(
+              response.data.endDate ? response.data.endDate.split("T")[0] : ""
+            );
+            setIsIndefinite(!response.data.endDate);
+          } else {
+            setError(response.message || "No se pudo cargar la asignación");
+          }
         }
       } catch (error) {
-        console.error(
-          "❌ [USER_EDIT_ASSIGNMENT] Error al cargar datos:",
-          error
-        );
-        setError("Error al cargar los datos");
+        setError("Error al cargar los datos de la asignación");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [userId, vehicleId]);
+    fetchAssignment();
+  }, [assignmentId, vehicleId, userIdFromQuery, isCreateMode]);
 
-  const handleSave = async () => {
-    if (!user || !startDate) {
-      alert("Por favor, complete todos los campos requeridos");
+  // Efecto para cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".user-search")) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Función para buscar usuarios
+  const searchUsers = async (searchTerm: string) => {
+    if (searchTerm.length < 2) {
+      setAvailableUsers([]);
+      setShowUserDropdown(false);
       return;
     }
 
     try {
-      console.log("💾 [USER_EDIT_ASSIGNMENT] Guardando asignación:", {
-        userId: user.id,
-        startDate,
-        endDate: isIndefinite ? null : endDate,
-      });
+      const response = await getUsers({ active: true }, { page: 1, limit: 10 });
 
-      // TODO: Implementar llamada al servicio para crear asignación
-      alert("Asignación guardada exitosamente");
-      navigate(-1); // Volver a la página anterior
+      if (response.success) {
+        // Filtrar usuarios por término de búsqueda
+        const filteredUsers = response.data.filter(
+          (user) =>
+            user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.dni?.toString().includes(searchTerm) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setAvailableUsers(filteredUsers);
+        setShowUserDropdown(true);
+      }
     } catch (error) {
-      console.error(
-        "❌ [USER_EDIT_ASSIGNMENT] Error al guardar asignación:",
-        error
-      );
-      alert("Error al guardar la asignación");
+      console.error("Error buscando usuarios:", error);
     }
   };
 
+  // Función para seleccionar un usuario
+  const handleUserSelect = (user: User) => {
+    setSelectedUser(user);
+    setUserSearchTerm(`${user.firstName} ${user.lastName}`);
+    setShowUserDropdown(false);
+  };
+
+  // Función para limpiar la selección de usuario
+  const clearUserSelection = () => {
+    setSelectedUser(null);
+    setUserSearchTerm("");
+    setAvailableUsers([]);
+    setShowUserDropdown(false);
+  };
+
+  // Función para buscar vehículos
+  const searchVehicles = async (searchTerm: string) => {
+    if (searchTerm.length < 2) {
+      setAvailableVehicles([]);
+      setShowVehicleDropdown(false);
+      return;
+    }
+
+    try {
+      const response = await getVehicles({}, { page: 1, limit: 10 });
+
+      if (response.success) {
+        // Filtrar vehículos por término de búsqueda
+        const filteredVehicles = response.data.filter(
+          (vehicle) =>
+            vehicle.licensePlate
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vehicle.year?.toString().includes(searchTerm)
+        );
+        setAvailableVehicles(filteredVehicles);
+        setShowVehicleDropdown(true);
+      }
+    } catch (error) {
+      console.error("Error buscando vehículos:", error);
+    }
+  };
+
+  // Función para seleccionar un vehículo
+  const handleVehicleSelect = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setVehicleSearchTerm(
+      `${vehicle.licensePlate} - ${vehicle.brand} ${vehicle.model}`
+    );
+    setShowVehicleDropdown(false);
+  };
+
+  // Función para limpiar la selección de vehículo
+  const clearVehicleSelection = () => {
+    setSelectedVehicle(null);
+    setVehicleSearchTerm("");
+    setAvailableVehicles([]);
+    setShowVehicleDropdown(false);
+  };
+
+  // Función para verificar si se puede cambiar el usuario
+  const canChangeUser = () => {
+    // No se puede cambiar si estamos en modo editar (ya tiene usuario asignado)
+    if (!isCreateMode) return false;
+
+    // No se puede cambiar si el usuario viene precargado desde la URL
+    if (preloadedUser) return false;
+
+    // Solo se puede cambiar si el usuario fue seleccionado manualmente (no precargado)
+    return selectedUser !== null;
+  };
+
+  // Función para verificar si se puede cambiar el vehículo
+  const canChangeVehicle = () => {
+    // No se puede cambiar si estamos en modo editar (ya tiene vehículo asignado)
+    if (!isCreateMode) return false;
+
+    // No se puede cambiar si el vehículo viene precargado desde la URL
+    if (preloadedVehicle) return false;
+
+    // Solo se puede cambiar si el vehículo fue seleccionado manualmente
+    return selectedVehicle !== null;
+  };
+  const handleSave = async () => {
+    if (!startDate) {
+      alert("Por favor, complete la fecha de inicio");
+      return;
+    }
+
+    if (isCreateMode) {
+      if (!selectedUser && !preloadedUser) {
+        alert("Por favor, seleccione un usuario");
+        return;
+      }
+      if (!preloadedVehicle && !selectedVehicle && !vehicleId) {
+        alert("Por favor, seleccione un vehículo");
+        return;
+      }
+
+      // TODO: Implementar servicio para crear nueva asignación
+      console.log("Crear asignación:", {
+        userId: selectedUser?.id || preloadedUser?.id,
+        vehicleId: preloadedVehicle?.id || selectedVehicle?.id || vehicleId,
+        startDate,
+        endDate: isIndefinite ? null : endDate,
+      });
+      alert("Nueva asignación creada exitosamente");
+    } else {
+      // TODO: Implementar servicio para actualizar asignación existente
+      alert("Asignación actualizada exitosamente");
+    }
+
+    navigate(-1);
+  };
+
   const handleCancel = () => {
-    navigate(-1); // Volver a la página anterior
+    navigate(-1);
   };
 
   if (loading) {
     return (
       <div className="user-edit-assignment-container">
-        <div className="loading">Cargando datos del usuario...</div>
+        <div className="loading">Cargando datos de la asignación...</div>
       </div>
     );
   }
 
-  if (error || !user || !vehicle) {
+  if (error || (!assignment && !isCreateMode)) {
     return (
       <div className="user-edit-assignment-container">
         <div className="error">
-          {error || "No se pudieron cargar los datos"}
+          {error || "No se pudo cargar la asignación"}
           <button onClick={handleCancel} className="button secondary">
             Volver
           </button>
@@ -129,53 +290,205 @@ export default function UserEditAssignment() {
   return (
     <div className="user-edit-assignment-container">
       <div className="user-edit-assignment-card">
-        <h1 className="title">Asignación de Usuario</h1>
+        <h1 className="title">
+          {isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
+        </h1>
 
         {/* Información del usuario */}
-        <div className="user-info">
-          <h2 className="section-title">Datos del Usuario</h2>
-          <div className="user-details">
-            <div className="detail-item">
-              <span className="label">DNI:</span>
-              <span className="value">{user.dni?.toLocaleString()}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Nombre:</span>
-              <span className="value">{user.firstName}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Apellido:</span>
-              <span className="value">{user.lastName}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Email:</span>
-              <span className="value">{user.email}</span>
+        {assignment?.user || selectedUser || preloadedUser ? (
+          <div className="user-info">
+            <h2 className="section-title">
+              Datos del Usuario
+              {canChangeUser() && (
+                <button
+                  onClick={clearUserSelection}
+                  className="clear-selection-btn"
+                  style={{
+                    marginLeft: "10px",
+                    fontSize: "0.8rem",
+                    padding: "4px 8px",
+                  }}
+                >
+                  Cambiar usuario
+                </button>
+              )}
+            </h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">DNI:</span>
+                <span className="value">
+                  {(
+                    assignment?.user?.dni ||
+                    selectedUser?.dni ||
+                    preloadedUser?.dni
+                  )?.toLocaleString()}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Nombre:</span>
+                <span className="value">
+                  {assignment?.user?.firstName ||
+                    selectedUser?.firstName ||
+                    preloadedUser?.firstName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Apellido:</span>
+                <span className="value">
+                  {assignment?.user?.lastName ||
+                    selectedUser?.lastName ||
+                    preloadedUser?.lastName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Email:</span>
+                <span className="value">
+                  {assignment?.user?.email ||
+                    selectedUser?.email ||
+                    preloadedUser?.email}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="user-info">
+            <h2 className="section-title">Seleccionar Usuario</h2>
+            <div className="user-search">
+              <div className="form-group">
+                <label htmlFor="userSearch" className="form-label">
+                  Buscar usuario (por nombre, apellido, DNI o email)
+                </label>
+                <input
+                  type="text"
+                  id="userSearch"
+                  value={userSearchTerm}
+                  onChange={(e) => {
+                    setUserSearchTerm(e.target.value);
+                    searchUsers(e.target.value);
+                  }}
+                  className="form-input"
+                  placeholder="Escriba para buscar..."
+                />
+              </div>
+
+              {showUserDropdown && availableUsers.length > 0 && (
+                <div className="user-dropdown">
+                  {availableUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="user-dropdown-item"
+                      onClick={() => handleUserSelect(user)}
+                    >
+                      <strong>
+                        {user.firstName} {user.lastName}
+                      </strong>
+                      <br />
+                      <small>
+                        DNI: {user.dni?.toLocaleString()} - {user.email}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Información del vehículo */}
-        <div className="user-info">
-          <h2 className="section-title">Datos del Vehículo</h2>
-          <div className="user-details">
-            <div className="detail-item">
-              <span className="label">Patente:</span>
-              <span className="value">{vehicle.licensePlate}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Marca:</span>
-              <span className="value">{vehicle.brand}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Modelo:</span>
-              <span className="value">{vehicle.model}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Año:</span>
-              <span className="value">{vehicle.year}</span>
+        {assignment?.vehicle || preloadedVehicle || selectedVehicle ? (
+          <div className="user-info">
+            <h2 className="section-title">
+              Datos del Vehículo
+              {canChangeVehicle() && (
+                <button
+                  onClick={clearVehicleSelection}
+                  className="clear-selection-btn"
+                  style={{
+                    marginLeft: "10px",
+                    fontSize: "0.8rem",
+                    padding: "4px 8px",
+                  }}
+                >
+                  Cambiar vehículo
+                </button>
+              )}
+            </h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">Patente:</span>
+                <span className="value">
+                  {assignment?.vehicle?.licensePlate ||
+                    preloadedVehicle?.licensePlate ||
+                    selectedVehicle?.licensePlate}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Marca:</span>
+                <span className="value">
+                  {assignment?.vehicle?.brand ||
+                    preloadedVehicle?.brand ||
+                    selectedVehicle?.brand}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Modelo:</span>
+                <span className="value">
+                  {assignment?.vehicle?.model ||
+                    preloadedVehicle?.model ||
+                    selectedVehicle?.model}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Año:</span>
+                <span className="value">
+                  {assignment?.vehicle?.year ||
+                    preloadedVehicle?.year ||
+                    selectedVehicle?.year}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="user-info">
+            <h2 className="section-title">Seleccionar Vehículo</h2>
+            <div className="vehicle-search">
+              <div className="form-group">
+                <label htmlFor="vehicleSearch" className="form-label">
+                  Buscar vehículo (por patente, marca, modelo o año)
+                </label>
+                <input
+                  type="text"
+                  id="vehicleSearch"
+                  value={vehicleSearchTerm}
+                  onChange={(e) => {
+                    setVehicleSearchTerm(e.target.value);
+                    searchVehicles(e.target.value);
+                  }}
+                  className="form-input"
+                  placeholder="Escriba para buscar..."
+                />
+              </div>
+
+              {showVehicleDropdown && availableVehicles.length > 0 && (
+                <div className="user-dropdown">
+                  {availableVehicles.map((vehicle) => (
+                    <div
+                      key={vehicle.id}
+                      className="user-dropdown-item"
+                      onClick={() => handleVehicleSelect(vehicle)}
+                    >
+                      <strong>
+                        {vehicle.licensePlate} - {vehicle.brand} {vehicle.model}
+                      </strong>
+                      <br />
+                      <small>Año: {vehicle.year}</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Formulario de asignación */}
         <div className="assignment-form">
@@ -233,7 +546,7 @@ export default function UserEditAssignment() {
             Cancelar
           </button>
           <button onClick={handleSave} className="button-confirm">
-            Guardar Asignación
+            {isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
           </button>
         </div>
       </div>

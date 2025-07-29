@@ -1,16 +1,16 @@
-import type { 
-  Assignment, 
-  AssignmentInput, 
-  AssignmentFilterParams 
-} from '../types/assignment';
-import { 
-  httpService, 
-  buildQueryParams, 
-  type PaginationParams, 
-  type ServiceResponse, 
-  type BackendResponse 
-} from '../common';
-import { ResponseStatus } from '../types/common';
+import type {
+  Assignment,
+  AssignmentInput,
+  AssignmentFilterParams,
+} from "../types/assignment";
+import {
+  httpService,
+  buildQueryParams,
+  type PaginationParams,
+  type ServiceResponse,
+  type BackendResponse,
+} from "../common";
+import { ResponseStatus } from "../types/common";
 
 /**
  * Obtiene todas las asignaciones (sin paginación)
@@ -28,7 +28,7 @@ export async function getAllAssignments(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener asignaciones"
+        message: response.message || "Error al obtener asignaciones",
       };
     }
 
@@ -41,7 +41,7 @@ export async function getAllAssignments(
       success: false,
       data: [],
       message: "Error al obtener asignaciones",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -50,7 +50,7 @@ export async function getAllAssignments(
  * Obtiene asignaciones con paginación
  */
 export async function getAssignments(
-  params?: AssignmentFilterParams, 
+  params?: AssignmentFilterParams,
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Assignment[]>> {
   try {
@@ -63,34 +63,38 @@ export async function getAssignments(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener asignaciones"
+        message: response.message || "Error al obtener asignaciones",
       };
     }
 
     return {
       success: true,
       data: response.data,
-      pagination: response.pagination ? {
-        page: response.pagination.page,
-        pageSize: response.pagination.limit,
-        total: response.pagination.total,
-        pages: response.pagination.pages
-      } : undefined,
+      pagination: response.pagination
+        ? {
+            page: response.pagination.page,
+            pageSize: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages,
+          }
+        : undefined,
     };
   } catch (error) {
     return {
       success: false,
       data: [],
       message: "Error al obtener asignaciones",
-      error: error as any
+      error: error as any,
     };
   }
 }
 
-export async function createAssignment(assignmentData: AssignmentInput): Promise<ServiceResponse<Assignment>> {
+export async function createAssignment(
+  assignmentData: AssignmentInput
+): Promise<ServiceResponse<Assignment>> {
   try {
     const response: BackendResponse<Assignment> = await httpService.post({
-      uri: '/assignments',
+      uri: "/assignments",
       body: assignmentData,
     });
 
@@ -98,7 +102,7 @@ export async function createAssignment(assignmentData: AssignmentInput): Promise
       return {
         success: false,
         data: {} as Assignment,
-        message: response.message || "Error al crear asignación"
+        message: response.message || "Error al crear asignación",
       };
     }
 
@@ -112,7 +116,7 @@ export async function createAssignment(assignmentData: AssignmentInput): Promise
       success: false,
       data: {} as Assignment,
       message: "Error al crear asignación",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -130,7 +134,7 @@ export async function getAllAssignmentsByUser(
  * Obtiene asignaciones de un usuario específico (con paginación)
  */
 export async function getAssignmentsByUser(
-  userId: string, 
+  userId: string,
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Assignment[]>> {
   return getAssignments({ userId }, pagination);
@@ -149,8 +153,100 @@ export async function getAllAssignmentsByVehicle(
  * Obtiene asignaciones de un vehículo específico (con paginación)
  */
 export async function getAssignmentsByVehicle(
-  vehicleId: string, 
+  vehicleId: string,
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Assignment[]>> {
   return getAssignments({ vehicleId }, pagination);
+}
+
+/**
+ * Obtiene una asignación específica por usuario y vehículo
+ */
+export async function getAssignmentByUserAndVehicle(
+  userId: string,
+  vehicleId: string
+): Promise<ServiceResponse<Assignment | null>> {
+  try {
+    const response = await getAssignments({ userId, vehicleId });
+
+    if (!response.success) {
+      return {
+        success: false,
+        data: null,
+        message: response.message || "Error al obtener la asignación",
+      };
+    }
+
+    // Retornar la primera asignación encontrada o null si no hay ninguna
+    const assignment =
+      response.data && response.data.length > 0 ? response.data[0] : null;
+
+    return {
+      success: true,
+      data: assignment,
+      message: assignment
+        ? "Asignación encontrada"
+        : "No se encontró la asignación",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al obtener la asignación",
+      error: error as any,
+    };
+  }
+}
+
+/**
+ * Obtiene una asignación específica por ID con datos completos
+ */
+export async function getAssignmentById(
+  assignmentId: string
+): Promise<ServiceResponse<Assignment>> {
+  try {
+    // Usar getAllAssignments sin paginación para obtener datos completos
+    const response = await getAssignments({}, { page: 1, limit: 1000 });
+
+    if (!response.success) {
+      return {
+        success: false,
+        data: {} as Assignment,
+        message: response.message || "Error al obtener asignaciones",
+      };
+    }
+
+    // Buscar la asignación específica en los resultados
+    const assignment = response.data.find((a) => a.id === assignmentId);
+
+    if (!assignment) {
+      return {
+        success: false,
+        data: {} as Assignment,
+        message: "Asignación no encontrada",
+      };
+    }
+
+    console.log("✅ [ASSIGNMENTS] Asignación encontrada:", {
+      id: assignment.id,
+      hasUser: !!assignment.user,
+      hasVehicle: !!assignment.vehicle,
+      userFirstName: assignment.user?.firstName,
+      vehicleLicense: assignment.vehicle?.licensePlate,
+    });
+
+    return {
+      success: true,
+      data: assignment,
+      message: "Asignación encontrada exitosamente",
+    };
+  } catch (error) {
+    console.error("❌ [ASSIGNMENTS] Error al obtener asignación:", error);
+    return {
+      success: false,
+      data: {} as Assignment,
+      message: "Error al obtener la asignación",
+      error: error as any,
+    };
+  }
 }

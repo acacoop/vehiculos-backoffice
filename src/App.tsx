@@ -19,8 +19,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<User />} />
         <Route path="/useredit/:id" element={<UserEdit />} />
+        <Route path="/userassignment/create" element={<UserEditAssignment />} />
         <Route
-          path="/userassignment/:userId/:vehicleId"
+          path="/userassignment/create/:vehicleId"
+          element={<UserEditAssignment />}
+        />
+        <Route
+          path="/userassignment/:assignmentId"
           element={<UserEditAssignment />}
         />
         <Route path="/metrics" element={<Metrics />} />
