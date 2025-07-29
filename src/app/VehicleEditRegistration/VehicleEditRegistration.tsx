@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import VehicleInfo from "../../components/VehicleInfo/VehicleInfo";
-import TechnicalSheet from "../../components/TechnicalSheet/TechnicalSheet";
+import EntityForm from "../../components/EntityForm/EntityForm";
 import Document from "../../components/Document/Document";
-import CarUnsubscribeButton from "../../components/CarUnsubscribeButton/CarUnsubscribeButton";
+import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import UserAssignmentTable from "../../components/UserAssignmentTable/UserAssignmentTable";
 import { createVehicle } from "../../services/vehicles";
 import type { Vehicle } from "../../types/vehicle";
@@ -93,23 +92,26 @@ export default function VehicleEditRegistration() {
       </h2>
 
       {/* Botón de estado del vehículo - Solo en modo edición */}
-      {!isCreateMode && (
-        <CarUnsubscribeButton
+      {!isCreateMode && vehicleId && (
+        <StatusToggle
+          entityId={vehicleId}
+          entityType="vehicle"
           active={isVehicleActive}
           onToggle={handleVehicleStatusChange}
         />
       )}
 
       {/* Información del vehículo - Siempre presente */}
-      <VehicleInfo
-        isVehicleActive={isVehicleActive}
-        vehicleId={isCreateMode ? undefined : vehicleId}
-        onVehicleChange={isCreateMode ? handleVehicleChange : undefined}
+      <EntityForm
+        entityType="vehicle"
+        entityId={isCreateMode ? undefined : vehicleId}
+        onDataChange={isCreateMode ? handleVehicleChange : undefined}
+        isActive={isVehicleActive}
         showActions={!isCreateMode}
       />
 
       {/* Ficha técnica - Siempre presente */}
-      <TechnicalSheet showActions={!isCreateMode} />
+      <EntityForm entityType="technical" showActions={!isCreateMode} />
 
       {/* TODO: Agregar tabla de mantenimientos cuando esté disponible - Solo en modo edición */}
       {!isCreateMode && vehicleId && (

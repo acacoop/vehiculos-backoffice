@@ -1,4 +1,4 @@
-.vehicle-state-container {
+.status-toggle-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,12 +12,12 @@
   height: auto;
 }
 
-.vehicle-state-title {
+.status-toggle-title {
   width: 100%;
   text-align: left;
 }
 
-.vehicle-state-bento {
+.status-toggle-content {
   display: flex;
   align-items: center;
   justify-content: space-between;

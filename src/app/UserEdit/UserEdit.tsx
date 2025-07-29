@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { CircularProgress, Alert } from "@mui/material";
-import UserPanel from "../../components/UserPanel/UserPanel";
+import EntityForm from "../../components/EntityForm/EntityForm";
 import UserCarPanel from "../../components/UserCarPanel/UserCarPanel";
 import DniLicense from "../../components/DniLicense/DniLicense";
 import ReservePanel from "../../components/ReservePanel/ReservePanel";
-import UserState from "../../components/UserState/UserState";
+import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import type { User } from "../../types/user";
 import "./UserEdit.css";
@@ -93,17 +93,23 @@ export default function UserEdit() {
   return (
     <main className="user-edit-container">
       <div className="user-state">
-        <UserState
-          userId={userData.id}
+        <StatusToggle
+          entityId={userData.id}
+          entityType="user"
           active={userData.active ?? false}
-          onToggle={(newState) => {
+          onToggle={(newState: boolean) => {
             console.log("Usuario actualizado:", newState);
           }}
         />
       </div>
 
       <div className="user-edit-body">
-        <UserPanel user={userData} setUser={setUserData} />
+        <EntityForm
+          entityType="user"
+          entityId={userData.id}
+          data={userData}
+          onDataChange={(newData: User) => setUserData(newData)}
+        />
       </div>
 
       <div className="user-edit-body">

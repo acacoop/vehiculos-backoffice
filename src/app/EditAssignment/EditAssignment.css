@@ -1,11 +1,11 @@
-.user-edit-assignment-container {
+.edit-assignment-container {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
   min-height: 100vh;
 }
 
-.user-edit-assignment-card {
+.edit-assignment-card {
   background: white;
   border-radius: 20px;
   padding: 30px;
@@ -287,11 +287,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .user-edit-assignment-container {
+  .edit-assignment-container {
     padding: 10px;
   }
 
-  .user-edit-assignment-card {
+  .edit-assignment-card {
     padding: 20px;
   }
 

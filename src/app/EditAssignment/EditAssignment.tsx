@@ -8,9 +8,9 @@ import { getUserById } from "../../services/users";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
-import "./UserEditAssignment.css";
+import "./EditAssignment.css";
 
-export default function UserEditAssignment() {
+export default function EditAssignment() {
   const { assignmentId, vehicleId } = useParams<{
     assignmentId?: string;
     vehicleId?: string;
@@ -268,7 +268,7 @@ export default function UserEditAssignment() {
 
   if (loading) {
     return (
-      <div className="user-edit-assignment-container">
+      <div className="edit-assignment-container">
         <div className="loading">Cargando datos de la asignación...</div>
       </div>
     );
@@ -276,7 +276,7 @@ export default function UserEditAssignment() {
 
   if (error || (!assignment && !isCreateMode)) {
     return (
-      <div className="user-edit-assignment-container">
+      <div className="edit-assignment-container">
         <div className="error">
           {error || "No se pudo cargar la asignación"}
           <button onClick={handleCancel} className="button secondary">
@@ -288,8 +288,8 @@ export default function UserEditAssignment() {
   }
 
   return (
-    <div className="user-edit-assignment-container">
-      <div className="user-edit-assignment-card">
+    <div className="edit-assignment-container">
+      <div className="edit-assignment-card">
         <h1 className="title">
           {isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
         </h1>

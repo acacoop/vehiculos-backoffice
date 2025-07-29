@@ -2,9 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
 import Home from "./app/home/Home";
-import User from "./app/user/User";
+import Users from "./app/Users/Users";
 import UserEdit from "./app/UserEdit/UserEdit";
-import UserEditAssignment from "./app/UserEditAssignment/UserEditAssignment";
+import EditAssignment from "./app/EditAssignment/EditAssignment";
 import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
 import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
@@ -16,16 +16,16 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/user" element={<User />} />
+        <Route path="/users" element={<Users />} />
         <Route path="/user/edit/:id" element={<UserEdit />} />
-        <Route path="/userassignment/create" element={<UserEditAssignment />} />
+        <Route path="/assignment/create" element={<EditAssignment />} />
         <Route
-          path="/userassignment/create/:vehicleId"
-          element={<UserEditAssignment />}
+          path="/assignment/create/:vehicleId"
+          element={<EditAssignment />}
         />
         <Route
-          path="/userassignment/:assignmentId"
-          element={<UserEditAssignment />}
+          path="/assignment/edit/:assignmentId"
+          element={<EditAssignment />}
         />
         <Route path="/metrics" element={<Metrics />} />
         <Route path="/vehicles" element={<Vehicles />} />

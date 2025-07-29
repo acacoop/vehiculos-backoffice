@@ -131,7 +131,7 @@ export default function UserCarPanel({ userId, user }: UserCarPanelProps) {
         </h2>
         <button
           className="add-vehicle-btn"
-          onClick={() => navigate(`/userassignment/create?userId=${userId}`)}
+          onClick={() => navigate(`/assignment/create?userId=${userId}`)}
         >
           + Agregar Vehículo
         </button>
@@ -143,7 +143,7 @@ export default function UserCarPanel({ userId, user }: UserCarPanelProps) {
           columns={vehicleColumns}
           title=""
           showEditColumn={true}
-          editRoute="/userassignment"
+          editRoute="/assignment/edit"
         />
       </div>
     </div>

@@ -102,8 +102,8 @@ export default function UserAssignmentTable({
           onClick={() =>
             navigate(
               vehicleId
-                ? `/userassignment/create/${vehicleId}`
-                : "/userassignment/create"
+                ? `/assignment/create/${vehicleId}`
+                : "/assignment/create"
             )
           }
         >
@@ -117,7 +117,7 @@ export default function UserAssignmentTable({
           columns={assignmentColumns}
           title=""
           showEditColumn={true}
-          editRoute="/userassignment"
+          editRoute="/assignment/edit"
         />
       </div>
     </div>

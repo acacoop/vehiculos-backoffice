@@ -1,6 +1,6 @@
 import { Chip } from "@mui/material";
 import Table from "../../components/Table/table";
-import "./User.css";
+import "./Users.css";
 import { getUsers } from "../../services/users";
 import type { ServiceResponse } from "../../common";
 import type { User as UserType } from "../../types/user";
@@ -42,10 +42,10 @@ const getUsersData = async (
   );
 };
 
-export default function User() {
+export default function Users() {
   return (
-    <main className="user-container">
-      <div className="user-header">
+    <main className="users-container">
+      <div className="users-header">
         <h1 className="title">Gestión de usuarios</h1>
       </div>
       <Table
