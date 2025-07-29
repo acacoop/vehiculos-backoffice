@@ -221,7 +221,7 @@ export default function UserEdit() {
           onAddButtonClick={() =>
             navigate(`/assignment/create?userId=${userId}`)
           }
-          maxWidth="1200px"
+          maxWidth="900px"
         />
       </div>
       <DniLicense />
