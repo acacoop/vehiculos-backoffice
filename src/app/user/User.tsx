@@ -53,7 +53,7 @@ export default function User() {
         columns={userColumns}
         title=""
         showEditColumn={true}
-        editRoute="/useredit"
+        editRoute="/user/edit"
       />
     </main>
   );

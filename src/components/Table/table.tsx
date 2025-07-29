@@ -40,7 +40,7 @@ export function Table<T extends GridValidRowModel>({
   columns,
   title,
   showEditColumn = false,
-  editRoute = "/useredit",
+  editRoute = "/user/edit",
   additionalRouteParams = "",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();

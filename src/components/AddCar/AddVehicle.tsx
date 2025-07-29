@@ -5,7 +5,7 @@ export default function AddVehicle() {
   const navigate = useNavigate();
 
   const handleAddVehicle = () => {
-    navigate("/vehicle-registration");
+    navigate("/vehicle/create");
   };
 
   return (

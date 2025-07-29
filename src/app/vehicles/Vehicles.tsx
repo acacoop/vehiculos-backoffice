@@ -68,7 +68,7 @@ export default function Vehicles() {
         columns={columns}
         title=""
         showEditColumn={true}
-        editRoute="/vehicleedit"
+        editRoute="/vehicle/edit"
       />
     </div>
   );

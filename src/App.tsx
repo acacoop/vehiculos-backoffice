@@ -5,8 +5,7 @@ import Home from "./app/home/Home";
 import User from "./app/user/User";
 import UserEdit from "./app/UserEdit/UserEdit";
 import UserEditAssignment from "./app/UserEditAssignment/UserEditAssignment";
-import VehicleEdit from "./app/VehiclesEdit/VehicleEdit";
-import VehicleRegistration from "./app/VehicleRegistration/VehicleRegistration";
+import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
 import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
 import Assignaments from "./app/assignment/Assignment";
@@ -18,7 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<User />} />
-        <Route path="/useredit/:id" element={<UserEdit />} />
+        <Route path="/user/edit/:id" element={<UserEdit />} />
         <Route path="/userassignment/create" element={<UserEditAssignment />} />
         <Route
           path="/userassignment/create/:vehicleId"
@@ -30,8 +29,8 @@ function App() {
         />
         <Route path="/metrics" element={<Metrics />} />
         <Route path="/vehicles" element={<Vehicles />} />
-        <Route path="/vehicleedit/:id" element={<VehicleEdit />} />
-        <Route path="/vehicle-registration" element={<VehicleRegistration />} />
+        <Route path="/vehicle/edit/:id" element={<VehicleEditRegistration />} />
+        <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
         <Route path="/assignments" element={<Assignaments />} />
       </Routes>
     </Router>
