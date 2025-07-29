@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
-import UserAssignmentTable from "../../components/UserAssignmentTable/UserAssignmentTable";
+import Table from "../../components/Table/table";
 import { createVehicle } from "../../services/vehicles";
+import { getAssignments } from "../../services/assignments";
 import type { Vehicle } from "../../types/vehicle";
+import type { Assignment } from "../../types/assignment";
+import type { PaginationParams } from "../../common";
 import "./VehicleEditRegistration.css";
 
 export default function VehicleEditRegistration() {
@@ -21,6 +25,76 @@ export default function VehicleEditRegistration() {
   const [isVehicleActive, setIsVehicleActive] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+
+  // Definición de columnas para la tabla de asignaciones
+  const assignmentColumns: GridColDef<Assignment>[] = [
+    {
+      field: "user.dni",
+      headerName: "DNI",
+      width: 110,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) =>
+        params.row.user.dni?.toLocaleString() || "Sin DNI",
+    },
+    {
+      field: "user.lastName",
+      headerName: "Apellido",
+      width: 150,
+      renderCell: (params) => params.row.user.lastName,
+    },
+    {
+      field: "user.firstName",
+      headerName: "Nombre",
+      width: 150,
+      renderCell: (params) => params.row.user.firstName,
+    },
+    {
+      field: "startDate",
+      headerName: "Fecha Desde",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.startDate) {
+          const date = new Date(params.row.startDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "Fecha Hasta",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.endDate) {
+          const date = new Date(params.row.endDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Activa";
+      },
+    },
+  ];
+
+  // Función para obtener asignaciones
+  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+    try {
+      // Filtrar por vehicleId si se proporciona
+      const filterParams = vehicleId ? { vehicleId } : {};
+      const response = await getAssignments(filterParams, paginationParams);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+        error: error as any,
+      };
+    }
+  };
 
   // Función para manejar el cambio de estado del vehículo (solo en modo edición)
   const handleVehicleStatusChange = (isActive: boolean) => {
@@ -122,10 +196,24 @@ export default function VehicleEditRegistration() {
 
       {/* Tabla de asignación de usuarios - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
-        <UserAssignmentTable
-          title="Asignar Usuarios al Vehículo"
-          width="900px"
-          vehicleId={vehicleId}
+        <Table<Assignment>
+          getRows={getAssignmentsForTable}
+          columns={assignmentColumns}
+          title=""
+          showEditColumn={true}
+          editRoute="/assignment/edit"
+          showTableHeader={true}
+          headerTitle="Asignar Usuarios al Vehículo"
+          showAddButton={true}
+          addButtonText="+ Agregar Asignación"
+          onAddButtonClick={() =>
+            navigate(
+              vehicleId
+                ? `/assignment/create/${vehicleId}`
+                : "/assignment/create"
+            )
+          }
+          maxWidth="900px"
         />
       )}
 

@@ -1,11 +1,9 @@
-.user-car-panel-container {
-  margin-top: 2rem;
-  padding: 20px;
-  max-width: 1200px;
+.table-main-container {
   margin: 0 auto;
+  width: 100%;
 }
 
-.user-car-panel-header {
+.table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,13 +12,14 @@
   margin-bottom: 20px;
 }
 
-.title-user-car-panel {
+.table-header-title {
   color: #282d86;
   font-size: 24px;
   margin: 0;
+  font-weight: 600;
 }
 
-.add-vehicle-btn {
+.table-add-btn {
   background-color: #282d86;
   color: white;
   border: none;
@@ -32,13 +31,19 @@
   transition: background-color 0.3s;
 }
 
-.add-vehicle-btn:hover {
+.table-add-btn:hover {
   background-color: #fe9000;
 }
 
-.table-container {
-  margin: 0 auto;
-  max-width: 900px;
-  width: 100%;
-  overflow-x: auto;
+/* Responsive */
+@media (max-width: 768px) {
+  .table-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .table-add-btn {
+    width: 100%;
+  }
 }

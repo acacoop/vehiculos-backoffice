@@ -1,8 +1,8 @@
 import "./Vehicles.css";
+import { useNavigate } from "react-router-dom";
 import Table from "../../components/Table/table";
 import { getVehicles } from "../../services/vehicles";
 import type { ServiceResponse, PaginationParams } from "../../common";
-import AddVehicle from "../../components/AddCar/AddVehicle";
 
 const columns = [
   { field: "licensePlate", headerName: "Patente", flex: 1 },
@@ -12,6 +12,8 @@ const columns = [
 ];
 
 export default function Vehicles() {
+  const navigate = useNavigate();
+
   // Función para obtener vehículos con paginación
   const getVehiclesData = async (
     pagination: PaginationParams
@@ -62,13 +64,17 @@ export default function Vehicles() {
 
   return (
     <div className="vehicles-container">
-      <AddVehicle />
       <Table
         getRows={getVehiclesData}
         columns={columns}
         title=""
         showEditColumn={true}
         editRoute="/vehicle/edit"
+        showTableHeader={true}
+        headerTitle="Gestión de Vehículos"
+        showAddButton={true}
+        addButtonText="Comenzar Registro"
+        onAddButtonClick={() => navigate("/vehicle/create")}
       />
     </div>
   );

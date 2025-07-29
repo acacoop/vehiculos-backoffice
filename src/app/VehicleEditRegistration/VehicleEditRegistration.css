@@ -18,7 +18,7 @@
 }
 
 .register-button {
-  background-color: #007bff;
+  background-color: #282d86;
   color: white;
   border: none;
   border-radius: 8px;
@@ -31,7 +31,7 @@
 }
 
 .register-button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #fe9000;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }

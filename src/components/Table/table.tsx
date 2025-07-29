@@ -8,6 +8,7 @@ import { esES } from "@mui/x-data-grid/locales";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ServiceResponse, PaginationParams } from "../../common";
+import "./table.css";
 
 const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -33,6 +34,15 @@ interface GenericTableProps<T extends GridValidRowModel> {
   showEditColumn?: boolean;
   editRoute?: string;
   additionalRouteParams?: string;
+  // Nuevas props para el header
+  showTableHeader?: boolean;
+  headerTitle?: string;
+  showAddButton?: boolean;
+  addButtonText?: string;
+  addButtonRoute?: string;
+  onAddButtonClick?: () => void;
+  maxWidth?: string;
+  containerClassName?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -42,6 +52,15 @@ export function Table<T extends GridValidRowModel>({
   showEditColumn = false,
   editRoute = "/user/edit",
   additionalRouteParams = "",
+  // Nuevas props con valores por defecto
+  showTableHeader = false,
+  headerTitle = "",
+  showAddButton = false,
+  addButtonText = "+ Agregar",
+  addButtonRoute = "",
+  onAddButtonClick,
+  maxWidth = "900px",
+  containerClassName = "",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -98,6 +117,14 @@ export function Table<T extends GridValidRowModel>({
     });
   };
 
+  const handleAddButtonClick = () => {
+    if (onAddButtonClick) {
+      onAddButtonClick();
+    } else if (addButtonRoute) {
+      navigate(addButtonRoute);
+    }
+  };
+
   const finalColumns: GridColDef<T>[] = [
     ...columns.map((col) => ({
       ...col,
@@ -137,45 +164,60 @@ export function Table<T extends GridValidRowModel>({
 
   return (
     <div
-      style={{
-        borderRadius: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        overflow: "auto",
-        width: "100%",
-        maxWidth: "1400px",
-        maxHeight: "1000px",
-      }}
+      className={`table-main-container ${containerClassName}`}
+      style={{ maxWidth }}
     >
-      <h2 style={{ textAlign: "start" }}>{title}</h2>
-      <DataGrid
-        rows={rows}
-        columns={finalColumns}
-        pagination
-        paginationMode="server"
-        rowCount={rowCount}
-        paginationModel={{
-          page: paginationModel.page,
-          pageSize: paginationModel.pageSize,
+      {showTableHeader && (
+        <div className="table-header">
+          <h2 className="table-header-title">{headerTitle}</h2>
+          {showAddButton && (
+            <button className="table-add-btn" onClick={handleAddButtonClick}>
+              {addButtonText}
+            </button>
+          )}
+        </div>
+      )}
+      <div
+        style={{
+          borderRadius: 20,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          overflow: "auto",
+          width: "100%",
+          maxWidth: "1400px",
+          maxHeight: "1000px",
         }}
-        onPaginationModelChange={handlePaginationChange}
-        pageSizeOptions={[10, 20, 50, 100]}
-        loading={loading}
-        showToolbar
-        localeText={esES.components.MuiDataGrid.defaultProps.localeText}
-        sx={{
-          backgroundColor: "#f2f2f2",
-          "& .MuiDataGrid-row:nth-of-type(even)": {
+      >
+        <h2 style={{ textAlign: "start" }}>{title}</h2>
+        <DataGrid
+          rows={rows}
+          columns={finalColumns}
+          pagination
+          paginationMode="server"
+          rowCount={rowCount}
+          paginationModel={{
+            page: paginationModel.page,
+            pageSize: paginationModel.pageSize,
+          }}
+          onPaginationModelChange={handlePaginationChange}
+          pageSizeOptions={[10, 20, 50, 100]}
+          loading={loading}
+          showToolbar
+          localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+          sx={{
             backgroundColor: "#f2f2f2",
-          },
-          "& .MuiDataGrid-row:nth-of-type(odd)": {
-            backgroundColor: "#ffffff",
-          },
-          borderRadius: 5,
-          height: "calc(100% - 60px)",
-          minHeight: "400px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        }}
-      />
+            "& .MuiDataGrid-row:nth-of-type(even)": {
+              backgroundColor: "#f2f2f2",
+            },
+            "& .MuiDataGrid-row:nth-of-type(odd)": {
+              backgroundColor: "#ffffff",
+            },
+            borderRadius: 5,
+            height: "calc(100% - 60px)",
+            minHeight: "400px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        />
+      </div>
     </div>
   );
 }

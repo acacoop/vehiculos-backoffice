@@ -1,30 +1,76 @@
-import { Chip, CircularProgress, Alert } from "@mui/material";
-import Table from "../../components/Table/table";
 import "./Assignment.css";
+import Table from "../../components/Table/table";
 import { getAssignments } from "../../services/assignments";
-import { useAsyncData } from "../../hooks";
-import type {
-  Assignment,
-  AssignmentListApiResponse,
-} from "../../types/assignment";
+import type { Assignment } from "../../types/assignment";
+import type { ServiceResponse, PaginationParams } from "../../common";
+import { type GridColDef } from "@mui/x-data-grid";
+import { Chip } from "@mui/material";
 
-const assignmentColumns = [
-  { field: "userDni", headerName: "DNI Usuario", width: 90 },
-  { field: "userName", headerName: "Usuario", width: 200 },
-  { field: "vehiclePlate", headerName: "Patente", width: 120 },
-  { field: "vehicleInfo", headerName: "Vehículo", width: 200 },
-  { field: "formattedStartDate", headerName: "Fecha Inicio", width: 130 },
-  { field: "formattedEndDate", headerName: "Fecha Fin", width: 130 },
+const assignmentColumns: GridColDef<Assignment>[] = [
+  {
+    field: "user.dni",
+    headerName: "DNI Usuario",
+    width: 90,
+    renderCell: (params) => params.row.user.dni?.toLocaleString() || "Sin DNI",
+  },
+  {
+    field: "user.name",
+    headerName: "Usuario",
+    width: 200,
+    renderCell: (params) =>
+      `${params.row.user.firstName} ${params.row.user.lastName}`,
+  },
+  {
+    field: "vehicle.licensePlate",
+    headerName: "Patente",
+    width: 120,
+    renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
+  },
+  {
+    field: "vehicle.info",
+    headerName: "Vehículo",
+    width: 200,
+    renderCell: (params) => {
+      const vehicle = params.row.vehicle;
+      return vehicle
+        ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
+        : "N/A";
+    },
+  },
+  {
+    field: "startDate",
+    headerName: "Fecha Inicio",
+    width: 130,
+    renderCell: (params) => {
+      if (params.row.startDate) {
+        const date = new Date(params.row.startDate);
+        return date.toLocaleDateString("es-AR");
+      }
+      return "Sin fecha";
+    },
+  },
+  {
+    field: "endDate",
+    headerName: "Fecha Fin",
+    width: 130,
+    renderCell: (params) => {
+      if (params.row.endDate) {
+        const date = new Date(params.row.endDate);
+        return date.toLocaleDateString("es-AR");
+      }
+      return "Activa";
+    },
+  },
   {
     field: "status",
     headerName: "Estado",
-    width: 120,
-    renderCell: (params: any) => {
+    width: 100,
+    renderCell: (params) => {
       const isActive =
-        !params.row?.endDate || new Date(params.row.endDate) > new Date();
+        !params.row.endDate || new Date(params.row.endDate) > new Date();
       return (
         <Chip
-          label={isActive ? "Activo" : "Finalizado"}
+          label={isActive ? "Activa" : "Finalizada"}
           color={isActive ? "success" : "default"}
           size="small"
           style={{ color: "#fff", fontWeight: 600 }}
@@ -35,80 +81,34 @@ const assignmentColumns = [
 ];
 
 export default function Assignment() {
-  const fetchAssignmentsData = async (): Promise<Assignment[]> => {
-    const response: AssignmentListApiResponse = await getAssignments();
-    return response.data;
+  // Función para obtener asignaciones con paginación
+  const getAssignmentsData = async (
+    paginationParams: PaginationParams
+  ): Promise<ServiceResponse<Assignment[]>> => {
+    try {
+      const response = await getAssignments({}, paginationParams);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+      };
+    }
   };
-
-  const {
-    data: assignments,
-    loading,
-    error,
-  } = useAsyncData(fetchAssignmentsData);
-
-  console.log(assignments);
-
-  if (loading) {
-    return (
-      <main className="assignment-container">
-        <div className="assignment-header">
-          <h2 className="assignment-title">Gestión de Asignaciones</h2>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "2rem",
-          }}
-        >
-          <CircularProgress />
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="assignment-container">
-        <div className="assignment-header">
-          <h1 className="assignment-title">Gestión de Asignaciones</h1>
-        </div>
-        <Alert severity="error" style={{ margin: "2rem" }}>
-          {error}
-        </Alert>
-      </main>
-    );
-  }
-
-  const mappedAssignments =
-    assignments?.map((assignment) => ({
-      ...assignment,
-      userDni: assignment.user?.dni ?? "",
-      userName: assignment.user
-        ? `${assignment.user.firstName ?? ""} ${
-            assignment.user.lastName ?? ""
-          }`.trim()
-        : "",
-      vehiclePlate: assignment.vehicle?.licensePlate ?? "",
-      vehicleInfo: assignment.vehicle
-        ? `${assignment.vehicle.brand ?? ""} ${
-            assignment.vehicle.model ?? ""
-          } (${assignment.vehicle.year ?? ""})`
-        : "",
-      formattedStartDate: assignment.startDate
-        ? new Date(assignment.startDate).toLocaleDateString("es-ES")
-        : "",
-      formattedEndDate: assignment.endDate
-        ? new Date(assignment.endDate).toLocaleDateString("es-ES")
-        : "Indefinido",
-    })) ?? [];
 
   return (
     <main className="assignment-container">
       <div className="assignment-header">
         <h1 className="title">Gestión de Asignaciones</h1>
       </div>
-      <Table rows={mappedAssignments} columns={assignmentColumns} title="" />
+      <Table<Assignment>
+        getRows={getAssignmentsData}
+        columns={assignmentColumns}
+        title=""
+        showEditColumn={true}
+        editRoute="/assignment/edit"
+      />
     </main>
   );
 }

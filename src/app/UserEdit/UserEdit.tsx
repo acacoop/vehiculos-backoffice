@@ -1,21 +1,114 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CircularProgress, Alert } from "@mui/material";
+import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
-import UserCarPanel from "../../components/UserCarPanel/UserCarPanel";
+import Table from "../../components/Table/table";
 import DniLicense from "../../components/DniLicense/DniLicense";
 import ReservePanel from "../../components/ReservePanel/ReservePanel";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
+import { getAssignmentsByUser } from "../../services/assignments";
 import type { User } from "../../types/user";
+import type { Assignment } from "../../types/assignment";
+import type { PaginationParams } from "../../common";
 import "./UserEdit.css";
 
 export default function UserEdit() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const userId = id;
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Definición de columnas para la tabla de vehículos asignados
+  const vehicleColumns: GridColDef<Assignment>[] = [
+    {
+      field: "vehicle.licensePlate",
+      headerName: "Patente",
+      width: 70,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
+    },
+    {
+      field: "vehicle.brand",
+      headerName: "Marca",
+      width: 90,
+      renderCell: (params) => params.row.vehicle?.brand || "N/A",
+    },
+    {
+      field: "vehicle.model",
+      headerName: "Modelo",
+      width: 90,
+      renderCell: (params) => params.row.vehicle?.model || "N/A",
+    },
+    {
+      field: "startDate",
+      headerName: "Desde",
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.startDate) {
+          const date = new Date(params.row.startDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "Hasta",
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.endDate) {
+          const date = new Date(params.row.endDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Activa";
+      },
+    },
+  ];
+
+  // Función para obtener asignaciones del usuario
+  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+    if (!userId) {
+      return {
+        success: false,
+        data: [],
+        message: "No se ha seleccionado ningún usuario",
+      };
+    }
+
+    try {
+      const response = await getAssignmentsByUser(userId, paginationParams);
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data,
+          total: response.data.length,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          data: [],
+          total: 0,
+          message: response.message,
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+      };
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -113,7 +206,23 @@ export default function UserEdit() {
       </div>
 
       <div className="user-edit-body">
-        <UserCarPanel userId={userData.id} user={userData} />
+        <Table<Assignment>
+          getRows={getAssignmentsForTable}
+          columns={vehicleColumns}
+          title=""
+          showEditColumn={true}
+          editRoute="/assignment/edit"
+          showTableHeader={true}
+          headerTitle={`Vehículos Asignados${
+            userData ? ` a ${userData.firstName} ${userData.lastName}` : ""
+          }`}
+          showAddButton={true}
+          addButtonText="+ Agregar Vehículo"
+          onAddButtonClick={() =>
+            navigate(`/assignment/create?userId=${userId}`)
+          }
+          maxWidth="1200px"
+        />
       </div>
       <DniLicense />
       <ReservePanel />
