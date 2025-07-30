@@ -1,6 +1,4 @@
-import type {
-  Maintenance,
-} from "../types/maintenance";
+import type { Maintenance } from "../types/maintenance";
 import {
   type PaginationParams,
   type ServiceResponse,
@@ -36,8 +34,6 @@ export async function getMaintenanceCategories(
     const baseUrl = "http://localhost:3000"; // Ajustar según tu configuración
     const fullUrl = `${baseUrl}${uri}`;
 
-    console.log("🌐 [MAINTENANCE] URL completa:", fullUrl);
-
     const response = await fetch(fullUrl);
 
     if (!response.ok) {
@@ -45,10 +41,6 @@ export async function getMaintenanceCategories(
     }
 
     const rawData = await response.json();
-
-    console.log("📨 [MAINTENANCE] Datos raw del backend:", rawData);
-    console.log("📊 [MAINTENANCE] Tipo de datos raw:", typeof rawData);
-    console.log("📊 [MAINTENANCE] Es array?", Array.isArray(rawData));
 
     // Verificar si es un array directo (como esperamos)
     if (Array.isArray(rawData)) {
@@ -76,17 +68,12 @@ export async function getMaintenanceCategories(
     }
 
     // Si no coincide con ningún formato esperado
-    console.error(
-      "❌ [MAINTENANCE] Formato de respuesta no reconocido:",
-      rawData
-    );
     return {
       success: false,
       data: [],
       message: "Formato de respuesta inesperado del servidor",
     };
   } catch (error) {
-    console.error("💥 [MAINTENANCE] Error al obtener mantenimientos:", error);
     return {
       success: false,
       data: [],
@@ -101,24 +88,15 @@ export async function getMaintenanceCategories(
  */
 export const getVehicleMaintenances = async (vehicleId: string) => {
   try {
-    console.log(
-      `📍 [MAINTENANCE] Obteniendo mantenimientos del vehículo ${vehicleId}...`
-    );
-
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`
     );
-    console.log("📡 [MAINTENANCE] Respuesta del servidor:", response.status);
 
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(
-      "✅ [MAINTENANCE] Mantenimientos del vehículo obtenidos:",
-      data
-    );
 
     // Si el backend devuelve array directamente
     if (Array.isArray(data)) {
@@ -136,10 +114,6 @@ export const getVehicleMaintenances = async (vehicleId: string) => {
       message: "Mantenimientos del vehículo obtenidos exitosamente",
     };
   } catch (error) {
-    console.error(
-      "💥 [MAINTENANCE] Error al obtener mantenimientos del vehículo:",
-      error
-    );
     return {
       success: false,
       data: [],
@@ -157,11 +131,6 @@ export const saveVehicleMaintenances = async (
   maintenanceIds: string[]
 ) => {
   try {
-    console.log(
-      `📍 [MAINTENANCE] Guardando mantenimientos del vehículo ${vehicleId}...`
-    );
-    console.log(`🔧 [MAINTENANCE] Mantenimientos a guardar:`, maintenanceIds);
-
     const url = `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`;
 
     const response = await fetch(url, {
@@ -174,17 +143,11 @@ export const saveVehicleMaintenances = async (
       }),
     });
 
-    console.log("📡 [MAINTENANCE] Respuesta del servidor:", response.status);
-
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(
-      `✅ [MAINTENANCE] Mantenimientos guardados exitosamente:`,
-      data
-    );
 
     return {
       success: true,
@@ -192,7 +155,6 @@ export const saveVehicleMaintenances = async (
       message: "Mantenimientos guardados exitosamente",
     };
   } catch (error) {
-    console.error("💥 [MAINTENANCE] Error al guarrar mantenimientos:", error);
     return {
       success: false,
       data: null,

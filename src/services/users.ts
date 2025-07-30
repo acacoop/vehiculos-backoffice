@@ -1,10 +1,10 @@
 import type { User, UserFilterParams } from "../types/user";
-import { 
-  httpService, 
+import {
+  httpService,
   buildQueryParams,
-  type BackendResponse, 
-  type ServiceResponse, 
-  type PaginationParams
+  type BackendResponse,
+  type ServiceResponse,
+  type PaginationParams,
 } from "../common";
 import { ResponseStatus } from "../types/common";
 
@@ -26,7 +26,7 @@ export async function getAllUsers(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener usuarios"
+        message: response.message || "Error al obtener usuarios",
       };
     }
 
@@ -39,7 +39,7 @@ export async function getAllUsers(
       success: false,
       data: [],
       message: "Error al obtener usuarios",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -63,28 +63,28 @@ export async function getUsers(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener usuarios"
+        message: response.message || "Error al obtener usuarios",
       };
     }
-
-    console.log("Response from getUsers:", response);
 
     return {
       success: true,
       data: response.data,
-      pagination: response.pagination ? {
-        page: response.pagination.page,
-        pageSize: response.pagination.limit,
-        total: response.pagination.total,
-        pages: response.pagination.pages
-      } : undefined,
+      pagination: response.pagination
+        ? {
+            page: response.pagination.page,
+            pageSize: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages,
+          }
+        : undefined,
     };
   } catch (error) {
     return {
       success: false,
       data: [],
       message: "Error al obtener usuarios",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -99,7 +99,7 @@ export async function getUserById(id: string): Promise<ServiceResponse<User>> {
       return {
         success: false,
         data: {} as User,
-        message: response.message || "Error al obtener usuario"
+        message: response.message || "Error al obtener usuario",
       };
     }
 
@@ -112,7 +112,7 @@ export async function getUserById(id: string): Promise<ServiceResponse<User>> {
       success: false,
       data: {} as User,
       message: "Error al obtener usuario",
-      error: error as any
+      error: error as any,
     };
   }
 }
@@ -131,7 +131,8 @@ export async function updateUserStatus(
       return {
         success: false,
         data: {} as User,
-        message: response.message || "Error al actualizar el estado del usuario"
+        message:
+          response.message || "Error al actualizar el estado del usuario",
       };
     }
 
@@ -145,7 +146,7 @@ export async function updateUserStatus(
       success: false,
       data: {} as User,
       message: "Error al actualizar el estado del usuario",
-      error: error as any
+      error: error as any,
     };
   }
 }

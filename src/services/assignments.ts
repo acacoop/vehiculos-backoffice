@@ -227,21 +227,12 @@ export async function getAssignmentById(
       };
     }
 
-    console.log("✅ [ASSIGNMENTS] Asignación encontrada:", {
-      id: assignment.id,
-      hasUser: !!assignment.user,
-      hasVehicle: !!assignment.vehicle,
-      userFirstName: assignment.user?.firstName,
-      vehicleLicense: assignment.vehicle?.licensePlate,
-    });
-
     return {
       success: true,
       data: assignment,
       message: "Asignación encontrada exitosamente",
     };
   } catch (error) {
-    console.error("❌ [ASSIGNMENTS] Error al obtener asignación:", error);
     return {
       success: false,
       data: {} as Assignment,

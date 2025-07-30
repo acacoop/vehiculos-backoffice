@@ -176,7 +176,6 @@ export default function VehicleEditRegistration() {
   // Función para manejar el cambio de estado del vehículo (solo en modo edición)
   const handleVehicleStatusChange = (isActive: boolean) => {
     setIsVehicleActive(isActive);
-    console.log(`Vehículo ${isActive ? "reactivado" : "dado de baja"}`);
   };
 
   // Función para recibir datos del VehicleInfo (solo en modo creación)
@@ -202,8 +201,6 @@ export default function VehicleEditRegistration() {
     setIsRegistering(true);
 
     try {
-      console.log("🚗 Registrando nuevo vehículo...", vehicleData);
-
       const response = await createVehicle({
         licensePlate: vehicleData.licensePlate,
         brand: vehicleData.brand,
@@ -220,7 +217,6 @@ export default function VehicleEditRegistration() {
         alert(`Error al registrar vehículo: ${response.message}`);
       }
     } catch (error) {
-      console.error("Error al registrar vehículo:", error);
       alert("Error al registrar el vehículo");
     } finally {
       setIsRegistering(false);

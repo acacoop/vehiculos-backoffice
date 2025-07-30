@@ -61,7 +61,6 @@ export default function StatusToggle({
   };
 
   const updateEntityStatusInDB = async (newState: boolean) => {
-    console.log(`🔄 Updating ${entityType} ${entityId} to active: ${newState}`);
     setIsLoading(true);
 
     try {
@@ -69,11 +68,9 @@ export default function StatusToggle({
         const response = await updateUserStatus(entityId, newState);
 
         if (response.success) {
-          console.log(`✅ ${entityType} updated in backend:`, response.data);
           setIsActive(newState);
           if (onToggle) onToggle(newState);
         } else {
-          console.error(`❌ Error updating ${entityType}:`, response.message);
           alert(
             response.message ||
               `Error al actualizar el estado del ${
@@ -87,12 +84,10 @@ export default function StatusToggle({
         // const response = await updateVehicleStatus(entityId, newState);
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        console.log(`✅ ${entityType} updated successfully`);
         setIsActive(newState);
         if (onToggle) onToggle(newState);
       }
     } catch (error) {
-      console.error(`❌ Error updating ${entityType}:`, error);
       alert(
         `Error al actualizar el estado del ${
           entityType === "user" ? "usuario" : "vehículo"

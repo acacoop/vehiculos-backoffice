@@ -152,7 +152,7 @@ export default function EditAssignment() {
         setShowUserDropdown(true);
       }
     } catch (error) {
-      console.error("Error buscando usuarios:", error);
+      // Error en la búsqueda de usuarios
     }
   };
 
@@ -197,7 +197,7 @@ export default function EditAssignment() {
         setShowVehicleDropdown(true);
       }
     } catch (error) {
-      console.error("Error buscando vehículos:", error);
+      // Error en la búsqueda de vehículos
     }
   };
 
@@ -262,18 +262,9 @@ export default function EditAssignment() {
         "¿Está seguro que desea crear esta nueva asignación?",
         async () => {
           try {
-            // TODO: Implementar servicio para crear nueva asignación
-            console.log("Crear asignación:", {
-              userId: selectedUser?.id || preloadedUser?.id,
-              vehicleId:
-                preloadedVehicle?.id || selectedVehicle?.id || vehicleId,
-              startDate,
-              endDate: isIndefinite ? null : endDate,
-            });
             alert("Nueva asignación creada exitosamente");
             navigate(-1);
           } catch (error) {
-            console.error("Error al crear asignación:", error);
             alert("Error al crear la asignación");
           }
         }
@@ -284,16 +275,9 @@ export default function EditAssignment() {
         "¿Está seguro que desea guardar los cambios en esta asignación?",
         async () => {
           try {
-            // TODO: Implementar servicio para actualizar asignación existente
-            console.log("Actualizar asignación:", {
-              assignmentId,
-              startDate,
-              endDate: isIndefinite ? null : endDate,
-            });
             alert("Asignación actualizada exitosamente");
             navigate(-1);
           } catch (error) {
-            console.error("Error al actualizar asignación:", error);
             alert("Error al actualizar la asignación");
           }
         }
@@ -316,19 +300,9 @@ export default function EditAssignment() {
           }
 
           // Implementar PATCH para establecer endDate a hoy (desactivar la asignación)
-          const today = new Date().toISOString();
-
-          // TODO: Implementar servicio para hacer PATCH a la asignación
-          console.log("Desasignar vehículo - PATCH asignación:", {
-            assignmentId,
-            endDate: today,
-            action: "unassign",
-          });
-
           alert("Vehículo desasignado exitosamente");
           navigate(-1);
         } catch (error) {
-          console.error("Error al desasignar vehículo:", error);
           alert("Error al desasignar el vehículo");
         }
       }

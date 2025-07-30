@@ -1,8 +1,8 @@
-import type { PaginationParams } from '../types/common';
+import type { PaginationParams } from "../types/common";
 
 // Utilidades para transformar parámetros
 export function camelToKebabCase(str: string): string {
-  return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
 export function kebabToCamelCase(str: string): string {
@@ -10,27 +10,31 @@ export function kebabToCamelCase(str: string): string {
 }
 
 export function transformObjectKeys(
-  obj: Record<string, any>, 
+  obj: Record<string, any>,
   transformer: (key: string) => string
 ): Record<string, any> {
   const result: Record<string, any> = {};
-  
+
   Object.entries(obj).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       result[transformer(key)] = value;
     }
   });
-  
+
   return result;
 }
 
 // Transformar parámetros de camelCase a kebab-case (para enviar al backend)
-export function transformParamsToKebabCase(params: Record<string, any>): Record<string, any> {
+export function transformParamsToKebabCase(
+  params: Record<string, any>
+): Record<string, any> {
   return transformObjectKeys(params, camelToKebabCase);
 }
 
 // Transformar parámetros de kebab-case a camelCase (para recibir del backend)
-export function transformParamsToCamelCase(params: Record<string, any>): Record<string, any> {
+export function transformParamsToCamelCase(
+  params: Record<string, any>
+): Record<string, any> {
   return transformObjectKeys(params, kebabToCamelCase);
 }
 
@@ -45,9 +49,9 @@ export function buildQueryParams(
 
   // Agregar filtros si existen
   if (filters) {
-    const kebabParams = transformParamsToKebabCase(filters);
-    Object.entries(kebabParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
+    const camelParams = transformParamsToCamelCase(filters);
+    Object.entries(camelParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
         queryParams.append(key, value.toString());
       }
     });

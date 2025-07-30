@@ -120,8 +120,6 @@ export async function updateVehicle(
   vehicleData: Partial<Omit<Vehicle, "id" | "imgUrl">>
 ): Promise<ServiceResponse<Vehicle>> {
   try {
-    console.log(`🔄 Actualizando vehículo ${id} con:`, vehicleData);
-
     const response: BackendResponse<Vehicle> = await httpService.patch({
       uri: `/vehicles/${id}`,
       body: vehicleData,

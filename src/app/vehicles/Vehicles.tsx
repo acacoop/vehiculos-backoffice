@@ -21,8 +21,6 @@ export default function Vehicles() {
     try {
       const response = await getVehicles(undefined, pagination);
 
-      console.log("🚗 Vehicles - Respuesta de vehículos:", response);
-
       if (response.success) {
         const mappedData = response.data.map((vehicle: any, index: number) => {
           const mappedItem = {
@@ -33,11 +31,8 @@ export default function Vehicles() {
             year: vehicle.year?.toString() || "N/A",
           };
 
-          console.log("🔄 Vehicles - Item mapeado:", mappedItem);
           return mappedItem;
         });
-
-        console.log("✅ Vehicles - Datos finales mapeados:", mappedData);
 
         return {
           success: true,
@@ -45,7 +40,6 @@ export default function Vehicles() {
           pagination: response.pagination,
         };
       } else {
-        console.error("❌ Vehicles - Error en respuesta:", response.message);
         return {
           success: false,
           data: [],
@@ -53,7 +47,6 @@ export default function Vehicles() {
         };
       }
     } catch (error) {
-      console.error("❌ Vehicles - Error al cargar vehículos:", error);
       return {
         success: false,
         data: [],

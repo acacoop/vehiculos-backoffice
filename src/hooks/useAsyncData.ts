@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useIsMounted } from './useIsMounted';
+import { useState, useEffect } from "react";
+import { useIsMounted } from "./useIsMounted";
 
 interface UseAsyncDataOptions {
   immediate?: boolean; // Si debe ejecutarse inmediatamente
@@ -26,20 +26,17 @@ export function useAsyncData<T>(
 
   const fetchData = async () => {
     try {
-      console.log('🚀 [useAsyncData] Iniciando fetch...');
       if (isMounted()) setLoading(true);
       if (isMounted()) setError(null);
-      
+
       const result = await fetchFunction();
-      console.log('✅ [useAsyncData] Fetch completado:', result);
-      
+
       if (isMounted()) {
         setData(result);
       }
     } catch (err) {
-      console.error('❌ [useAsyncData] Error en fetch:', err);
       if (isMounted()) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setError(err instanceof Error ? err.message : "Error desconocido");
       }
     } finally {
       if (isMounted()) {
@@ -49,7 +46,6 @@ export function useAsyncData<T>(
   };
 
   useEffect(() => {
-    console.log('🔄 [useAsyncData] useEffect ejecutado, immediate:', options.immediate);
     if (options.immediate) {
       fetchData();
     }

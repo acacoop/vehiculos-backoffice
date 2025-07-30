@@ -211,7 +211,6 @@ export default function EntityForm({
           setError(response?.message || `Error al cargar ${entityType}`);
         }
       } catch (err) {
-        console.error(`❌ Error al cargar ${entityType}:`, err);
         setError(
           err instanceof Error ? err.message : `Error al cargar ${entityType}`
         );
@@ -257,15 +256,12 @@ export default function EntityForm({
             });
 
             if (response.success) {
-              console.log("✅ Vehículo actualizado exitosamente");
               setShowDialog(false);
             } else {
-              console.error("❌ Error al actualizar:", response.message);
               setError(response.message || "Error al actualizar vehículo");
             }
           } else {
             // Modo registro - guardar datos localmente
-            console.log("💾 Guardando datos del nuevo vehículo:", formData);
             setShowDialog(false);
             alert(
               "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
@@ -276,22 +272,18 @@ export default function EntityForm({
         case "technical":
           // Simular guardado de ficha técnica
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log("✅ Ficha técnica actualizada exitosamente");
           setShowDialog(false);
           break;
 
         case "user":
           // Para usuarios, solo mostrar confirmación (son read-only)
-          console.log("✅ Datos de usuario confirmados");
           setShowDialog(false);
           break;
 
         default:
-          console.log(`💾 Guardando datos de ${entityType}:`, formData);
           setShowDialog(false);
       }
     } catch (err) {
-      console.error(`❌ Error al actualizar ${entityType}:`, err);
       setError(
         err instanceof Error ? err.message : `Error al actualizar ${entityType}`
       );

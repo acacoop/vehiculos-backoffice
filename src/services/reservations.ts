@@ -54,16 +54,10 @@ export async function getReservations(
 ): Promise<ServiceResponse<Reservation[]>> {
   try {
     const queryParams = buildQueryParams(params, pagination);
-    console.log(
-      "🔄 Llamando al servicio con:",
-      `/reservations?${queryParams.toString()}`
-    );
 
     const response = await httpService.get({
       uri: `/reservations?${queryParams.toString()}`,
     });
-
-    console.log("📡 Respuesta cruda del httpService:", response);
 
     // El httpService devuelve directamente el array de datos
     // No está envuelto en BackendResponse como esperábamos
@@ -77,8 +71,6 @@ export async function getReservations(
       reservations = [];
     }
 
-    console.log("📋 Reservas procesadas:", reservations);
-
     return {
       success: true,
       data: reservations,
@@ -90,7 +82,6 @@ export async function getReservations(
       },
     };
   } catch (error) {
-    console.error("❌ Error en getReservations:", error);
     return {
       success: false,
       data: [],
@@ -141,8 +132,6 @@ export async function updateReservation(
   reservationData: Partial<Omit<Reservation, "id">>
 ): Promise<ServiceResponse<Reservation>> {
   try {
-    console.log(`🔄 Actualizando reserva ${id} con:`, reservationData);
-
     const response: BackendResponse<Reservation> = await httpService.patch({
       uri: `/reservations/${id}`,
       body: reservationData,
@@ -178,8 +167,6 @@ export async function createReservation(
   reservationData: Omit<Reservation, "id">
 ): Promise<ServiceResponse<Reservation>> {
   try {
-    console.log("📝 Creando nueva reserva:", reservationData);
-
     const response: BackendResponse<Reservation> = await httpService.post({
       uri: "/reservations",
       body: reservationData,
@@ -215,8 +202,6 @@ export async function deleteReservation(
   id: string
 ): Promise<ServiceResponse<void>> {
   try {
-    console.log(`🗑️ Eliminando reserva ${id}`);
-
     const response: BackendResponse<void> = await httpService.delete({
       uri: `/reservations/${id}`,
     });
@@ -252,19 +237,11 @@ export async function getReservationsByUser(
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Reservation[]>> {
   try {
-    console.log(`🔄 Obteniendo reservas del usuario ${userId}`);
-
     const queryParams = buildQueryParams({ userId }, pagination);
-    console.log(
-      "🔄 Llamando al servicio con:",
-      `/reservations?${queryParams.toString()}`
-    );
 
     const response = await httpService.get({
       uri: `/reservations?${queryParams.toString()}`,
     });
-
-    console.log("📡 Respuesta cruda del httpService:", response);
 
     // El httpService devuelve directamente el array de datos
     let reservations: Reservation[] = [];
@@ -277,8 +254,6 @@ export async function getReservationsByUser(
       reservations = [];
     }
 
-    console.log("📋 Reservas del usuario procesadas:", reservations);
-
     return {
       success: true,
       data: reservations,
@@ -290,7 +265,6 @@ export async function getReservationsByUser(
       },
     };
   } catch (error) {
-    console.error("❌ Error en getReservationsByUser:", error);
     return {
       success: false,
       data: [],

@@ -78,16 +78,9 @@ export function Table<T extends GridValidRowModel>({
     setLoading(true);
     try {
       // MUI usa páginas base 0, pero el backend usa páginas base 1
-      console.log("🔄 Fetching data with pagination:", {
-        page: page + 1,
-        limit: pageSize,
-      });
       const response = await getRows({ page: page + 1, limit: pageSize });
-      console.log("📊 Response from getRows:", response);
 
       if (response.success) {
-        console.log("✅ Setting rows:", response.data);
-        console.log("📊 Setting pagination:", response.pagination);
         setRows(response.data);
 
         // Actualizar información de paginación si está disponible
@@ -97,11 +90,9 @@ export function Table<T extends GridValidRowModel>({
           setRowCount(response.data?.length || 0);
         }
       } else {
-        console.error("Error fetching data:", response.message);
         setRows([]);
       }
     } catch (error) {
-      console.error("Error in fetchData:", error);
       setRows([]);
     } finally {
       setLoading(false);

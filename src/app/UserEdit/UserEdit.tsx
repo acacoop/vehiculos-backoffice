@@ -276,8 +276,8 @@ export default function UserEdit() {
           entityId={userData.id}
           entityType="user"
           active={userData.active ?? false}
-          onToggle={(newState: boolean) => {
-            console.log("Usuario actualizado:", newState);
+          onToggle={(_newState: boolean) => {
+            // Usuario actualizado
           }}
         />
       </div>

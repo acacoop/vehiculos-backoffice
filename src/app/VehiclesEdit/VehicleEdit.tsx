@@ -170,8 +170,8 @@ export default function VehicleEdit() {
           entityId={vehicleData.id}
           entityType="vehicle"
           active={true}
-          onToggle={(newState: boolean) => {
-            console.log("Vehículo actualizado:", newState);
+          onToggle={() => {
+            // Handle vehicle status change
           }}
         />
       </div>
