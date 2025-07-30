@@ -243,3 +243,59 @@ export async function deleteReservation(
     };
   }
 }
+
+/**
+ * Obtiene reservas de un usuario específico con paginación
+ */
+export async function getReservationsByUser(
+  userId: string,
+  pagination?: PaginationParams
+): Promise<ServiceResponse<Reservation[]>> {
+  try {
+    console.log(`🔄 Obteniendo reservas del usuario ${userId}`);
+
+    const queryParams = buildQueryParams({ userId }, pagination);
+    console.log(
+      "🔄 Llamando al servicio con:",
+      `/reservations?${queryParams.toString()}`
+    );
+
+    const response = await httpService.get({
+      uri: `/reservations?${queryParams.toString()}`,
+    });
+
+    console.log("📡 Respuesta cruda del httpService:", response);
+
+    // El httpService devuelve directamente el array de datos
+    let reservations: Reservation[] = [];
+
+    if (Array.isArray(response)) {
+      reservations = response;
+    } else if (response && typeof response === "object" && response.data) {
+      reservations = Array.isArray(response.data) ? response.data : [];
+    } else {
+      reservations = [];
+    }
+
+    console.log("📋 Reservas del usuario procesadas:", reservations);
+
+    return {
+      success: true,
+      data: reservations,
+      pagination: {
+        page: pagination?.page || 1,
+        pageSize: pagination?.limit || 20,
+        total: reservations.length,
+        pages: Math.ceil(reservations.length / (pagination?.limit || 20)),
+      },
+    };
+  } catch (error) {
+    console.error("❌ Error en getReservationsByUser:", error);
+    return {
+      success: false,
+      data: [],
+      message: "Error al obtener reservas del usuario",
+      error: error as any,
+    };
+  }
+}

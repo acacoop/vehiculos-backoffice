@@ -45,10 +45,9 @@ const getUsersData = async (
 export default function Users() {
   return (
     <main className="users-container">
-      <div className="users-header">
-        <h1 className="title">Gestión de usuarios</h1>
-      </div>
       <Table
+        showTableHeader={true}
+        headerTitle="Gestión de Usuarios"
         getRows={getUsersData}
         columns={userColumns}
         title=""

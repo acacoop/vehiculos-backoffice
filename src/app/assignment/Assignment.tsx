@@ -99,15 +99,15 @@ export default function Assignment() {
 
   return (
     <main className="assignment-container">
-      <div className="assignment-header">
-        <h1 className="title">Gestión de Asignaciones</h1>
-      </div>
       <Table<Assignment>
+        showTableHeader={true}
+        headerTitle="Gestión de Asignaciones"
         getRows={getAssignmentsData}
         columns={assignmentColumns}
         title=""
         showEditColumn={true}
         editRoute="/assignment/edit"
+        tableWidth="1200px"
       />
     </main>
   );

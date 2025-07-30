@@ -5,7 +5,7 @@
   padding: 20px;
   border-radius: 20px;
   flex-direction: column;
-  width: 800px;
+  width: 900px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
   height: auto;
@@ -87,12 +87,12 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: 0.3s ease, transform 0.2s ease;
   min-width: 120px;
 }
 
 .confirm-button:hover:not(:disabled) {
-  background-color: #1f1f4b;
+  background-color: #fe9000;
   transform: translateY(-1px);
 }
 

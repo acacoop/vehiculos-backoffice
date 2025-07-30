@@ -1,17 +1,7 @@
- .vehicles-container {
+.vehicles-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  justify-content: center;    
-  
-}
-
-
-.vehicles-title{
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #232d85;
-
+  justify-content: center;
 }

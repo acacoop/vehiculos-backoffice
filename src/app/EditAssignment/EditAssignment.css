@@ -1,8 +1,10 @@
 .edit-assignment-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  min-height: 100vh;
 }
 
 .edit-assignment-card {
@@ -11,6 +13,7 @@
   padding: 30px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  width: 1200px;
 }
 
 .title {
@@ -30,6 +33,7 @@
   border-left: 4px solid #fe9000;
   padding-left: 15px;
   border-radius: 4px;
+  text-align: start;
 }
 
 /* Información del usuario */
@@ -163,8 +167,7 @@
 }
 
 .button-confirm:hover {
-  background-color: #1f1f4b;
-  box-shadow: 0 4px 12px rgba(15, 7, 126, 0.3);
+  background-color: #1e2366; /* Más oscuro que #282d86 */
 }
 
 .button-cancel {
@@ -180,8 +183,24 @@
 }
 
 .button-cancel:hover {
-  background-color: #9c2222;
-  box-shadow: 0 4px 12px rgba(121, 26, 26, 0.322);
+  background-color: #c62828; /* Más oscuro que #e53935 */
+}
+
+.button-unassign {
+  text-transform: none;
+  padding: 8px 20px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.button-unassign:hover {
+  background-color: #f57c00; /* Más oscuro que #ff9800 */
 }
 
 /* Estados de carga y error */

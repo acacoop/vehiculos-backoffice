@@ -7,9 +7,11 @@ import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import Table from "../../components/Table/table";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
+import { getVehicleMaintenances } from "../../services/maintenances";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
-import type { PaginationParams } from "../../common";
+import type { Maintenance } from "../../types/maintenance";
+import type { PaginationParams, ServiceResponse } from "../../common";
 import "./VehicleEditRegistration.css";
 
 export default function VehicleEditRegistration() {
@@ -79,6 +81,24 @@ export default function VehicleEditRegistration() {
     },
   ];
 
+  // Definición de columnas para la tabla de mantenimientos
+  const maintenanceColumns: GridColDef<Maintenance>[] = [
+    {
+      field: "id",
+      headerName: "ID",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "name",
+      headerName: "Nombre del Mantenimiento",
+      width: 300,
+      flex: 1,
+      renderCell: (params) => params.row.name,
+    },
+  ];
+
   // Función para obtener asignaciones
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
@@ -91,6 +111,63 @@ export default function VehicleEditRegistration() {
         success: false,
         data: [],
         message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+        error: error as any,
+      };
+    }
+  };
+
+  // Función para obtener mantenimientos del vehículo
+  const getMaintenancesForTable = async (
+    paginationParams: PaginationParams
+  ): Promise<ServiceResponse<Maintenance[]>> => {
+    try {
+      if (!vehicleId) {
+        return {
+          success: false,
+          data: [],
+          message: "ID de vehículo no proporcionado",
+          error: undefined,
+        };
+      }
+
+      const response = await getVehicleMaintenances(vehicleId);
+
+      // Adaptar la respuesta para incluir paginación si es necesario
+      if (response.success) {
+        const data = response.data || [];
+
+        // Simular paginación local si el backend no la maneja
+        const { page = 1, limit = 20 } = paginationParams;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = data.slice(startIndex, endIndex);
+
+        return {
+          success: true,
+          data: paginatedData,
+          message: response.message,
+          pagination: {
+            page,
+            pageSize: limit,
+            total: data.length,
+            pages: Math.ceil(data.length / limit),
+          },
+        };
+      }
+
+      return {
+        success: response.success,
+        data: response.data || [],
+        message: response.message,
+        error: response.error,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener mantenimientos: ${
+          (error as Error)?.message
+        }`,
         error: error as any,
       };
     }
@@ -187,11 +264,20 @@ export default function VehicleEditRegistration() {
       {/* Ficha técnica - Siempre presente */}
       <EntityForm entityType="technical" showActions={!isCreateMode} />
 
-      {/* TODO: Agregar tabla de mantenimientos cuando esté disponible - Solo en modo edición */}
+      {/* Tabla de mantenimientos - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
-        <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-          <p>Tabla de mantenimientos - Pendiente de implementar</p>
-        </div>
+        <Table<Maintenance>
+          getRows={getMaintenancesForTable}
+          columns={maintenanceColumns}
+          title=""
+          showEditColumn={false}
+          showTableHeader={true}
+          headerTitle="Mantenimientos del Vehículo"
+          maxWidth="900px"
+          tableWidth="900px"
+          showAddButton={true}
+          addButtonText="+ Agregar mantenimiento"
+        />
       )}
 
       {/* Tabla de asignación de usuarios - Solo en modo edición */}

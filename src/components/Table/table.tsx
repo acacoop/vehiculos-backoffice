@@ -43,6 +43,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   onAddButtonClick?: () => void;
   maxWidth?: string;
   containerClassName?: string;
+  tableWidth?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -59,8 +60,9 @@ export function Table<T extends GridValidRowModel>({
   addButtonText = "+ Agregar",
   addButtonRoute = "",
   onAddButtonClick,
-  maxWidth = "900px",
+  maxWidth = "1200px",
   containerClassName = "",
+  tableWidth = "100%",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -182,7 +184,7 @@ export function Table<T extends GridValidRowModel>({
           borderRadius: 20,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           overflow: "auto",
-          width: "100%",
+          width: tableWidth,
           maxWidth: "1400px",
           maxHeight: "1000px",
         }}

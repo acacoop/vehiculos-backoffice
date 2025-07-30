@@ -5,12 +5,13 @@ import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
 import DniLicense from "../../components/DniLicense/DniLicense";
-import ReservePanel from "../../components/ReservePanel/ReservePanel";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
+import { getReservationsByUser } from "../../services/reservations";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
+import type { Reservation } from "../../types/reservation";
 import type { PaginationParams } from "../../common";
 import "./UserEdit.css";
 
@@ -74,6 +75,54 @@ export default function UserEdit() {
     },
   ];
 
+  // Definición de columnas para la tabla de reservas
+  const reservationColumns: GridColDef<Reservation>[] = [
+    {
+      field: "vehicleId",
+      headerName: "ID Vehículo",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => params.row.vehicleId || "N/A",
+    },
+    {
+      field: "startDate",
+      headerName: "Fecha Inicio",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.startDate) {
+          const date = new Date(params.row.startDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "Fecha Fin",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.endDate) {
+          const date = new Date(params.row.endDate);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "id",
+      headerName: "ID Reserva",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => params.row.id || "N/A",
+    },
+  ];
+
   // Función para obtener asignaciones del usuario
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     if (!userId) {
@@ -106,6 +155,43 @@ export default function UserEdit() {
         success: false,
         data: [],
         message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+      };
+    }
+  };
+
+  // Función para obtener reservas del usuario
+  const getReservationsForTable = async (
+    paginationParams: PaginationParams
+  ) => {
+    if (!userId) {
+      return {
+        success: false,
+        data: [],
+        message: "No se ha seleccionado ningún usuario",
+      };
+    }
+
+    try {
+      const response = await getReservationsByUser(userId, paginationParams);
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data,
+          pagination: response.pagination,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          data: [],
+          message: response.message,
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener reservas: ${(error as Error)?.message}`,
       };
     }
   };
@@ -224,8 +310,27 @@ export default function UserEdit() {
           maxWidth="900px"
         />
       </div>
+
+      <div className="user-edit-body">
+        <Table<Reservation>
+          getRows={getReservationsForTable}
+          columns={reservationColumns}
+          title=""
+          showEditColumn={false}
+          showTableHeader={true}
+          headerTitle={`Reservas de Vehículos${
+            userData ? ` de ${userData.firstName} ${userData.lastName}` : ""
+          }`}
+          showAddButton={true}
+          addButtonText="+ Nueva Reserva"
+          onAddButtonClick={() =>
+            navigate(`/reservations/create?userId=${userId}`)
+          }
+          maxWidth="900px"
+        />
+      </div>
+
       <DniLicense />
-      <ReservePanel />
     </main>
   );
 }

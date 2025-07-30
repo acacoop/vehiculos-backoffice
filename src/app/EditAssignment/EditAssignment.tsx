@@ -5,6 +5,8 @@ import { getVehicleById } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
 import { getVehicles } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
@@ -49,6 +51,15 @@ export default function EditAssignment() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
+
+  // Hook para diálogos de confirmación
+  const {
+    isOpen: isConfirmOpen,
+    message: confirmMessage,
+    showConfirm,
+    handleConfirm: confirmDialogConfirm,
+    handleCancel: confirmDialogCancel,
+  } = useConfirmDialog();
 
   useEffect(() => {
     const fetchAssignment = async () => {
@@ -246,24 +257,82 @@ export default function EditAssignment() {
         return;
       }
 
-      // TODO: Implementar servicio para crear nueva asignación
-      console.log("Crear asignación:", {
-        userId: selectedUser?.id || preloadedUser?.id,
-        vehicleId: preloadedVehicle?.id || selectedVehicle?.id || vehicleId,
-        startDate,
-        endDate: isIndefinite ? null : endDate,
-      });
-      alert("Nueva asignación creada exitosamente");
+      // Mostrar diálogo de confirmación para crear asignación
+      showConfirm(
+        "¿Está seguro que desea crear esta nueva asignación?",
+        async () => {
+          try {
+            // TODO: Implementar servicio para crear nueva asignación
+            console.log("Crear asignación:", {
+              userId: selectedUser?.id || preloadedUser?.id,
+              vehicleId:
+                preloadedVehicle?.id || selectedVehicle?.id || vehicleId,
+              startDate,
+              endDate: isIndefinite ? null : endDate,
+            });
+            alert("Nueva asignación creada exitosamente");
+            navigate(-1);
+          } catch (error) {
+            console.error("Error al crear asignación:", error);
+            alert("Error al crear la asignación");
+          }
+        }
+      );
     } else {
-      // TODO: Implementar servicio para actualizar asignación existente
-      alert("Asignación actualizada exitosamente");
+      // Mostrar diálogo de confirmación para actualizar asignación
+      showConfirm(
+        "¿Está seguro que desea guardar los cambios en esta asignación?",
+        async () => {
+          try {
+            // TODO: Implementar servicio para actualizar asignación existente
+            console.log("Actualizar asignación:", {
+              assignmentId,
+              startDate,
+              endDate: isIndefinite ? null : endDate,
+            });
+            alert("Asignación actualizada exitosamente");
+            navigate(-1);
+          } catch (error) {
+            console.error("Error al actualizar asignación:", error);
+            alert("Error al actualizar la asignación");
+          }
+        }
+      );
     }
-
-    navigate(-1);
   };
 
   const handleCancel = () => {
     navigate(-1);
+  };
+
+  const handleUnassign = async () => {
+    showConfirm(
+      "¿Está seguro que desea desasignar este vehículo? Esta acción establecerá la fecha de fin de la asignación a hoy y no se puede deshacer.",
+      async () => {
+        try {
+          if (!assignmentId) {
+            alert("ID de asignación no disponible");
+            return;
+          }
+
+          // Implementar PATCH para establecer endDate a hoy (desactivar la asignación)
+          const today = new Date().toISOString();
+
+          // TODO: Implementar servicio para hacer PATCH a la asignación
+          console.log("Desasignar vehículo - PATCH asignación:", {
+            assignmentId,
+            endDate: today,
+            action: "unassign",
+          });
+
+          alert("Vehículo desasignado exitosamente");
+          navigate(-1);
+        } catch (error) {
+          console.error("Error al desasignar vehículo:", error);
+          alert("Error al desasignar el vehículo");
+        }
+      }
+    );
   };
 
   if (loading) {
@@ -545,11 +614,24 @@ export default function EditAssignment() {
           <button onClick={handleCancel} className="button-cancel">
             Cancelar
           </button>
+          {!isCreateMode && (
+            <button onClick={handleUnassign} className="button-unassign">
+              Desasignar Vehículo
+            </button>
+          )}
           <button onClick={handleSave} className="button-confirm">
             {isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
           </button>
         </div>
       </div>
+
+      {/* Diálogo de confirmación */}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        message={confirmMessage}
+        onConfirm={confirmDialogConfirm}
+        onCancel={confirmDialogCancel}
+      />
     </div>
   );
 }
