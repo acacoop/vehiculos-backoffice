@@ -9,9 +9,9 @@ import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
+import { getVehicleById } from "../../services/vehicles";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
-import type { Reservation } from "../../types/reservation";
 import type { PaginationParams } from "../../common";
 import "./UserEdit.css";
 
@@ -84,11 +84,9 @@ export default function UserEdit() {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        // Si la reserva incluye información del vehículo
         if (params.row.vehicle) {
           return `${params.row.vehicle.brand} ${params.row.vehicle.model} (${params.row.vehicle.licensePlate})`;
         }
-        // Si solo tenemos el vehicleId, mostrarlo como fallback
         return params.row.vehicleId || "N/A";
       },
     },
@@ -207,9 +205,31 @@ export default function UserEdit() {
     try {
       const response = await getReservationsByUser(userId, paginationParams);
       if (response.success) {
+        // Enriquecer cada reserva con información completa del vehículo
+        const enrichedReservations = await Promise.all(
+          response.data.map(async (reservation: any) => {
+            if (reservation.vehicleId && !reservation.vehicle) {
+              try {
+                const vehicleResponse = await getVehicleById(
+                  reservation.vehicleId
+                );
+                if (vehicleResponse.success && vehicleResponse.data) {
+                  return {
+                    ...reservation,
+                    vehicle: vehicleResponse.data,
+                  };
+                }
+              } catch (error) {
+                // Si no se puede obtener la información del vehículo, continuar sin ella
+              }
+            }
+            return reservation;
+          })
+        );
+
         return {
           success: true,
-          data: response.data,
+          data: enrichedReservations,
           pagination: response.pagination,
           message: response.message,
         };
