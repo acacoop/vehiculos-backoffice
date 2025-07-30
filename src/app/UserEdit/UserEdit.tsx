@@ -76,14 +76,21 @@ export default function UserEdit() {
   ];
 
   // Definición de columnas para la tabla de reservas
-  const reservationColumns: GridColDef<Reservation>[] = [
+  const reservationColumns: GridColDef<any>[] = [
     {
-      field: "vehicleId",
-      headerName: "ID Vehículo",
-      width: 150,
+      field: "vehicle",
+      headerName: "Vehículo",
+      width: 200,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => params.row.vehicleId || "N/A",
+      renderCell: (params) => {
+        // Si la reserva incluye información del vehículo
+        if (params.row.vehicle) {
+          return `${params.row.vehicle.brand} ${params.row.vehicle.model} (${params.row.vehicle.licensePlate})`;
+        }
+        // Si solo tenemos el vehicleId, mostrarlo como fallback
+        return params.row.vehicleId || "N/A";
+      },
     },
     {
       field: "startDate",
@@ -114,12 +121,38 @@ export default function UserEdit() {
       },
     },
     {
-      field: "id",
-      headerName: "ID Reserva",
-      width: 200,
+      field: "status",
+      headerName: "Estado",
+      width: 100,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => params.row.id || "N/A",
+      renderCell: (params) => {
+        if (!params.row.startDate || !params.row.endDate) {
+          return "Sin estado";
+        }
+
+        const now = new Date();
+        const startDate = new Date(params.row.startDate);
+        const endDate = new Date(params.row.endDate);
+
+        if (now >= startDate && now <= endDate) {
+          return (
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>Activa</span>
+          );
+        } else if (now > endDate) {
+          return (
+            <span style={{ color: "#f44336", fontWeight: "bold" }}>
+              Finalizada
+            </span>
+          );
+        } else {
+          return (
+            <span style={{ color: "#ff9800", fontWeight: "bold" }}>
+              Programada
+            </span>
+          );
+        }
+      },
     },
   ];
 
@@ -312,7 +345,7 @@ export default function UserEdit() {
       </div>
 
       <div className="user-edit-body">
-        <Table<Reservation>
+        <Table<any>
           getRows={getReservationsForTable}
           columns={reservationColumns}
           title=""

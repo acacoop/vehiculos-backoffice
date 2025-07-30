@@ -6,6 +6,17 @@ export interface Reservation {
   endDate: string; // ISO date string
 }
 
+// Reserva con información del vehículo incluida
+export interface ReservationWithVehicle extends Reservation {
+  vehicle?: {
+    id: string;
+    licensePlate: string;
+    brand: string;
+    model: string;
+    year: number;
+  };
+}
+
 // Parámetros para filtrar reservas (camelCase para uso interno)
 export interface ReservationFilterParams {
   vehicleId?: string;
