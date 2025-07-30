@@ -82,20 +82,46 @@ export default function VehicleEditRegistration() {
   ];
 
   // Definición de columnas para la tabla de mantenimientos
-  const maintenanceColumns: GridColDef<Maintenance>[] = [
+  const maintenanceColumns: GridColDef<any>[] = [
     {
       field: "id",
-      headerName: "ID",
+      headerName: "ID Asignación",
       width: 150,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => params.row.id?.slice(0, 8) + "..." || "N/A",
     },
     {
-      field: "name",
-      headerName: "Nombre del Mantenimiento",
+      field: "maintenance_category_name",
+      headerName: "Categoría de Mantenimiento",
       width: 300,
       flex: 1,
-      renderCell: (params) => params.row.name,
+      renderCell: (params) =>
+        params.row.maintenance_category_name ||
+        params.row.name ||
+        "Sin categoría",
+    },
+    {
+      field: "kilometers_frequency",
+      headerName: "Frecuencia (KM)",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.kilometers_frequency;
+        return km ? `${km.toLocaleString()} km` : "N/A";
+      },
+    },
+    {
+      field: "days_frequency",
+      headerName: "Frecuencia (Días)",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const days = params.row.days_frequency;
+        return days ? `${days} días` : "N/A";
+      },
     },
   ];
 
@@ -119,7 +145,7 @@ export default function VehicleEditRegistration() {
   // Función para obtener mantenimientos del vehículo
   const getMaintenancesForTable = async (
     paginationParams: PaginationParams
-  ): Promise<ServiceResponse<Maintenance[]>> => {
+  ): Promise<ServiceResponse<any[]>> => {
     try {
       if (!vehicleId) {
         return {
@@ -262,7 +288,7 @@ export default function VehicleEditRegistration() {
 
       {/* Tabla de mantenimientos - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
-        <Table<Maintenance>
+        <Table<any>
           getRows={getMaintenancesForTable}
           columns={maintenanceColumns}
           title=""

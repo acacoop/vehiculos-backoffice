@@ -89,7 +89,7 @@ export async function getMaintenanceCategories(
 export const getVehicleMaintenances = async (vehicleId: string) => {
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`
+      `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`
     );
 
     if (!response.ok) {
@@ -107,7 +107,17 @@ export const getVehicleMaintenances = async (vehicleId: string) => {
       };
     }
 
-    // Si viene encapsulado en un objeto
+    // Si viene encapsulado en un objeto con status "success"
+    if (data.status === "success") {
+      return {
+        success: true,
+        data: data.data || [],
+        message:
+          data.message || "Mantenimientos del vehículo obtenidos exitosamente",
+      };
+    }
+
+    // Si viene encapsulado en un objeto sin status
     return {
       success: true,
       data: data.data || [],
