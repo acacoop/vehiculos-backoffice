@@ -8,8 +8,10 @@ import Table from "../../components/Table/table";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
+import { getReservationsByVehicle } from "../../services/reservations";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
+import type { ReservationWithUser } from "../../types/reservation";
 import type { PaginationParams, ServiceResponse } from "../../common";
 import "./VehicleEditRegistration.css";
 
@@ -124,6 +126,80 @@ export default function VehicleEditRegistration() {
     },
   ];
 
+  // Definición de columnas para la tabla de reservas
+  const reservationColumns: GridColDef<ReservationWithUser>[] = [
+    {
+      field: "user.lastName",
+      headerName: "Apellido",
+      width: 150,
+      renderCell: (params) => params.row.user?.lastName || "N/A",
+    },
+    {
+      field: "user.firstName",
+      headerName: "Nombre",
+      width: 150,
+      renderCell: (params) => params.row.user?.firstName || "N/A",
+    },
+    {
+      field: "startDate",
+      headerName: "Fecha y Hora Inicio",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.startDate) {
+          const date = new Date(params.row.startDate);
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "Fecha y Hora Fin",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.endDate) {
+          const date = new Date(params.row.endDate);
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "status",
+      headerName: "Estado",
+      width: 120,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const now = new Date();
+        const startDate = new Date(params.row.startDate);
+        const endDate = new Date(params.row.endDate);
+
+        if (now < startDate) {
+          return "Pendiente";
+        } else if (now >= startDate && now <= endDate) {
+          return "Activa";
+        } else {
+          return "Finalizada";
+        }
+      },
+    },
+  ];
+
   // Función para obtener asignaciones
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
@@ -193,6 +269,59 @@ export default function VehicleEditRegistration() {
         message: `Error al obtener mantenimientos: ${
           (error as Error)?.message
         }`,
+        error: error as any,
+      };
+    }
+  };
+
+  // Función para obtener reservas del vehículo con información del usuario
+  const getReservationsForTable = async (
+    paginationParams: PaginationParams
+  ): Promise<ServiceResponse<ReservationWithUser[]>> => {
+    try {
+      if (!vehicleId) {
+        return {
+          success: false,
+          data: [],
+          message: "ID de vehículo no proporcionado",
+          error: undefined,
+        };
+      }
+
+      const response = await getReservationsByVehicle(
+        vehicleId,
+        paginationParams
+      );
+
+      if (response.success) {
+        // Aquí necesitaríamos enriquecer los datos con información del usuario
+        // Por ahora, asumimos que el backend ya incluye esta información
+        return {
+          success: true,
+          data: response.data.data as ReservationWithUser[],
+          message: response.message,
+          pagination: {
+            page: paginationParams.page || 1,
+            pageSize: paginationParams.limit || 20,
+            total: response.data.total,
+            pages: Math.ceil(
+              response.data.total / (paginationParams.limit || 20)
+            ),
+          },
+        };
+      }
+
+      return {
+        success: response.success,
+        data: [],
+        message: response.message,
+        error: response.error,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener reservas: ${(error as Error)?.message}`,
         error: error as any,
       };
     }
@@ -319,6 +448,25 @@ export default function VehicleEditRegistration() {
                 ? `/assignment/create/${vehicleId}`
                 : "/assignment/create"
             )
+          }
+          maxWidth="900px"
+        />
+      )}
+
+      {/* Tabla de reservas - Solo en modo edición */}
+      {!isCreateMode && vehicleId && (
+        <Table<ReservationWithUser>
+          getRows={getReservationsForTable}
+          columns={reservationColumns}
+          title=""
+          showEditColumn={true}
+          editRoute="/reservation/edit"
+          showTableHeader={true}
+          headerTitle="Reservas del Vehículo"
+          showAddButton={true}
+          addButtonText="+ Nueva Reserva"
+          onAddButtonClick={() =>
+            navigate(`/reservation/create?vehicleId=${vehicleId}`)
           }
           maxWidth="900px"
         />

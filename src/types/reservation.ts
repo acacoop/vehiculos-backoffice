@@ -17,6 +17,17 @@ export interface ReservationWithVehicle extends Reservation {
   };
 }
 
+// Reserva con información del usuario incluida
+export interface ReservationWithUser extends Reservation {
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    dni: number;
+    email: string;
+  };
+}
+
 // Parámetros para filtrar reservas (camelCase para uso interno)
 export interface ReservationFilterParams {
   vehicleId?: string;

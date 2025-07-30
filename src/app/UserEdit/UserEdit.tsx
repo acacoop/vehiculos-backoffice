@@ -9,7 +9,6 @@ import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
-import { getVehicleById } from "../../services/vehicles";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams } from "../../common";
@@ -92,28 +91,38 @@ export default function UserEdit() {
     },
     {
       field: "startDate",
-      headerName: "Fecha Inicio",
-      width: 130,
+      headerName: "Fecha y Hora Inicio",
+      width: 180,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
         if (params.row.startDate) {
           const date = new Date(params.row.startDate);
-          return date.toLocaleDateString("es-AR");
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
         }
         return "Sin fecha";
       },
     },
     {
       field: "endDate",
-      headerName: "Fecha Fin",
-      width: 130,
+      headerName: "Fecha y Hora Fin",
+      width: 180,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
         if (params.row.endDate) {
           const date = new Date(params.row.endDate);
-          return date.toLocaleDateString("es-AR");
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
         }
         return "Sin fecha";
       },
@@ -205,31 +214,9 @@ export default function UserEdit() {
     try {
       const response = await getReservationsByUser(userId, paginationParams);
       if (response.success) {
-        // Enriquecer cada reserva con información completa del vehículo
-        const enrichedReservations = await Promise.all(
-          response.data.map(async (reservation: any) => {
-            if (reservation.vehicleId && !reservation.vehicle) {
-              try {
-                const vehicleResponse = await getVehicleById(
-                  reservation.vehicleId
-                );
-                if (vehicleResponse.success && vehicleResponse.data) {
-                  return {
-                    ...reservation,
-                    vehicle: vehicleResponse.data,
-                  };
-                }
-              } catch (error) {
-                // Si no se puede obtener la información del vehículo, continuar sin ella
-              }
-            }
-            return reservation;
-          })
-        );
-
         return {
           success: true,
-          data: enrichedReservations,
+          data: response.data,
           pagination: response.pagination,
           message: response.message,
         };
@@ -369,7 +356,8 @@ export default function UserEdit() {
           getRows={getReservationsForTable}
           columns={reservationColumns}
           title=""
-          showEditColumn={false}
+          showEditColumn={true}
+          editRoute="/reservation/edit"
           showTableHeader={true}
           headerTitle={`Reservas de Vehículos${
             userData ? ` de ${userData.firstName} ${userData.lastName}` : ""
@@ -377,7 +365,7 @@ export default function UserEdit() {
           showAddButton={true}
           addButtonText="+ Nueva Reserva"
           onAddButtonClick={() =>
-            navigate(`/reservations/create?userId=${userId}`)
+            navigate(`/reservation/create?userId=${userId}`)
           }
           maxWidth="900px"
         />

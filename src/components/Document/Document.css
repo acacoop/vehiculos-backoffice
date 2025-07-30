@@ -267,31 +267,31 @@
   text-align: center;
 }
 
-.form-group {
+.document-form-group {
   margin-bottom: 20px;
 }
 
-.form-group label {
+.document-form-group label {
   display: block;
   margin-bottom: 8px;
   color: #282d86;
   font-weight: 500;
 }
 
-.checkbox-label {
+.document-checkbox-label {
   display: flex !important;
   align-items: center;
   gap: 8px;
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
+.document-checkbox-label input[type="checkbox"] {
   margin: 0;
 }
 
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="file"] {
+.document-form-group input[type="text"],
+.document-form-group input[type="date"],
+.document-form-group input[type="file"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #cfd8dc;
@@ -301,8 +301,8 @@
   box-sizing: border-box;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="date"]:focus {
+.document-form-group input[type="text"]:focus,
+.document-form-group input[type="date"]:focus {
   border-color: #282d86;
   outline: none;
   background: #eef1fa;
@@ -323,14 +323,14 @@
   font-style: italic;
 }
 
-.form-actions {
+.document-form-actions {
   display: flex;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 30px;
 }
 
-.cancel-btn {
+.document-cancel-btn {
   padding: 10px 20px;
   background-color: #e53935;
   color: white;
@@ -341,11 +341,11 @@
   transition: background-color 0.3s;
 }
 
-.cancel-btn:hover {
+.document-cancel-btn:hover {
   background-color: #fe9000;
 }
 
-.submit-btn {
+.document-submit-btn {
   padding: 10px 20px;
   background-color: #282d86;
   color: white;
@@ -356,7 +356,7 @@
   transition: background-color 0.3s;
 }
 
-.submit-btn:hover {
+.document-submit-btn:hover {
   background-color: #fe9000;
 }
 
@@ -381,7 +381,7 @@
     padding: 20px;
   }
 
-  .form-actions {
+  .document-form-actions {
     flex-direction: column;
   }
 }

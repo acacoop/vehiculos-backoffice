@@ -271,7 +271,7 @@ export default function Document() {
               {editingDocument ? "Editar Documento" : "Agregar Nuevo Documento"}
             </h3>
             <form onSubmit={handleSubmit}>
-              <div className="form-group">
+              <div className="document-form-group">
                 <label htmlFor="title">Título del Documento *</label>
                 <input
                   type="text"
@@ -283,8 +283,8 @@ export default function Document() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="checkbox-label">
+              <div className="document-form-group">
+                <label className="document-checkbox-label">
                   <input
                     type="checkbox"
                     checked={hasExpiration}
@@ -295,7 +295,7 @@ export default function Document() {
               </div>
 
               {hasExpiration && (
-                <div className="form-group">
+                <div className="document-form-group">
                   <label htmlFor="expiration">Fecha de Vencimiento</label>
                   <input
                     type="date"
@@ -306,7 +306,7 @@ export default function Document() {
                 </div>
               )}
 
-              <div className="form-group">
+              <div className="document-form-group">
                 <label htmlFor="file-input">
                   Archivo del Documento {editingDocument ? "" : "*"}
                 </label>
@@ -329,15 +329,15 @@ export default function Document() {
                 )}
               </div>
 
-              <div className="form-actions">
+              <div className="document-form-actions">
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="cancel-btn"
+                  className="document-cancel-btn"
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="submit-btn">
+                <button type="submit" className="document-submit-btn">
                   Confirmar y Guardar
                 </button>
               </div>

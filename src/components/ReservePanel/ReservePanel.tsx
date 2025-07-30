@@ -67,7 +67,8 @@ export default function ReservePanel() {
           getRows={getReservationsForTable}
           columns={reservationColumns}
           title=""
-          showEditColumn={false}
+          showEditColumn={true}
+          editRoute="/reservation/edit"
         />
       </div>
     </div>

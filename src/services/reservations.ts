@@ -98,30 +98,56 @@ export async function getReservationById(
   id: string
 ): Promise<ServiceResponse<Reservation>> {
   try {
+    // Intentar primero con el endpoint específico
     const response: BackendResponse<Reservation> = await httpService.get({
       uri: `/reservations/${id}`,
     });
 
-    if (response.status === ResponseStatus.ERROR) {
+    if (response.status === ResponseStatus.SUCCESS) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    }
+  } catch (error) {
+    // Si el endpoint específico falla, intentar obtener desde la lista completa
+    console.warn(`Endpoint /reservations/${id} no disponible, buscando en lista completa`);
+    
+    try {
+      const allReservationsResponse = await getAllReservations();
+      
+      if (allReservationsResponse.success) {
+        const reservation = allReservationsResponse.data.find(r => r.id === id);
+        
+        if (reservation) {
+          return {
+            success: true,
+            data: reservation,
+          };
+        } else {
+          return {
+            success: false,
+            data: {} as Reservation,
+            message: `Reserva con ID ${id} no encontrada`,
+          };
+        }
+      }
+    } catch (fallbackError) {
+      // Si ambos fallan, devolver error
       return {
         success: false,
         data: {} as Reservation,
-        message: response.message || "Error al obtener reserva",
+        message: "Error al obtener reserva",
+        error: fallbackError as any,
       };
     }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as Reservation,
-      message: "Error al obtener reserva",
-      error: error as any,
-    };
   }
+
+  return {
+    success: false,
+    data: {} as Reservation,
+    message: "Error al obtener reserva",
+  };
 }
 
 /**
@@ -269,6 +295,42 @@ export async function getReservationsByUser(
       success: false,
       data: [],
       message: "Error al obtener reservas del usuario",
+      error: error as any,
+    };
+  }
+}
+
+/**
+ * Obtiene reservas por vehículo con paginación
+ */
+export async function getReservationsByVehicle(
+  vehicleId: string,
+  params?: PaginationParams & ReservationFilterParams
+): Promise<ServiceResponse<{ data: Reservation[]; total: number }>> {
+  try {
+    const queryParams = buildQueryParams(params);
+    const response: BackendResponse<{ data: Reservation[]; total: number }> =
+      await httpService.get({
+        uri: `/reservations/vehicle/${vehicleId}?${queryParams.toString()}`,
+      });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: { data: [], total: 0 },
+        message: response.message || "Error al obtener reservas del vehículo",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: { data: [], total: 0 },
+      message: "Error al obtener reservas del vehículo",
       error: error as any,
     };
   }

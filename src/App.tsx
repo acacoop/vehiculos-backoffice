@@ -9,6 +9,7 @@ import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRe
 import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
 import Assignaments from "./app/assignment/Assignment";
+import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
           path="/assignment/edit/:assignmentId"
           element={<EditAssignment />}
         />
+        <Route path="/reservation/create" element={<ReservationEdit />} />
+        <Route path="/reservation/edit/:id" element={<ReservationEdit />} />
         <Route path="/metrics" element={<Metrics />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/vehicle/edit/:id" element={<VehicleEditRegistration />} />
