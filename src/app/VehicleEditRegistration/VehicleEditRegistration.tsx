@@ -10,7 +10,6 @@ import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
-import type { Maintenance } from "../../types/maintenance";
 import type { PaginationParams, ServiceResponse } from "../../common";
 import "./VehicleEditRegistration.css";
 
