@@ -19,7 +19,7 @@ export default function Home() {
           <BentoHome
             icon={IconUserBlue}
             text="Gestión de Usuarios"
-            onClick={() => navigate("/user")}
+            onClick={() => navigate("/users")}
           />
           <BentoHome
             icon={IconCarBlue}
