@@ -306,51 +306,67 @@ export default function ReservationEdit() {
           <div className="reservation-form-section">
             <h3>Información del Usuario</h3>
 
-            <div className="reservation-form-group">
-              <label htmlFor="userSearch" className="reservation-form-label">
-                Buscar Usuario
-              </label>
-              <div className="user-search">
-                <input
-                  id="userSearch"
-                  type="text"
-                  value={userSearch}
-                  onChange={(e) => handleUserSearch(e.target.value)}
-                  onFocus={() =>
-                    userSearch.length > 2 && setShowUserDropdown(true)
-                  }
-                  onBlur={() =>
-                    setTimeout(() => setShowUserDropdown(false), 200)
-                  }
-                  placeholder="Buscar por nombre o DNI..."
-                  disabled={!isCreateMode && !!preloadedUserId}
-                  className="reservation-form-input"
-                />
-                {showUserDropdown && availableUsers.length > 0 && (
-                  <div className="user-dropdown">
-                    {availableUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="user-dropdown-item"
-                        onClick={() => handleUserSelect(user)}
-                      >
-                        {user.firstName} {user.lastName} - DNI: {user.dni}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {!preloadedUserId && (
+              <div className="reservation-form-group">
+                <label htmlFor="userSearch" className="reservation-form-label">
+                  Buscar Usuario
+                </label>
+                <div className="user-search">
+                  <input
+                    id="userSearch"
+                    type="text"
+                    value={userSearch}
+                    onChange={(e) => handleUserSearch(e.target.value)}
+                    onFocus={() =>
+                      userSearch.length > 2 && setShowUserDropdown(true)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => setShowUserDropdown(false), 200)
+                    }
+                    placeholder="Buscar por nombre o DNI..."
+                    className="reservation-form-input"
+                  />
+                  {showUserDropdown && availableUsers.length > 0 && (
+                    <div className="user-dropdown">
+                      {availableUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className="user-dropdown-item"
+                          onClick={() => handleUserSelect(user)}
+                        >
+                          {user.firstName} {user.lastName} - DNI: {user.dni}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {selectedUser && (
               <div className="reservation-form-group">
-                <label className="reservation-form-label">Usuario Seleccionado</label>
+                <label className="reservation-form-label">
+                  Usuario Seleccionado
+                </label>
                 <input
                   type="text"
                   value={`${selectedUser.firstName} ${selectedUser.lastName} - DNI: ${selectedUser.dni}`}
                   disabled
                   className="reservation-form-input"
                 />
+                {preloadedUserId && (
+                  <small
+                    style={{
+                      color: "#666",
+                      fontSize: "0.9rem",
+                      marginTop: "4px",
+                      display: "block",
+                    }}
+                  >
+                    Este usuario fue seleccionado automáticamente y no se puede
+                    cambiar.
+                  </small>
+                )}
               </div>
             )}
           </div>
@@ -359,51 +375,71 @@ export default function ReservationEdit() {
           <div className="reservation-form-section">
             <h3>Información del Vehículo</h3>
 
-            <div className="reservation-form-group">
-              <label htmlFor="vehicleSearch" className="reservation-form-label">
-                Buscar Vehículo
-              </label>
-              <div className="vehicle-search">
-                <input
-                  id="vehicleSearch"
-                  type="text"
-                  value={vehicleSearch}
-                  onChange={(e) => handleVehicleSearch(e.target.value)}
-                  onFocus={() =>
-                    vehicleSearch.length > 2 && setShowVehicleDropdown(true)
-                  }
-                  onBlur={() =>
-                    setTimeout(() => setShowVehicleDropdown(false), 200)
-                  }
-                  placeholder="Buscar por marca, modelo o patente..."
-                  disabled={!isCreateMode && !!preloadedVehicleId}
-                  className="reservation-form-input"
-                />
-                {showVehicleDropdown && availableVehicles.length > 0 && (
-                  <div className="vehicle-dropdown">
-                    {availableVehicles.map((vehicle) => (
-                      <div
-                        key={vehicle.id}
-                        className="vehicle-dropdown-item"
-                        onClick={() => handleVehicleSelect(vehicle)}
-                      >
-                        {vehicle.brand} {vehicle.model} - {vehicle.licensePlate}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {!preloadedVehicleId && (
+              <div className="reservation-form-group">
+                <label
+                  htmlFor="vehicleSearch"
+                  className="reservation-form-label"
+                >
+                  Buscar Vehículo
+                </label>
+                <div className="vehicle-search">
+                  <input
+                    id="vehicleSearch"
+                    type="text"
+                    value={vehicleSearch}
+                    onChange={(e) => handleVehicleSearch(e.target.value)}
+                    onFocus={() =>
+                      vehicleSearch.length > 2 && setShowVehicleDropdown(true)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => setShowVehicleDropdown(false), 200)
+                    }
+                    placeholder="Buscar por marca, modelo o patente..."
+                    className="reservation-form-input"
+                  />
+                  {showVehicleDropdown && availableVehicles.length > 0 && (
+                    <div className="vehicle-dropdown">
+                      {availableVehicles.map((vehicle) => (
+                        <div
+                          key={vehicle.id}
+                          className="vehicle-dropdown-item"
+                          onClick={() => handleVehicleSelect(vehicle)}
+                        >
+                          {vehicle.brand} {vehicle.model} -{" "}
+                          {vehicle.licensePlate}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {selectedVehicle && (
               <div className="reservation-form-group">
-                <label className="reservation-form-label">Vehículo Seleccionado</label>
+                <label className="reservation-form-label">
+                  Vehículo Seleccionado
+                </label>
                 <input
                   type="text"
                   value={`${selectedVehicle.brand} ${selectedVehicle.model} - ${selectedVehicle.licensePlate}`}
                   disabled
                   className="reservation-form-input"
                 />
+                {preloadedVehicleId && (
+                  <small
+                    style={{
+                      color: "#666",
+                      fontSize: "0.9rem",
+                      marginTop: "4px",
+                      display: "block",
+                    }}
+                  >
+                    Este vehículo fue seleccionado automáticamente y no se puede
+                    cambiar.
+                  </small>
+                )}
               </div>
             )}
           </div>
