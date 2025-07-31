@@ -108,6 +108,9 @@ export default function Assignment() {
         showEditColumn={true}
         editRoute="/assignment/edit"
         tableWidth="1200px"
+        showAddButton={true}
+        addButtonText="+ Agregar Asignación"
+        addButtonRoute="/assignment/create"
       />
     </main>
   );

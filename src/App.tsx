@@ -10,6 +10,8 @@ import Vehicles from "./app/vehicles/Vehicles";
 import Metrics from "./app/metrics/Metrics";
 import Assignaments from "./app/assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
+import MaintenancePage from "./app/maintenances/maintenances";
+import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 
 function App() {
   return (
@@ -35,6 +37,9 @@ function App() {
         <Route path="/vehicle/edit/:id" element={<VehicleEditRegistration />} />
         <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
         <Route path="/assignments" element={<Assignaments />} />
+        <Route path="/maintenances" element={<MaintenancePage />} />
+        <Route path="/maintenance/create" element={<EditMaintenance />} />
+        <Route path="/maintenance/edit/:id" element={<EditMaintenance />} />
       </Routes>
     </Router>
   );

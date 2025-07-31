@@ -22,21 +22,6 @@
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
-}
-
-@media (max-width: 900px) {
-  .home-content {
-    padding: 24px 0 0 12px;
-  }
-  .bento-home-container {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-
-@media screen and (min-width: 1500px) {
-  .home-header {
-    font-size: x-large;
-    font-weight: 600;
-  }
+  justify-content: center;
+  max-width: 900px;
 }

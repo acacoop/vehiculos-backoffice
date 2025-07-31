@@ -539,7 +539,7 @@ export default function EditAssignment() {
 
           <div className="form-group">
             <label htmlFor="startDate" className="form-label">
-              Fecha Desde *
+              Fecha Desde <span className="required">*</span>
             </label>
             <input
               type="date"

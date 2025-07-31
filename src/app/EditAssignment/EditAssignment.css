@@ -58,10 +58,8 @@
 
 .label {
   font-weight: 600;
-  color: #666;
+  color: #282d86;
   font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .value {
@@ -96,10 +94,15 @@
   gap: 10px;
 }
 
+.required {
+  color: #fe9000;
+  font-weight: bold;
+}
+
 .form-label {
   display: block;
   font-weight: 600;
-  color: #333;
+  color: #282d86;
   font-size: 1rem;
 }
 
@@ -127,17 +130,17 @@
 }
 
 .form-checkbox {
-  width: 18px;
+  width: 18px !important;
   height: 18px;
   accent-color: #fe9000;
 }
 
 .checkbox-label {
   font-size: 1rem;
-  color: #333;
+  color: #282d86 !important;
   cursor: pointer;
   user-select: none;
-  margin: 0;
+  margin: 0 !important;
 }
 
 /* Botones de acción */

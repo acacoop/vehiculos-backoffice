@@ -173,3 +173,114 @@ export const saveVehicleMaintenances = async (
     };
   }
 };
+
+/**
+ * Obtener un mantenimiento específico por ID
+ */
+export const getMaintenanceById = async (
+  id: string
+): Promise<ServiceResponse<Maintenance>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: data as Maintenance,
+      message: "Mantenimiento obtenido exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Maintenance,
+      message: "Error al obtener el mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Crear un nuevo mantenimiento
+ */
+export const createMaintenance = async (
+  maintenance: Omit<Maintenance, "id">
+): Promise<ServiceResponse<Maintenance>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/categories`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(maintenance),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: data as Maintenance,
+      message: "Mantenimiento creado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Maintenance,
+      message: "Error al crear el mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Actualizar un mantenimiento existente
+ */
+export const updateMaintenance = async (
+  id: string,
+  maintenance: Partial<Maintenance>
+): Promise<ServiceResponse<Maintenance>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(maintenance),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: data as Maintenance,
+      message: "Mantenimiento actualizado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Maintenance,
+      message: "Error al actualizar el mantenimiento",
+      error: error as any,
+    };
+  }
+};
