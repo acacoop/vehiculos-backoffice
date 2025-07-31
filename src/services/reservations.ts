@@ -111,14 +111,18 @@ export async function getReservationById(
     }
   } catch (error) {
     // Si el endpoint específico falla, intentar obtener desde la lista completa
-    console.warn(`Endpoint /reservations/${id} no disponible, buscando en lista completa`);
-    
+    console.warn(
+      `Endpoint /reservations/${id} no disponible, buscando en lista completa`
+    );
+
     try {
       const allReservationsResponse = await getAllReservations();
-      
+
       if (allReservationsResponse.success) {
-        const reservation = allReservationsResponse.data.find(r => r.id === id);
-        
+        const reservation = allReservationsResponse.data.find(
+          (r) => r.id === id
+        );
+
         if (reservation) {
           return {
             success: true,

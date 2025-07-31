@@ -83,9 +83,9 @@
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 12px 24px;
+  padding: 10px 16px;
   font-size: 16px;
-  font-weight: 600;
+
   cursor: pointer;
   transition: 0.3s ease, transform 0.2s ease;
   min-width: 120px;
