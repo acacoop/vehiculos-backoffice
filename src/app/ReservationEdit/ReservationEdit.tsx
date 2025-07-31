@@ -303,11 +303,11 @@ export default function ReservationEdit() {
 
         <div className="reservation-form">
           {/* Sección de Usuario */}
-          <div className="form-section">
+          <div className="reservation-form-section">
             <h3>Información del Usuario</h3>
 
-            <div className="form-group">
-              <label htmlFor="userSearch" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="userSearch" className="reservation-form-label">
                 Buscar Usuario
               </label>
               <div className="user-search">
@@ -324,7 +324,7 @@ export default function ReservationEdit() {
                   }
                   placeholder="Buscar por nombre o DNI..."
                   disabled={!isCreateMode && !!preloadedUserId}
-                  className="form-input"
+                  className="reservation-form-input"
                 />
                 {showUserDropdown && availableUsers.length > 0 && (
                   <div className="user-dropdown">
@@ -343,24 +343,24 @@ export default function ReservationEdit() {
             </div>
 
             {selectedUser && (
-              <div className="form-group">
-                <label className="form-label">Usuario Seleccionado</label>
+              <div className="reservation-form-group">
+                <label className="reservation-form-label">Usuario Seleccionado</label>
                 <input
                   type="text"
                   value={`${selectedUser.firstName} ${selectedUser.lastName} - DNI: ${selectedUser.dni}`}
                   disabled
-                  className="form-input"
+                  className="reservation-form-input"
                 />
               </div>
             )}
           </div>
 
           {/* Sección de Vehículo */}
-          <div className="form-section">
+          <div className="reservation-form-section">
             <h3>Información del Vehículo</h3>
 
-            <div className="form-group">
-              <label htmlFor="vehicleSearch" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="vehicleSearch" className="reservation-form-label">
                 Buscar Vehículo
               </label>
               <div className="vehicle-search">
@@ -377,7 +377,7 @@ export default function ReservationEdit() {
                   }
                   placeholder="Buscar por marca, modelo o patente..."
                   disabled={!isCreateMode && !!preloadedVehicleId}
-                  className="form-input"
+                  className="reservation-form-input"
                 />
                 {showVehicleDropdown && availableVehicles.length > 0 && (
                   <div className="vehicle-dropdown">
@@ -396,24 +396,24 @@ export default function ReservationEdit() {
             </div>
 
             {selectedVehicle && (
-              <div className="form-group">
-                <label className="form-label">Vehículo Seleccionado</label>
+              <div className="reservation-form-group">
+                <label className="reservation-form-label">Vehículo Seleccionado</label>
                 <input
                   type="text"
                   value={`${selectedVehicle.brand} ${selectedVehicle.model} - ${selectedVehicle.licensePlate}`}
                   disabled
-                  className="form-input"
+                  className="reservation-form-input"
                 />
               </div>
             )}
           </div>
 
           {/* Sección de Fechas */}
-          <div className="form-section">
+          <div className="reservation-form-section">
             <h3>Período de la Reserva</h3>
 
-            <div className="form-group">
-              <label htmlFor="startDate" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="startDate" className="reservation-form-label">
                 Fecha de Inicio
               </label>
               <input
@@ -423,12 +423,12 @@ export default function ReservationEdit() {
                 onChange={(e) => setStartDate(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
                 required
-                className="form-input"
+                className="reservation-form-input"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="endDate" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="endDate" className="reservation-form-label">
                 Fecha de Fin
               </label>
               <input
@@ -438,12 +438,12 @@ export default function ReservationEdit() {
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate || new Date().toISOString().split("T")[0]}
                 required
-                className="form-input"
+                className="reservation-form-input"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="startTime" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="startTime" className="reservation-form-label">
                 Hora de Inicio
               </label>
               <input
@@ -452,12 +452,12 @@ export default function ReservationEdit() {
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="form-input"
+                className="reservation-form-input"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="endTime" className="form-label">
+            <div className="reservation-form-group">
+              <label htmlFor="endTime" className="reservation-form-label">
                 Hora de Fin
               </label>
               <input
@@ -466,16 +466,16 @@ export default function ReservationEdit() {
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="form-input"
+                className="reservation-form-input"
               />
             </div>
           </div>
         </div>
 
-        <div className="form-actions">
+        <div className="reservation-form-actions">
           <button
             type="button"
-            className="btn btn-secondary"
+            className="reservation-btn reservation-btn-secondary"
             onClick={handleCancel}
             disabled={saving}
           >
@@ -483,7 +483,7 @@ export default function ReservationEdit() {
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="reservation-btn reservation-btn-primary"
             onClick={handleSave}
             disabled={saving}
           >
