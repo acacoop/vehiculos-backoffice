@@ -70,6 +70,7 @@
 .form-actions {
   display: flex;
   gap: 20px;
+  align-items: center;
   justify-content: center;
   margin-top: 40px;
   padding-top: 30px;
@@ -114,29 +115,4 @@
   justify-content: center;
   align-items: center;
   height: 400px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .edit-maintenance-container {
-    padding: 20px;
-  }
-
-  .edit-maintenance-title {
-    font-size: 28px;
-  }
-
-  .form-section {
-    padding: 20px;
-  }
-
-  .form-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .btn {
-    width: 100%;
-    max-width: 300px;
-  }
 }
