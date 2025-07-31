@@ -181,21 +181,46 @@ export const getMaintenanceById = async (
   id: string
 ): Promise<ServiceResponse<Maintenance>> => {
   try {
+    // Intentar primero el endpoint específico
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`
     );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        data: data as Maintenance,
+        message: "Mantenimiento obtenido exitosamente",
+      };
     }
 
-    const data = await response.json();
+    // Si el endpoint específico falla, usar fallback con getAllMaintenances
+    console.warn(
+      `Endpoint específico falló, usando fallback para mantenimiento ${id}`
+    );
 
-    return {
-      success: true,
-      data: data as Maintenance,
-      message: "Mantenimiento obtenido exitosamente",
-    };
+    const allMaintenancesResponse = await getMaintenanceCategories();
+
+    if (allMaintenancesResponse.success) {
+      const maintenance = allMaintenancesResponse.data.find((m) => m.id === id);
+
+      if (maintenance) {
+        return {
+          success: true,
+          data: maintenance,
+          message: "Mantenimiento obtenido exitosamente (fallback)",
+        };
+      } else {
+        return {
+          success: false,
+          data: {} as Maintenance,
+          message: "Mantenimiento no encontrado",
+        };
+      }
+    }
+
+    throw new Error(`HTTP error! status: ${response.status}`);
   } catch (error) {
     return {
       success: false,

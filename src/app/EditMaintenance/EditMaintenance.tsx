@@ -6,6 +6,8 @@ import {
   createMaintenance,
   updateMaintenance,
 } from "../../services/maintenances";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 
 import "./EditMaintenance.css";
 
@@ -24,6 +26,14 @@ export default function EditMaintenance({}: EditMaintenanceProps) {
   const [error, setError] = useState<string | null>(null);
   const [maintenanceName, setMaintenanceName] = useState("");
 
+  // ConfirmDialog hook
+  const {
+    isOpen,
+    message,
+    showConfirm,
+    handleConfirm,
+    handleCancel: handleDialogCancel,
+  } = useConfirmDialog();
   useEffect(() => {
     if (!isCreateMode && id) {
       loadMaintenance(id);
@@ -55,35 +65,37 @@ export default function EditMaintenance({}: EditMaintenanceProps) {
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    const actionText = isCreateMode ? "crear" : "actualizar";
+    const confirmMessage = `¿Está seguro que desea ${actionText} este mantenimiento?`;
 
-    try {
-      let response;
+    showConfirm(confirmMessage, async () => {
+      setSaving(true);
+      setError(null);
 
-      if (isCreateMode) {
-        response = await createMaintenance({ name: maintenanceName.trim() });
-      } else if (id) {
-        response = await updateMaintenance(id, {
-          name: maintenanceName.trim(),
-        });
+      try {
+        let response;
+
+        if (isCreateMode) {
+          response = await createMaintenance({ name: maintenanceName.trim() });
+        } else if (id) {
+          response = await updateMaintenance(id, {
+            name: maintenanceName.trim(),
+          });
+        }
+
+        if (response?.success) {
+          navigate("/maintenances");
+        } else {
+          setError(
+            response?.message || `Error al ${actionText} el mantenimiento`
+          );
+        }
+      } catch (err) {
+        setError(`Error al ${actionText} el mantenimiento`);
+      } finally {
+        setSaving(false);
       }
-
-      if (response?.success) {
-        navigate("/maintenances");
-      } else {
-        setError(
-          response?.message ||
-            `Error al ${isCreateMode ? "crear" : "actualizar"} el mantenimiento`
-        );
-      }
-    } catch (err) {
-      setError(
-        `Error al ${isCreateMode ? "crear" : "actualizar"} el mantenimiento`
-      );
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const handleCancel = () => {
@@ -116,6 +128,7 @@ export default function EditMaintenance({}: EditMaintenanceProps) {
 
       <div className="edit-maintenance-content">
         <div className="form-section">
+          <h3>Información del Mantenimiento</h3>
           <div className="form-group">
             <label htmlFor="maintenanceName" className="form-label">
               Nombre del Mantenimiento *
@@ -155,6 +168,13 @@ export default function EditMaintenance({}: EditMaintenanceProps) {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={isOpen}
+        message={message}
+        onConfirm={handleConfirm}
+        onCancel={handleDialogCancel}
+      />
     </div>
   );
 }
