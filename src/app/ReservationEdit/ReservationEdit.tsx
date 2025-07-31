@@ -354,19 +354,6 @@ export default function ReservationEdit() {
                   disabled
                   className="reservation-form-input"
                 />
-                {preloadedUserId && (
-                  <small
-                    style={{
-                      color: "#666",
-                      fontSize: "0.9rem",
-                      marginTop: "4px",
-                      display: "block",
-                    }}
-                  >
-                    Este usuario fue seleccionado automáticamente y no se puede
-                    cambiar.
-                  </small>
-                )}
               </div>
             )}
           </div>
@@ -427,19 +414,6 @@ export default function ReservationEdit() {
                   disabled
                   className="reservation-form-input"
                 />
-                {preloadedVehicleId && (
-                  <small
-                    style={{
-                      color: "#666",
-                      fontSize: "0.9rem",
-                      marginTop: "4px",
-                      display: "block",
-                    }}
-                  >
-                    Este vehículo fue seleccionado automáticamente y no se puede
-                    cambiar.
-                  </small>
-                )}
               </div>
             )}
           </div>

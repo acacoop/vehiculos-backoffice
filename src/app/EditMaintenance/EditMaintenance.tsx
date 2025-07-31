@@ -8,12 +8,9 @@ import {
 } from "../../services/maintenances";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-
 import "./EditMaintenance.css";
 
-interface EditMaintenanceProps {}
-
-export default function EditMaintenance({}: EditMaintenanceProps) {
+export default function EditMaintenance() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
