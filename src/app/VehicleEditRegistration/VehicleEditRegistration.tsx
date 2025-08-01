@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
@@ -20,16 +20,22 @@ export default function VehicleEditRegistration() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Determinar si estamos en modo creación o edición
   const isCreateMode = location.pathname.includes("/create");
   const vehicleId = id;
 
-  // Estados
   const [isVehicleActive, setIsVehicleActive] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+  const [refreshTables, setRefreshTables] = useState(0);
 
-  // Definición de columnas para la tabla de asignaciones
+  useEffect(() => {
+    const handleFocus = () => {
+      setRefreshTables((prev) => prev + 1);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
   const assignmentColumns: GridColDef<Assignment>[] = [
     {
       field: "user.dni",
@@ -73,16 +79,15 @@ export default function VehicleEditRegistration() {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        if (params.row.endDate) {
+        if (params.row.endDate && params.row.endDate.trim() !== "") {
           const date = new Date(params.row.endDate);
           return date.toLocaleDateString("es-AR");
         }
-        return "Activa";
+        return "Indefinida";
       },
     },
   ];
 
-  // Definición de columnas para la tabla de mantenimientos
   const maintenanceColumns: GridColDef<any>[] = [
     {
       field: "id",
@@ -126,7 +131,6 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  // Definición de columnas para la tabla de reservas
   const reservationColumns: GridColDef<ReservationWithUser>[] = [
     {
       field: "user.lastName",
@@ -200,10 +204,8 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  // Función para obtener asignaciones
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
-      // Filtrar por vehicleId si se proporciona
       const filterParams = vehicleId ? { vehicleId } : {};
       const response = await getAssignments(filterParams, paginationParams);
       return response;
@@ -217,7 +219,6 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  // Función para obtener mantenimientos del vehículo
   const getMaintenancesForTable = async (
     paginationParams: PaginationParams
   ): Promise<ServiceResponse<any[]>> => {
@@ -233,11 +234,8 @@ export default function VehicleEditRegistration() {
 
       const response = await getVehicleMaintenances(vehicleId);
 
-      // Adaptar la respuesta para incluir paginación si es necesario
       if (response.success) {
         const data = response.data || [];
-
-        // Simular paginación local si el backend no la maneja
         const { page = 1, limit = 20 } = paginationParams;
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
@@ -274,7 +272,6 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  // Función para obtener reservas del vehículo con información del usuario
   const getReservationsForTable = async (
     paginationParams: PaginationParams
   ): Promise<ServiceResponse<ReservationWithUser[]>> => {
@@ -293,28 +290,19 @@ export default function VehicleEditRegistration() {
         paginationParams
       );
 
-      if (response.success) {
-        // Aquí necesitaríamos enriquecer los datos con información del usuario
-        // Por ahora, asumimos que el backend ya incluye esta información
+      if (response.success && response.data) {
         return {
           success: true,
-          data: response.data.data as ReservationWithUser[],
+          data: response.data as ReservationWithUser[],
           message: response.message,
-          pagination: {
-            page: paginationParams.page || 1,
-            pageSize: paginationParams.limit || 20,
-            total: response.data.total,
-            pages: Math.ceil(
-              response.data.total / (paginationParams.limit || 20)
-            ),
-          },
+          pagination: response.pagination,
         };
       }
 
       return {
-        success: response.success,
+        success: false,
         data: [],
-        message: response.message,
+        message: response.message || "No se pudieron obtener las reservas",
         error: response.error,
       };
     } catch (error) {
@@ -326,25 +314,20 @@ export default function VehicleEditRegistration() {
       };
     }
   };
-
-  // Función para manejar el cambio de estado del vehículo (solo en modo edición)
   const handleVehicleStatusChange = (isActive: boolean) => {
     setIsVehicleActive(isActive);
   };
 
-  // Función para recibir datos del VehicleInfo (solo en modo creación)
   const handleVehicleChange = (vehicle: Vehicle | null) => {
     setVehicleData(vehicle);
   };
 
-  // Función para manejar el registro del vehículo (solo en modo creación)
   const handleVehicleRegistration = async () => {
     if (!vehicleData) {
       alert("Por favor completa la información del vehículo");
       return;
     }
 
-    // Validar campos obligatorios
     if (!vehicleData.licensePlate || !vehicleData.brand || !vehicleData.model) {
       alert(
         "Por favor completa todos los campos obligatorios (Patente, Marca, Modelo)"
@@ -365,7 +348,6 @@ export default function VehicleEditRegistration() {
 
       if (response.success) {
         alert("¡Vehículo registrado exitosamente!");
-        // Navegar de vuelta a la lista de vehículos
         navigate("/vehicles");
       } else {
         alert(`Error al registrar vehículo: ${response.message}`);
@@ -377,7 +359,6 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  // Validación para modo edición
   if (!isCreateMode && (!vehicleId || vehicleId.trim() === "")) {
     return (
       <div className="vehicle-edit-registration-container">
@@ -392,7 +373,6 @@ export default function VehicleEditRegistration() {
         {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
       </h2>
 
-      {/* Botón de estado del vehículo - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
         <StatusToggle
           entityId={vehicleId}
@@ -402,7 +382,6 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      {/* Información del vehículo - Siempre presente */}
       <EntityForm
         entityType="vehicle"
         entityId={isCreateMode ? undefined : vehicleId}
@@ -411,10 +390,8 @@ export default function VehicleEditRegistration() {
         showActions={!isCreateMode}
       />
 
-      {/* Ficha técnica - Siempre presente */}
       <EntityForm entityType="technical" showActions={!isCreateMode} />
 
-      {/* Tabla de mantenimientos - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
         <Table<any>
           getRows={getMaintenancesForTable}
@@ -430,7 +407,6 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      {/* Tabla de asignación de usuarios - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
         <Table<Assignment>
           getRows={getAssignmentsForTable}
@@ -453,9 +429,9 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      {/* Tabla de reservas - Solo en modo edición */}
       {!isCreateMode && vehicleId && (
         <Table<ReservationWithUser>
+          key={`reservations-${vehicleId}-${refreshTables}`}
           getRows={getReservationsForTable}
           columns={reservationColumns}
           title=""
@@ -472,10 +448,8 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      {/* Documentación - Siempre presente */}
       <Document />
 
-      {/* Botón de registro - Solo en modo creación */}
       {isCreateMode && (
         <div className="registration-actions">
           <button

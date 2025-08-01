@@ -65,11 +65,11 @@ export default function UserEdit() {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        if (params.row.endDate) {
+        if (params.row.endDate && params.row.endDate.trim() !== "") {
           const date = new Date(params.row.endDate);
           return date.toLocaleDateString("es-AR");
         }
-        return "Activa";
+        return "Indefinida";
       },
     },
   ];

@@ -122,6 +122,83 @@ export async function createAssignment(
 }
 
 /**
+ * Actualiza una asignación existente
+ */
+export async function updateAssignment(
+  assignmentId: string,
+  assignmentData: Partial<AssignmentInput>
+): Promise<ServiceResponse<Assignment>> {
+  try {
+    const response: BackendResponse<Assignment> = await httpService.patch({
+      uri: `/assignments/${assignmentId}`,
+      body: assignmentData,
+    });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: {} as Assignment,
+        message: response.message || "Error al actualizar asignación",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Asignación actualizada exitosamente",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      data: {} as Assignment,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Error al actualizar asignación",
+      error: error as any,
+    };
+  }
+}
+
+/**
+ * Finaliza una asignación estableciendo la fecha de fin
+ */
+export async function finishAssignment(
+  assignmentId: string,
+  endDate?: string
+): Promise<ServiceResponse<Assignment>> {
+  const finalEndDate = endDate || new Date().toISOString();
+
+  try {
+    const response: BackendResponse<Assignment> = await httpService.patch({
+      uri: `/assignments/${assignmentId}/finish`,
+      body: { endDate: finalEndDate },
+    });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: {} as Assignment,
+        message: response.message || "Error al finalizar asignación",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Asignación finalizada exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as Assignment,
+      message: "Error al finalizar asignación",
+      error: error as any,
+    };
+  }
+}
+
+/**
  * Obtiene asignaciones de un usuario específico (sin paginación)
  */
 export async function getAllAssignmentsByUser(

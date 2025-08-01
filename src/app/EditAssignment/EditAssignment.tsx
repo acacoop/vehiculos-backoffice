@@ -1,6 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getAssignmentById } from "../../services/assignments";
+import {
+  getAssignmentById,
+  createAssignment,
+  updateAssignment,
+  finishAssignment,
+} from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
 import { getVehicles } from "../../services/vehicles";
@@ -138,9 +143,7 @@ export default function EditAssignment() {
 
     try {
       const response = await getUsers({ active: true }, { page: 1, limit: 10 });
-
       if (response.success) {
-        // Filtrar usuarios por término de búsqueda
         const filteredUsers = response.data.filter(
           (user) =>
             user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,8 +154,9 @@ export default function EditAssignment() {
         setAvailableUsers(filteredUsers);
         setShowUserDropdown(true);
       }
-    } catch (error) {
-      // Error en la búsqueda de usuarios
+    } catch {
+      setAvailableUsers([]);
+      setShowUserDropdown(false);
     }
   };
 
@@ -181,9 +185,7 @@ export default function EditAssignment() {
 
     try {
       const response = await getVehicles({}, { page: 1, limit: 10 });
-
       if (response.success) {
-        // Filtrar vehículos por término de búsqueda
         const filteredVehicles = response.data.filter(
           (vehicle) =>
             vehicle.licensePlate
@@ -196,8 +198,9 @@ export default function EditAssignment() {
         setAvailableVehicles(filteredVehicles);
         setShowVehicleDropdown(true);
       }
-    } catch (error) {
-      // Error en la búsqueda de vehículos
+    } catch {
+      setAvailableVehicles([]);
+      setShowVehicleDropdown(false);
     }
   };
 
@@ -262,8 +265,30 @@ export default function EditAssignment() {
         "¿Está seguro que desea crear esta nueva asignación?",
         async () => {
           try {
-            alert("Nueva asignación creada exitosamente");
-            navigate(-1);
+            const finalUser = selectedUser || preloadedUser;
+            const finalVehicle = selectedVehicle || preloadedVehicle;
+
+            if (!finalUser || !finalVehicle) {
+              alert("Error: Usuario o vehículo no encontrado");
+              return;
+            }
+
+            const assignmentData = {
+              userId: finalUser.id,
+              vehicleId: finalVehicle.id,
+              startDate: startDate,
+              endDate: isIndefinite ? null : endDate || null,
+              active: true,
+            };
+
+            const response = await createAssignment(assignmentData);
+
+            if (response.success) {
+              alert("Nueva asignación creada exitosamente");
+              navigate(-1);
+            } else {
+              alert(`Error al crear la asignación: ${response.message}`);
+            }
           } catch (error) {
             alert("Error al crear la asignación");
           }
@@ -275,8 +300,44 @@ export default function EditAssignment() {
         "¿Está seguro que desea guardar los cambios en esta asignación?",
         async () => {
           try {
-            alert("Asignación actualizada exitosamente");
-            navigate(-1);
+            if (!assignmentId || !assignment) {
+              alert("Error: ID de asignación no disponible");
+              return;
+            }
+
+            // Preparar las fechas en formato ISO
+            const startDateISO = new Date(
+              startDate + "T00:00:00.000Z"
+            ).toISOString();
+            const endDateISO =
+              isIndefinite || !endDate
+                ? null
+                : new Date(endDate + "T23:59:59.000Z").toISOString();
+
+            const updateData: any = {
+              startDate: startDateISO,
+              endDate: endDateISO,
+            };
+
+            // Solo incluir userId y vehicleId si han cambiado
+            if (selectedUser && selectedUser.id !== assignment.user.id) {
+              updateData.userId = selectedUser.id;
+            }
+            if (
+              selectedVehicle &&
+              selectedVehicle.id !== assignment.vehicle.id
+            ) {
+              updateData.vehicleId = selectedVehicle.id;
+            }
+
+            const response = await updateAssignment(assignmentId, updateData);
+
+            if (response.success) {
+              alert("Asignación actualizada exitosamente");
+              navigate(-1);
+            } else {
+              alert(`Error al actualizar la asignación: ${response.message}`);
+            }
           } catch (error) {
             alert("Error al actualizar la asignación");
           }
@@ -299,9 +360,15 @@ export default function EditAssignment() {
             return;
           }
 
-          // Implementar PATCH para establecer endDate a hoy (desactivar la asignación)
-          alert("Vehículo desasignado exitosamente");
-          navigate(-1);
+          // Usar el servicio para finalizar la asignación
+          const response = await finishAssignment(assignmentId);
+
+          if (response.success) {
+            alert("Vehículo desasignado exitosamente");
+            navigate(-1);
+          } else {
+            alert(`Error al desasignar el vehículo: ${response.message}`);
+          }
         } catch (error) {
           alert("Error al desasignar el vehículo");
         }

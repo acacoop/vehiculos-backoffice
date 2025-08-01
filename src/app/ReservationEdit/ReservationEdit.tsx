@@ -61,8 +61,24 @@ export default function ReservationEdit() {
 
             setStartDate(startDateTime.toISOString().split("T")[0]); // Formato YYYY-MM-DD
             setEndDate(endDateTime.toISOString().split("T")[0]);
-            setStartTime(startDateTime.toTimeString().slice(0, 5)); // Formato HH:MM
-            setEndTime(endDateTime.toTimeString().slice(0, 5));
+
+            // Extraer hora en formato 24h (HH:MM)
+            const startHours = startDateTime
+              .getHours()
+              .toString()
+              .padStart(2, "0");
+            const startMinutes = startDateTime
+              .getMinutes()
+              .toString()
+              .padStart(2, "0");
+            const endHours = endDateTime.getHours().toString().padStart(2, "0");
+            const endMinutes = endDateTime
+              .getMinutes()
+              .toString()
+              .padStart(2, "0");
+
+            setStartTime(`${startHours}:${startMinutes}`);
+            setEndTime(`${endHours}:${endMinutes}`);
 
             // Cargar usuario y vehículo
             const [userResponse, vehicleResponse] = await Promise.all([

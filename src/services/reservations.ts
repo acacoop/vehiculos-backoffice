@@ -1,6 +1,7 @@
 import type {
   Reservation,
   ReservationFilterParams,
+  ReservationWithUser,
 } from "../types/reservation";
 import {
   httpService,
@@ -310,10 +311,10 @@ export async function getReservationsByUser(
 export async function getReservationsByVehicle(
   vehicleId: string,
   params?: PaginationParams & ReservationFilterParams
-): Promise<ServiceResponse<{ data: Reservation[]; total: number }>> {
+): Promise<ServiceResponse<ReservationWithUser[]>> {
   try {
     const queryParams = buildQueryParams(params);
-    const response: BackendResponse<{ data: Reservation[]; total: number }> =
+    const response: BackendResponse<ReservationWithUser[]> =
       await httpService.get({
         uri: `/reservations/vehicle/${vehicleId}?${queryParams.toString()}`,
       });
@@ -321,7 +322,7 @@ export async function getReservationsByVehicle(
     if (response.status === ResponseStatus.ERROR) {
       return {
         success: false,
-        data: { data: [], total: 0 },
+        data: [],
         message: response.message || "Error al obtener reservas del vehículo",
       };
     }
@@ -329,11 +330,19 @@ export async function getReservationsByVehicle(
     return {
       success: true,
       data: response.data,
+      pagination: response.pagination
+        ? {
+            page: response.pagination.page,
+            pageSize: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages,
+          }
+        : undefined,
     };
   } catch (error) {
     return {
       success: false,
-      data: { data: [], total: 0 },
+      data: [],
       message: "Error al obtener reservas del vehículo",
       error: error as any,
     };
