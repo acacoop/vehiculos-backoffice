@@ -24,6 +24,7 @@ export default function Assignment() {
       field: "user.name",
       headerName: "Usuario",
       width: 200,
+      valueGetter: (_, row) => `${row.user.firstName} ${row.user.lastName}`,
       renderCell: (params) =>
         `${params.row.user.firstName} ${params.row.user.lastName}`,
     },
@@ -31,12 +32,19 @@ export default function Assignment() {
       field: "vehicle.licensePlate",
       headerName: "Patente",
       width: 120,
+      valueGetter: (_, row) => row.vehicle?.licensePlate || "N/A",
       renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
     },
     {
       field: "vehicle.info",
       headerName: "Vehículo",
       width: 200,
+      valueGetter: (_, row) => {
+        const vehicle = row.vehicle;
+        return vehicle
+          ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
+          : "N/A";
+      },
       renderCell: (params) => {
         const vehicle = params.row.vehicle;
         return vehicle
@@ -86,6 +94,19 @@ export default function Assignment() {
       field: "status",
       headerName: "Estado",
       width: 100,
+      valueGetter: (_, row) => {
+        let isActive = true;
+        if (row.endDate) {
+          try {
+            const endDate = new Date(row.endDate);
+            const now = new Date();
+            isActive = endDate > now;
+          } catch {
+            isActive = false;
+          }
+        }
+        return isActive ? "Activa" : "Finalizada";
+      },
       renderCell: (params) => {
         let isActive = true;
         if (params.row.endDate) {
@@ -103,7 +124,11 @@ export default function Assignment() {
             label={isActive ? "Activa" : "Finalizada"}
             color={isActive ? "success" : "default"}
             size="small"
-            style={{ color: "#fff", fontWeight: 600 }}
+            style={{
+              color: "#fff",
+              fontWeight: 600,
+              backgroundColor: isActive ? undefined : "#E53935",
+            }}
           />
         );
       },

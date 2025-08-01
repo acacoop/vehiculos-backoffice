@@ -30,18 +30,21 @@ export default function UserEdit() {
       width: 70,
       headerAlign: "center",
       align: "center",
+      valueGetter: (_, row) => row.vehicle?.licensePlate || "N/A",
       renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
     },
     {
       field: "vehicle.brand",
       headerName: "Marca",
       width: 90,
+      valueGetter: (_, row) => row.vehicle?.brand || "N/A",
       renderCell: (params) => params.row.vehicle?.brand || "N/A",
     },
     {
       field: "vehicle.model",
       headerName: "Modelo",
       width: 90,
+      valueGetter: (_, row) => row.vehicle?.model || "N/A",
       renderCell: (params) => params.row.vehicle?.model || "N/A",
     },
     {
@@ -82,6 +85,12 @@ export default function UserEdit() {
       width: 200,
       headerAlign: "center",
       align: "center",
+      valueGetter: (_, row) => {
+        if (row.vehicle) {
+          return `${row.vehicle.brand} ${row.vehicle.model} (${row.vehicle.licensePlate})`;
+        }
+        return row.vehicleId || "N/A";
+      },
       renderCell: (params) => {
         if (params.row.vehicle) {
           return `${params.row.vehicle.brand} ${params.row.vehicle.model} (${params.row.vehicle.licensePlate})`;
@@ -133,6 +142,23 @@ export default function UserEdit() {
       width: 100,
       headerAlign: "center",
       align: "center",
+      valueGetter: (_, row) => {
+        if (!row.startDate || !row.endDate) {
+          return "Sin estado";
+        }
+
+        const now = new Date();
+        const startDate = new Date(row.startDate);
+        const endDate = new Date(row.endDate);
+
+        if (now >= startDate && now <= endDate) {
+          return "Activa";
+        } else if (now > endDate) {
+          return "Finalizada";
+        } else {
+          return "Programada";
+        }
+      },
       renderCell: (params) => {
         if (!params.row.startDate || !params.row.endDate) {
           return "Sin estado";
@@ -148,7 +174,7 @@ export default function UserEdit() {
           );
         } else if (now > endDate) {
           return (
-            <span style={{ color: "#f44336", fontWeight: "bold" }}>
+            <span style={{ color: "#E53935", fontWeight: "bold" }}>
               Finalizada
             </span>
           );
