@@ -4,7 +4,7 @@ import { CircularProgress, Alert } from "@mui/material";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
-import DniLicense from "../../components/DniLicense/DniLicense";
+import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
@@ -397,7 +397,37 @@ export default function UserEdit() {
         />
       </div>
 
-      <DniLicense />
+      <Document 
+        title="Documentos del Usuario"
+        initialDocuments={[
+          {
+            id: "1",
+            title: "DNI Frente",
+            fileName: "dni_frente.jpg",
+            uploadDate: "2024-01-15",
+          },
+          {
+            id: "2",
+            title: "DNI Dorso",
+            fileName: "dni_dorso.jpg",
+            uploadDate: "2024-01-15",
+          },
+          {
+            id: "3",
+            title: "Licencia Frente",
+            expirationDate: "2025-06-30",
+            fileName: "licencia_frente.jpg",
+            uploadDate: "2024-02-10",
+          },
+          {
+            id: "4",
+            title: "Licencia Dorso",
+            expirationDate: "2025-06-30",
+            fileName: "licencia_dorso.jpg",
+            uploadDate: "2024-02-10",
+          },
+        ]}
+      />
     </main>
   );
 }

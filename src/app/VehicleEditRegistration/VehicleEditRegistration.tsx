@@ -448,7 +448,38 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      <Document />
+      <Document 
+        title="Documentos del Vehículo"
+        initialDocuments={[
+          {
+            id: "1",
+            title: "Registro del Vehículo",
+            expirationDate: "2024-12-31",
+            fileName: "registro_vehiculo.pdf",
+            uploadDate: "2024-01-15",
+          },
+          {
+            id: "2",
+            title: "Seguro del Vehículo",
+            expirationDate: "2024-08-15",
+            fileName: "seguro_auto.pdf",
+            uploadDate: "2024-02-01",
+          },
+          {
+            id: "3",
+            title: "Revisión Técnica",
+            expirationDate: "2024-10-20",
+            fileName: "revision_tecnica.pdf",
+            uploadDate: "2024-03-10",
+          },
+          {
+            id: "4",
+            title: "Manual del Usuario",
+            fileName: "manual_usuario.pdf",
+            uploadDate: "2024-01-01",
+          },
+        ]}
+      />
 
       {isCreateMode && (
         <div className="registration-actions">

@@ -9,37 +9,17 @@ interface DocumentItem {
   uploadDate: string;
 }
 
-export default function Document() {
-  // Documentos hardcodeados iniciales
-  const [documents, setDocuments] = useState<DocumentItem[]>([
-    {
-      id: "1",
-      title: "Registro del Vehículo",
-      expirationDate: "2024-12-31",
-      fileName: "registro_vehiculo.pdf",
-      uploadDate: "2024-01-15",
-    },
-    {
-      id: "2",
-      title: "Seguro del Vehículo",
-      expirationDate: "2024-08-15",
-      fileName: "seguro_auto.pdf",
-      uploadDate: "2024-02-01",
-    },
-    {
-      id: "3",
-      title: "Revisión Técnica",
-      expirationDate: "2024-10-20",
-      fileName: "revision_tecnica.pdf",
-      uploadDate: "2024-03-10",
-    },
-    {
-      id: "4",
-      title: "Manual del Usuario",
-      fileName: "manual_usuario.pdf",
-      uploadDate: "2024-01-01",
-    },
-  ]);
+interface DocumentProps {
+  title?: string;
+  initialDocuments?: DocumentItem[];
+}
+
+export default function Document({ 
+  title = "Documentos", 
+  initialDocuments = [] 
+}: DocumentProps) {
+  // Documentos iniciales basados en props o valores por defecto
+  const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
 
   // Estados para el formulario
   const [showForm, setShowForm] = useState(false);
@@ -184,7 +164,7 @@ export default function Document() {
   return (
     <div className="document">
       <div className="document-header">
-        <h2>Documentos del Vehículo</h2>
+        <h2>{title}</h2>
         <button className="add-document-btn" onClick={() => setShowForm(true)}>
           + Agregar Documento
         </button>
