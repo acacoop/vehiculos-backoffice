@@ -448,7 +448,7 @@ export default function VehicleEditRegistration() {
         />
       )}
 
-      <Document 
+      <Document
         title="Documentos del Vehículo"
         initialDocuments={[
           {

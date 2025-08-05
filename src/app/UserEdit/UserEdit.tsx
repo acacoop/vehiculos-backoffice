@@ -397,7 +397,7 @@ export default function UserEdit() {
         />
       </div>
 
-      <Document 
+      <Document
         title="Documentos del Usuario"
         initialDocuments={[
           {

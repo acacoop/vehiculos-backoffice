@@ -14,9 +14,9 @@ interface DocumentProps {
   initialDocuments?: DocumentItem[];
 }
 
-export default function Document({ 
-  title = "Documentos", 
-  initialDocuments = [] 
+export default function Document({
+  title = "Documentos",
+  initialDocuments = [],
 }: DocumentProps) {
   // Documentos iniciales basados en props o valores por defecto
   const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
