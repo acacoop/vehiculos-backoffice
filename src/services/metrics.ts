@@ -101,10 +101,6 @@ export async function getReservationMetrics(): Promise<
     const vehicles = vehiclesResponse.success ? vehiclesResponse.data : [];
     const total = reservations.length;
 
-    console.log("Raw data - Reservations:", reservations.length, reservations);
-    console.log("Raw data - Users:", users.length, users);
-    console.log("Raw data - Vehicles:", vehicles.length, vehicles);
-
     // Crear mapas para búsqueda rápida
     const userMap = new Map(users.map((u) => [u.id, u]));
     const vehicleMap = new Map(vehicles.map((v) => [v.id, v]));
@@ -130,32 +126,41 @@ export async function getReservationMetrics(): Promise<
 
     // Agrupar por usuario
     const userCountMap: Record<string, number> = {};
-    reservations.forEach((r) => {
-      console.log("Processing reservation:", r);
-      const user = userMap.get(r.userId);
-      console.log("Found user for reservation:", user);
-      if (user) {
-        const userName = `${user.firstName} ${user.lastName}`;
+    reservations.forEach((r: any) => {
+      // El backend está devolviendo objetos user y vehicle incluidos
+      if (r.user) {
+        const userName = `${r.user.firstName} ${r.user.lastName}`;
         userCountMap[userName] = (userCountMap[userName] || 0) + 1;
+      } else if (r.userId) {
+        // Fallback a la estructura original con solo IDs
+        const user = userMap.get(r.userId);
+        if (user) {
+          const userName = `${user.firstName} ${user.lastName}`;
+          userCountMap[userName] = (userCountMap[userName] || 0) + 1;
+        }
       }
     });
-
-    console.log("Final userCountMap:", userCountMap);
 
     const byUser = Object.entries(userCountMap)
       .map(([userName, count]) => ({ userName, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10); // Top 10
 
-    console.log("Final byUser result:", byUser);
-
     // Agrupar por vehículo
     const vehicleCountMap: Record<string, number> = {};
-    reservations.forEach((r) => {
-      const vehicle = vehicleMap.get(r.vehicleId);
-      if (vehicle) {
-        const vehicleInfo = `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
+    reservations.forEach((r: any) => {
+      // El backend está devolviendo objetos vehicle incluidos
+      if (r.vehicle) {
+        const vehicleInfo = `${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.licensePlate})`;
         vehicleCountMap[vehicleInfo] = (vehicleCountMap[vehicleInfo] || 0) + 1;
+      } else if (r.vehicleId) {
+        // Fallback a la estructura original con solo IDs
+        const vehicle = vehicleMap.get(r.vehicleId);
+        if (vehicle) {
+          const vehicleInfo = `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
+          vehicleCountMap[vehicleInfo] =
+            (vehicleCountMap[vehicleInfo] || 0) + 1;
+        }
       }
     });
 

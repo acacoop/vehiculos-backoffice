@@ -41,11 +41,7 @@ export default function ReserveMetrics() {
         const response = await getReservationMetrics();
 
         if (response.success) {
-          console.log("Reservation metrics data:", response.data);
-          console.log("byUser data:", response.data.byUser);
           setMetrics(response.data);
-        } else {
-          console.error("Error response:", response.message);
         }
       } catch (error) {
         console.error("Error al obtener métricas de reservas:", error);
@@ -68,9 +64,6 @@ export default function ReserveMetrics() {
       </div>
     );
   }
-
-  // Mostrar datos para debugging
-  console.log("Rendering ReserveMetrics with data:", metrics);
 
   return (
     <div className="dashboard-metrics-container">
