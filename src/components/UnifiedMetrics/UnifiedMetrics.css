@@ -63,21 +63,21 @@
     margin-left: auto;
     margin-right: auto;
   }
-  
+
   .unified-metrics-row {
     flex-direction: row;
     justify-content: center;
     align-items: stretch;
     gap: 24px;
   }
-  
+
   .unified-metrics-card {
     width: 390px;
     min-width: 390px;
     min-height: 340px;
     height: 100%;
   }
-  
+
   .unified-metrics-card.wide {
     width: 100%;
     max-width: 820px;

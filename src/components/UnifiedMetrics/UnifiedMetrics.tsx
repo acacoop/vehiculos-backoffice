@@ -163,7 +163,9 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
         <div className="unified-metrics-card wide">
           <h3 className="unified-metrics-title">Reservas por mes</h3>
           {metrics.reservations.byMonth.length === 0 ? (
-            <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+            <div
+              style={{ padding: "20px", textAlign: "center", color: "#666" }}
+            >
               No hay datos de reservas por mes
             </div>
           ) : (
@@ -194,12 +196,17 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
             Top usuarios con más reservas
           </h3>
           {metrics.reservations.byUser.length === 0 ? (
-            <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+            <div
+              style={{ padding: "20px", textAlign: "center", color: "#666" }}
+            >
               No hay datos de usuarios con reservas
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={metrics.reservations.byUser.slice(0, 5)} layout="vertical">
+              <BarChart
+                data={metrics.reservations.byUser.slice(0, 5)}
+                layout="vertical"
+              >
                 <XAxis type="number" allowDecimals={false} stroke="#888" />
                 <YAxis
                   dataKey="userName"
@@ -298,7 +305,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
     const vehicleData = metrics.vehicles.byBrand.map((item) => ({
       brand: item.brand,
       count: item.count,
-      fullMark: Math.max(...metrics.vehicles.byBrand.map(v => v.count)),
+      fullMark: Math.max(...metrics.vehicles.byBrand.map((v) => v.count)),
     }));
 
     return (
@@ -339,10 +346,10 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
               <XAxis dataKey="month" stroke="#888" />
               <YAxis allowDecimals={false} stroke="#888" />
               <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="count" 
-                stroke="#FE9000" 
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="#FE9000"
                 strokeWidth={3}
                 dot={{ fill: "#282D86", strokeWidth: 2, r: 4 }}
               />
@@ -367,9 +374,9 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
               <XAxis dataKey="month" stroke="#888" />
               <YAxis allowDecimals={false} stroke="#888" />
               <Tooltip />
-              <Area 
-                type="monotone" 
-                dataKey="count" 
+              <Area
+                type="monotone"
+                dataKey="count"
                 stroke="#282D86"
                 fill="#282D86"
                 fillOpacity={0.3}
@@ -388,9 +395,14 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
     return (
       <div className="unified-metrics-container">
         <div className="unified-metrics-card wide">
-          <h3 className="unified-metrics-title">Top usuarios (Bar horizontal)</h3>
+          <h3 className="unified-metrics-title">
+            Top usuarios (Bar horizontal)
+          </h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={metrics.reservations.byUser.slice(0, 5)} layout="vertical">
+            <BarChart
+              data={metrics.reservations.byUser.slice(0, 5)}
+              layout="vertical"
+            >
               <XAxis type="number" allowDecimals={false} stroke="#888" />
               <YAxis
                 dataKey="userName"
@@ -424,13 +436,9 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
           <h3 className="unified-metrics-title">Métricas personalizadas</h3>
           <div style={{ padding: "40px", textAlign: "center", color: "#888" }}>
             <p>Aquí puedes agregar métricas personalizadas</p>
-            <div style={{ marginTop: "20px", fontSize: "2rem" }}>
-              📊
-            </div>
+            <div style={{ marginTop: "20px", fontSize: "2rem" }}>📊</div>
           </div>
-          <div className="unified-metrics-footer">
-            Panel personalizable
-          </div>
+          <div className="unified-metrics-footer">Panel personalizable</div>
         </div>
       </div>
     );
