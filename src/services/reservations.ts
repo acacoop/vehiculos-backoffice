@@ -2,6 +2,7 @@ import type {
   Reservation,
   ReservationFilterParams,
   ReservationWithUser,
+  ReservationWithDetails,
 } from "../types/reservation";
 import {
   httpService,
@@ -97,12 +98,13 @@ export async function getReservations(
  */
 export async function getReservationById(
   id: string
-): Promise<ServiceResponse<Reservation>> {
+): Promise<ServiceResponse<ReservationWithDetails>> {
   try {
     // Intentar primero con el endpoint específico
-    const response: BackendResponse<Reservation> = await httpService.get({
-      uri: `/reservations/${id}`,
-    });
+    const response: BackendResponse<ReservationWithDetails> =
+      await httpService.get({
+        uri: `/reservations/${id}`,
+      });
 
     if (response.status === ResponseStatus.SUCCESS) {
       return {
@@ -122,7 +124,7 @@ export async function getReservationById(
       if (allReservationsResponse.success) {
         const reservation = allReservationsResponse.data.find(
           (r) => r.id === id
-        );
+        ) as ReservationWithDetails;
 
         if (reservation) {
           return {
@@ -132,7 +134,7 @@ export async function getReservationById(
         } else {
           return {
             success: false,
-            data: {} as Reservation,
+            data: {} as ReservationWithDetails,
             message: `Reserva con ID ${id} no encontrada`,
           };
         }
@@ -141,7 +143,7 @@ export async function getReservationById(
       // Si ambos fallan, devolver error
       return {
         success: false,
-        data: {} as Reservation,
+        data: {} as ReservationWithDetails,
         message: "Error al obtener reserva",
         error: fallbackError as any,
       };
@@ -150,7 +152,7 @@ export async function getReservationById(
 
   return {
     success: false,
-    data: {} as Reservation,
+    data: {} as ReservationWithDetails,
     message: "Error al obtener reserva",
   };
 }

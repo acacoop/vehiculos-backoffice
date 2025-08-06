@@ -4,12 +4,12 @@ export interface Vehicle {
   brand: string;
   model: string;
   year: number;
-  imgUrl: string;
+  imgUrl?: string;
 }
 
 // Parámetros para filtrar vehículos (camelCase para uso interno)
 export interface VehicleFilterParams {
-  licensePlate?: string;  // Se convertirá a license-plate
+  licensePlate?: string; // Se convertirá a license-plate
   brand?: string;
   model?: string;
   year?: number;
@@ -17,7 +17,7 @@ export interface VehicleFilterParams {
 
 // Respuesta específica para vehículos
 export interface VehiclesApiResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: Vehicle[];
   pagination?: {

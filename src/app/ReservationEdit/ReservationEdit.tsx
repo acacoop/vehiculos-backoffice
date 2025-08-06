@@ -33,6 +33,12 @@ export default function ReservationEdit() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
+  // Estados para datos precargados
+  const [preloadedUser, setPreloadedUser] = useState<User | null>(null);
+  const [preloadedVehicle, setPreloadedVehicle] = useState<Vehicle | null>(
+    null
+  );
+
   // Estados de búsqueda
   const [userSearch, setUserSearch] = useState("");
   const [vehicleSearch, setVehicleSearch] = useState("");
@@ -80,24 +86,46 @@ export default function ReservationEdit() {
             setStartTime(`${startHours}:${startMinutes}`);
             setEndTime(`${endHours}:${endMinutes}`);
 
-            // Cargar usuario y vehículo
-            const [userResponse, vehicleResponse] = await Promise.all([
-              getUserById(reservation.userId),
-              getVehicleById(reservation.vehicleId),
-            ]);
+            // Manejar diferentes estructuras de datos del backend
+            let userId: string;
+            let vehicleId: string;
 
-            if (userResponse.success) {
-              setSelectedUser(userResponse.data);
+            if ("user" in reservation && reservation.user) {
+              // Nueva estructura: objetos user y vehicle incluidos
+              setSelectedUser(reservation.user);
               setUserSearch(
-                `${userResponse.data.firstName} ${userResponse.data.lastName}`
+                `${reservation.user.firstName} ${reservation.user.lastName}`
               );
+              userId = reservation.user.id;
+            } else if ("userId" in reservation) {
+              // Estructura original: solo IDs
+              userId = reservation.userId;
+              const userResponse = await getUserById(userId);
+              if (userResponse.success) {
+                setSelectedUser(userResponse.data);
+                setUserSearch(
+                  `${userResponse.data.firstName} ${userResponse.data.lastName}`
+                );
+              }
             }
 
-            if (vehicleResponse.success) {
-              setSelectedVehicle(vehicleResponse.data);
+            if ("vehicle" in reservation && reservation.vehicle) {
+              // Nueva estructura: objetos user y vehicle incluidos
+              setSelectedVehicle(reservation.vehicle);
               setVehicleSearch(
-                `${vehicleResponse.data.brand} ${vehicleResponse.data.model} (${vehicleResponse.data.licensePlate})`
+                `${reservation.vehicle.brand} ${reservation.vehicle.model} (${reservation.vehicle.licensePlate})`
               );
+              vehicleId = reservation.vehicle.id;
+            } else if ("vehicleId" in reservation) {
+              // Estructura original: solo IDs
+              vehicleId = reservation.vehicleId;
+              const vehicleResponse = await getVehicleById(vehicleId);
+              if (vehicleResponse.success) {
+                setSelectedVehicle(vehicleResponse.data);
+                setVehicleSearch(
+                  `${vehicleResponse.data.brand} ${vehicleResponse.data.model} (${vehicleResponse.data.licensePlate})`
+                );
+              }
             }
           } else {
             setError(response.message || "Error al cargar la reserva");
@@ -115,7 +143,7 @@ export default function ReservationEdit() {
             const userResponse = await getUserById(preloadedUserId);
             if (userResponse.success) {
               const user = userResponse.data;
-              setSelectedUser(user);
+              setPreloadedUser(user);
               setUserSearch(`${user.firstName} ${user.lastName}`);
             }
           }
@@ -124,7 +152,7 @@ export default function ReservationEdit() {
             const vehicleResponse = await getVehicleById(preloadedVehicleId);
             if (vehicleResponse.success) {
               const vehicle = vehicleResponse.data;
-              setSelectedVehicle(vehicle);
+              setPreloadedVehicle(vehicle);
               setVehicleSearch(
                 `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`
               );
@@ -140,6 +168,19 @@ export default function ReservationEdit() {
 
     loadInitialData();
   }, [isCreateMode, reservationId, preloadedUserId, preloadedVehicleId]);
+
+  // Sincronizar datos precargados con los seleccionados
+  useEffect(() => {
+    if (preloadedUser && !selectedUser) {
+      setSelectedUser(preloadedUser);
+    }
+  }, [preloadedUser, selectedUser]);
+
+  useEffect(() => {
+    if (preloadedVehicle && !selectedVehicle) {
+      setSelectedVehicle(preloadedVehicle);
+    }
+  }, [preloadedVehicle, selectedVehicle]);
 
   // Búsqueda de usuarios
   const handleUserSearch = async (searchTerm: string) => {
@@ -207,6 +248,46 @@ export default function ReservationEdit() {
       `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`
     );
     setShowVehicleDropdown(false);
+  };
+
+  // Función para limpiar la selección de usuario
+  const clearUserSelection = () => {
+    setSelectedUser(null);
+    setUserSearch("");
+    setAvailableUsers([]);
+    setShowUserDropdown(false);
+  };
+
+  // Función para limpiar la selección de vehículo
+  const clearVehicleSelection = () => {
+    setSelectedVehicle(null);
+    setVehicleSearch("");
+    setAvailableVehicles([]);
+    setShowVehicleDropdown(false);
+  };
+
+  // Función para verificar si se puede cambiar el usuario
+  const canChangeUser = () => {
+    // No se puede cambiar si estamos en modo editar (ya tiene usuario asignado)
+    if (!isCreateMode) return false;
+
+    // No se puede cambiar si el usuario viene precargado desde la URL
+    if (preloadedUser) return false;
+
+    // Solo se puede cambiar si el usuario fue seleccionado manualmente (no precargado)
+    return selectedUser !== null;
+  };
+
+  // Función para verificar si se puede cambiar el vehículo
+  const canChangeVehicle = () => {
+    // No se puede cambiar si estamos en modo editar (ya tiene vehículo asignado)
+    if (!isCreateMode) return false;
+
+    // No se puede cambiar si el vehículo viene precargado desde la URL
+    if (preloadedVehicle) return false;
+
+    // Solo se puede cambiar si el vehículo fue seleccionado manualmente
+    return selectedVehicle !== null;
   };
 
   // Validar formulario
@@ -319,10 +400,48 @@ export default function ReservationEdit() {
 
         <div className="reservation-form">
           {/* Sección de Usuario */}
-          <div className="reservation-form-section">
-            <h3>Información del Usuario</h3>
-
-            {!preloadedUserId && (
+          {selectedUser ? (
+            <div className="user-info">
+              <h2 className="section-title">
+                Información del Usuario
+                {canChangeUser() && (
+                  <button
+                    onClick={clearUserSelection}
+                    className="clear-selection-btn"
+                    style={{
+                      marginLeft: "10px",
+                      fontSize: "0.8rem",
+                      padding: "4px 8px",
+                    }}
+                  >
+                    Cambiar usuario
+                  </button>
+                )}
+              </h2>
+              <div className="user-details">
+                <div className="detail-item">
+                  <span className="label">DNI:</span>
+                  <span className="value">
+                    {selectedUser.dni?.toLocaleString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Nombre:</span>
+                  <span className="value">{selectedUser.firstName}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Apellido:</span>
+                  <span className="value">{selectedUser.lastName}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Email:</span>
+                  <span className="value">{selectedUser.email}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="reservation-form-section">
+              <h3>Información del Usuario</h3>
               <div className="reservation-form-group">
                 <label htmlFor="userSearch" className="reservation-form-label">
                   Buscar Usuario
@@ -357,28 +476,50 @@ export default function ReservationEdit() {
                   )}
                 </div>
               </div>
-            )}
-
-            {selectedUser && (
-              <div className="reservation-form-group">
-                <label className="reservation-form-label">
-                  Usuario Seleccionado
-                </label>
-                <input
-                  type="text"
-                  value={`${selectedUser.firstName} ${selectedUser.lastName} - DNI: ${selectedUser.dni}`}
-                  disabled
-                  className="reservation-form-input"
-                />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Sección de Vehículo */}
-          <div className="reservation-form-section">
-            <h3>Información del Vehículo</h3>
-
-            {!preloadedVehicleId && (
+          {selectedVehicle ? (
+            <div className="user-info">
+              <h2 className="section-title">
+                Información del Vehículo
+                {canChangeVehicle() && (
+                  <button
+                    onClick={clearVehicleSelection}
+                    className="clear-selection-btn"
+                    style={{
+                      marginLeft: "10px",
+                      fontSize: "0.8rem",
+                      padding: "4px 8px",
+                    }}
+                  >
+                    Cambiar vehículo
+                  </button>
+                )}
+              </h2>
+              <div className="user-details">
+                <div className="detail-item">
+                  <span className="label">Patente:</span>
+                  <span className="value">{selectedVehicle.licensePlate}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Marca:</span>
+                  <span className="value">{selectedVehicle.brand}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Modelo:</span>
+                  <span className="value">{selectedVehicle.model}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Año:</span>
+                  <span className="value">{selectedVehicle.year}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="reservation-form-section">
+              <h3>Información del Vehículo</h3>
               <div className="reservation-form-group">
                 <label
                   htmlFor="vehicleSearch"
@@ -417,42 +558,55 @@ export default function ReservationEdit() {
                   )}
                 </div>
               </div>
-            )}
-
-            {selectedVehicle && (
-              <div className="reservation-form-group">
-                <label className="reservation-form-label">
-                  Vehículo Seleccionado
-                </label>
-                <input
-                  type="text"
-                  value={`${selectedVehicle.brand} ${selectedVehicle.model} - ${selectedVehicle.licensePlate}`}
-                  disabled
-                  className="reservation-form-input"
-                />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Sección de Fechas */}
           <div className="reservation-form-section">
             <h3>Período de la Reserva</h3>
-
+            <div>
+              {" "}
+              <div className="reservation-form-group">
+                <label htmlFor="startTime" className="reservation-form-label">
+                  Hora de Inicio
+                </label>
+                <input
+                  id="startTime"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                  className="reservation-form-input"
+                />
+              </div>
+              <div className="reservation-form-group">
+                <label htmlFor="startDate" className="reservation-form-label">
+                  Fecha de Inicio
+                </label>
+                <input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                  className="reservation-form-input"
+                />
+              </div>
+            </div>
             <div className="reservation-form-group">
-              <label htmlFor="startDate" className="reservation-form-label">
-                Fecha de Inicio
+              <label htmlFor="endTime" className="reservation-form-label">
+                Hora de Fin
               </label>
               <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
+                id="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 required
                 className="reservation-form-input"
               />
             </div>
-
             <div className="reservation-form-group">
               <label htmlFor="endDate" className="reservation-form-label">
                 Fecha de Fin
@@ -463,34 +617,6 @@ export default function ReservationEdit() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate || new Date().toISOString().split("T")[0]}
-                required
-                className="reservation-form-input"
-              />
-            </div>
-
-            <div className="reservation-form-group">
-              <label htmlFor="startTime" className="reservation-form-label">
-                Hora de Inicio
-              </label>
-              <input
-                id="startTime"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-                className="reservation-form-input"
-              />
-            </div>
-
-            <div className="reservation-form-group">
-              <label htmlFor="endTime" className="reservation-form-label">
-                Hora de Fin
-              </label>
-              <input
-                id="endTime"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
                 required
                 className="reservation-form-input"
               />
