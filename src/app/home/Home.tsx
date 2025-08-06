@@ -5,7 +5,7 @@ import IconCarBlue from "../../assets/icons/car blue.svg";
 import IconSettingsBlue from "../../assets/icons/security blue.svg";
 import IconMaintenanceBlue from "../../assets/icons/maintenance blue.svg";
 import IconMetricsBlue from "../../assets/icons/metrics blue.svg";
-import DashboardMetrics from "../../components/DashboardMetrics/DashboardMetrics";
+import UnifiedMetrics from "../../components/UnifiedMetrics/UnifiedMetrics";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -45,7 +45,7 @@ export default function Home() {
           />
         </div>
         <div>
-          <DashboardMetrics />
+          <UnifiedMetrics type="dashboard" />
         </div>
       </div>
     </section>

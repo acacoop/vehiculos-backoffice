@@ -1,8 +1,0 @@
-.dashboard-metrics-card.wide {
-  width: 100%;
-  min-width: 350px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
