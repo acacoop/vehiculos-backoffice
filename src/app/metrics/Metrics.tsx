@@ -7,10 +7,11 @@ export default function Metrics() {
       <h1 className="title">Métricas</h1>
       <MetricsPanel type="usuariosPie" />
       <MetricsPanel type="usuariosBar" />
-      <MetricsPanel type="autosRadar" />
+      <MetricsPanel type="vehiclesRadar" />
       <MetricsPanel type="reservasLine" />
       <MetricsPanel type="reservasArea" />
       <MetricsPanel type="topUsuariosBar" />
+      <MetricsPanel type="custom" />
     </div>
   );
 }

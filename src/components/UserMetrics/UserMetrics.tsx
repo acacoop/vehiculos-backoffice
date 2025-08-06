@@ -1,4 +1,5 @@
-import users from "../../data/user.json";
+import { useState, useEffect } from "react";
+import { getUserMetrics } from "../../services/metrics";
 import "./UserMetrics.css";
 
 import {
@@ -11,17 +12,44 @@ import {
 } from "recharts";
 
 export default function UserMetrics() {
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u) => u.active).length;
-  const inactiveUsers = totalUsers - activeUsers;
-  const adminUsers = users.filter((u) => u.role === "administrador").length;
-  const userUsers = totalUsers - adminUsers;
+  const [userStats, setUserStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    activePercentage: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const porcentajeActivos =
-    totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
+  useEffect(() => {
+    const fetchUserMetrics = async () => {
+      try {
+        setLoading(true);
+        const response = await getUserMetrics();
 
-  const porcentajeAdmins =
-    totalUsers > 0 ? Math.round((adminUsers / totalUsers) * 100) : 0;
+        if (response.success) {
+          setUserStats(response.data);
+        }
+      } catch (error) {
+        console.error("Error al obtener métricas de usuarios:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="dashboard-metrics-row">
+        <div className="dashboard-metrics-card">
+          <h3 className="dashboard-metrics-title">
+            Cargando métricas de usuarios...
+          </h3>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-metrics-row">
@@ -31,8 +59,8 @@ export default function UserMetrics() {
           <PieChart>
             <Pie
               data={[
-                { name: "Activos", value: activeUsers },
-                { name: "Inactivos", value: inactiveUsers },
+                { name: "Activos", value: userStats.active },
+                { name: "Inactivos", value: userStats.inactive },
               ]}
               dataKey="value"
               nameKey="name"
@@ -51,17 +79,17 @@ export default function UserMetrics() {
           </PieChart>
         </ResponsiveContainer>
         <div className="dashboard-metrics-footer">
-          <b>{porcentajeActivos}%</b> de usuarios activos
+          <b>{userStats.activePercentage}%</b> de usuarios activos
         </div>
       </div>
       <div className="dashboard-metrics-card">
-        <h3 className="dashboard-metrics-title">Usuarios por rol</h3>
+        <h3 className="dashboard-metrics-title">Total de usuarios</h3>
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
               data={[
-                { name: "Administradores", value: adminUsers },
-                { name: "Usuarios", value: userUsers },
+                { name: "Total", value: userStats.total },
+                { name: "Activos", value: userStats.active },
               ]}
               dataKey="value"
               nameKey="name"
@@ -72,15 +100,15 @@ export default function UserMetrics() {
                 `${name}: ${(percent * 100).toFixed(0)}%`
               }
             >
-              <Cell key="admin" fill="#FE9000" />
-              <Cell key="user" fill="#282D86" />
+              <Cell key="total" fill="#FE9000" />
+              <Cell key="active" fill="#282D86" />
             </Pie>
             <Tooltip />
             <Legend />
           </PieChart>
         </ResponsiveContainer>
         <div className="dashboard-metrics-footer">
-          <b>{porcentajeAdmins}%</b> administradores
+          <b>{userStats.total}</b> usuarios en total
         </div>
       </div>
     </div>

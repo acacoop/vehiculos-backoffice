@@ -31,3 +31,26 @@
   color: #555;
   font-size: 0.98em;
 }
+
+.custom-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.custom-metrics p {
+  margin: 0;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #333;
+  width: 100%;
+}
+
+.dashboard-metrics-footer {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #666;
+}

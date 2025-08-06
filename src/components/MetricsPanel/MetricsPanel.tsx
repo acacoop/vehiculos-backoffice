@@ -1,5 +1,6 @@
-import users from "../../data/user.json";
-import reservas from "../../data/reservas.json";
+import { useState, useEffect } from "react";
+import { getDashboardMetrics } from "../../services/metrics";
+import type { DashboardMetrics } from "../../services/metrics";
 import "./MetricsPanel.css";
 import {
   PieChart,
@@ -38,7 +39,7 @@ const COLORS = [
 type MetricsPanelType =
   | "usuariosPie"
   | "usuariosBar"
-  | "autosRadar"
+  | "vehiclesRadar"
   | "reservasLine"
   | "reservasArea"
   | "topUsuariosBar"
@@ -49,27 +50,47 @@ interface MetricsPanelProps {
 }
 
 export default function MetricsPanel({ type }: MetricsPanelProps) {
-  // --- Datos base ---
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u) => u.active).length;
-  const inactiveUsers = totalUsers - activeUsers;
-  const adminUsers = users.filter((u) => u.role === "administrador").length;
-  const userUsers = totalUsers - adminUsers;
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const reservasPorMes = (() => {
-    const map: Record<string, number> = {};
-    reservas.forEach((r) => {
-      map[r.mes] = (map[r.mes] || 0) + 1;
-    });
-    return Object.entries(map).map(([mes, count]) => ({ mes, count }));
-  })();
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        setLoading(true);
+        const response = await getDashboardMetrics();
 
-  const reservasPorUsuario = users
-    .map((u) => ({
-      name: u.name,
-      reservas: u.reservas ? u.reservas.length : 0,
-    }))
-    .filter((u) => u.reservas > 0);
+        if (response.success) {
+          setMetrics(response.data);
+        }
+      } catch (error) {
+        console.error("Error al obtener métricas del dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="metrics-panel-container">
+        <div className="metrics-panel">
+          <h3>Cargando métricas...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  if (!metrics) {
+    return (
+      <div className="metrics-panel-container">
+        <div className="metrics-panel">
+          <h3>Error al cargar métricas</h3>
+        </div>
+      </div>
+    );
+  }
 
   if (type === "usuariosPie") {
     return (
@@ -80,8 +101,8 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
             <PieChart>
               <Pie
                 data={[
-                  { name: "Activos", value: activeUsers },
-                  { name: "Inactivos", value: inactiveUsers },
+                  { name: "Activos", value: metrics.users.active },
+                  { name: "Inactivos", value: metrics.users.inactive },
                 ]}
                 dataKey="value"
                 nameKey="name"
@@ -100,13 +121,7 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
             </PieChart>
           </ResponsiveContainer>
           <div className="dashboard-metrics-footer">
-            <b>
-              {totalUsers > 0
-                ? Math.round((activeUsers / totalUsers) * 100)
-                : 0}
-              %
-            </b>{" "}
-            de usuarios activos
+            <b>{metrics.users.activePercentage}%</b> de usuarios activos
           </div>
         </div>
       </div>
@@ -117,12 +132,12 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
     return (
       <div className="metrics-panel-container">
         <div className="metrics-panel">
-          <h3>Usuarios por rol (Bar)</h3>
+          <h3>Estado de usuarios (Bar)</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={[
-                { name: "Administradores", value: adminUsers },
-                { name: "Usuarios", value: userUsers },
+                { name: "Activos", value: metrics.users.active },
+                { name: "Inactivos", value: metrics.users.inactive },
               ]}
             >
               <CartesianGrid strokeDasharray="3 3" />
@@ -130,8 +145,8 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
               <YAxis allowDecimals={false} />
               <Tooltip />
               <Bar dataKey="value" fill="#FE9000">
-                <Cell fill="#FE9000" />
                 <Cell fill="#282D86" />
+                <Cell fill="#bdbdbd" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -140,28 +155,19 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
     );
   }
 
-  if (type === "autosRadar") {
-    // Radar de cantidad de autos por marca (ejemplo simple)
-    const marcas = users.reduce((acc: Record<string, number>, u) => {
-      if (u.car) acc[u.car] = (acc[u.car] || 0) + 1;
-      return acc;
-    }, {});
-    const data = Object.entries(marcas).map(([marca, count]) => ({
-      marca,
-      cantidad: count,
-    }));
+  if (type === "vehiclesRadar") {
     return (
       <div className="metrics-panel-container">
         <div className="metrics-panel">
-          <h3>Autos por modelo (Radar)</h3>
+          <h3>Vehículos por marca (Radar)</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={data.slice(0, 8)}>
+            <RadarChart data={metrics.vehicles.byBrand.slice(0, 8)}>
               <PolarGrid />
-              <PolarAngleAxis dataKey="marca" />
+              <PolarAngleAxis dataKey="brand" />
               <PolarRadiusAxis />
               <Radar
-                name="Autos"
-                dataKey="cantidad"
+                name="Vehículos"
+                dataKey="count"
                 stroke="#282D86"
                 fill="#282D86"
                 fillOpacity={0.6}
@@ -180,9 +186,9 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
         <div className="metrics-panel">
           <h3>Reservas por mes (Line)</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={reservasPorMes}>
+            <LineChart data={metrics.reservations.byMonth}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
+              <XAxis dataKey="month" />
               <YAxis allowDecimals={false} />
               <Tooltip />
               <Line
@@ -205,9 +211,9 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
         <div className="metrics-panel">
           <h3>Reservas por mes (Area)</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={reservasPorMes}>
+            <AreaChart data={metrics.reservations.byMonth}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
+              <XAxis dataKey="month" />
               <YAxis allowDecimals={false} />
               <Tooltip />
               <Area
@@ -231,16 +237,14 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
           <h3>Top usuarios con más reservas (Bar horizontal)</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart
-              data={reservasPorUsuario
-                .sort((a, b) => b.reservas - a.reservas)
-                .slice(0, 5)}
+              data={metrics.reservations.byUser.slice(0, 5)}
               layout="vertical"
             >
               <XAxis type="number" allowDecimals={false} />
-              <YAxis dataKey="name" type="category" width={120} />
+              <YAxis dataKey="userName" type="category" width={120} />
               <Tooltip />
-              <Bar dataKey="reservas" fill="#282D86">
-                {reservasPorUsuario.map((_, index) => (
+              <Bar dataKey="count" fill="#282D86">
+                {metrics.reservations.byUser.slice(0, 5).map((_, index) => (
                   <Cell
                     key={`cell-user-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -260,7 +264,21 @@ export default function MetricsPanel({ type }: MetricsPanelProps) {
       <div className="metrics-panel-container">
         <div className="metrics-panel">
           <h3>Panel Personalizado</h3>
-          <p>Aquí puedes mostrar cualquier métrica o gráfico que desees.</p>
+          <div className="custom-metrics">
+            <p>
+              <strong>Total de usuarios:</strong> {metrics.users.total}
+            </p>
+            <p>
+              <strong>Total de reservas:</strong> {metrics.reservations.total}
+            </p>
+            <p>
+              <strong>Total de vehículos:</strong> {metrics.vehicles.total}
+            </p>
+            <p>
+              <strong>Total de asignaciones:</strong>{" "}
+              {metrics.assignments.total}
+            </p>
+          </div>
         </div>
       </div>
     );
