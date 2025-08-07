@@ -9,7 +9,9 @@ import {
 import { getVehicleById, getVehicles } from "../../services/vehicles";
 import { getUserById, getUsers } from "../../services/users";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { useConfirmDialog } from "../../hooks";
+import { useNotification } from "../../hooks/useNotification";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
@@ -63,6 +65,10 @@ export default function EditAssignment() {
     handleConfirm: confirmDialogConfirm,
     handleCancel: confirmDialogCancel,
   } = useConfirmDialog();
+
+  // Hook para notificaciones
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
 
   useEffect(() => {
     const fetchAssignment = async () => {
@@ -244,17 +250,17 @@ export default function EditAssignment() {
   };
   const handleSave = async () => {
     if (!startDate) {
-      alert("Por favor, complete la fecha de inicio");
+      showError("Por favor, complete la fecha de inicio");
       return;
     }
 
     if (isCreateMode) {
       if (!selectedUser && !preloadedUser) {
-        alert("Por favor, seleccione un usuario");
+        showError("Por favor, seleccione un usuario");
         return;
       }
       if (!preloadedVehicle && !selectedVehicle && !vehicleId) {
-        alert("Por favor, seleccione un vehículo");
+        showError("Por favor, seleccione un vehículo");
         return;
       }
 
@@ -267,7 +273,7 @@ export default function EditAssignment() {
             const finalVehicle = selectedVehicle || preloadedVehicle;
 
             if (!finalUser || !finalVehicle) {
-              alert("Error: Usuario o vehículo no encontrado");
+              showError("Error: Usuario o vehículo no encontrado");
               return;
             }
 
@@ -282,13 +288,16 @@ export default function EditAssignment() {
             const response = await createAssignment(assignmentData);
 
             if (response.success) {
-              alert("Nueva asignación creada exitosamente");
-              navigate(-1);
+              showSuccess("Nueva asignación creada exitosamente");
+              // Esperar un poco para que se muestre la notificación antes de navegar
+              setTimeout(() => {
+                navigate(-1);
+              }, 1500);
             } else {
-              alert(`Error al crear la asignación: ${response.message}`);
+              showError(`Error al crear la asignación: ${response.message}`);
             }
           } catch (error) {
-            alert("Error al crear la asignación");
+            showError("Error al crear la asignación");
           }
         }
       );
@@ -299,7 +308,7 @@ export default function EditAssignment() {
         async () => {
           try {
             if (!assignmentId || !assignment) {
-              alert("Error: ID de asignación no disponible");
+              showError("Error: ID de asignación no disponible");
               return;
             }
 
@@ -331,13 +340,18 @@ export default function EditAssignment() {
             const response = await updateAssignment(assignmentId, updateData);
 
             if (response.success) {
-              alert("Asignación actualizada exitosamente");
-              navigate(-1);
+              showSuccess("Asignación actualizada exitosamente");
+              // Esperar un poco para que se muestre la notificación antes de navegar
+              setTimeout(() => {
+                navigate(-1);
+              }, 1500);
             } else {
-              alert(`Error al actualizar la asignación: ${response.message}`);
+              showError(
+                `Error al actualizar la asignación: ${response.message}`
+              );
             }
           } catch (error) {
-            alert("Error al actualizar la asignación");
+            showError("Error al actualizar la asignación");
           }
         }
       );
@@ -354,7 +368,7 @@ export default function EditAssignment() {
       async () => {
         try {
           if (!assignmentId) {
-            alert("ID de asignación no disponible");
+            showError("ID de asignación no disponible");
             return;
           }
 
@@ -362,13 +376,16 @@ export default function EditAssignment() {
           const response = await finishAssignment(assignmentId);
 
           if (response.success) {
-            alert("Vehículo desasignado exitosamente");
-            navigate(-1);
+            showSuccess("Vehículo desasignado exitosamente");
+            // Esperar un poco para que se muestre la notificación antes de navegar
+            setTimeout(() => {
+              navigate(-1);
+            }, 1500);
           } else {
-            alert(`Error al desasignar el vehículo: ${response.message}`);
+            showError(`Error al desasignar el vehículo: ${response.message}`);
           }
         } catch (error) {
-          alert("Error al desasignar el vehículo");
+          showError("Error al desasignar el vehículo");
         }
       }
     );
@@ -671,6 +688,16 @@ export default function EditAssignment() {
         onConfirm={confirmDialogConfirm}
         onCancel={confirmDialogCancel}
       />
+
+      {/* Componente de notificación */}
+      {notification.isOpen && (
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      )}
     </div>
   );
 }
