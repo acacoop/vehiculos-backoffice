@@ -18,7 +18,7 @@ export default function NotificationToast({
   type = "info",
   isOpen,
   onClose,
-  duration = 3000
+  duration = 3000,
 }: NotificationToastProps) {
   // Auto-cerrar después del tiempo especificado
   useEffect(() => {

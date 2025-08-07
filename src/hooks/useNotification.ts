@@ -17,7 +17,10 @@ export function useNotification() {
   });
 
   // Función para mostrar una notificación
-  const showNotification = (message: string, type: NotificationType = "info") => {
+  const showNotification = (
+    message: string,
+    type: NotificationType = "info"
+  ) => {
     setNotification({
       isOpen: true,
       message,
@@ -27,7 +30,7 @@ export function useNotification() {
 
   // Función para cerrar la notificación
   const closeNotification = () => {
-    setNotification(prev => ({
+    setNotification((prev) => ({
       ...prev,
       isOpen: false,
     }));

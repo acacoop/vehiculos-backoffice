@@ -49,7 +49,8 @@ export default function StatusToggle({
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, message, showConfirm, handleConfirm, handleCancel } =
     useConfirmDialog();
-  const { notification, showSuccess, showError, closeNotification } = useNotification();
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
 
   const config = ENTITY_CONFIG[entityType];
 
@@ -74,7 +75,7 @@ export default function StatusToggle({
           setIsActive(newState);
           if (onToggle) onToggle(newState);
           // Mostrar notificación de éxito
-          const successMessage = newState 
+          const successMessage = newState
             ? `Usuario desbloqueado exitosamente`
             : `Usuario bloqueado exitosamente`;
           showSuccess(successMessage);
@@ -95,7 +96,7 @@ export default function StatusToggle({
         setIsActive(newState);
         if (onToggle) onToggle(newState);
         // Mostrar notificación de éxito para vehículos
-        const successMessage = newState 
+        const successMessage = newState
           ? `Vehículo reactivado exitosamente`
           : `Vehículo dado de baja exitosamente`;
         showSuccess(successMessage);
