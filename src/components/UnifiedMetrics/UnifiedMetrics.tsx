@@ -48,11 +48,22 @@ type UnifiedMetricsType =
 
 interface UnifiedMetricsProps {
   type: UnifiedMetricsType;
+  width?: string | number;
+  height?: string | number;
 }
 
-export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
+export default function UnifiedMetrics({
+  type,
+  width,
+  height,
+}: UnifiedMetricsProps) {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Crear el objeto de estilos con width y height si se proporcionan
+  const containerStyle: React.CSSProperties = {};
+  if (width) containerStyle.width = width;
+  if (height) containerStyle.height = height;
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -75,7 +86,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (loading) {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Cargando métricas...</h3>
         </div>
@@ -85,7 +96,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (!metrics) {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Error al cargar métricas</h3>
         </div>
@@ -96,7 +107,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
   // Renderizado tipo Dashboard (combina UserMetrics y ReserveMetrics)
   if (type === "dashboard") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         {/* Sección de Usuarios */}
         <div className="unified-metrics-row">
           <div className="unified-metrics-card">
@@ -237,7 +248,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
   // Renderizados específicos por tipo
   if (type === "usuariosPie") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Usuarios activos (Pie)</h3>
           <ResponsiveContainer width="100%" height={220}>
@@ -273,7 +284,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (type === "usuariosBar") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Usuarios (Bar)</h3>
           <ResponsiveContainer width="100%" height={220}>
@@ -309,7 +320,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
     }));
 
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Vehículos por marca (Radar)</h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -337,7 +348,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (type === "reservasLine") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card wide">
           <h3 className="unified-metrics-title">Reservas por mes (Línea)</h3>
           <ResponsiveContainer width="100%" height={220}>
@@ -365,7 +376,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (type === "reservasArea") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card wide">
           <h3 className="unified-metrics-title">Reservas por mes (Área)</h3>
           <ResponsiveContainer width="100%" height={220}>
@@ -393,7 +404,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (type === "topUsuariosBar") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card wide">
           <h3 className="unified-metrics-title">
             Top usuarios (Bar horizontal)
@@ -431,7 +442,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   if (type === "custom") {
     return (
-      <div className="unified-metrics-container">
+      <div className="unified-metrics-container" style={containerStyle}>
         <div className="unified-metrics-card">
           <h3 className="unified-metrics-title">Métricas personalizadas</h3>
           <div style={{ padding: "40px", textAlign: "center", color: "#888" }}>
@@ -446,7 +457,7 @@ export default function UnifiedMetrics({ type }: UnifiedMetricsProps) {
 
   // Fallback por defecto
   return (
-    <div className="unified-metrics-container">
+    <div className="unified-metrics-container" style={containerStyle}>
       <div className="unified-metrics-card">
         <h3 className="unified-metrics-title">Tipo de métrica no reconocido</h3>
         <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>

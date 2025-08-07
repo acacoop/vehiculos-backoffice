@@ -2,7 +2,6 @@ import type {
   Reservation,
   ReservationFilterParams,
   ReservationWithUser,
-  ReservationWithDetails,
 } from "../types/reservation";
 import {
   httpService,
@@ -98,90 +97,119 @@ export async function getReservations(
  */
 export async function getReservationById(
   id: string
-): Promise<ServiceResponse<ReservationWithDetails>> {
+): Promise<ServiceResponse<Reservation>> {
   try {
-    // Intentar primero con el endpoint específico
-    const response: BackendResponse<ReservationWithDetails> =
-      await httpService.get({
-        uri: `/reservations/${id}`,
-      });
+    // El backend no soporta endpoint específico por ID, usar lista completa
+    const allReservationsResponse = await getAllReservations();
 
-    if (response.status === ResponseStatus.SUCCESS) {
+    if (allReservationsResponse.success) {
+      const reservation = allReservationsResponse.data.find((r) => r.id === id);
+
+      if (reservation) {
+        return {
+          success: true,
+          data: reservation,
+        };
+      } else {
+        return {
+          success: false,
+          data: {} as Reservation,
+          message: `Reserva con ID ${id} no encontrada`,
+        };
+      }
+    } else {
       return {
-        success: true,
-        data: response.data,
+        success: false,
+        data: {} as Reservation,
+        message: allReservationsResponse.message || "Error al obtener reservas",
       };
     }
   } catch (error) {
-    // Si el endpoint específico falla, intentar obtener desde la lista completa
-    console.warn(
-      `Endpoint /reservations/${id} no disponible, buscando en lista completa`
-    );
-
-    try {
-      const allReservationsResponse = await getAllReservations();
-
-      if (allReservationsResponse.success) {
-        const reservation = allReservationsResponse.data.find(
-          (r) => r.id === id
-        ) as ReservationWithDetails;
-
-        if (reservation) {
-          return {
-            success: true,
-            data: reservation,
-          };
-        } else {
-          return {
-            success: false,
-            data: {} as ReservationWithDetails,
-            message: `Reserva con ID ${id} no encontrada`,
-          };
-        }
-      }
-    } catch (fallbackError) {
-      // Si ambos fallan, devolver error
-      return {
-        success: false,
-        data: {} as ReservationWithDetails,
-        message: "Error al obtener reserva",
-        error: fallbackError as any,
-      };
-    }
+    return {
+      success: false,
+      data: {} as Reservation,
+      message: "Error al obtener reserva",
+      error: error as any,
+    };
   }
-
-  return {
-    success: false,
-    data: {} as ReservationWithDetails,
-    message: "Error al obtener reserva",
-  };
 }
 
 /**
  * Actualiza una reserva
+ * Implementación con múltiples estrategias para manejar diferentes configuraciones de backend
  */
 export async function updateReservation(
   id: string,
   reservationData: Partial<Omit<Reservation, "id">>
 ): Promise<ServiceResponse<Reservation>> {
   try {
-    const response: BackendResponse<Reservation> = await httpService.patch({
-      uri: `/reservations/${id}`,
-      body: reservationData,
-    });
+    let response: BackendResponse<Reservation>;
+    let lastError: any;
 
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as Reservation,
-        message: response.message || "Error al actualizar reserva",
-      };
+    // Estrategia 1: Intentar PATCH
+    try {
+      response = await httpService.patch({
+        uri: `/reservations/${id}`,
+        body: reservationData,
+      });
+
+      if (response.status !== ResponseStatus.ERROR) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Reserva actualizada exitosamente",
+        };
+      }
+    } catch (patchError) {
+      console.warn("PATCH failed:", patchError);
+      lastError = patchError;
     }
 
+    // Estrategia 2: Intentar PUT
+    try {
+      response = await httpService.put({
+        uri: `/reservations/${id}`,
+        body: reservationData,
+      });
+
+      if (response.status !== ResponseStatus.ERROR) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Reserva actualizada exitosamente",
+        };
+      }
+    } catch (putError) {
+      console.warn("PUT failed:", putError);
+      lastError = putError;
+    }
+
+    // Estrategia 3: Intentar POST al endpoint general (algunos backends usan esto para updates)
+    try {
+      response = await httpService.post({
+        uri: `/reservations`,
+        body: { ...reservationData, id },
+      });
+
+      if (response.status !== ResponseStatus.ERROR) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Reserva actualizada exitosamente",
+        };
+      }
+    } catch (postError) {
+      console.warn("POST failed:", postError);
+      lastError = postError;
+    }
+
+    // Si todas las estrategias fallan
     return {
-      success: true,
-      data: response.data,
-      message: "Reserva actualizada exitosamente",
+      success: false,
+      data: {} as Reservation,
+      message:
+        "Error al actualizar reserva - ningún endpoint disponible funciona",
+      error: lastError,
     };
   } catch (error) {
     return {
