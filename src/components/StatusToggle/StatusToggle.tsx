@@ -2,7 +2,9 @@ import { useState } from "react";
 import { COLORS } from "../../common/colors";
 import { updateUserStatus } from "../../services/users";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
+import { useNotification } from "../../hooks/useNotification";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../NotificationToast/NotificationToast";
 import "./StatusToggle.css";
 
 type EntityType = "user" | "vehicle";
@@ -47,6 +49,7 @@ export default function StatusToggle({
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, message, showConfirm, handleConfirm, handleCancel } =
     useConfirmDialog();
+  const { notification, showSuccess, showError, closeNotification } = useNotification();
 
   const config = ENTITY_CONFIG[entityType];
 
@@ -70,8 +73,13 @@ export default function StatusToggle({
         if (response.success) {
           setIsActive(newState);
           if (onToggle) onToggle(newState);
+          // Mostrar notificación de éxito
+          const successMessage = newState 
+            ? `Usuario desbloqueado exitosamente`
+            : `Usuario bloqueado exitosamente`;
+          showSuccess(successMessage);
         } else {
-          alert(
+          showError(
             response.message ||
               `Error al actualizar el estado del ${
                 entityType === "user" ? "usuario" : "vehículo"
@@ -86,9 +94,14 @@ export default function StatusToggle({
 
         setIsActive(newState);
         if (onToggle) onToggle(newState);
+        // Mostrar notificación de éxito para vehículos
+        const successMessage = newState 
+          ? `Vehículo reactivado exitosamente`
+          : `Vehículo dado de baja exitosamente`;
+        showSuccess(successMessage);
       }
     } catch (error) {
-      alert(
+      showError(
         `Error al actualizar el estado del ${
           entityType === "user" ? "usuario" : "vehículo"
         }`
@@ -160,6 +173,16 @@ export default function StatusToggle({
         onCancel={handleCancel}
         title={config.dialogTitle}
       />
+
+      {/* Componente de notificación */}
+      {notification.isOpen && (
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      )}
     </>
   );
 }

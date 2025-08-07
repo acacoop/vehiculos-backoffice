@@ -1,0 +1,109 @@
+/* Estilos base para el componente NotificationToast */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  min-width: 250px;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Animación de entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Estilos para el texto */
+.notification-toast p {
+  margin: 0;
+  flex: 1;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Botón de cerrar */
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+/* Tipos de notificación */
+.notification-success {
+  background-color: #d4edda;
+  border-left: 4px solid #28a745;
+  color: #155724;
+}
+
+.notification-success .notification-close {
+  color: #155724;
+}
+
+.notification-error {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+}
+
+.notification-error .notification-close {
+  color: #721c24;
+}
+
+.notification-warning {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  color: #856404;
+}
+
+.notification-warning .notification-close {
+  color: #856404;
+}
+
+.notification-info {
+  background-color: #d1ecf1;
+  border-left: 4px solid #17a2b8;
+  color: #0c5460;
+}
+
+.notification-info .notification-close {
+  color: #0c5460;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notification-toast {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
