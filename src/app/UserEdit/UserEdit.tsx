@@ -144,7 +144,7 @@ export default function UserEdit() {
       align: "center",
       valueGetter: (_, row) => {
         if (!row.startDate || !row.endDate) {
-          return "Finalizada";
+          return "Sin estado";
         }
 
         const now = new Date();
@@ -153,17 +153,15 @@ export default function UserEdit() {
 
         if (now >= startDate && now <= endDate) {
           return "Activa";
-        } else {
+        } else if (now > endDate) {
           return "Finalizada";
+        } else {
+          return "Programada";
         }
       },
       renderCell: (params) => {
         if (!params.row.startDate || !params.row.endDate) {
-          return (
-            <span style={{ color: "#E53935", fontWeight: "bold" }}>
-              Finalizada
-            </span>
-          );
+          return "Sin estado";
         }
 
         const now = new Date();
@@ -174,10 +172,16 @@ export default function UserEdit() {
           return (
             <span style={{ color: "#4caf50", fontWeight: "bold" }}>Activa</span>
           );
-        } else {
+        } else if (now > endDate) {
           return (
             <span style={{ color: "#E53935", fontWeight: "bold" }}>
               Finalizada
+            </span>
+          );
+        } else {
+          return (
+            <span style={{ color: "#ff9800", fontWeight: "bold" }}>
+              Programada
             </span>
           );
         }

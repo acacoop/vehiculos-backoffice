@@ -6,10 +6,12 @@ import {
   updateAssignment,
   finishAssignment,
 } from "../../services/assignments";
-import { getVehicleById, getVehicles } from "../../services/vehicles";
-import { getUserById, getUsers } from "../../services/users";
+import { getVehicleById } from "../../services/vehicles";
+import { getUsers } from "../../services/users";
+import { getVehicles } from "../../services/vehicles";
+import { getUserById } from "../../services/users";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import { useConfirmDialog } from "../../hooks";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
@@ -143,7 +145,7 @@ export default function EditAssignment() {
       const response = await getUsers({ active: true }, { page: 1, limit: 10 });
       if (response.success) {
         const filteredUsers = response.data.filter(
-          (user: User) =>
+          (user) =>
             user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.dni?.toString().includes(searchTerm) ||
