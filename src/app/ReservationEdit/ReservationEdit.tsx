@@ -49,8 +49,10 @@ export default function ReservationEdit() {
         setLoading(true);
         try {
           const response = await getReservationById(reservationId);
+
           if (response.success && response.data) {
             const reservation = response.data;
+
             const startDateTime = new Date(reservation.startDate);
             const endDateTime = new Date(reservation.endDate);
 
@@ -102,7 +104,10 @@ export default function ReservationEdit() {
             setError(response.message || "Error al cargar la reserva");
           }
         } catch (err) {
-          setError("Error al cargar la reserva");
+          setError(
+            "Error al cargar la reserva: " +
+              (err instanceof Error ? err.message : "Error desconocido")
+          );
         } finally {
           setLoading(false);
         }
@@ -122,7 +127,7 @@ export default function ReservationEdit() {
             }
           }
         } catch (err) {
-          console.error("Error loading preloaded data:", err);
+          // Error silencioso para datos precargados
         } finally {
           setLoading(false);
         }

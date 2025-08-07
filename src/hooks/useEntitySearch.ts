@@ -27,7 +27,8 @@ export function useUserSearch() {
           setShowDropdown(true);
         }
       } catch (error) {
-        console.error("Error searching users:", error);
+        setAvailableUsers([]);
+        setShowDropdown(false);
       }
     } else {
       setShowDropdown(false);
@@ -80,7 +81,8 @@ export function useVehicleSearch() {
           setShowDropdown(true);
         }
       } catch (error) {
-        console.error("Error searching vehicles:", error);
+        setAvailableVehicles([]);
+        setShowDropdown(false);
       }
     } else {
       setShowDropdown(false);
