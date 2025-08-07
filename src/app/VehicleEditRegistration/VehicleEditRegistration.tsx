@@ -188,17 +188,32 @@ export default function VehicleEditRegistration() {
       width: 120,
       headerAlign: "center",
       align: "center",
+      valueGetter: (_, row) => {
+        const now = new Date();
+        const startDate = new Date(row.startDate);
+        const endDate = new Date(row.endDate);
+
+        if (now >= startDate && now <= endDate) {
+          return "Activa";
+        } else {
+          return "Finalizada";
+        }
+      },
       renderCell: (params) => {
         const now = new Date();
         const startDate = new Date(params.row.startDate);
         const endDate = new Date(params.row.endDate);
 
-        if (now < startDate) {
-          return "Pendiente";
-        } else if (now >= startDate && now <= endDate) {
-          return "Activa";
+        if (now >= startDate && now <= endDate) {
+          return (
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>Activa</span>
+          );
         } else {
-          return "Finalizada";
+          return (
+            <span style={{ color: "#E53935", fontWeight: "bold" }}>
+              Finalizada
+            </span>
+          );
         }
       },
     },
