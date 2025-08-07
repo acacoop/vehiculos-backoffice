@@ -75,7 +75,7 @@ export default function UnifiedMetrics({
           setMetrics(response.data);
         }
       } catch (error) {
-        console.error("Error al obtener métricas:", error);
+        // Error silencioso - se maneja con el estado de loading
       } finally {
         setLoading(false);
       }

@@ -9,10 +9,12 @@ import {
 import { getUserById } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { useUserSearch, useVehicleSearch } from "../../hooks";
+import { useNotification } from "../../hooks/useNotification";
 import {
   UserSearch,
   VehicleSearch,
 } from "../../components/EntitySearch/EntitySearch";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import "./ReservationEdit.css";
@@ -41,6 +43,10 @@ export default function ReservationEdit() {
   // Hooks para búsqueda de entidades
   const userSearch = useUserSearch();
   const vehicleSearch = useVehicleSearch();
+
+  // Hook para notificaciones
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -140,27 +146,27 @@ export default function ReservationEdit() {
   // Validar formulario
   const validateForm = () => {
     if (!userSearch.selectedUser) {
-      setError("Debe seleccionar un usuario");
+      showError("Debe seleccionar un usuario");
       return false;
     }
     if (!vehicleSearch.selectedVehicle) {
-      setError("Debe seleccionar un vehículo");
+      showError("Debe seleccionar un vehículo");
       return false;
     }
     if (!startDate) {
-      setError("Debe seleccionar una fecha de inicio");
+      showError("Debe seleccionar una fecha de inicio");
       return false;
     }
     if (!endDate) {
-      setError("Debe seleccionar una fecha de fin");
+      showError("Debe seleccionar una fecha de fin");
       return false;
     }
     if (!startTime) {
-      setError("Debe seleccionar un horario de inicio");
+      showError("Debe seleccionar un horario de inicio");
       return false;
     }
     if (!endTime) {
-      setError("Debe seleccionar un horario de fin");
+      showError("Debe seleccionar un horario de fin");
       return false;
     }
 
@@ -168,7 +174,7 @@ export default function ReservationEdit() {
     const endDateTime = new Date(`${endDate}T${endTime}`);
 
     if (startDateTime >= endDateTime) {
-      setError(
+      showError(
         "La fecha y hora de inicio debe ser anterior a la fecha y hora de fin"
       );
       return false;
@@ -195,18 +201,21 @@ export default function ReservationEdit() {
         : await updateReservation(reservationId!, reservationData);
 
       if (response.success) {
-        alert(
+        showSuccess(
           `Reserva ${isCreateMode ? "creada" : "actualizada"} exitosamente`
         );
-        navigate(-1);
+        // Esperar un poco para que se muestre la notificación antes de navegar
+        setTimeout(() => {
+          navigate(-1);
+        }, 1500);
       } else {
-        setError(
+        showError(
           response.message ||
             `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`
         );
       }
     } catch (err) {
-      setError(`Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`);
+      showError(`Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`);
     } finally {
       setSaving(false);
     }
@@ -429,6 +438,16 @@ export default function ReservationEdit() {
           </button>
         </div>
       </div>
+
+      {/* Componente de notificación */}
+      {notification.isOpen && (
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      )}
     </div>
   );
 }

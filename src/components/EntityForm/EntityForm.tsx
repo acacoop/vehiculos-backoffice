@@ -4,6 +4,8 @@ import { CircularProgress, Alert } from "@mui/material";
 import { getVehicleById, updateVehicle } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../NotificationToast/NotificationToast";
+import { useNotification } from "../../hooks/useNotification";
 import "./EntityForm.css";
 
 // Tipos para los campos del formulario
@@ -133,6 +135,10 @@ export default function EntityForm({
   const [showDialog, setShowDialog] = useState(false);
   const [updating, setUpdating] = useState(false);
 
+  // Hook de notificaciones
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
+
   const config = ENTITY_CONFIGS[entityType];
 
   // Inicializar datos por defecto según el tipo de entidad
@@ -257,20 +263,23 @@ export default function EntityForm({
 
             if (response.success) {
               setShowDialog(false);
+              showSuccess("Vehículo actualizado exitosamente");
             } else {
-              setError(response.message || "Error al actualizar vehículo");
+              const errorMessage =
+                response.message || "Error al actualizar vehículo";
+              setError(errorMessage);
+              showError(errorMessage);
             }
           } else {
             // Modo registro - guardar datos localmente
             setShowDialog(false);
-            alert(
+            showSuccess(
               "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
             );
           }
           break;
 
         case "technical":
-          // Simular guardado de ficha técnica
           await new Promise((resolve) => setTimeout(resolve, 1000));
           setShowDialog(false);
           break;
@@ -284,9 +293,13 @@ export default function EntityForm({
           setShowDialog(false);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : `Error al actualizar ${entityType}`
-      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : `Error al actualizar ${entityType}`;
+      setError(errorMessage);
+      showError(errorMessage);
+      setShowDialog(false);
     } finally {
       setUpdating(false);
     }
@@ -384,6 +397,14 @@ export default function EntityForm({
           onCancel={handleCancel}
         />
       )}
+
+      {/* Sistema de notificaciones */}
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+      />
     </div>
   );
 }

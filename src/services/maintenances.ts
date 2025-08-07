@@ -196,10 +196,6 @@ export const getMaintenanceById = async (
     }
 
     // Si el endpoint específico falla, usar fallback con getAllMaintenances
-    console.warn(
-      `Endpoint específico falló, usando fallback para mantenimiento ${id}`
-    );
-
     const allMaintenancesResponse = await getMaintenanceCategories();
 
     if (allMaintenancesResponse.success) {

@@ -5,10 +5,12 @@ import EntityForm from "../../components/EntityForm/EntityForm";
 import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import Table from "../../components/Table/table";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getReservationsByVehicle } from "../../services/reservations";
+import { useNotification } from "../../hooks/useNotification";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
 import type { ReservationWithUser } from "../../types/reservation";
@@ -27,6 +29,10 @@ export default function VehicleEditRegistration() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [refreshTables, setRefreshTables] = useState(0);
+
+  // Hook para notificaciones
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
 
   useEffect(() => {
     const handleFocus = () => {
@@ -339,12 +345,12 @@ export default function VehicleEditRegistration() {
 
   const handleVehicleRegistration = async () => {
     if (!vehicleData) {
-      alert("Por favor completa la información del vehículo");
+      showError("Por favor completa la información del vehículo");
       return;
     }
 
     if (!vehicleData.licensePlate || !vehicleData.brand || !vehicleData.model) {
-      alert(
+      showError(
         "Por favor completa todos los campos obligatorios (Patente, Marca, Modelo)"
       );
       return;
@@ -358,17 +364,22 @@ export default function VehicleEditRegistration() {
         brand: vehicleData.brand,
         model: vehicleData.model,
         year: vehicleData.year,
-        imgUrl: vehicleData.imgUrl || "",
+        imgUrl:
+          vehicleData.imgUrl ||
+          "https://www.toyota.com/imgix/content/dam/toyota/vehicles/2023/rav4/mlp/desktop/2023-rav4-xle-magnetic-gray-d.png",
       });
 
       if (response.success) {
-        alert("¡Vehículo registrado exitosamente!");
-        navigate("/vehicles");
+        showSuccess("¡Vehículo registrado exitosamente!");
+        // Esperar un poco para que se muestre la notificación antes de navegar
+        setTimeout(() => {
+          navigate("/vehicles");
+        }, 1500);
       } else {
-        alert(`Error al registrar vehículo: ${response.message}`);
+        showError(`Error al registrar vehículo: ${response.message}`);
       }
     } catch (error) {
-      alert("Error al registrar el vehículo");
+      showError("Error al registrar el vehículo");
     } finally {
       setIsRegistering(false);
     }
@@ -510,6 +521,16 @@ export default function VehicleEditRegistration() {
             {isRegistering ? "Registrando..." : "Registrar Vehículo"}
           </button>
         </div>
+      )}
+
+      {/* Componente de notificación */}
+      {notification.isOpen && (
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
       )}
     </div>
   );

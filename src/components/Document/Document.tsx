@@ -1,4 +1,8 @@
 import { useState } from "react";
+import NotificationToast from "../NotificationToast/NotificationToast";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import { useNotification } from "../../hooks/useNotification";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import "./Document.css";
 
 interface DocumentItem {
@@ -32,6 +36,16 @@ export default function Document({
   const [hasExpiration, setHasExpiration] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Hooks para notificaciones y confirmación
+  const { notification, showSuccess, showError, showInfo, closeNotification } = useNotification();
+  const { 
+    isOpen: confirmDialogOpen, 
+    message: confirmDialogMessage, 
+    showConfirm, 
+    handleConfirm: confirmDialogConfirm, 
+    handleCancel: confirmDialogCancel 
+  } = useConfirmDialog();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("es-ES");
@@ -64,7 +78,7 @@ export default function Document({
   const handleDownload = (doc: DocumentItem) => {
     // Simular descarga del archivo
     // En una aplicación real, esto haría una petición al servidor para obtener el archivo
-    alert(`Descargando archivo: ${doc.fileName}`);
+    showInfo(`Descargando archivo: ${doc.fileName}`);
 
     // Crear un enlace temporal para simular la descarga
     const link = document.createElement("a");
@@ -85,15 +99,15 @@ export default function Document({
   const handleDelete = (docId: string) => {
     const doc = documents.find((d) => d.id === docId);
     if (doc && (isExpired(doc.expirationDate) || !doc.expirationDate)) {
-      if (
-        window.confirm(
-          `¿Está seguro de que desea eliminar el documento "${doc.title}"?`
-        )
-      ) {
-        setDocuments((prev) => prev.filter((d) => d.id !== docId));
-      }
+      showConfirm(
+        `¿Está seguro de que desea eliminar el documento "${doc.title}"?`,
+        () => {
+          setDocuments((prev) => prev.filter((d) => d.id !== docId));
+          showSuccess("Documento eliminado exitosamente");
+        }
+      );
     } else {
-      alert(
+      showError(
         "Solo se pueden eliminar documentos vencidos o sin fecha de vencimiento."
       );
     }
@@ -103,7 +117,7 @@ export default function Document({
     event.preventDefault();
 
     if (!newTitle.trim() || (!selectedFile && !editingDocument)) {
-      alert("Por favor, complete el título y seleccione un archivo");
+      showError("Por favor, complete el título y seleccione un archivo");
       return;
     }
 
@@ -121,6 +135,7 @@ export default function Document({
           doc.id === editingDocument.id ? updatedDocument : doc
         )
       );
+      showSuccess("Documento actualizado exitosamente");
     } else {
       // Crear nuevo documento
       const newDocument: DocumentItem = {
@@ -132,6 +147,7 @@ export default function Document({
       };
 
       setDocuments((prev) => [...prev, newDocument]);
+      showSuccess("Documento agregado exitosamente");
     }
 
     // Iniciar animación de cierre
@@ -325,6 +341,23 @@ export default function Document({
           </div>
         </div>
       )}
+
+      {/* Sistema de notificaciones */}
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+      />
+
+      {/* Diálogo de confirmación */}
+      <ConfirmDialog
+        open={confirmDialogOpen}
+        title="Confirmar eliminación"
+        message={confirmDialogMessage}
+        onConfirm={confirmDialogConfirm}
+        onCancel={confirmDialogCancel}
+      />
     </div>
   );
 }
