@@ -15,6 +15,7 @@ import {
   VehicleSearch,
 } from "../../components/EntitySearch/EntitySearch";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import DateTimePicker from "../../components/DateTimePicker/DateTimePicker";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import "./ReservationEdit.css";
@@ -355,63 +356,18 @@ export default function ReservationEdit() {
           <div className="reservation-form-section">
             <h3>Período de la Reserva</h3>
 
-            <div className="reservation-form-group">
-              <label htmlFor="startDate" className="reservation-form-label">
-                Fecha de Inicio
-              </label>
-              <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                required
-                className="reservation-form-input"
-              />
-            </div>
-
-            <div className="reservation-form-group">
-              <label htmlFor="endDate" className="reservation-form-label">
-                Fecha de Fin
-              </label>
-              <input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || new Date().toISOString().split("T")[0]}
-                required
-                className="reservation-form-input"
-              />
-            </div>
-
-            <div className="reservation-form-group">
-              <label htmlFor="startTime" className="reservation-form-label">
-                Hora de Inicio
-              </label>
-              <input
-                id="startTime"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-                className="reservation-form-input"
-              />
-            </div>
-
-            <div className="reservation-form-group">
-              <label htmlFor="endTime" className="reservation-form-label">
-                Hora de Fin
-              </label>
-              <input
-                id="endTime"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-                className="reservation-form-input"
-              />
-            </div>
+            <DateTimePicker
+              startDate={startDate}
+              startTime={startTime}
+              endDate={endDate}
+              endTime={endTime}
+              onStartDateChange={setStartDate}
+              onStartTimeChange={setStartTime}
+              onEndDateChange={setEndDate}
+              onEndTimeChange={setEndTime}
+              disabled={saving}
+              minDate={new Date().toISOString().split("T")[0]}
+            />
           </div>
         </div>
 

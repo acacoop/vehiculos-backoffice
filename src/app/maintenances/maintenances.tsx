@@ -80,7 +80,7 @@ export default function MaintenancePage() {
         showEditColumn={true}
         editRoute="/maintenance/edit"
         showTableHeader={true}
-        headerTitle="Categorías de Mantenimiento"
+        headerTitle="Mantenimientos"
         showAddButton={true}
         addButtonText="+ Nuevo Mantenimiento"
         onAddButtonClick={handleCreateMaintenance}
