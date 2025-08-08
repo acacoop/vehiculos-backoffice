@@ -37,13 +37,14 @@ export default function Document({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Hooks para notificaciones y confirmación
-  const { notification, showSuccess, showError, showInfo, closeNotification } = useNotification();
-  const { 
-    isOpen: confirmDialogOpen, 
-    message: confirmDialogMessage, 
-    showConfirm, 
-    handleConfirm: confirmDialogConfirm, 
-    handleCancel: confirmDialogCancel 
+  const { notification, showSuccess, showError, showInfo, closeNotification } =
+    useNotification();
+  const {
+    isOpen: confirmDialogOpen,
+    message: confirmDialogMessage,
+    showConfirm,
+    handleConfirm: confirmDialogConfirm,
+    handleCancel: confirmDialogCancel,
   } = useConfirmDialog();
 
   const formatDate = (dateString: string) => {
@@ -341,7 +342,6 @@ export default function Document({
           </div>
         </div>
       )}
-
       {/* Sistema de notificaciones */}
       <NotificationToast
         message={notification.message}
@@ -349,7 +349,6 @@ export default function Document({
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-
       {/* Diálogo de confirmación */}
       <ConfirmDialog
         open={confirmDialogOpen}
