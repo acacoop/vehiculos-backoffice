@@ -1,10 +1,12 @@
 .navbar {
-  position: relative;
+  position: fixed;
   height: 64px;
   background: #232d85;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  z-index: 999;
 }
 
 .navbar-logo img {
