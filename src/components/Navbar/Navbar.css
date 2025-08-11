@@ -75,7 +75,6 @@
   padding-top: 80px;
   transition: left 0.3s;
   z-index: 101;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-sidebar.open {
