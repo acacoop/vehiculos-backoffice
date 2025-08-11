@@ -12,6 +12,7 @@ import Assignaments from "./app/assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 import MaintenancePage from "./app/maintenances/maintenances";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
+import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/maintenances" element={<MaintenancePage />} />
         <Route path="/maintenance/create" element={<EditMaintenance />} />
         <Route path="/maintenance/edit/:id" element={<EditMaintenance />} />
+        <Route path="/vehicle-responsibles" element={<VehicleResponsibles />} />
       </Routes>
     </Router>
   );

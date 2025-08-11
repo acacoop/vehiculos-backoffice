@@ -7,6 +7,7 @@ import IconMaintenanceBlue from "../../assets/icons/maintenance blue.svg";
 import IconMetricsBlue from "../../assets/icons/metrics blue.svg";
 import UnifiedMetrics from "../../components/UnifiedMetrics/UnifiedMetrics";
 import { useNavigate } from "react-router-dom";
+import IconResponsible from "../../assets/icons/assignment blue.svg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -42,6 +43,11 @@ export default function Home() {
             icon={IconMetricsBlue}
             text="Métricas"
             onClick={() => navigate("/metrics")}
+          />
+          <BentoHome
+            icon={IconResponsible}
+            text="Responsable de Vehículo"
+            onClick={() => navigate("/vehicle-responsibles")}
           />
         </div>
         <div>
