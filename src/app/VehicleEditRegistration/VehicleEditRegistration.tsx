@@ -225,6 +225,49 @@ export default function VehicleEditRegistration() {
     },
   ];
 
+  // Columnas para la tabla de kilometraje
+  const mileageColumns: GridColDef[] = [
+    {
+      field: "date",
+      headerName: "Fecha de Registro",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.date) {
+          const date = new Date(params.row.date);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "mileage",
+      headerName: "Kilometraje",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.mileage || params.row.kilometers;
+        return km ? `${km.toLocaleString()} km` : "N/A";
+      },
+    },
+    {
+      field: "notes",
+      headerName: "Observaciones",
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) =>
+        params.row.notes || params.row.observations || "Sin observaciones",
+    },
+    {
+      field: "createdBy",
+      headerName: "Registrado por",
+      width: 180,
+      renderCell: (params) => params.row.createdBy || params.row.user || "N/A",
+    },
+  ];
+
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
       const filterParams = vehicleId ? { vehicleId } : {};
@@ -335,6 +378,66 @@ export default function VehicleEditRegistration() {
       };
     }
   };
+
+  // Función para obtener datos de kilometraje (mock data por ahora)
+  const getMileageForTable = async (
+    paginationParams: PaginationParams
+  ): Promise<ServiceResponse<any[]>> => {
+    try {
+      // TODO: Implementar servicio real para obtener historiales de kilometraje
+      // Por ahora devolvemos datos mock
+      const mockMileageData = [
+        {
+          id: "1",
+          date: "2024-08-01T00:00:00Z",
+          mileage: 15000,
+          notes: "Registro mensual rutinario",
+          createdBy: "Juan Pérez",
+        },
+        {
+          id: "2",
+          date: "2024-07-01T00:00:00Z",
+          mileage: 14500,
+          notes: "Registro después de mantenimiento",
+          createdBy: "María González",
+        },
+        {
+          id: "3",
+          date: "2024-06-01T00:00:00Z",
+          mileage: 14200,
+          notes: "Registro mensual",
+          createdBy: "Carlos López",
+        },
+      ];
+
+      const { page = 1, limit = 20 } = paginationParams;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedData = mockMileageData.slice(startIndex, endIndex);
+
+      return {
+        success: true,
+        data: paginatedData,
+        message: "Datos de kilometraje obtenidos correctamente",
+        pagination: {
+          page,
+          pageSize: limit,
+          total: mockMileageData.length,
+          pages: Math.ceil(mockMileageData.length / limit),
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener historial de kilometraje: ${
+          (error as Error)?.message
+        }`,
+        error: error as any,
+      };
+    }
+  };
+
   const handleVehicleStatusChange = (isActive: boolean) => {
     setIsVehicleActive(isActive);
   };
@@ -471,6 +574,22 @@ export default function VehicleEditRegistration() {
             navigate(`/reservation/create?vehicleId=${vehicleId}`)
           }
           maxWidth="900px"
+        />
+      )}
+
+      {!isCreateMode && vehicleId && (
+        <Table<any>
+          getRows={getMileageForTable}
+          columns={mileageColumns}
+          title=""
+          showEditColumn={false}
+          showTableHeader={true}
+          headerTitle="Historial de Kilometraje registrado"
+          showAddButton={true}
+          addButtonText="+ Agregar nuevo registro"
+          onAddButtonClick={() => navigate(`/kilometers/create/${vehicleId}`)}
+          maxWidth="900px"
+          tableWidth="900px"
         />
       )}
 

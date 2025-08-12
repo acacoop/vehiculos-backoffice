@@ -1,0 +1,45 @@
+/* Importar estilos de EditAssignment para mantener consistencia */
+@import "../EditAssignment/EditAssignment.css";
+
+.kilometers-edit-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.error-message {
+  text-align: center;
+  color: #e53935;
+  font-size: 16px;
+  padding: 20px;
+  background-color: #ffebee;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
+}
+
+/* Estilos específicos para textarea */
+.textarea-input {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Campo de solo lectura */
+.readonly-field {
+  padding: 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.readonly-value {
+  color: #666;
+  font-style: italic;
+}
