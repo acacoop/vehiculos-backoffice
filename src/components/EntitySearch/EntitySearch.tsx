@@ -1,5 +1,6 @@
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
+import type { Maintenance } from "../../types/maintenance";
 
 interface UserSearchProps {
   searchTerm: string;
@@ -91,6 +92,55 @@ export function VehicleSearch({
               onClick={() => onVehicleSelect(vehicle)}
             >
               {vehicle.brand} {vehicle.model} - {vehicle.licensePlate}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface CategorySearchProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  availableCategories: Maintenance[];
+  showDropdown: boolean;
+  onCategorySelect: (category: Maintenance) => void;
+  onDropdownToggle: (show: boolean) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function CategorySearch({
+  searchTerm,
+  onSearchChange,
+  availableCategories,
+  showDropdown,
+  onCategorySelect,
+  onDropdownToggle,
+  placeholder = "Buscar categoría...",
+  className = "reservation-form-input",
+}: CategorySearchProps) {
+  return (
+    <div className="category-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => searchTerm.length > 1 && onDropdownToggle(true)}
+        onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && availableCategories.length > 0 && (
+        <div className="category-dropdown">
+          {availableCategories.map((category) => (
+            <div
+              key={category.id}
+              className="category-dropdown-item"
+              onClick={() => onCategorySelect(category)}
+            >
+              {category.name}
             </div>
           ))}
         </div>

@@ -1,30 +1,45 @@
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { CircularProgress, Alert } from "@mui/material";
-import {
-  getMaintenanceById,
-  createMaintenance,
-  updateMaintenance,
-  deleteMaintenance,
-} from "../../services/maintenances";
-import { useConfirmDialog } from "../../hooks/useConfirmDialog";
+import { getMaintenanceCategories } from "../../services/maintenances";
+import { CategorySearch } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import { useConfirmDialog } from "../../hooks";
+import { useNotification } from "../../hooks/useNotification";
+import type { Maintenance, MaintenanceItem } from "../../types/maintenance";
 import "./EditMaintenance.css";
 
 export default function EditMaintenance() {
-  const { id } = useParams<{ id: string }>();
+  const { maintenanceId } = useParams<{ maintenanceId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Determinar si estamos en modo creación o edición
-  const isCreateMode = !id;
+  const isCreateMode = location.pathname.includes("/create");
 
-  // Estados
+  // Estados principales
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [maintenanceName, setMaintenanceName] = useState("");
 
-  // ConfirmDialog hook
+  // Estados del formulario
+  const [title, setTitle] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
+    null
+  );
+  const [frequencyKm, setFrequencyKm] = useState<number>(10000);
+  const [frequencyDays, setFrequencyDays] = useState<number>(365);
+  const [observations, setObservations] = useState("");
+  const [instructions, setInstructions] = useState("");
+
+  // Estados para búsqueda de categorías
+  const [categorySearchTerm, setCategorySearchTerm] = useState("");
+  const [availableCategories, setAvailableCategories] = useState<Maintenance[]>(
+    []
+  );
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [allCategories, setAllCategories] = useState<Maintenance[]>([]);
+
+  // Hooks
   const {
     isOpen,
     message,
@@ -32,104 +47,145 @@ export default function EditMaintenance() {
     handleConfirm,
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
+
   useEffect(() => {
-    if (!isCreateMode && id) {
-      loadMaintenance(id);
+    loadCategories();
+    if (!isCreateMode && maintenanceId) {
+      loadMaintenance(maintenanceId);
     }
-  }, [id, isCreateMode]);
+  }, [maintenanceId, isCreateMode]);
 
-  const loadMaintenance = async (maintenanceId: string) => {
-    setLoading(true);
-    setError(null);
-
+  const loadCategories = async () => {
     try {
-      const response = await getMaintenanceById(maintenanceId);
-
+      const response = await getMaintenanceCategories({ page: 1, limit: 100 });
       if (response.success && response.data) {
-        // La respuesta tiene estructura anidada: response.data.data.name
-        const responseData = response.data as any;
-        const actualData = responseData.data || responseData;
-        const nameValue = actualData.name;
-
-        setMaintenanceName(nameValue || "");
-      } else {
-        setError(
-          response.message || "Error al cargar la categoría de mantenimiento"
-        );
+        setAllCategories(response.data);
+        setAvailableCategories(response.data);
       }
     } catch (err) {
-      setError(
-        "Error al cargar la categoría de mantenimiento: " +
-          (err instanceof Error ? err.message : String(err))
-      );
+      console.error("Error loading categories:", err);
+    }
+  };
+
+  const loadMaintenance = async (id: string) => {
+    setLoading(true);
+    try {
+      // TODO: Implementar servicio para obtener mantenimiento por ID
+      // const response = await getMaintenanceItemById(id);
+      // if (response.success && response.data) {
+      //   const maintenance = response.data;
+      //   setTitle(maintenance.title);
+      //   setFrequencyKm(maintenance.frequencyKm);
+      //   setFrequencyDays(maintenance.frequencyDays);
+      //   setObservations(maintenance.observations || "");
+      //   setInstructions(maintenance.instructions || "");
+      //
+      //   // Buscar y setear la categoría
+      //   if (maintenance.categoryId) {
+      //     const category = allCategories.find(c => c.id === maintenance.categoryId);
+      //     if (category) {
+      //       setSelectedCategory(category);
+      //       setCategorySearchTerm(category.name);
+      //     }
+      //   }
+      // }
+      console.log("Loading maintenance:", id);
+    } catch (err) {
+      setError("Error al cargar el mantenimiento");
     } finally {
       setLoading(false);
     }
   };
 
+  // Búsqueda de categorías
+  useEffect(() => {
+    if (categorySearchTerm.length > 1) {
+      const filtered = allCategories.filter((category) =>
+        category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+      );
+      setAvailableCategories(filtered);
+    } else {
+      setAvailableCategories(allCategories);
+    }
+  }, [categorySearchTerm, allCategories]);
+
+  const handleCategorySearchChange = (term: string) => {
+    setCategorySearchTerm(term);
+    if (!term) {
+      setSelectedCategory(null);
+    }
+  };
+
+  const handleCategorySelect = (category: Maintenance) => {
+    setSelectedCategory(category);
+    setCategorySearchTerm(category.name);
+    setShowCategoryDropdown(false);
+  };
+
   const handleSave = async () => {
-    if (!maintenanceName.trim()) {
-      setError("La categoría de mantenimiento es obligatoria");
+    // Validaciones
+    if (!title.trim()) {
+      showError("El título es obligatorio");
+      return;
+    }
+    if (!selectedCategory) {
+      showError("Debe seleccionar una categoría");
+      return;
+    }
+    if (frequencyKm <= 0) {
+      showError("La frecuencia en kilómetros debe ser mayor a 0");
+      return;
+    }
+    if (frequencyDays <= 0) {
+      showError("La frecuencia en días debe ser mayor a 0");
       return;
     }
 
     const actionText = isCreateMode ? "crear" : "actualizar";
-    const confirmMessage = `¿Está seguro que desea ${actionText} esta categoría de mantenimiento?`;
+    const confirmMessage = `¿Está seguro que desea ${actionText} este mantenimiento?`;
 
     showConfirm(confirmMessage, async () => {
       setSaving(true);
       setError(null);
 
       try {
-        let response;
+        const maintenanceData: Partial<MaintenanceItem> = {
+          title: title.trim(),
+          categoryId: selectedCategory.id,
+          frequencyKm,
+          frequencyDays,
+          observations: observations.trim() || undefined,
+          instructions: instructions.trim() || undefined,
+        };
 
-        if (isCreateMode) {
-          response = await createMaintenance({ name: maintenanceName.trim() });
-        } else if (id) {
-          response = await updateMaintenance(id, {
-            name: maintenanceName.trim(),
-          });
-        }
+        // TODO: Implementar servicios para crear/actualizar mantenimientos
+        // let response;
+        // if (isCreateMode) {
+        //   response = await createMaintenanceItem(maintenanceData);
+        // } else if (maintenanceId) {
+        //   response = await updateMaintenanceItem(maintenanceId, maintenanceData);
+        // }
 
-        if (response?.success) {
+        // Simulamos éxito por ahora
+        // if (response?.success) {
+        const successMessage = isCreateMode
+          ? "Mantenimiento creado exitosamente"
+          : "Mantenimiento actualizado exitosamente";
+        showSuccess(successMessage);
+
+        setTimeout(() => {
           navigate("/maintenances");
-        } else {
-          setError(
-            response?.message ||
-              `Error al ${actionText} la categoría de mantenimiento`
-          );
-        }
+        }, 1500);
+        // } else {
+        //   showError(
+        //     response?.message ||
+        //       `Error al ${actionText} el mantenimiento`
+        //   );
+        // }
       } catch (err) {
-        setError(`Error al ${actionText} la categoría de mantenimiento`);
-      } finally {
-        setSaving(false);
-      }
-    });
-  };
-
-  const handleDelete = async () => {
-    if (!id) return;
-
-    const confirmMessage =
-      "¿Está seguro que desea eliminar esta categoría de mantenimiento? Esta acción no se puede deshacer.";
-
-    showConfirm(confirmMessage, async () => {
-      setSaving(true);
-      setError(null);
-
-      try {
-        const response = await deleteMaintenance(id);
-
-        if (response.success) {
-          navigate("/maintenances");
-        } else {
-          setError(
-            response.message ||
-              "Error al eliminar la categoría de mantenimiento"
-          );
-        }
-      } catch (err) {
-        setError("Error al eliminar la categoría de mantenimiento");
+        showError(`Error al ${actionText} el mantenimiento`);
       } finally {
         setSaving(false);
       }
@@ -143,8 +199,9 @@ export default function EditMaintenance() {
   if (loading) {
     return (
       <div className="edit-maintenance-container">
-        <div className="loading-spinner">
-          <CircularProgress />
+        <div className="edit-maintenance-loading">
+          <div className="loading-spinner"></div>
+          <p>Cargando...</p>
         </div>
       </div>
     );
@@ -154,36 +211,102 @@ export default function EditMaintenance() {
     <div className="edit-maintenance-container">
       <div className="edit-maintenance-header">
         <h1 className="edit-maintenance-title">
-          {isCreateMode
-            ? "Nueva Categoría de Mantenimiento"
-            : "Editar Categoría de Mantenimiento"}
+          {isCreateMode ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
         </h1>
       </div>
 
-      {error && (
-        <Alert severity="error" style={{ margin: "20px 0" }}>
-          {error}
-        </Alert>
-      )}
-
-      <div className="edit-maintenance-content">
+      <div className="edit-maintenance-form">
         <div className="form-section">
-          <h3>Información de la Categoría</h3>
+          <h3>Información del Mantenimiento</h3>
+
           <div className="form-group">
-            <label htmlFor="maintenanceName" className="form-label">
-              Categoría de Mantenimiento *
-            </label>
+            <label className="form-label">Título del Mantenimiento *</label>
             <input
-              id="maintenanceName"
               type="text"
-              value={maintenanceName}
-              onChange={(e) => setMaintenanceName(e.target.value)}
-              placeholder="Ingrese la categoría del mantenimiento"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ej: Cambio de aceite y filtros"
               className="form-input"
-              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Categoría *</label>
+            <CategorySearch
+              searchTerm={categorySearchTerm}
+              onSearchChange={handleCategorySearchChange}
+              availableCategories={availableCategories}
+              showDropdown={showCategoryDropdown}
+              onCategorySelect={handleCategorySelect}
+              onDropdownToggle={setShowCategoryDropdown}
+              placeholder="Buscar categoría..."
+              className="form-input"
+            />
+            {selectedCategory && (
+              <div className="selected-entity">
+                <span>Categoría seleccionada: {selectedCategory.name}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Frecuencia</h3>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Frecuencia en Kilómetros *</label>
+              <input
+                type="number"
+                value={frequencyKm}
+                onChange={(e) => setFrequencyKm(Number(e.target.value))}
+                min="1"
+                placeholder="10000"
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Frecuencia en Días *</label>
+              <input
+                type="number"
+                value={frequencyDays}
+                onChange={(e) => setFrequencyDays(Number(e.target.value))}
+                min="1"
+                placeholder="365"
+                className="form-input"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Detalles Adicionales</h3>
+
+          <div className="form-group">
+            <label className="form-label">Observaciones</label>
+            <textarea
+              value={observations}
+              onChange={(e) => setObservations(e.target.value)}
+              placeholder="Observaciones adicionales..."
+              className="form-textarea"
+              rows={3}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Instrucciones</label>
+            <textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="Instrucciones detalladas para el mantenimiento..."
+              className="form-textarea"
+              rows={4}
             />
           </div>
         </div>
+
+        {error && <div className="error-message">{error}</div>}
 
         <div className="form-actions">
           <button
@@ -195,34 +318,17 @@ export default function EditMaintenance() {
             Cancelar
           </button>
 
-          {!isCreateMode && (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleDelete}
-              disabled={saving}
-              style={{
-                marginLeft: "10px",
-                backgroundColor: "#dc3545",
-                color: "white",
-              }}
-            >
-              {saving ? "Eliminando..." : "Eliminar"}
-            </button>
-          )}
-
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
             disabled={saving}
-            style={{ marginLeft: "10px" }}
           >
             {saving
               ? "Guardando..."
               : isCreateMode
-              ? "Crear Categoría"
-              : "Actualizar Categoría"}
+              ? "Crear Mantenimiento"
+              : "Actualizar Mantenimiento"}
           </button>
         </div>
       </div>
@@ -232,6 +338,13 @@ export default function EditMaintenance() {
         message={message}
         onConfirm={handleConfirm}
         onCancel={handleDialogCancel}
+      />
+
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
       />
     </div>
   );

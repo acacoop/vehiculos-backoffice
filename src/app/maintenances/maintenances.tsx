@@ -125,8 +125,7 @@ export default function MaintenancePage() {
   };
 
   const handleCreatePossibleMaintenance = () => {
-    // TODO: Crear ruta para crear mantenimientos posibles
-    navigate("/maintenance/possible/create");
+    navigate("/maintenance/create");
   };
 
   return (

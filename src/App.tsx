@@ -12,6 +12,7 @@ import Assignaments from "./app/assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 import MaintenancePage from "./app/maintenances/maintenances";
 import EditCategory from "./app/EditCategory/EditCategory";
+import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 
@@ -42,6 +43,11 @@ function App() {
         <Route path="/maintenances" element={<MaintenancePage />} />
         <Route path="/category/create" element={<EditCategory />} />
         <Route path="/category/edit/:id" element={<EditCategory />} />
+        <Route path="/maintenance/create" element={<EditMaintenance />} />
+        <Route
+          path="/maintenance/possible/edit/:maintenanceId"
+          element={<EditMaintenance />}
+        />
         <Route
           path="/kilometers/create/:vehicleId"
           element={<KilometersEdit />}
