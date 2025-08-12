@@ -6,8 +6,13 @@ import {
   updateAssignment,
   finishAssignment,
 } from "../../services/assignments";
-import { getVehicleById, getVehicles } from "../../services/vehicles";
-import { getUserById, getUsers } from "../../services/users";
+import { getVehicleById } from "../../services/vehicles";
+import { getUserById } from "../../services/users";
+import { useUserSearch, useVehicleSearch } from "../../hooks";
+import {
+  UserSearch,
+  VehicleSearch,
+} from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { useConfirmDialog } from "../../hooks";
@@ -40,18 +45,10 @@ export default function EditAssignment() {
     null
   );
   const [preloadedUser, setPreloadedUser] = useState<User | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  // Estados para búsqueda de usuarios
-  const [userSearchTerm, setUserSearchTerm] = useState<string>("");
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-
-  // Estados para búsqueda de vehículos
-  const [vehicleSearchTerm, setVehicleSearchTerm] = useState<string>("");
-  const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
-  const [showVehicleDropdown, setShowVehicleDropdown] = useState(false);
+  // Hooks para búsqueda de entidades
+  const userSearch = useUserSearch();
+  const vehicleSearch = useVehicleSearch();
 
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -124,107 +121,6 @@ export default function EditAssignment() {
     fetchAssignment();
   }, [assignmentId, vehicleId, userIdFromQuery, isCreateMode]);
 
-  // Efecto para cerrar dropdown al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".user-search")) {
-        setShowUserDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Función para buscar usuarios
-  const searchUsers = async (searchTerm: string) => {
-    if (searchTerm.length < 2) {
-      setAvailableUsers([]);
-      setShowUserDropdown(false);
-      return;
-    }
-
-    try {
-      const response = await getUsers({ active: true }, { page: 1, limit: 10 });
-      if (response.success) {
-        const filteredUsers = response.data.filter(
-          (user: User) =>
-            user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.dni?.toString().includes(searchTerm) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setAvailableUsers(filteredUsers);
-        setShowUserDropdown(true);
-      }
-    } catch {
-      setAvailableUsers([]);
-      setShowUserDropdown(false);
-    }
-  };
-
-  // Función para seleccionar un usuario
-  const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
-    setUserSearchTerm(`${user.firstName} ${user.lastName}`);
-    setShowUserDropdown(false);
-  };
-
-  // Función para limpiar la selección de usuario
-  const clearUserSelection = () => {
-    setSelectedUser(null);
-    setUserSearchTerm("");
-    setAvailableUsers([]);
-    setShowUserDropdown(false);
-  };
-
-  // Función para buscar vehículos
-  const searchVehicles = async (searchTerm: string) => {
-    if (searchTerm.length < 2) {
-      setAvailableVehicles([]);
-      setShowVehicleDropdown(false);
-      return;
-    }
-
-    try {
-      const response = await getVehicles({}, { page: 1, limit: 100 });
-      if (response.success) {
-        const filteredVehicles = response.data.filter(
-          (vehicle) =>
-            vehicle.licensePlate
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            vehicle.year?.toString().includes(searchTerm)
-        );
-        setAvailableVehicles(filteredVehicles);
-        setShowVehicleDropdown(true);
-      }
-    } catch {
-      setAvailableVehicles([]);
-      setShowVehicleDropdown(false);
-    }
-  };
-
-  // Función para seleccionar un vehículo
-  const handleVehicleSelect = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    setVehicleSearchTerm(
-      `${vehicle.licensePlate} - ${vehicle.brand} ${vehicle.model}`
-    );
-    setShowVehicleDropdown(false);
-  };
-
-  // Función para limpiar la selección de vehículo
-  const clearVehicleSelection = () => {
-    setSelectedVehicle(null);
-    setVehicleSearchTerm("");
-    setAvailableVehicles([]);
-    setShowVehicleDropdown(false);
-  };
-
   // Función para verificar si se puede cambiar el usuario
   const canChangeUser = () => {
     // No se puede cambiar si estamos en modo editar (ya tiene usuario asignado)
@@ -234,7 +130,7 @@ export default function EditAssignment() {
     if (preloadedUser) return false;
 
     // Solo se puede cambiar si el usuario fue seleccionado manualmente (no precargado)
-    return selectedUser !== null;
+    return userSearch.selectedUser !== null;
   };
 
   // Función para verificar si se puede cambiar el vehículo
@@ -246,7 +142,7 @@ export default function EditAssignment() {
     if (preloadedVehicle) return false;
 
     // Solo se puede cambiar si el vehículo fue seleccionado manualmente
-    return selectedVehicle !== null;
+    return vehicleSearch.selectedVehicle !== null;
   };
   const handleSave = async () => {
     if (!startDate) {
@@ -255,11 +151,11 @@ export default function EditAssignment() {
     }
 
     if (isCreateMode) {
-      if (!selectedUser && !preloadedUser) {
+      if (!userSearch.selectedUser && !preloadedUser) {
         showError("Por favor, seleccione un usuario");
         return;
       }
-      if (!preloadedVehicle && !selectedVehicle && !vehicleId) {
+      if (!preloadedVehicle && !vehicleSearch.selectedVehicle && !vehicleId) {
         showError("Por favor, seleccione un vehículo");
         return;
       }
@@ -269,8 +165,9 @@ export default function EditAssignment() {
         "¿Está seguro que desea crear esta nueva asignación?",
         async () => {
           try {
-            const finalUser = selectedUser || preloadedUser;
-            const finalVehicle = selectedVehicle || preloadedVehicle;
+            const finalUser = userSearch.selectedUser || preloadedUser;
+            const finalVehicle =
+              vehicleSearch.selectedVehicle || preloadedVehicle;
 
             if (!finalUser || !finalVehicle) {
               showError("Error: Usuario o vehículo no encontrado");
@@ -327,14 +224,17 @@ export default function EditAssignment() {
             };
 
             // Solo incluir userId y vehicleId si han cambiado
-            if (selectedUser && selectedUser.id !== assignment.user.id) {
-              updateData.userId = selectedUser.id;
+            if (
+              userSearch.selectedUser &&
+              userSearch.selectedUser.id !== assignment.user.id
+            ) {
+              updateData.userId = userSearch.selectedUser.id;
             }
             if (
-              selectedVehicle &&
-              selectedVehicle.id !== assignment.vehicle.id
+              vehicleSearch.selectedVehicle &&
+              vehicleSearch.selectedVehicle.id !== assignment.vehicle.id
             ) {
-              updateData.vehicleId = selectedVehicle.id;
+              updateData.vehicleId = vehicleSearch.selectedVehicle.id;
             }
 
             const response = await updateAssignment(assignmentId, updateData);
@@ -420,13 +320,13 @@ export default function EditAssignment() {
         </h1>
 
         {/* Información del usuario */}
-        {assignment?.user || selectedUser || preloadedUser ? (
+        {assignment?.user || userSearch.selectedUser || preloadedUser ? (
           <div className="user-info">
             <h2 className="section-title">
               Datos del Usuario
               {canChangeUser() && (
                 <button
-                  onClick={clearUserSelection}
+                  onClick={userSearch.clearSelection}
                   className="clear-selection-btn"
                   style={{
                     marginLeft: "10px",
@@ -444,7 +344,7 @@ export default function EditAssignment() {
                 <span className="value">
                   {(
                     assignment?.user?.dni ||
-                    selectedUser?.dni ||
+                    userSearch.selectedUser?.dni ||
                     preloadedUser?.dni
                   )?.toLocaleString()}
                 </span>
@@ -453,7 +353,7 @@ export default function EditAssignment() {
                 <span className="label">Nombre:</span>
                 <span className="value">
                   {assignment?.user?.firstName ||
-                    selectedUser?.firstName ||
+                    userSearch.selectedUser?.firstName ||
                     preloadedUser?.firstName}
                 </span>
               </div>
@@ -461,7 +361,7 @@ export default function EditAssignment() {
                 <span className="label">Apellido:</span>
                 <span className="value">
                   {assignment?.user?.lastName ||
-                    selectedUser?.lastName ||
+                    userSearch.selectedUser?.lastName ||
                     preloadedUser?.lastName}
                 </span>
               </div>
@@ -469,7 +369,7 @@ export default function EditAssignment() {
                 <span className="label">Email:</span>
                 <span className="value">
                   {assignment?.user?.email ||
-                    selectedUser?.email ||
+                    userSearch.selectedUser?.email ||
                     preloadedUser?.email}
                 </span>
               </div>
@@ -483,50 +383,29 @@ export default function EditAssignment() {
                 <label htmlFor="userSearch" className="form-label">
                   Buscar usuario (por nombre, apellido, DNI o email)
                 </label>
-                <input
-                  type="text"
-                  id="userSearch"
-                  value={userSearchTerm}
-                  onChange={(e) => {
-                    setUserSearchTerm(e.target.value);
-                    searchUsers(e.target.value);
-                  }}
-                  className="form-input"
-                  placeholder="Escriba para buscar..."
+                <UserSearch
+                  searchTerm={userSearch.searchTerm}
+                  onSearchChange={userSearch.searchUsers}
+                  availableUsers={userSearch.availableUsers}
+                  showDropdown={userSearch.showDropdown}
+                  onUserSelect={userSearch.selectUser}
+                  onDropdownToggle={userSearch.setShowDropdown}
                 />
               </div>
-
-              {showUserDropdown && availableUsers.length > 0 && (
-                <div className="user-dropdown">
-                  {availableUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="user-dropdown-item"
-                      onClick={() => handleUserSelect(user)}
-                    >
-                      <strong>
-                        {user.firstName} {user.lastName}
-                      </strong>
-                      <br />
-                      <small>
-                        DNI: {user.dni?.toLocaleString()} - {user.email}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         )}
 
         {/* Información del vehículo */}
-        {assignment?.vehicle || preloadedVehicle || selectedVehicle ? (
+        {assignment?.vehicle ||
+        preloadedVehicle ||
+        vehicleSearch.selectedVehicle ? (
           <div className="user-info">
             <h2 className="section-title">
               Datos del Vehículo
               {canChangeVehicle() && (
                 <button
-                  onClick={clearVehicleSelection}
+                  onClick={vehicleSearch.clearSelection}
                   className="clear-selection-btn"
                   style={{
                     marginLeft: "10px",
@@ -544,7 +423,7 @@ export default function EditAssignment() {
                 <span className="value">
                   {assignment?.vehicle?.licensePlate ||
                     preloadedVehicle?.licensePlate ||
-                    selectedVehicle?.licensePlate}
+                    vehicleSearch.selectedVehicle?.licensePlate}
                 </span>
               </div>
               <div className="detail-item">
@@ -552,7 +431,7 @@ export default function EditAssignment() {
                 <span className="value">
                   {assignment?.vehicle?.brand ||
                     preloadedVehicle?.brand ||
-                    selectedVehicle?.brand}
+                    vehicleSearch.selectedVehicle?.brand}
                 </span>
               </div>
               <div className="detail-item">
@@ -560,7 +439,7 @@ export default function EditAssignment() {
                 <span className="value">
                   {assignment?.vehicle?.model ||
                     preloadedVehicle?.model ||
-                    selectedVehicle?.model}
+                    vehicleSearch.selectedVehicle?.model}
                 </span>
               </div>
               <div className="detail-item">
@@ -568,7 +447,7 @@ export default function EditAssignment() {
                 <span className="value">
                   {assignment?.vehicle?.year ||
                     preloadedVehicle?.year ||
-                    selectedVehicle?.year}
+                    vehicleSearch.selectedVehicle?.year}
                 </span>
               </div>
             </div>
@@ -581,36 +460,15 @@ export default function EditAssignment() {
                 <label htmlFor="vehicleSearch" className="form-label">
                   Buscar vehículo (por patente, marca, modelo o año)
                 </label>
-                <input
-                  type="text"
-                  id="vehicleSearch"
-                  value={vehicleSearchTerm}
-                  onChange={(e) => {
-                    setVehicleSearchTerm(e.target.value);
-                    searchVehicles(e.target.value);
-                  }}
-                  className="form-input"
-                  placeholder="Escriba para buscar..."
+                <VehicleSearch
+                  searchTerm={vehicleSearch.searchTerm}
+                  onSearchChange={vehicleSearch.searchVehicles}
+                  availableVehicles={vehicleSearch.availableVehicles}
+                  showDropdown={vehicleSearch.showDropdown}
+                  onVehicleSelect={vehicleSearch.selectVehicle}
+                  onDropdownToggle={vehicleSearch.setShowDropdown}
                 />
               </div>
-
-              {showVehicleDropdown && availableVehicles.length > 0 && (
-                <div className="user-dropdown">
-                  {availableVehicles.map((vehicle) => (
-                    <div
-                      key={vehicle.id}
-                      className="user-dropdown-item"
-                      onClick={() => handleVehicleSelect(vehicle)}
-                    >
-                      <strong>
-                        {vehicle.licensePlate} - {vehicle.brand} {vehicle.model}
-                      </strong>
-                      <br />
-                      <small>Año: {vehicle.year}</small>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         )}
