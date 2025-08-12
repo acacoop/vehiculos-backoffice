@@ -101,13 +101,15 @@ export default function EditMaintenance() {
 
   // Búsqueda de categorías
   useEffect(() => {
-    if (categorySearchTerm.length > 1) {
+    if (categorySearchTerm.length >= 1) {
       const filtered = allCategories.filter((category) =>
         category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
       );
       setAvailableCategories(filtered);
+      setShowCategoryDropdown(filtered.length > 0);
     } else {
       setAvailableCategories(allCategories);
+      setShowCategoryDropdown(false);
     }
   }, [categorySearchTerm, allCategories]);
 
@@ -115,6 +117,7 @@ export default function EditMaintenance() {
     setCategorySearchTerm(term);
     if (!term) {
       setSelectedCategory(null);
+      setShowCategoryDropdown(false);
     }
   };
 

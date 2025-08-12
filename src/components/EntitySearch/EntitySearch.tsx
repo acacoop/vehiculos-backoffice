@@ -127,7 +127,7 @@ export function CategorySearch({
         type="text"
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        onFocus={() => searchTerm.length > 1 && onDropdownToggle(true)}
+        onFocus={() => searchTerm.length >= 1 && onDropdownToggle(true)}
         onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
         placeholder={placeholder}
         className={className}
