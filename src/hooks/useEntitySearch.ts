@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getAllUsers } from "../services/users";
-import { getAllVehicles } from "../services/vehicles";
+import { getVehicles } from "../services/vehicles";
 import type { User } from "../types/user";
 import type { Vehicle } from "../types/vehicle";
 
@@ -68,14 +68,15 @@ export function useVehicleSearch() {
     setSearchTerm(term);
     if (term.length > 2) {
       try {
-        const response = await getAllVehicles();
+        const response = await getVehicles({}, { page: 1, limit: 100 });
         if (response.success) {
           const filtered = response.data.filter(
-            (vehicle) =>
+            (vehicle: Vehicle) =>
               `${vehicle.brand} ${vehicle.model}`
                 .toLowerCase()
                 .includes(term.toLowerCase()) ||
-              vehicle.licensePlate.toLowerCase().includes(term.toLowerCase())
+              vehicle.licensePlate.toLowerCase().includes(term.toLowerCase()) ||
+              vehicle.year?.toString().includes(term)
           );
           setAvailableVehicles(filtered);
           setShowDropdown(true);
