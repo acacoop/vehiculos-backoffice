@@ -8,10 +8,12 @@ import {
   deleteMaintenance,
 } from "../../services/maintenances";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
+import { useNotification } from "../../hooks/useNotification";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import "./EditMaintenance.css";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import "./EditCategory.css";
 
-export default function EditMaintenance() {
+export default function EditCategory() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -22,7 +24,7 @@ export default function EditMaintenance() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [maintenanceName, setMaintenanceName] = useState("");
+  const [categoryName, setCategoryName] = useState("");
 
   // ConfirmDialog hook
   const {
@@ -32,18 +34,23 @@ export default function EditMaintenance() {
     handleConfirm,
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
+
+  // Notification hook
+  const { notification, showSuccess, showError, closeNotification } =
+    useNotification();
+
   useEffect(() => {
     if (!isCreateMode && id) {
-      loadMaintenance(id);
+      loadCategory(id);
     }
   }, [id, isCreateMode]);
 
-  const loadMaintenance = async (maintenanceId: string) => {
+  const loadCategory = async (categoryId: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await getMaintenanceById(maintenanceId);
+      const response = await getMaintenanceById(categoryId);
 
       if (response.success && response.data) {
         // La respuesta tiene estructura anidada: response.data.data.name
@@ -51,7 +58,7 @@ export default function EditMaintenance() {
         const actualData = responseData.data || responseData;
         const nameValue = actualData.name;
 
-        setMaintenanceName(nameValue || "");
+        setCategoryName(nameValue || "");
       } else {
         setError(
           response.message || "Error al cargar la categoría de mantenimiento"
@@ -68,7 +75,7 @@ export default function EditMaintenance() {
   };
 
   const handleSave = async () => {
-    if (!maintenanceName.trim()) {
+    if (!categoryName.trim()) {
       setError("La categoría de mantenimiento es obligatoria");
       return;
     }
@@ -84,23 +91,31 @@ export default function EditMaintenance() {
         let response;
 
         if (isCreateMode) {
-          response = await createMaintenance({ name: maintenanceName.trim() });
+          response = await createMaintenance({ name: categoryName.trim() });
         } else if (id) {
           response = await updateMaintenance(id, {
-            name: maintenanceName.trim(),
+            name: categoryName.trim(),
           });
         }
 
         if (response?.success) {
-          navigate("/maintenances");
+          const successMessage = isCreateMode
+            ? "Categoría creada exitosamente"
+            : "Categoría actualizada exitosamente";
+          showSuccess(successMessage);
+
+          // Pequeño delay para que se vea la notificación antes de navegar
+          setTimeout(() => {
+            navigate("/maintenances");
+          }, 1500);
         } else {
-          setError(
+          showError(
             response?.message ||
               `Error al ${actionText} la categoría de mantenimiento`
           );
         }
       } catch (err) {
-        setError(`Error al ${actionText} la categoría de mantenimiento`);
+        showError(`Error al ${actionText} la categoría de mantenimiento`);
       } finally {
         setSaving(false);
       }
@@ -121,15 +136,20 @@ export default function EditMaintenance() {
         const response = await deleteMaintenance(id);
 
         if (response.success) {
-          navigate("/maintenances");
+          showSuccess("Categoría eliminada exitosamente");
+
+          // Pequeño delay para que se vea la notificación antes de navegar
+          setTimeout(() => {
+            navigate("/maintenances");
+          }, 1500);
         } else {
-          setError(
+          showError(
             response.message ||
               "Error al eliminar la categoría de mantenimiento"
           );
         }
       } catch (err) {
-        setError("Error al eliminar la categoría de mantenimiento");
+        showError("Error al eliminar la categoría de mantenimiento");
       } finally {
         setSaving(false);
       }
@@ -142,7 +162,7 @@ export default function EditMaintenance() {
 
   if (loading) {
     return (
-      <div className="edit-maintenance-container">
+      <div className="edit-category-container">
         <div className="loading-spinner">
           <CircularProgress />
         </div>
@@ -151,9 +171,9 @@ export default function EditMaintenance() {
   }
 
   return (
-    <div className="edit-maintenance-container">
-      <div className="edit-maintenance-header">
-        <h1 className="edit-maintenance-title">
+    <div className="edit-category-container">
+      <div className="edit-category-header">
+        <h1 className="edit-category-title">
           {isCreateMode
             ? "Nueva Categoría de Mantenimiento"
             : "Editar Categoría de Mantenimiento"}
@@ -166,18 +186,18 @@ export default function EditMaintenance() {
         </Alert>
       )}
 
-      <div className="edit-maintenance-content">
+      <div className="edit-category-content">
         <div className="form-section">
           <h3>Información de la Categoría</h3>
           <div className="form-group">
-            <label htmlFor="maintenanceName" className="form-label">
+            <label htmlFor="categoryName" className="form-label">
               Categoría de Mantenimiento *
             </label>
             <input
-              id="maintenanceName"
+              id="categoryName"
               type="text"
-              value={maintenanceName}
-              onChange={(e) => setMaintenanceName(e.target.value)}
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
               placeholder="Ingrese la categoría del mantenimiento"
               className="form-input"
               required
@@ -232,6 +252,13 @@ export default function EditMaintenance() {
         message={message}
         onConfirm={handleConfirm}
         onCancel={handleDialogCancel}
+      />
+
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
       />
     </div>
   );

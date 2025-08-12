@@ -11,7 +11,7 @@ import Metrics from "./app/metrics/Metrics";
 import Assignaments from "./app/assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 import MaintenancePage from "./app/maintenances/maintenances";
-import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
+import EditCategory from "./app/EditCategory/EditCategory";
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 
@@ -40,8 +40,8 @@ function App() {
         <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
         <Route path="/assignments" element={<Assignaments />} />
         <Route path="/maintenances" element={<MaintenancePage />} />
-        <Route path="/maintenance/create" element={<EditMaintenance />} />
-        <Route path="/maintenance/edit/:id" element={<EditMaintenance />} />
+        <Route path="/category/create" element={<EditCategory />} />
+        <Route path="/category/edit/:id" element={<EditCategory />} />
         <Route
           path="/kilometers/create/:vehicleId"
           element={<KilometersEdit />}

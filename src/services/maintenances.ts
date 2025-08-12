@@ -305,3 +305,114 @@ export const updateMaintenance = async (
     };
   }
 };
+
+/**
+ * Eliminar una categoría de mantenimiento
+ */
+export const deleteMaintenance = async (
+  id: string
+): Promise<ServiceResponse<null>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return {
+      success: true,
+      data: null,
+      message: "Categoría eliminada exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al eliminar la categoría",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Interfaz para mantenimientos posibles con información de categoría
+ */
+interface MaintenancePossible {
+  id: string;
+  name: string;
+  maintenanceCategoryName?: string; // Como viene del backend en camelCase
+  maintenancecategoryname?: string; // Como realmente viene del backend en lowercase
+}
+
+/**
+ * Interfaz normalizada para el frontend (ya viene en el formato correcto)
+ */
+export interface MaintenancePossibleNormalized {
+  id: string;
+  name: string;
+  maintenanceCategoryName: string;
+}
+
+/**
+ * Obtiene todos los mantenimientos posibles con información de categoría
+ */
+export async function getMaintenancePossibles(
+  pagination?: PaginationParams
+): Promise<ServiceResponse<MaintenancePossibleNormalized[]>> {
+  try {
+    const uri = "/maintenance/posibles";
+
+    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const rawData = await response.json();
+
+    // Procesar los datos según la estructura de tu controlador: { status: 'success', data: [...] }
+    let dataArray: MaintenancePossible[] = [];
+
+    if (rawData.status === "success" && rawData.data) {
+      if (Array.isArray(rawData.data)) {
+        dataArray = rawData.data;
+      }
+    } else if (Array.isArray(rawData)) {
+      dataArray = rawData;
+    }
+
+    const normalizedData: MaintenancePossibleNormalized[] = dataArray.map(
+      (item) => {
+        return {
+          id: item.id,
+          name: item.name,
+          maintenanceCategoryName:
+            item.maintenancecategoryname ||
+            item.maintenanceCategoryName ||
+            "Sin categoría",
+        };
+      }
+    );
+
+    return {
+      success: true,
+      data: normalizedData,
+      message: "Mantenimientos posibles obtenidos exitosamente",
+    };
+  } catch (error) {
+    console.error("Error fetching maintenance possibles:", error);
+    return {
+      success: false,
+      data: [],
+      message:
+        "Error al obtener mantenimientos posibles: " +
+        (error instanceof Error ? error.message : String(error)),
+      error: error as any,
+    };
+  }
+}
