@@ -188,7 +188,7 @@ export default function EditAssignment() {
     }
 
     try {
-      const response = await getVehicles({}, { page: 1, limit: 10 });
+      const response = await getVehicles({}, { page: 1, limit: 100 });
       if (response.success) {
         const filteredVehicles = response.data.filter(
           (vehicle) =>
