@@ -5,7 +5,9 @@ import {
   createReservation,
   updateReservation,
   getReservationById,
+  getAllReservations,
 } from "../../services/reservations";
+import { getAllAssignments } from "../../services/assignments";
 import { getUserById } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { useUserSearch, useVehicleSearch } from "../../hooks";
@@ -39,7 +41,6 @@ export default function ReservationEdit() {
   // Estados de control
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Hooks para búsqueda de entidades
   const userSearch = useUserSearch();
@@ -108,10 +109,10 @@ export default function ReservationEdit() {
               }
             }
           } else {
-            setError(response.message || "Error al cargar la reserva");
+            showError(response.message || "Error al cargar la reserva");
           }
         } catch (err) {
-          setError(
+          showError(
             "Error al cargar la reserva: " +
               (err instanceof Error ? err.message : "Error desconocido")
           );
@@ -183,18 +184,140 @@ export default function ReservationEdit() {
     return true;
   };
 
+  // Función para verificar si ya existe una reserva activa para el mismo usuario y vehículo
+  const checkExistingReservation = async (
+    userId: string,
+    vehicleId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<boolean> => {
+    try {
+      const response = await getAllReservations();
+
+      if (response.success && response.data.length > 0) {
+        const newStartDate = new Date(startDate);
+        const newEndDate = new Date(endDate);
+
+        // Verificar si hay conflicto de fechas con reservas existentes para el mismo usuario y vehículo
+        const hasConflict = response.data.some((reservation) => {
+          // Solo verificar reservas del mismo usuario y vehículo
+          if (
+            reservation.userId !== userId ||
+            reservation.vehicleId !== vehicleId
+          ) {
+            return false;
+          }
+
+          // Si estamos editando, excluir la reserva actual
+          if (!isCreateMode && reservation.id === reservationId) {
+            return false;
+          }
+
+          const existingStartDate = new Date(reservation.startDate);
+          const existingEndDate = new Date(reservation.endDate);
+
+          // Verificar solapamiento de fechas
+          return (
+            (newStartDate >= existingStartDate &&
+              newStartDate <= existingEndDate) ||
+            (newEndDate >= existingStartDate &&
+              newEndDate <= existingEndDate) ||
+            (newStartDate <= existingStartDate && newEndDate >= existingEndDate)
+          );
+        });
+
+        return hasConflict;
+      }
+      return false;
+    } catch (error) {
+      // En caso de error en la verificación, permitir continuar
+      return false;
+    }
+  };
+
+  // Función para verificar si el usuario tiene el vehículo asignado
+  const checkVehicleAssignment = async (
+    userId: string,
+    vehicleId: string
+  ): Promise<boolean> => {
+    try {
+      const response = await getAllAssignments({
+        userId,
+        vehicleId,
+      });
+
+      if (response.success && response.data.length > 0) {
+        // Verificar si hay alguna asignación activa (sin fecha de fin o fecha de fin en el futuro)
+        const hasActiveAssignment = response.data.some((assignment) => {
+          if (!assignment.endDate) return true; // Sin fecha de fin = indefinida = activa
+          const endDate = new Date(assignment.endDate);
+          return endDate > new Date(); // Fecha de fin en el futuro = activa
+        });
+        return hasActiveAssignment;
+      }
+      return false;
+    } catch (error) {
+      // En caso de error en la verificación, devolver false para mostrar el error
+      return false;
+    }
+  };
+
   // Guardar reserva
   const handleSave = async () => {
-    setError(null);
     if (!validateForm()) return;
 
     setSaving(true);
     try {
+      const startDateTime = new Date(`${startDate}T${startTime}`).toISOString();
+      const endDateTime = new Date(`${endDate}T${endTime}`).toISOString();
+
+      // Verificar si el usuario tiene el vehículo asignado
+      const hasVehicleAssigned = await checkVehicleAssignment(
+        userSearch.selectedUser!.id,
+        vehicleSearch.selectedVehicle!.id
+      );
+
+      if (!hasVehicleAssigned) {
+        showError(
+          `No se puede generar la reserva ya que el usuario ${
+            userSearch.selectedUser!.firstName
+          } ${userSearch.selectedUser!.lastName} no cuenta con el auto ${
+            vehicleSearch.selectedVehicle!.brand
+          } ${vehicleSearch.selectedVehicle!.model} (${
+            vehicleSearch.selectedVehicle!.licensePlate
+          }) asignado`
+        );
+        setSaving(false);
+        return;
+      }
+
+      // Verificar si ya existe una reserva para el mismo usuario y vehículo en el período seleccionado
+      const hasExistingReservation = await checkExistingReservation(
+        userSearch.selectedUser!.id,
+        vehicleSearch.selectedVehicle!.id,
+        startDateTime,
+        endDateTime
+      );
+
+      if (hasExistingReservation) {
+        showError(
+          `Ya existe una reserva para ${userSearch.selectedUser!.firstName} ${
+            userSearch.selectedUser!.lastName
+          } con el vehículo ${vehicleSearch.selectedVehicle!.brand} ${
+            vehicleSearch.selectedVehicle!.model
+          } (${
+            vehicleSearch.selectedVehicle!.licensePlate
+          }) en el período seleccionado`
+        );
+        setSaving(false);
+        return;
+      }
+
       const reservationData = {
         userId: userSearch.selectedUser!.id,
         vehicleId: vehicleSearch.selectedVehicle!.id,
-        startDate: new Date(`${startDate}T${startTime}`).toISOString(),
-        endDate: new Date(`${endDate}T${endTime}`).toISOString(),
+        startDate: startDateTime,
+        endDate: endDateTime,
       };
 
       const response = isCreateMode
@@ -210,10 +333,27 @@ export default function ReservationEdit() {
           navigate(-1);
         }, 1500);
       } else {
-        showError(
-          response.message ||
-            `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`
-        );
+        // Verificar si es un error de reserva duplicada
+        const errorMessage = response.message || "";
+        if (
+          errorMessage.toLowerCase().includes("already reserved") ||
+          errorMessage.toLowerCase().includes("ya reservado") ||
+          errorMessage.toLowerCase().includes("duplicate") ||
+          errorMessage.toLowerCase().includes("duplicado") ||
+          errorMessage.includes("500") || // Internal server error que podría indicar conflicto
+          errorMessage.toLowerCase().includes("conflict")
+        ) {
+          showError(
+            `Ya existe una reserva para ${userSearch.selectedUser!.firstName} ${
+              userSearch.selectedUser!.lastName
+            } con este vehículo en el período seleccionado`
+          );
+        } else {
+          showError(
+            response.message ||
+              `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`
+          );
+        }
       }
     } catch (err) {
       showError(`Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`);

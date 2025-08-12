@@ -5,6 +5,7 @@ import {
   createAssignment,
   updateAssignment,
   finishAssignment,
+  getAllAssignments,
 } from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
@@ -144,6 +145,33 @@ export default function EditAssignment() {
     // Solo se puede cambiar si el vehículo fue seleccionado manualmente
     return vehicleSearch.selectedVehicle !== null;
   };
+  // Función para verificar si ya existe una asignación activa
+  const checkExistingAssignment = async (
+    userId: string,
+    vehicleId: string
+  ): Promise<boolean> => {
+    try {
+      const response = await getAllAssignments({
+        userId,
+        vehicleId,
+      });
+
+      if (response.success && response.data.length > 0) {
+        // Verificar si alguna asignación está activa (no tiene fecha de fin o la fecha de fin es futura)
+        const hasActiveAssignment = response.data.some((assignment) => {
+          if (!assignment.endDate) return true; // Sin fecha de fin = indefinida = activa
+          const endDate = new Date(assignment.endDate);
+          return endDate > new Date(); // Fecha de fin en el futuro = activa
+        });
+        return hasActiveAssignment;
+      }
+      return false;
+    } catch (error) {
+      // En caso de error en la verificación, permitir continuar
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     if (!startDate) {
       showError("Por favor, complete la fecha de inicio");
@@ -174,6 +202,18 @@ export default function EditAssignment() {
               return;
             }
 
+            // Verificar si ya existe una asignación activa para este usuario y vehículo
+            const hasExistingAssignment = await checkExistingAssignment(
+              finalUser.id,
+              finalVehicle.id
+            );
+            if (hasExistingAssignment) {
+              showError(
+                `El vehículo ${finalVehicle.brand} ${finalVehicle.model} (${finalVehicle.licensePlate}) ya se encuentra asignado a ${finalUser.firstName} ${finalUser.lastName}`
+              );
+              return;
+            }
+
             const assignmentData = {
               userId: finalUser.id,
               vehicleId: finalVehicle.id,
@@ -191,7 +231,22 @@ export default function EditAssignment() {
                 navigate(-1);
               }, 1500);
             } else {
-              showError(`Error al crear la asignación: ${response.message}`);
+              // Verificar si es un error de asignación duplicada
+              const errorMessage = response.message || "";
+              if (
+                errorMessage.toLowerCase().includes("already assigned") ||
+                errorMessage.toLowerCase().includes("ya asignado") ||
+                errorMessage.toLowerCase().includes("duplicate") ||
+                errorMessage.toLowerCase().includes("duplicado") ||
+                errorMessage.includes("500") || // Internal server error que podría indicar conflicto
+                errorMessage.toLowerCase().includes("conflict")
+              ) {
+                showError(
+                  `Este vehículo ya se encuentra asignado a ${finalUser.firstName} ${finalUser.lastName}`
+                );
+              } else {
+                showError(`Error al crear la asignación: ${response.message}`);
+              }
             }
           } catch (error) {
             showError("Error al crear la asignación");
