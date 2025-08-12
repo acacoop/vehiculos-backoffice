@@ -238,40 +238,89 @@ export default function ReservationEdit() {
   }
 
   return (
-    <div className="reservation-edit-container">
-      <div className="reservation-edit-content">
-        <div className="reservation-edit-header">
-          <h1 className="reservation-edit-title">
-            {isCreateMode ? "Nueva Reserva" : "Editar Reserva"}
-          </h1>
-        </div>
+    <div className="edit-assignment-container">
+      <div className="edit-assignment-card">
+        <h1 className="title">
+          {isCreateMode ? "Nueva Reserva" : "Editar Reserva"}
+        </h1>
 
-        {error && <div className="error-message">{error}</div>}
-
-        <div className="reservation-form">
-          {/* Sección de Usuario */}
-          <div className="reservation-form-section">
-            <h3>
-              Información del Usuario
-              {userSearch.selectedUser && (
-                <button
-                  onClick={userSearch.clearSelection}
-                  className="clear-selection-btn"
-                  style={{
-                    marginLeft: "10px",
-                    fontSize: "0.8rem",
-                    padding: "4px 8px",
-                  }}
-                >
-                  Cambiar usuario
-                </button>
-              )}
-            </h3>
-
-            {!preloadedUserId && !userSearch.selectedUser && (
-              <div className="reservation-form-group">
-                <label htmlFor="userSearch" className="reservation-form-label">
-                  Buscar Usuario
+        {/* Información del usuario */}
+        {preloadedUserId && userSearch.selectedUser ? (
+          <div className="user-info">
+            <h2 className="section-title">Datos del Usuario</h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">DNI:</span>
+                <span className="value">
+                  {userSearch.selectedUser.dni?.toLocaleString()}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Nombre:</span>
+                <span className="value">
+                  {userSearch.selectedUser.firstName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Apellido:</span>
+                <span className="value">
+                  {userSearch.selectedUser.lastName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Email:</span>
+                <span className="value">{userSearch.selectedUser.email}</span>
+              </div>
+            </div>
+          </div>
+        ) : userSearch.selectedUser ? (
+          <div className="user-info">
+            <h2 className="section-title">
+              Datos del Usuario
+              <button
+                onClick={userSearch.clearSelection}
+                className="clear-selection-btn"
+                style={{
+                  marginLeft: "10px",
+                  fontSize: "0.8rem",
+                  padding: "4px 8px",
+                }}
+              >
+                Cambiar usuario
+              </button>
+            </h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">DNI:</span>
+                <span className="value">
+                  {userSearch.selectedUser.dni?.toLocaleString()}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Nombre:</span>
+                <span className="value">
+                  {userSearch.selectedUser.firstName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Apellido:</span>
+                <span className="value">
+                  {userSearch.selectedUser.lastName}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Email:</span>
+                <span className="value">{userSearch.selectedUser.email}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="user-info">
+            <h2 className="section-title">Seleccionar Usuario</h2>
+            <div className="user-search">
+              <div className="form-group">
+                <label htmlFor="userSearch" className="form-label">
+                  Buscar usuario (por nombre, apellido, DNI o email)
                 </label>
                 <UserSearch
                   searchTerm={userSearch.searchTerm}
@@ -282,49 +331,91 @@ export default function ReservationEdit() {
                   onDropdownToggle={userSearch.setShowDropdown}
                 />
               </div>
-            )}
-
-            {userSearch.selectedUser && (
-              <div className="reservation-form-group">
-                <label className="reservation-form-label">
-                  Usuario Seleccionado
-                </label>
-                <input
-                  type="text"
-                  value={`${userSearch.selectedUser.firstName} ${userSearch.selectedUser.lastName} - DNI: ${userSearch.selectedUser.dni}`}
-                  disabled
-                  className="reservation-form-input"
-                />
-              </div>
-            )}
+            </div>
           </div>
+        )}
 
-          {/* Sección de Vehículo */}
-          <div className="reservation-form-section">
-            <h3>
-              Información del Vehículo
-              {vehicleSearch.selectedVehicle && (
-                <button
-                  onClick={vehicleSearch.clearSelection}
-                  className="clear-selection-btn"
-                  style={{
-                    marginLeft: "10px",
-                    fontSize: "0.8rem",
-                    padding: "4px 8px",
-                  }}
-                >
-                  Cambiar vehículo
-                </button>
-              )}
-            </h3>
-
-            {!preloadedVehicleId && !vehicleSearch.selectedVehicle && (
-              <div className="reservation-form-group">
-                <label
-                  htmlFor="vehicleSearch"
-                  className="reservation-form-label"
-                >
-                  Buscar Vehículo
+        {/* Información del vehículo */}
+        {preloadedVehicleId && vehicleSearch.selectedVehicle ? (
+          <div className="user-info">
+            <h2 className="section-title">Datos del Vehículo</h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">Patente:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.licensePlate}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Marca:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.brand}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Modelo:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.model}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Año:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.year}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : vehicleSearch.selectedVehicle ? (
+          <div className="user-info">
+            <h2 className="section-title">
+              Datos del Vehículo
+              <button
+                onClick={vehicleSearch.clearSelection}
+                className="clear-selection-btn"
+                style={{
+                  marginLeft: "10px",
+                  fontSize: "0.8rem",
+                  padding: "4px 8px",
+                }}
+              >
+                Cambiar vehículo
+              </button>
+            </h2>
+            <div className="user-details">
+              <div className="detail-item">
+                <span className="label">Patente:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.licensePlate}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Marca:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.brand}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Modelo:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.model}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Año:</span>
+                <span className="value">
+                  {vehicleSearch.selectedVehicle.year}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="user-info">
+            <h2 className="section-title">Seleccionar Vehículo</h2>
+            <div className="vehicle-search">
+              <div className="form-group">
+                <label htmlFor="vehicleSearch" className="form-label">
+                  Buscar vehículo (por patente, marca, modelo o año)
                 </label>
                 <VehicleSearch
                   searchTerm={vehicleSearch.searchTerm}
@@ -335,55 +426,40 @@ export default function ReservationEdit() {
                   onDropdownToggle={vehicleSearch.setShowDropdown}
                 />
               </div>
-            )}
-
-            {vehicleSearch.selectedVehicle && (
-              <div className="reservation-form-group">
-                <label className="reservation-form-label">
-                  Vehículo Seleccionado
-                </label>
-                <input
-                  type="text"
-                  value={`${vehicleSearch.selectedVehicle.brand} ${vehicleSearch.selectedVehicle.model} - ${vehicleSearch.selectedVehicle.licensePlate}`}
-                  disabled
-                  className="reservation-form-input"
-                />
-              </div>
-            )}
+            </div>
           </div>
+        )}
 
-          {/* Sección de Fechas */}
-          <div className="reservation-form-section">
-            <h3>Período de la Reserva</h3>
+        {/* Formulario de reserva */}
+        <div className="assignment-form">
+          <h2 className="section-title">Período de la Reserva</h2>
 
-            <DateTimePicker
-              startDate={startDate}
-              startTime={startTime}
-              endDate={endDate}
-              endTime={endTime}
-              onStartDateChange={setStartDate}
-              onStartTimeChange={setStartTime}
-              onEndDateChange={setEndDate}
-              onEndTimeChange={setEndTime}
-              disabled={saving}
-              minDate={new Date().toISOString().split("T")[0]}
-            />
-          </div>
+          <DateTimePicker
+            startDate={startDate}
+            startTime={startTime}
+            endDate={endDate}
+            endTime={endTime}
+            onStartDateChange={setStartDate}
+            onStartTimeChange={setStartTime}
+            onEndDateChange={setEndDate}
+            onEndTimeChange={setEndTime}
+            disabled={saving}
+            minDate={new Date().toISOString().split("T")[0]}
+          />
         </div>
 
-        <div className="reservation-form-actions">
+        {/* Botones de acción */}
+        <div className="action-buttons">
           <button
-            type="button"
-            className="reservation-btn reservation-btn-secondary"
             onClick={handleCancel}
+            className="button-cancel"
             disabled={saving}
           >
             Cancelar
           </button>
           <button
-            type="button"
-            className="reservation-btn reservation-btn-primary"
             onClick={handleSave}
+            className="button-confirm"
             disabled={saving}
           >
             {saving
