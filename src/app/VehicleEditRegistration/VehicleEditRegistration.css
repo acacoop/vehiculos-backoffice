@@ -15,35 +15,6 @@
   padding: 20px 0;
 }
 
-.register-button {
-  background-color: #282d86;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 15px 30px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
-}
-
-.register-button:hover:not(:disabled) {
-  background-color: #fe9000;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-}
-
-.register-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
-}
-
-.register-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .vehicle-edit-registration-container > * {
   margin-bottom: 30px;
 }
@@ -60,10 +31,5 @@
   .vehicle-edit-registration-container .title {
     font-size: 24px;
     margin-bottom: 20px;
-  }
-
-  .register-button {
-    padding: 12px 24px;
-    font-size: 14px;
   }
 }

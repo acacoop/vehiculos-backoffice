@@ -155,53 +155,6 @@
   border-bottom: none;
 }
 
-.reservation-form-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-  border-radius: 20px;
-  padding: 30px;
-  width: 1200px;
-}
-
-.reservation-btn {
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  min-width: 120px;
-  text-transform: none;
-}
-
-.reservation-btn-primary {
-  background-color: #282d86;
-  color: #fff;
-  transition: background-color 0.2s;
-}
-
-.reservation-btn-primary:hover:not(:disabled) {
-  background-color: #1e2366;
-}
-
-.reservation-btn-secondary {
-  background-color: #e53935;
-  color: white;
-  transition: background-color 0.3s;
-}
-
-.reservation-btn-secondary:hover:not(:disabled) {
-  background-color: #c62828;
-}
-
-.reservation-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .loading-spinner {
   display: flex;
   justify-content: center;

@@ -140,71 +140,6 @@
   margin: 0 !important;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-}
-
-.button {
-  padding: 12px 30px;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  min-width: 120px;
-}
-
-.button-confirm {
-  background-color: #282d86;
-  color: #fff;
-  transition: background-color 0.2s;
-  text-transform: none;
-  padding: 8px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.button-confirm:hover {
-  background-color: #1e2366;
-}
-
-.button-cancel {
-  text-transform: none;
-  padding: 8px 20px;
-  background-color: #e53935;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-  cursor: pointer;
-}
-
-.button-cancel:hover {
-  background-color: #c62828;
-}
-
-.button-unassign {
-  text-transform: none;
-  padding: 8px 20px;
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-  cursor: pointer;
-  margin: 0 10px;
-}
-
-.button-unassign:hover {
-  background-color: #f57c00;
-}
-
 .loading,
 .error {
   text-align: center;
@@ -314,16 +249,6 @@
 
   .title {
     font-size: 1.6rem;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .button {
-    width: 100%;
-    max-width: 250px;
   }
 
   .user-details {

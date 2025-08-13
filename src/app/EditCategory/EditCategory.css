@@ -67,49 +67,6 @@
   box-shadow: 0 0 0 3px rgba(40, 45, 134, 0.1);
 }
 
-.form-actions {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 40px;
-  padding-top: 30px;
-}
-
-.btn {
-  padding: 15px 40px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  min-width: 180px;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #282d86;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #1e2058;
-}
-
-.btn-secondary {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #c82333;
-}
-
 .loading-spinner {
   display: flex;
   justify-content: center;
