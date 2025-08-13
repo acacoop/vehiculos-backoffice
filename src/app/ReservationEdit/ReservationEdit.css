@@ -35,24 +35,6 @@
   width: 1200px;
 }
 
-.reservation-form-section {
-  margin-bottom: 30px;
-}
-
-.reservation-form-section h3 {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  color: #282d86;
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  border-left: 4px solid #fe9000;
-  padding-left: 15px;
-  border-radius: 4px;
-  text-align: start;
-}
-
 .reservation-form-group {
   margin-bottom: 20px;
   gap: 10px;
@@ -155,6 +137,16 @@
   border-bottom: none;
 }
 
+.reservation-form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  border-radius: 20px;
+  padding: 30px;
+  width: 1200px;
+}
+
 .loading-spinner {
   display: flex;
   justify-content: center;
@@ -203,17 +195,8 @@
     font-size: 22px;
   }
 
-  .reservation-form-section h3 {
-    font-size: 1.2rem;
-  }
-
   .reservation-form-actions {
     flex-direction: column;
-  }
-
-  .reservation-btn {
-    width: 100%;
-    margin-bottom: 10px;
   }
 }
 

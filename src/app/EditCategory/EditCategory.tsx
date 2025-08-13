@@ -11,25 +11,22 @@ import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import { useNotification } from "../../hooks/useNotification";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import {
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
-} from "../../components/Buttons/Buttons";
 import "./EditCategory.css";
 
 export default function EditCategory() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  // Determinar si estamos en modo creación o edición
   const isCreateMode = !id;
 
+  // Estados
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
 
+  // ConfirmDialog hook
   const {
     isOpen,
     message,
@@ -38,6 +35,7 @@ export default function EditCategory() {
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
 
+  // Notification hook
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -55,6 +53,7 @@ export default function EditCategory() {
       const response = await getMaintenanceById(categoryId);
 
       if (response.success && response.data) {
+        // La respuesta tiene estructura anidada: response.data.data.name
         const responseData = response.data as any;
         const actualData = responseData.data || responseData;
         const nameValue = actualData.name;
@@ -105,6 +104,7 @@ export default function EditCategory() {
             : "Categoría actualizada exitosamente";
           showSuccess(successMessage);
 
+          // Pequeño delay para que se vea la notificación antes de navegar
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);
@@ -138,6 +138,7 @@ export default function EditCategory() {
         if (response.success) {
           showSuccess("Categoría eliminada exitosamente");
 
+          // Pequeño delay para que se vea la notificación antes de navegar
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);
@@ -204,29 +205,46 @@ export default function EditCategory() {
           </div>
         </div>
 
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
             onClick={handleCancel}
             disabled={saving}
-          />
+          >
+            Cancelar
+          </button>
 
           {!isCreateMode && (
-            <DeleteButton
-              text="Eliminar"
+            <button
+              type="button"
+              className="btn btn-danger"
               onClick={handleDelete}
               disabled={saving}
-              loading={saving}
-            />
+              style={{
+                marginLeft: "10px",
+                backgroundColor: "#dc3545",
+                color: "white",
+              }}
+            >
+              {saving ? "Eliminando..." : "Eliminar"}
+            </button>
           )}
 
-          <ConfirmButton
-            text={isCreateMode ? "Crear Categoría" : "Actualizar Categoría"}
+          <button
+            type="button"
+            className="btn btn-primary"
             onClick={handleSave}
             disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
+            style={{ marginLeft: "10px" }}
+          >
+            {saving
+              ? "Guardando..."
+              : isCreateMode
+              ? "Crear Categoría"
+              : "Actualizar Categoría"}
+          </button>
+        </div>
       </div>
 
       <ConfirmDialog

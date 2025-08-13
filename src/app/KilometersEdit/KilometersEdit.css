@@ -1,4 +1,3 @@
-
 @import "../EditAssignment/EditAssignment.css";
 
 .kilometers-edit-container {
@@ -24,13 +23,11 @@
   border: 1px solid #ffcdd2;
 }
 
-
 .textarea-input {
   min-height: 100px;
   resize: vertical;
   font-family: inherit;
 }
-
 
 .readonly-field {
   padding: 12px;

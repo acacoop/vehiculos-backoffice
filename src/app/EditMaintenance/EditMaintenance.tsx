@@ -1,22 +1,19 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
+  getMaintenanceCategories,
   getMaintenancePossibles,
   createMaintenanceItem,
   updateMaintenanceItem,
   deleteMaintenanceItem,
   type MaintenanceItemData,
 } from "../../services/maintenances";
+import { CategorySearch } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import {
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
-} from "../../components/Buttons/Buttons";
-import { useConfirmDialog, useCategorySearch } from "../../hooks";
+import { useConfirmDialog } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
+import type { Maintenance } from "../../types/maintenance";
 import "./EditMaintenance.css";
 
 export default function EditMaintenance() {
@@ -32,13 +29,20 @@ export default function EditMaintenance() {
   const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
+    null
+  );
   const [frequencyKm, setFrequencyKm] = useState<number>(10000);
   const [frequencyDays, setFrequencyDays] = useState<number>(365);
   const [observations, setObservations] = useState("");
   const [instructions, setInstructions] = useState("");
-  const [pendingCategoryName, setPendingCategoryName] = useState<string>("");
 
-  const categorySearch = useCategorySearch();
+  const [categorySearchTerm, setCategorySearchTerm] = useState("");
+  const [availableCategories, setAvailableCategories] = useState<Maintenance[]>(
+    []
+  );
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [allCategories, setAllCategories] = useState<Maintenance[]>([]);
   const {
     isOpen,
     message,
@@ -50,22 +54,26 @@ export default function EditMaintenance() {
     useNotification();
 
   useEffect(() => {
-    if (!isCreateMode && maintenanceId) {
-      loadMaintenance(maintenanceId);
-    }
-  }, [maintenanceId, isCreateMode]);
+    loadCategories();
+  }, []);
 
   useEffect(() => {
-    if (pendingCategoryName && categorySearch.allCategories.length > 0) {
-      const category = categorySearch.allCategories.find(
-        (c: any) => c.name.toLowerCase() === pendingCategoryName.toLowerCase()
-      );
-      if (category) {
-        categorySearch.selectCategory(category);
-        setPendingCategoryName("");
-      }
+    if (!isCreateMode && maintenanceId && allCategories.length > 0) {
+      loadMaintenance(maintenanceId);
     }
-  }, [categorySearch.allCategories, pendingCategoryName]);
+  }, [maintenanceId, isCreateMode, allCategories]);
+
+  const loadCategories = async () => {
+    try {
+      const response = await getMaintenanceCategories({ page: 1, limit: 100 });
+      if (response.success && response.data) {
+        setAllCategories(response.data);
+        setAvailableCategories(response.data);
+      }
+    } catch (err) {
+      console.error("Error loading categories:", err);
+    }
+  };
 
   const loadMaintenance = async (id: string) => {
     setLoading(true);
@@ -77,25 +85,23 @@ export default function EditMaintenance() {
 
         if (maintenance) {
           setTitle(maintenance.name);
+
           setFrequencyKm(10000);
           setFrequencyDays(365);
           setObservations("");
           setInstructions("");
 
-          if (maintenance.maintenanceCategoryName) {
-            if (categorySearch.allCategories.length > 0) {
-              const category = categorySearch.allCategories.find(
-                (c: any) =>
-                  c.name.toLowerCase() ===
-                  maintenance.maintenanceCategoryName.toLowerCase()
-              );
-              if (category) {
-                categorySearch.selectCategory(category);
-              } else {
-                setPendingCategoryName(maintenance.maintenanceCategoryName);
-              }
+          if (maintenance.maintenanceCategoryName && allCategories.length > 0) {
+            const category = allCategories.find(
+              (c) =>
+                c.name.toLowerCase() ===
+                maintenance.maintenanceCategoryName.toLowerCase()
+            );
+            if (category) {
+              setSelectedCategory(category);
+              setCategorySearchTerm(category.name);
             } else {
-              setPendingCategoryName(maintenance.maintenanceCategoryName);
+              setCategorySearchTerm(maintenance.maintenanceCategoryName);
             }
           }
         } else {
@@ -114,12 +120,39 @@ export default function EditMaintenance() {
     }
   };
 
+  useEffect(() => {
+    if (categorySearchTerm.length >= 1) {
+      const filtered = allCategories.filter((category) =>
+        category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+      );
+      setAvailableCategories(filtered);
+      setShowCategoryDropdown(filtered.length > 0);
+    } else {
+      setAvailableCategories(allCategories);
+      setShowCategoryDropdown(false);
+    }
+  }, [categorySearchTerm, allCategories]);
+
+  const handleCategorySearchChange = (term: string) => {
+    setCategorySearchTerm(term);
+    if (!term) {
+      setSelectedCategory(null);
+      setShowCategoryDropdown(false);
+    }
+  };
+
+  const handleCategorySelect = (category: Maintenance) => {
+    setSelectedCategory(category);
+    setCategorySearchTerm(category.name);
+    setShowCategoryDropdown(false);
+  };
+
   const handleSave = async () => {
     if (!title.trim()) {
       showError("El título es obligatorio");
       return;
     }
-    if (!categorySearch.selectedCategory) {
+    if (!selectedCategory) {
       showError("Debe seleccionar una categoría");
       return;
     }
@@ -142,7 +175,7 @@ export default function EditMaintenance() {
       try {
         const maintenanceData: MaintenanceItemData = {
           title: title.trim(),
-          categoryId: categorySearch.selectedCategory!.id,
+          categoryId: selectedCategory.id,
           frequencyKm,
           frequencyDays,
           observations: observations.trim() || undefined,
@@ -250,59 +283,19 @@ export default function EditMaintenance() {
 
           <div className="form-group">
             <label className="form-label">Categoría *</label>
-            {categorySearch.selectedCategory ? (
-              <div className="category-info">
-                <h2 className="section-title">
-                  Categoría seleccionada
-                  <button
-                    onClick={categorySearch.clearSelection}
-                    className="clear-selection-btn"
-                    style={{
-                      marginLeft: "10px",
-                      fontSize: "0.8rem",
-                      padding: "4px 8px",
-                    }}
-                  >
-                    Cambiar categoría
-                  </button>
-                </h2>
-                <div className="category-details">
-                  <div className="detail-item">
-                    <span className="label">Categoría:</span>
-                    <span className="value">
-                      {categorySearch.selectedCategory.name}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="category-search">
-                <input
-                  type="text"
-                  value={categorySearch.searchTerm}
-                  onChange={(e) =>
-                    categorySearch.searchCategories(e.target.value)
-                  }
-                  onFocus={() => categorySearch.setShowDropdown(true)}
-                  placeholder="Buscar categoría..."
-                  className="form-input"
-                />
-                {categorySearch.showDropdown &&
-                  categorySearch.availableCategories.length > 0 && (
-                    <div className="category-dropdown">
-                      {categorySearch.availableCategories.map((category) => (
-                        <div
-                          key={category.id}
-                          className="category-dropdown-item"
-                          onClick={() =>
-                            categorySearch.selectCategory(category)
-                          }
-                        >
-                          <strong>{category.name}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+            <CategorySearch
+              searchTerm={categorySearchTerm}
+              onSearchChange={handleCategorySearchChange}
+              availableCategories={availableCategories}
+              showDropdown={showCategoryDropdown}
+              onCategorySelect={handleCategorySelect}
+              onDropdownToggle={setShowCategoryDropdown}
+              placeholder="Buscar categoría..."
+              className="form-input"
+            />
+            {selectedCategory && (
+              <div className="selected-entity">
+                <span>Categoría seleccionada: {selectedCategory.name}</span>
               </div>
             )}
           </div>
@@ -366,31 +359,40 @@ export default function EditMaintenance() {
 
         {error && <div className="error-message">{error}</div>}
 
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
             onClick={handleCancel}
             disabled={saving || deleting}
-          />
+          >
+            Cancelar
+          </button>
 
           {!isCreateMode && (
-            <DeleteButton
-              text="Eliminar"
+            <button
+              type="button"
+              className="btn btn-danger"
               onClick={handleDelete}
               disabled={saving || deleting}
-              loading={deleting}
-            />
+            >
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </button>
           )}
 
-          <ConfirmButton
-            text={
-              isCreateMode ? "Crear Mantenimiento" : "Actualizar Mantenimiento"
-            }
+          <button
+            type="button"
+            className="btn btn-primary"
             onClick={handleSave}
             disabled={saving || deleting}
-            loading={saving}
-          />
-        </ButtonGroup>
+          >
+            {saving
+              ? "Guardando..."
+              : isCreateMode
+              ? "Crear Mantenimiento"
+              : "Actualizar Mantenimiento"}
+          </button>
+        </div>
       </div>
 
       <ConfirmDialog

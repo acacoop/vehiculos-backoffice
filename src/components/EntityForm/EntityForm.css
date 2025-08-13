@@ -102,7 +102,6 @@
   transform: none;
 }
 
-
 @media (max-width: 768px) {
   .entity-form {
     width: 100%;

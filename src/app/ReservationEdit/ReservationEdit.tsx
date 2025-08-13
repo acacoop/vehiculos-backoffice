@@ -12,12 +12,9 @@ import { getUserById } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { useUserSearch, useVehicleSearch } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
-import {
-  UserSearch,
-  VehicleSearch,
-} from "../../components/EntitySearch/EntitySearch";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import DateTimePicker from "../../components/DateTimePicker/DateTimePicker";
+import FormLayout from "../../components/FormLayout/FormLayout";
+import type { FormSection } from "../../components/FormLayout/FormLayout";
 import {
   CancelButton,
   ConfirmButton,
@@ -151,52 +148,40 @@ export default function ReservationEdit() {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (!startDate) {
-      showError("Debe seleccionar una fecha de inicio");
-      return false;
-    }
-    if (!endDate) {
-      showError("Debe seleccionar una fecha de fin");
-      return false;
-    }
-    if (!startTime) {
-      showError("Debe seleccionar un horario de inicio");
-      return false;
-    }
-    if (!endTime) {
-      showError("Debe seleccionar un horario de fin");
+    if (!startDate || !endDate || !startTime || !endTime) {
+      showError("Debe completar todas las fechas y horarios");
       return false;
     }
 
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
 
-    if (startDateTime >= endDateTime) {
-      showError(
-        "La fecha y hora de inicio debe ser anterior a la fecha y hora de fin"
-      );
+    if (endDateTime <= startDateTime) {
+      showError("La fecha de fin debe ser posterior a la fecha de inicio");
       return false;
     }
+
+    const now = new Date();
+    if (startDateTime <= now) {
+      showError("La fecha de inicio debe ser futura");
+      return false;
+    }
+
     return true;
   };
 
-  const checkExistingReservation = async (
-    userId: string,
-    vehicleId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<boolean> => {
+  const checkConflicts = async (): Promise<boolean> => {
     try {
-      const response = await getAllReservations();
+      if (userSearch.selectedUser && vehicleSearch.selectedVehicle) {
+        const newStartDate = new Date(`${startDate}T${startTime}`);
+        const newEndDate = new Date(`${endDate}T${endTime}`);
 
-      if (response.success && response.data.length > 0) {
-        const newStartDate = new Date(startDate);
-        const newEndDate = new Date(endDate);
+        const reservationsResponse = await getAllReservations();
 
-        const hasConflict = response.data.some((reservation) => {
+        const hasConflict = reservationsResponse.data?.some((reservation) => {
           if (
-            reservation.userId !== userId ||
-            reservation.vehicleId !== vehicleId
+            reservation.vehicleId !== vehicleSearch.selectedVehicle?.id &&
+            reservation.userId !== userSearch.selectedUser?.id
           ) {
             return false;
           }
@@ -254,44 +239,23 @@ export default function ReservationEdit() {
 
     setSaving(true);
     try {
-      const startDateTime = new Date(`${startDate}T${startTime}`).toISOString();
-      const endDateTime = new Date(`${endDate}T${endTime}`).toISOString();
-
-      const hasVehicleAssigned = await checkVehicleAssignment(
-        userSearch.selectedUser!.id,
-        vehicleSearch.selectedVehicle!.id
-      );
-
-      if (!hasVehicleAssigned) {
+      const hasConflict = await checkConflicts();
+      if (hasConflict) {
         showError(
-          `No se puede generar la reserva ya que el usuario ${
-            userSearch.selectedUser!.firstName
-          } ${userSearch.selectedUser!.lastName} no cuenta con el auto ${
-            vehicleSearch.selectedVehicle!.brand
-          } ${vehicleSearch.selectedVehicle!.model} (${
-            vehicleSearch.selectedVehicle!.licensePlate
-          }) asignado`
+          "Ya existe una reserva para este usuario o vehículo en el horario seleccionado"
         );
         setSaving(false);
         return;
       }
 
-      const hasExistingReservation = await checkExistingReservation(
+      const hasActiveAssignment = await checkVehicleAssignment(
         userSearch.selectedUser!.id,
-        vehicleSearch.selectedVehicle!.id,
-        startDateTime,
-        endDateTime
+        vehicleSearch.selectedVehicle!.id
       );
 
-      if (hasExistingReservation) {
+      if (!hasActiveAssignment) {
         showError(
-          `Ya existe una reserva para ${userSearch.selectedUser!.firstName} ${
-            userSearch.selectedUser!.lastName
-          } con el vehículo ${vehicleSearch.selectedVehicle!.brand} ${
-            vehicleSearch.selectedVehicle!.model
-          } (${
-            vehicleSearch.selectedVehicle!.licensePlate
-          }) en el período seleccionado`
+          "El usuario debe tener una asignación activa del vehículo para crear la reserva"
         );
         setSaving(false);
         return;
@@ -300,46 +264,38 @@ export default function ReservationEdit() {
       const reservationData = {
         userId: userSearch.selectedUser!.id,
         vehicleId: vehicleSearch.selectedVehicle!.id,
-        startDate: startDateTime,
-        endDate: endDateTime,
+        startDate: new Date(`${startDate}T${startTime}`).toISOString(),
+        endDate: new Date(`${endDate}T${endTime}`).toISOString(),
       };
 
-      const response = isCreateMode
-        ? await createReservation(reservationData)
-        : await updateReservation(reservationId!, reservationData);
+      let response;
+      if (isCreateMode) {
+        response = await createReservation(reservationData);
+      } else {
+        response = await updateReservation(reservationId!, reservationData);
+      }
 
       if (response.success) {
         showSuccess(
-          `Reserva ${isCreateMode ? "creada" : "actualizada"} exitosamente`
+          isCreateMode
+            ? "Reserva creada exitosamente"
+            : "Reserva actualizada exitosamente"
         );
 
         setTimeout(() => {
           navigate(-1);
         }, 1500);
       } else {
-        const errorMessage = response.message || "";
-        if (
-          errorMessage.toLowerCase().includes("already reserved") ||
-          errorMessage.toLowerCase().includes("ya reservado") ||
-          errorMessage.toLowerCase().includes("duplicate") ||
-          errorMessage.toLowerCase().includes("duplicado") ||
-          errorMessage.includes("500") ||
-          errorMessage.toLowerCase().includes("conflict")
-        ) {
-          showError(
-            `Ya existe una reserva para ${userSearch.selectedUser!.firstName} ${
-              userSearch.selectedUser!.lastName
-            } con este vehículo en el período seleccionado`
-          );
-        } else {
-          showError(
-            response.message ||
-              `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`
-          );
-        }
+        showError(
+          response.message ||
+            `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`
+        );
       }
     } catch (err) {
-      showError(`Error al ${isCreateMode ? "crear" : "actualizar"} la reserva`);
+      showError(
+        `Error al ${isCreateMode ? "crear" : "actualizar"} la reserva: ` +
+          (err instanceof Error ? err.message : "Error desconocido")
+      );
     } finally {
       setSaving(false);
     }
@@ -347,6 +303,20 @@ export default function ReservationEdit() {
 
   const handleCancel = () => {
     navigate(-1);
+  };
+
+  // Handlers para FormLayout
+  const handleUserChange = () => {
+    // Los datos del usuario son readonly cuando están precargados
+  };
+
+  const handleVehicleChange = () => {
+    // Los datos del vehículo son readonly cuando están precargados
+  };
+
+  const handleFormChange = (_key: string, _value: string | number) => {
+    // Este handler es para campos que no necesitan lógica específica
+    // Los campos específicos como datetime se manejan directamente en sus componentes
   };
 
   if (loading) {
@@ -359,218 +329,171 @@ export default function ReservationEdit() {
     );
   }
 
+  // Configuración de secciones para FormLayout
+  const sections: FormSection[] = [];
+
+  // Sección de datos del usuario (solo si hay usuario seleccionado)
+  if (userSearch.selectedUser) {
+    sections.push({
+      title: "Datos del Usuario",
+      horizontal: true,
+      fields: [
+        {
+          key: "dni",
+          label: "DNI:",
+          type: "text",
+          value: userSearch.selectedUser.dni?.toLocaleString() || "",
+          onChange: handleUserChange,
+          disabled: true,
+        },
+        {
+          key: "firstName",
+          label: "Nombre:",
+          type: "text",
+          value: userSearch.selectedUser.firstName || "",
+          onChange: handleUserChange,
+          disabled: true,
+        },
+        {
+          key: "lastName",
+          label: "Apellido:",
+          type: "text",
+          value: userSearch.selectedUser.lastName || "",
+          onChange: handleUserChange,
+          disabled: true,
+        },
+        {
+          key: "email",
+          label: "Email:",
+          type: "email",
+          value: userSearch.selectedUser.email || "",
+          onChange: handleUserChange,
+          disabled: true,
+        },
+      ],
+    });
+  } else {
+    // Sección para buscar usuario
+    sections.push({
+      title: "Seleccionar Usuario",
+      fields: [
+        {
+          key: "userSearch",
+          label: "Buscar usuario (por nombre o DNI)",
+          type: "userSearch",
+          value: "",
+          onChange: handleFormChange,
+          entitySearch: true,
+          searchTerm: userSearch.searchTerm,
+          onSearchChange: userSearch.searchUsers,
+          availableUsers: userSearch.availableUsers,
+          showDropdown: userSearch.showDropdown,
+          onUserSelect: userSearch.selectUser,
+          onDropdownToggle: userSearch.setShowDropdown,
+          placeholder: "Buscar por nombre o DNI...",
+          required: true,
+        },
+      ],
+    });
+  }
+
+  // Sección de datos del vehículo (solo si hay vehículo seleccionado)
+  if (vehicleSearch.selectedVehicle) {
+    sections.push({
+      title: "Datos del Vehículo",
+      horizontal: true,
+      fields: [
+        {
+          key: "licensePlate",
+          label: "Patente:",
+          type: "text",
+          value: vehicleSearch.selectedVehicle.licensePlate || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "brand",
+          label: "Marca:",
+          type: "text",
+          value: vehicleSearch.selectedVehicle.brand || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "model",
+          label: "Modelo:",
+          type: "text",
+          value: vehicleSearch.selectedVehicle.model || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "year",
+          label: "Año:",
+          type: "number",
+          value: vehicleSearch.selectedVehicle.year || 0,
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+      ],
+    });
+  } else {
+    // Sección para buscar vehículo
+    sections.push({
+      title: "Seleccionar Vehículo",
+      fields: [
+        {
+          key: "vehicleSearch",
+          label: "Buscar vehículo (por patente, marca, modelo o año)",
+          type: "vehicleSearch",
+          value: "",
+          onChange: handleFormChange,
+          entitySearch: true,
+          searchTerm: vehicleSearch.searchTerm,
+          onSearchChange: vehicleSearch.searchVehicles,
+          availableVehicles: vehicleSearch.availableVehicles,
+          showDropdown: vehicleSearch.showDropdown,
+          onVehicleSelect: vehicleSearch.selectVehicle,
+          onDropdownToggle: vehicleSearch.setShowDropdown,
+          placeholder: "Buscar por patente, marca, modelo...",
+          required: true,
+        },
+      ],
+    });
+  }
+
+  // Sección de fechas y horarios
+  sections.push({
+    title: "Fechas y Horarios",
+    fields: [
+      {
+        key: "datetime",
+        label: "Seleccionar fechas y horarios",
+        type: "datetime",
+        value: "",
+        onChange: handleFormChange,
+        dateTimePicker: true,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        onStartDateChange: setStartDate,
+        onStartTimeChange: setStartTime,
+        onEndDateChange: setEndDate,
+        onEndTimeChange: setEndTime,
+        minDate: new Date().toISOString().split("T")[0],
+        disabled: saving,
+        required: true,
+      },
+    ],
+  });
+
   return (
-    <div className="edit-assignment-container">
-      <div className="edit-assignment-card">
-        <h1 className="title">
-          {isCreateMode ? "Nueva Reserva" : "Editar Reserva"}
-        </h1>
-
-        {}
-        {preloadedUserId && userSearch.selectedUser ? (
-          <div className="user-info">
-            <h2 className="section-title">Datos del Usuario</h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">DNI:</span>
-                <span className="value">
-                  {userSearch.selectedUser.dni?.toLocaleString()}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Nombre:</span>
-                <span className="value">
-                  {userSearch.selectedUser.firstName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Apellido:</span>
-                <span className="value">
-                  {userSearch.selectedUser.lastName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Email:</span>
-                <span className="value">{userSearch.selectedUser.email}</span>
-              </div>
-            </div>
-          </div>
-        ) : userSearch.selectedUser ? (
-          <div className="user-info">
-            <h2 className="section-title">
-              Datos del Usuario
-              <button
-                onClick={userSearch.clearSelection}
-                className="clear-selection-btn"
-                style={{
-                  marginLeft: "10px",
-                  fontSize: "0.8rem",
-                  padding: "4px 8px",
-                }}
-              >
-                Cambiar usuario
-              </button>
-            </h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">DNI:</span>
-                <span className="value">
-                  {userSearch.selectedUser.dni?.toLocaleString()}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Nombre:</span>
-                <span className="value">
-                  {userSearch.selectedUser.firstName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Apellido:</span>
-                <span className="value">
-                  {userSearch.selectedUser.lastName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Email:</span>
-                <span className="value">{userSearch.selectedUser.email}</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="user-info">
-            <h2 className="section-title">Seleccionar Usuario</h2>
-            <div className="user-search">
-              <div className="form-group">
-                <label htmlFor="userSearch" className="form-label">
-                  Buscar usuario (por nombre, apellido, DNI o email)
-                </label>
-                <UserSearch
-                  searchTerm={userSearch.searchTerm}
-                  onSearchChange={userSearch.searchUsers}
-                  availableUsers={userSearch.availableUsers}
-                  showDropdown={userSearch.showDropdown}
-                  onUserSelect={userSearch.selectUser}
-                  onDropdownToggle={userSearch.setShowDropdown}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {}
-        {preloadedVehicleId && vehicleSearch.selectedVehicle ? (
-          <div className="user-info">
-            <h2 className="section-title">Datos del Vehículo</h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">Patente:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.licensePlate}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Marca:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.brand}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Modelo:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.model}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Año:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.year}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : vehicleSearch.selectedVehicle ? (
-          <div className="user-info">
-            <h2 className="section-title">
-              Datos del Vehículo
-              <button
-                onClick={vehicleSearch.clearSelection}
-                className="clear-selection-btn"
-                style={{
-                  marginLeft: "10px",
-                  fontSize: "0.8rem",
-                  padding: "4px 8px",
-                }}
-              >
-                Cambiar vehículo
-              </button>
-            </h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">Patente:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.licensePlate}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Marca:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.brand}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Modelo:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.model}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Año:</span>
-                <span className="value">
-                  {vehicleSearch.selectedVehicle.year}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="user-info">
-            <h2 className="section-title">Seleccionar Vehículo</h2>
-            <div className="vehicle-search">
-              <div className="form-group">
-                <label htmlFor="vehicleSearch" className="form-label">
-                  Buscar vehículo (por patente, marca, modelo o año)
-                </label>
-                <VehicleSearch
-                  searchTerm={vehicleSearch.searchTerm}
-                  onSearchChange={vehicleSearch.searchVehicles}
-                  availableVehicles={vehicleSearch.availableVehicles}
-                  showDropdown={vehicleSearch.showDropdown}
-                  onVehicleSelect={vehicleSearch.selectVehicle}
-                  onDropdownToggle={vehicleSearch.setShowDropdown}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {}
-        <div className="assignment-form">
-          <h2 className="section-title">Período de la Reserva</h2>
-
-          <DateTimePicker
-            startDate={startDate}
-            startTime={startTime}
-            endDate={endDate}
-            endTime={endTime}
-            onStartDateChange={setStartDate}
-            onStartTimeChange={setStartTime}
-            onEndDateChange={setEndDate}
-            onEndTimeChange={setEndTime}
-            disabled={saving}
-            minDate={new Date().toISOString().split("T")[0]}
-          />
-        </div>
-
-        {}
+    <>
+      <FormLayout
+        title={isCreateMode ? "Nueva Reserva" : "Editar Reserva"}
+        sections={sections}
+      >
         <ButtonGroup>
           <CancelButton
             text="Cancelar"
@@ -584,9 +507,8 @@ export default function ReservationEdit() {
             loading={saving}
           />
         </ButtonGroup>
-      </div>
+      </FormLayout>
 
-      {}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}
@@ -595,6 +517,6 @@ export default function ReservationEdit() {
           onClose={closeNotification}
         />
       )}
-    </div>
+    </>
   );
 }

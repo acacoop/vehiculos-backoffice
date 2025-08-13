@@ -140,6 +140,13 @@
   margin: 0 !important;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
 .loading,
 .error {
   text-align: center;
@@ -249,6 +256,11 @@
 
   .title {
     font-size: 1.6rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
   }
 
   .user-details {

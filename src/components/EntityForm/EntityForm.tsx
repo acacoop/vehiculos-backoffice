@@ -8,7 +8,6 @@ import NotificationToast from "../NotificationToast/NotificationToast";
 import { useNotification } from "../../hooks/useNotification";
 import "./EntityForm.css";
 
-
 type FieldType = "text" | "email" | "number";
 
 type FormField = {
@@ -21,7 +20,6 @@ type FormField = {
 };
 
 type EntityType = "user" | "vehicle" | "technical";
-
 
 const ENTITY_CONFIGS: Record<
   EntityType,
@@ -106,9 +104,9 @@ const ENTITY_CONFIGS: Record<
 type Props = {
   entityType: EntityType;
   entityId?: string;
-  data?: any; 
+  data?: any;
   onDataChange?: (data: any) => void;
-  isActive?: boolean; 
+  isActive?: boolean;
   showActions?: boolean;
   className?: string;
 };
@@ -125,7 +123,6 @@ export default function EntityForm({
   const [searchParams] = useSearchParams();
   const { id: paramId } = useParams<{ id: string }>();
 
-  
   const entityId = propEntityId || paramId || searchParams.get("id");
   const isEditMode = Boolean(entityId);
 
@@ -135,13 +132,11 @@ export default function EntityForm({
   const [showDialog, setShowDialog] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
   const config = ENTITY_CONFIGS[entityType];
 
-  
   const getDefaultData = () => {
     switch (entityType) {
       case "user":
@@ -175,14 +170,12 @@ export default function EntityForm({
 
   useEffect(() => {
     const fetchData = async () => {
-      
       if (propData) {
         setFormData(propData);
         setLoading(false);
         return;
       }
 
-      
       if (!entityId) {
         const defaultData = getDefaultData();
         setFormData(defaultData);
@@ -202,7 +195,6 @@ export default function EntityForm({
             response = await getVehicleById(entityId);
             break;
           case "technical":
-            
             const technicalData = getDefaultData();
             setFormData(technicalData);
             setLoading(false);
@@ -228,7 +220,6 @@ export default function EntityForm({
     fetchData();
   }, [entityId, entityType, propData]);
 
-  
   useEffect(() => {
     if (onDataChange) {
       onDataChange(formData);
@@ -253,7 +244,6 @@ export default function EntityForm({
       switch (entityType) {
         case "vehicle":
           if (entityId) {
-            
             const response = await updateVehicle(entityId, {
               licensePlate: formData.licensePlate,
               brand: formData.brand,
@@ -271,7 +261,6 @@ export default function EntityForm({
               showError(errorMessage);
             }
           } else {
-            
             setShowDialog(false);
             showSuccess(
               "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
@@ -285,7 +274,6 @@ export default function EntityForm({
           break;
 
         case "user":
-          
           setShowDialog(false);
           break;
 

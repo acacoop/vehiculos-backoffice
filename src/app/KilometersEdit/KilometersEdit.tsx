@@ -4,6 +4,8 @@ import { CircularProgress } from "@mui/material";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks/useNotification";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import FormLayout from "../../components/FormLayout/FormLayout";
+import type { FormSection } from "../../components/FormLayout/FormLayout";
 import {
   CancelButton,
   ConfirmButton,
@@ -17,7 +19,6 @@ export default function KilometersEdit() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const isCreateMode = true;
   const preloadedVehicleId = vehicleId || searchParams.get("vehicleId");
 
   const [mileage, setMileage] = useState("");
@@ -93,13 +94,14 @@ export default function KilometersEdit() {
 
     setSaving(true);
     try {
-      const mileageData = {
-        vehicleId: preloadedVehicleId,
-        mileage: parseInt(mileage),
-        observations: observations.trim() || "Sin observaciones",
-        registrationDate: registrationDate,
-        createdBy: "Administrador",
-      };
+      // Aquí iría la llamada al servicio para crear el registro
+      // const mileageData = {
+      //   vehicleId: preloadedVehicleId,
+      //   mileage: parseInt(mileage),
+      //   observations: observations.trim() || "Sin observaciones",
+      //   registrationDate: registrationDate,
+      //   createdBy: "Administrador",
+      // };
 
       const response = { success: true };
 
@@ -143,92 +145,107 @@ export default function KilometersEdit() {
     );
   }
 
+  // Handlers para FormLayout
+  const handleVehicleChange = () => {
+    // Los datos del vehículo son readonly, no necesitan cambiar
+  };
+
+  const handleRegistrationChange = (key: string, value: string | number) => {
+    switch (key) {
+      case "registrationDate":
+        setRegistrationDate(value as string);
+        break;
+      case "mileage":
+        setMileage(value.toString());
+        break;
+      case "observations":
+        setObservations(value as string);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Configuración de secciones para FormLayout
+  const sections: FormSection[] = [
+    {
+      title: "Datos del Vehículo",
+      horizontal: true, // Layout horizontal para datos del vehículo
+      fields: [
+        {
+          key: "licensePlate",
+          label: "Patente:",
+          type: "text",
+          value: vehicleData.licensePlate || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "brand",
+          label: "Marca:",
+          type: "text",
+          value: vehicleData.brand || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "model",
+          label: "Modelo:",
+          type: "text",
+          value: vehicleData.model || "",
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+        {
+          key: "year",
+          label: "Año:",
+          type: "number",
+          value: vehicleData.year || 0,
+          onChange: handleVehicleChange,
+          disabled: true,
+        },
+      ],
+    },
+    {
+      title: "Registro de Kilometraje",
+      fields: [
+        {
+          key: "registrationDate",
+          label: "Fecha de Registro",
+          type: "date",
+          value: registrationDate,
+          onChange: handleRegistrationChange,
+          required: true,
+          disabled: saving,
+        },
+        {
+          key: "mileage",
+          label: "Kilometraje",
+          type: "number",
+          placeholder: "Ingrese el kilometraje actual",
+          value: mileage,
+          onChange: handleRegistrationChange,
+          required: true,
+          disabled: saving,
+          className: "full-width",
+        },
+
+        {
+          key: "registradoPor",
+          label: "Registrado por",
+          type: "text",
+          value: "Administrador",
+          onChange: () => {},
+          disabled: true,
+          className: "full-width",
+        },
+      ],
+    },
+  ];
+
   return (
-    <div className="edit-assignment-container">
-      <div className="edit-assignment-card">
-        <h1 className="title">Nuevo Registro de Kilometraje</h1>
-
-        {}
-        <div className="user-info">
-          <h2 className="section-title">Datos del Vehículo</h2>
-          <div className="user-details">
-            <div className="detail-item">
-              <span className="label">Patente:</span>
-              <span className="value">{vehicleData.licensePlate}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Marca:</span>
-              <span className="value">{vehicleData.brand}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Modelo:</span>
-              <span className="value">{vehicleData.model}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Año:</span>
-              <span className="value">{vehicleData.year}</span>
-            </div>
-          </div>
-        </div>
-
-        {}
-        <div className="assignment-form">
-          <h2 className="section-title">Registro de Kilometraje</h2>
-
-          <div className="form-group">
-            <label htmlFor="registrationDate" className="form-label">
-              Fecha de Registro *
-            </label>
-            <input
-              type="date"
-              id="registrationDate"
-              value={registrationDate}
-              onChange={(e) => setRegistrationDate(e.target.value)}
-              className="form-input"
-              disabled={saving}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="mileage" className="form-label">
-              Kilometraje *
-            </label>
-            <input
-              type="number"
-              id="mileage"
-              value={mileage}
-              onChange={(e) => setMileage(e.target.value)}
-              placeholder="Ingrese el kilometraje actual"
-              className="form-input"
-              disabled={saving}
-              min="0"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="observations" className="form-label">
-              Observaciones
-            </label>
-            <textarea
-              id="observations"
-              value={observations}
-              onChange={(e) => setObservations(e.target.value)}
-              placeholder="Ingrese observaciones adicionales (opcional)"
-              className="form-input textarea-input"
-              disabled={saving}
-              rows={4}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Registrado por</label>
-            <div className="readonly-field">
-              <span className="readonly-value">Administrador</span>
-            </div>
-          </div>
-        </div>
-
-        {}
+    <>
+      <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
         <ButtonGroup>
           <CancelButton
             text="Cancelar"
@@ -242,9 +259,8 @@ export default function KilometersEdit() {
             loading={saving}
           />
         </ButtonGroup>
-      </div>
+      </FormLayout>
 
-      {}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}
@@ -253,6 +269,6 @@ export default function KilometersEdit() {
           onClose={closeNotification}
         />
       )}
-    </div>
+    </>
   );
 }

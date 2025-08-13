@@ -23,21 +23,6 @@
   margin: 0 auto;
 }
 
-.form-section {
-  margin-bottom: 40px;
-  padding: 30px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border-left: 4px solid #fe9000;
-}
-
-.form-section h3 {
-  color: #282d86;
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-}
-
 .form-group {
   margin-bottom: 25px;
 }
@@ -65,6 +50,15 @@
   outline: none;
   border-color: #282d86;
   box-shadow: 0 0 0 3px rgba(40, 45, 134, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  padding-top: 30px;
 }
 
 .loading-spinner {
