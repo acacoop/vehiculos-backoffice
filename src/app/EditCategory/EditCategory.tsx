@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CircularProgress, Alert } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import {
   getMaintenanceById,
   createMaintenance,
@@ -11,6 +11,14 @@ import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import { useNotification } from "../../hooks/useNotification";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import FormLayout from "../../components/FormLayout/FormLayout";
+import type { FormSection } from "../../components/FormLayout/FormLayout";
+import {
+  CancelButton,
+  DeleteButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import "./EditCategory.css";
 
 export default function EditCategory() {
@@ -23,7 +31,6 @@ export default function EditCategory() {
   // Estados
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
 
   // ConfirmDialog hook
@@ -47,7 +54,6 @@ export default function EditCategory() {
 
   const loadCategory = async (categoryId: string) => {
     setLoading(true);
-    setError(null);
 
     try {
       const response = await getMaintenanceById(categoryId);
@@ -60,12 +66,12 @@ export default function EditCategory() {
 
         setCategoryName(nameValue || "");
       } else {
-        setError(
+        showError(
           response.message || "Error al cargar la categoría de mantenimiento"
         );
       }
     } catch (err) {
-      setError(
+      showError(
         "Error al cargar la categoría de mantenimiento: " +
           (err instanceof Error ? err.message : String(err))
       );
@@ -76,7 +82,7 @@ export default function EditCategory() {
 
   const handleSave = async () => {
     if (!categoryName.trim()) {
-      setError("La categoría de mantenimiento es obligatoria");
+      showError("La categoría de mantenimiento es obligatoria");
       return;
     }
 
@@ -85,7 +91,6 @@ export default function EditCategory() {
 
     showConfirm(confirmMessage, async () => {
       setSaving(true);
-      setError(null);
 
       try {
         let response;
@@ -130,7 +135,6 @@ export default function EditCategory() {
 
     showConfirm(confirmMessage, async () => {
       setSaving(true);
-      setError(null);
 
       try {
         const response = await deleteMaintenance(id);
@@ -170,82 +174,63 @@ export default function EditCategory() {
     );
   }
 
+  // Configuración de secciones para FormLayout
+  const sections: FormSection[] = [
+    {
+      title: "Información de la Categoría",
+      fields: [
+        {
+          key: "categoryName",
+          label: "Categoría de Mantenimiento",
+          type: "text",
+          value: categoryName,
+          onChange: (_key: string, value: string | number) =>
+            setCategoryName(value as string),
+          placeholder: "Ingrese la categoría del mantenimiento",
+          required: true,
+        },
+      ],
+    },
+  ];
+
   return (
-    <div className="edit-category-container">
-      <div className="edit-category-header">
-        <h1 className="edit-category-title">
-          {isCreateMode
+    <>
+      <FormLayout
+        title={
+          isCreateMode
             ? "Nueva Categoría de Mantenimiento"
-            : "Editar Categoría de Mantenimiento"}
-        </h1>
-      </div>
-
-      {error && (
-        <Alert severity="error" style={{ margin: "20px 0" }}>
-          {error}
-        </Alert>
-      )}
-
-      <div className="edit-category-content">
-        <div className="form-section">
-          <h3>Información de la Categoría</h3>
-          <div className="form-group">
-            <label htmlFor="categoryName" className="form-label">
-              Categoría de Mantenimiento *
-            </label>
-            <input
-              id="categoryName"
-              type="text"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              placeholder="Ingrese la categoría del mantenimiento"
-              className="form-input"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn btn-secondary"
+            : "Editar Categoría de Mantenimiento"
+        }
+        sections={sections}
+      >
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
             disabled={saving}
-          >
-            Cancelar
-          </button>
-
+          />
           {!isCreateMode && (
-            <button
-              type="button"
-              className="btn btn-danger"
+            <DeleteButton
+              text="Eliminar"
               onClick={handleDelete}
               disabled={saving}
-              style={{
-                marginLeft: "10px",
-                backgroundColor: "#dc3545",
-                color: "white",
-              }}
-            >
-              {saving ? "Eliminando..." : "Eliminar"}
-            </button>
+              loading={saving}
+            />
           )}
-
-          <button
-            type="button"
-            className="btn btn-primary"
+          <ConfirmButton
+            text={
+              saving
+                ? "Guardando..."
+                : isCreateMode
+                ? "Crear Categoría"
+                : "Actualizar Categoría"
+            }
             onClick={handleSave}
             disabled={saving}
-            style={{ marginLeft: "10px" }}
-          >
-            {saving
-              ? "Guardando..."
-              : isCreateMode
-              ? "Crear Categoría"
-              : "Actualizar Categoría"}
-          </button>
-        </div>
-      </div>
+            loading={saving}
+          />
+        </ButtonGroup>
+      </FormLayout>
 
       <ConfirmDialog
         open={isOpen}
@@ -260,6 +245,6 @@ export default function EditCategory() {
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-    </div>
+    </>
   );
 }

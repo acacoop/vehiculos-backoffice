@@ -8,9 +8,16 @@ import {
   deleteMaintenanceItem,
   type MaintenanceItemData,
 } from "../../services/maintenances";
-import { CategorySearch } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import FormLayout from "../../components/FormLayout/FormLayout";
+import type { FormSection } from "../../components/FormLayout/FormLayout";
+import {
+  CancelButton,
+  DeleteButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import { useConfirmDialog } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
 import type { Maintenance } from "../../types/maintenance";
@@ -26,7 +33,6 @@ export default function EditMaintenance() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
@@ -105,13 +111,13 @@ export default function EditMaintenance() {
             }
           }
         } else {
-          setError("Mantenimiento no encontrado");
+          showError("Mantenimiento no encontrado");
         }
       } else {
-        setError("Error al cargar el mantenimiento");
+        showError("Error al cargar el mantenimiento");
       }
     } catch (err) {
-      setError(
+      showError(
         "Error al cargar el mantenimiento: " +
           (err instanceof Error ? err.message : String(err))
       );
@@ -170,7 +176,6 @@ export default function EditMaintenance() {
 
     showConfirm(confirmMessage, async () => {
       setSaving(true);
-      setError(null);
 
       try {
         const maintenanceData: MaintenanceItemData = {
@@ -225,7 +230,6 @@ export default function EditMaintenance() {
       "¿Está seguro que desea eliminar este mantenimiento? Esta acción no se puede deshacer.",
       async () => {
         setDeleting(true);
-        setError(null);
 
         try {
           const response = await deleteMaintenanceItem(maintenanceId);
@@ -258,142 +262,133 @@ export default function EditMaintenance() {
     );
   }
 
+  // Configuración de secciones para FormLayout
+  const sections: FormSection[] = [];
+
+  // Sección 1: Información del mantenimiento
+  sections.push({
+    title: "Información del Mantenimiento",
+    fields: [
+      {
+        key: "title",
+        label: "Título del Mantenimiento",
+        type: "text",
+        value: title,
+        onChange: (_key: string, value: string | number) =>
+          setTitle(value as string),
+        placeholder: "Ej: Cambio de aceite y filtros",
+        required: true,
+      },
+      {
+        key: "category",
+        label: "Categoría",
+        type: "categorySearch",
+        value: categorySearchTerm,
+        onChange: (_key: string, value: string | number) =>
+          handleCategorySearchChange(value as string),
+        entitySearch: true,
+        searchTerm: categorySearchTerm,
+        onSearchChange: handleCategorySearchChange,
+        availableCategories: availableCategories,
+        showDropdown: showCategoryDropdown,
+        onCategorySelect: handleCategorySelect,
+        onDropdownToggle: setShowCategoryDropdown,
+        selectedCategory: selectedCategory,
+        placeholder: "Buscar categoría...",
+        required: true,
+      },
+    ],
+  });
+
+  // Sección 2: Frecuencia (layout horizontal)
+  sections.push({
+    title: "Frecuencia",
+    horizontal: true,
+    fields: [
+      {
+        key: "frequencyKm",
+        label: "Frecuencia en Kilómetros",
+        type: "number",
+        value: frequencyKm,
+        onChange: (_key: string, value: string | number) =>
+          setFrequencyKm(value as number),
+        placeholder: "10000",
+        min: 1,
+        required: true,
+      },
+      {
+        key: "frequencyDays",
+        label: "Frecuencia en Días",
+        type: "number",
+        value: frequencyDays,
+        onChange: (_key: string, value: string | number) =>
+          setFrequencyDays(value as number),
+        placeholder: "365",
+        min: 1,
+        required: true,
+      },
+    ],
+  });
+
+  // Sección 3: Detalles adicionales
+  sections.push({
+    title: "Detalles Adicionales",
+    fields: [
+      {
+        key: "observations",
+        label: "Observaciones",
+        type: "textarea",
+        value: observations,
+        onChange: (_key: string, value: string | number) =>
+          setObservations(value as string),
+        placeholder: "Observaciones adicionales...",
+      },
+      {
+        key: "instructions",
+        label: "Instrucciones",
+        type: "textarea",
+        value: instructions,
+        onChange: (_key: string, value: string | number) =>
+          setInstructions(value as string),
+        placeholder: "Instrucciones detalladas para el mantenimiento...",
+      },
+    ],
+  });
+
   return (
-    <div className="edit-maintenance-container">
-      <div className="edit-maintenance-header">
-        <h1 className="edit-maintenance-title">
-          {isCreateMode ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
-        </h1>
-      </div>
-
-      <div className="edit-maintenance-form">
-        <div className="form-section">
-          <h3>Información del Mantenimiento</h3>
-
-          <div className="form-group">
-            <label className="form-label">Título del Mantenimiento *</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej: Cambio de aceite y filtros"
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Categoría *</label>
-            <CategorySearch
-              searchTerm={categorySearchTerm}
-              onSearchChange={handleCategorySearchChange}
-              availableCategories={availableCategories}
-              showDropdown={showCategoryDropdown}
-              onCategorySelect={handleCategorySelect}
-              onDropdownToggle={setShowCategoryDropdown}
-              placeholder="Buscar categoría..."
-              className="form-input"
-            />
-            {selectedCategory && (
-              <div className="selected-entity">
-                <span>Categoría seleccionada: {selectedCategory.name}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Frecuencia</h3>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Frecuencia en Kilómetros *</label>
-              <input
-                type="number"
-                value={frequencyKm}
-                onChange={(e) => setFrequencyKm(Number(e.target.value))}
-                min="1"
-                placeholder="10000"
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Frecuencia en Días *</label>
-              <input
-                type="number"
-                value={frequencyDays}
-                onChange={(e) => setFrequencyDays(Number(e.target.value))}
-                min="1"
-                placeholder="365"
-                className="form-input"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Detalles Adicionales</h3>
-
-          <div className="form-group">
-            <label className="form-label">Observaciones</label>
-            <textarea
-              value={observations}
-              onChange={(e) => setObservations(e.target.value)}
-              placeholder="Observaciones adicionales..."
-              className="form-textarea"
-              rows={3}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Instrucciones</label>
-            <textarea
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="Instrucciones detalladas para el mantenimiento..."
-              className="form-textarea"
-              rows={4}
-            />
-          </div>
-        </div>
-
-        {error && <div className="error-message">{error}</div>}
-
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn btn-secondary"
+    <>
+      <FormLayout
+        title={isCreateMode ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
+        sections={sections}
+      >
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
             disabled={saving || deleting}
-          >
-            Cancelar
-          </button>
-
+          />
           {!isCreateMode && (
-            <button
-              type="button"
-              className="btn btn-danger"
+            <DeleteButton
+              text="Eliminar"
               onClick={handleDelete}
               disabled={saving || deleting}
-            >
-              {deleting ? "Eliminando..." : "Eliminar"}
-            </button>
+              loading={deleting}
+            />
           )}
-
-          <button
-            type="button"
-            className="btn btn-primary"
+          <ConfirmButton
+            text={
+              saving
+                ? "Guardando..."
+                : isCreateMode
+                ? "Crear Mantenimiento"
+                : "Actualizar Mantenimiento"
+            }
             onClick={handleSave}
             disabled={saving || deleting}
-          >
-            {saving
-              ? "Guardando..."
-              : isCreateMode
-              ? "Crear Mantenimiento"
-              : "Actualizar Mantenimiento"}
-          </button>
-        </div>
-      </div>
+            loading={saving}
+          />
+        </ButtonGroup>
+      </FormLayout>
 
       <ConfirmDialog
         open={isOpen}
@@ -408,6 +403,6 @@ export default function EditMaintenance() {
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-    </div>
+    </>
   );
 }

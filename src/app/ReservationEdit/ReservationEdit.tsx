@@ -323,6 +323,13 @@ export default function ReservationEdit() {
     sections.push({
       title: "Datos del Usuario",
       horizontal: true,
+      // Solo mostrar botón de cambio si el usuario NO vino precargado
+      actionButton: !preloadedUserId
+        ? {
+            text: "Cambiar usuario",
+            onClick: () => userSearch.clearSelection(),
+          }
+        : undefined,
       fields: [
         {
           key: "dni",
@@ -388,6 +395,13 @@ export default function ReservationEdit() {
     sections.push({
       title: "Datos del Vehículo",
       horizontal: true,
+      // Solo mostrar botón de cambio si el vehículo NO vino precargado
+      actionButton: !preloadedVehicleId
+        ? {
+            text: "Cambiar vehículo",
+            onClick: () => vehicleSearch.clearSelection(),
+          }
+        : undefined,
       fields: [
         {
           key: "licensePlate",
