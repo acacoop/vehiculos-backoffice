@@ -18,7 +18,7 @@ import {
   ConfirmButton,
   ButtonGroup,
 } from "../../components/Buttons/Buttons";
-import { useConfirmDialog } from "../../hooks";
+import { useConfirmDialog, useCategorySearch } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
 import type { Maintenance } from "../../types/maintenance";
 import "./EditMaintenance.css";
@@ -35,20 +35,13 @@ export default function EditMaintenance() {
   const [deleting, setDeleting] = useState(false);
 
   const [title, setTitle] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
-    null
-  );
   const [frequencyKm, setFrequencyKm] = useState<number>(10000);
   const [frequencyDays, setFrequencyDays] = useState<number>(365);
   const [observations, setObservations] = useState("");
   const [instructions, setInstructions] = useState("");
 
-  const [categorySearchTerm, setCategorySearchTerm] = useState("");
-  const [availableCategories, setAvailableCategories] = useState<Maintenance[]>(
-    []
-  );
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [allCategories, setAllCategories] = useState<Maintenance[]>([]);
+  const categorySearch = useCategorySearch();
   const {
     isOpen,
     message,
@@ -74,7 +67,6 @@ export default function EditMaintenance() {
       const response = await getMaintenanceCategories({ page: 1, limit: 100 });
       if (response.success && response.data) {
         setAllCategories(response.data);
-        setAvailableCategories(response.data);
       }
     } catch (err) {
       console.error("Error loading categories:", err);
@@ -104,10 +96,7 @@ export default function EditMaintenance() {
                 maintenance.maintenanceCategoryName.toLowerCase()
             );
             if (category) {
-              setSelectedCategory(category);
-              setCategorySearchTerm(category.name);
-            } else {
-              setCategorySearchTerm(maintenance.maintenanceCategoryName);
+              categorySearch.selectCategory(category);
             }
           }
         } else {
@@ -126,39 +115,12 @@ export default function EditMaintenance() {
     }
   };
 
-  useEffect(() => {
-    if (categorySearchTerm.length >= 1) {
-      const filtered = allCategories.filter((category) =>
-        category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
-      );
-      setAvailableCategories(filtered);
-      setShowCategoryDropdown(filtered.length > 0);
-    } else {
-      setAvailableCategories(allCategories);
-      setShowCategoryDropdown(false);
-    }
-  }, [categorySearchTerm, allCategories]);
-
-  const handleCategorySearchChange = (term: string) => {
-    setCategorySearchTerm(term);
-    if (!term) {
-      setSelectedCategory(null);
-      setShowCategoryDropdown(false);
-    }
-  };
-
-  const handleCategorySelect = (category: Maintenance) => {
-    setSelectedCategory(category);
-    setCategorySearchTerm(category.name);
-    setShowCategoryDropdown(false);
-  };
-
   const handleSave = async () => {
     if (!title.trim()) {
       showError("El título es obligatorio");
       return;
     }
-    if (!selectedCategory) {
+    if (!categorySearch.selectedCategory) {
       showError("Debe seleccionar una categoría");
       return;
     }
@@ -180,7 +142,7 @@ export default function EditMaintenance() {
       try {
         const maintenanceData: MaintenanceItemData = {
           title: title.trim(),
-          categoryId: selectedCategory.id,
+          categoryId: categorySearch.selectedCategory!.id,
           frequencyKm,
           frequencyDays,
           observations: observations.trim() || undefined,
@@ -279,26 +241,52 @@ export default function EditMaintenance() {
         placeholder: "Ej: Cambio de aceite y filtros",
         required: true,
       },
-      {
-        key: "category",
-        label: "Categoría",
-        type: "categorySearch",
-        value: categorySearchTerm,
-        onChange: (_key: string, value: string | number) =>
-          handleCategorySearchChange(value as string),
-        entitySearch: true,
-        searchTerm: categorySearchTerm,
-        onSearchChange: handleCategorySearchChange,
-        availableCategories: availableCategories,
-        showDropdown: showCategoryDropdown,
-        onCategorySelect: handleCategorySelect,
-        onDropdownToggle: setShowCategoryDropdown,
-        selectedCategory: selectedCategory,
-        placeholder: "Buscar categoría...",
-        required: true,
-      },
     ],
   });
+
+  // Sección de categoría - dinámicamente según si hay selección
+  if (categorySearch.selectedCategory) {
+    sections.push({
+      title: "Datos de la Categoría",
+      horizontal: true,
+      actionButton: {
+        text: "Cambiar categoría",
+        onClick: () => categorySearch.clearSelection(),
+      },
+      fields: [
+        {
+          key: "categoryName",
+          label: "Nombre:",
+          type: "text",
+          value: categorySearch.selectedCategory.name || "",
+          onChange: () => {},
+          disabled: true,
+        },
+      ],
+    });
+  } else {
+    sections.push({
+      title: "Seleccionar Categoría",
+      fields: [
+        {
+          key: "category",
+          label: "Categoría",
+          type: "categorySearch",
+          value: "",
+          onChange: () => {},
+          entitySearch: true,
+          searchTerm: categorySearch.searchTerm,
+          onSearchChange: categorySearch.searchCategories,
+          availableCategories: categorySearch.availableCategories,
+          showDropdown: categorySearch.showDropdown,
+          onCategorySelect: categorySearch.selectCategory,
+          onDropdownToggle: categorySearch.setShowDropdown,
+          placeholder: "Buscar categoría...",
+          required: true,
+        },
+      ],
+    });
+  }
 
   // Sección 2: Frecuencia (layout horizontal)
   sections.push({

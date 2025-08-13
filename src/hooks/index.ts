@@ -1,2 +1,6 @@
 export { useConfirmDialog } from "./useConfirmDialog";
-export { useUserSearch, useVehicleSearch } from "./useEntitySearch";
+export {
+  useUserSearch,
+  useVehicleSearch,
+  useCategorySearch,
+} from "./useEntitySearch";

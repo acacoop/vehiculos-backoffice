@@ -22,7 +22,9 @@ export interface FormField {
     | "datetime"
     | "userSearch"
     | "vehicleSearch"
-    | "categorySearch";
+    | "categorySearch"
+    | "checkbox"
+    | "display";
   placeholder?: string;
   value: string | number;
   onChange: (key: string, value: string | number) => void;
@@ -57,7 +59,15 @@ export interface FormField {
   onVehicleSelect?: (vehicle: Vehicle) => void;
   onCategorySelect?: (category: Maintenance) => void;
   onDropdownToggle?: (show: boolean) => void;
-  selectedCategory?: Maintenance | null;
+
+  // Checkbox props
+  checked?: boolean;
+
+  // Display props
+  displayValue?: string | React.ReactNode;
+
+  // Conditional rendering
+  condition?: () => boolean;
 }
 
 export interface FormSection {
@@ -130,7 +140,6 @@ const FormLayout: React.FC<FormLayoutProps> = ({
       onVehicleSelect,
       onCategorySelect,
       onDropdownToggle,
-      selectedCategory,
     } = field;
 
     // DateTimePicker component
@@ -215,11 +224,45 @@ const FormLayout: React.FC<FormLayoutProps> = ({
             placeholder={placeholder}
             className="form-input"
           />
-          {selectedCategory && (
-            <div className="selected-entity">
-              <span>Categoría seleccionada: {selectedCategory.name}</span>
-            </div>
-          )}
+        </div>
+      );
+    }
+
+    // Checkbox component
+    if (type === "checkbox") {
+      return (
+        <div
+          key={key}
+          className={`form-field checkbox-field ${fieldClassName || ""}`}
+        >
+          <div className="checkbox-group">
+            <input
+              type="checkbox"
+              id={key}
+              checked={field.checked || false}
+              onChange={(e) =>
+                handleFieldChange(sectionIndex, key, e.target.checked ? 1 : 0)
+              }
+              className="form-checkbox"
+              disabled={disabled}
+            />
+            <label htmlFor={key} className="checkbox-label">
+              {label}
+            </label>
+          </div>
+        </div>
+      );
+    }
+
+    // Display component for showing read-only information
+    if (type === "display") {
+      return (
+        <div
+          key={key}
+          className={`form-field display-field ${fieldClassName || ""}`}
+        >
+          <label className="form-label">{label}</label>
+          <div className="display-value">{field.displayValue || value}</div>
         </div>
       );
     }
@@ -251,7 +294,9 @@ const FormLayout: React.FC<FormLayoutProps> = ({
             className="form-input"
             placeholder={placeholder}
             value={value}
-            min={type === "number" ? min : undefined}
+            min={
+              type === "number" ? min : type === "date" ? minDate : undefined
+            }
             max={type === "number" ? max : undefined}
             onChange={(e) => {
               const newValue =
@@ -300,7 +345,9 @@ const FormLayout: React.FC<FormLayoutProps> = ({
                 section.horizontal ? "horizontal-layout" : ""
               }`}
             >
-              {section.fields.map((field) => renderField(field, sectionIndex))}
+              {section.fields
+                .filter((field) => !field.condition || field.condition())
+                .map((field) => renderField(field, sectionIndex))}
             </div>
           </div>
         ))}

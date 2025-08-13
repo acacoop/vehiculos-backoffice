@@ -7,6 +7,19 @@
   padding: 120px;
 }
 
+.form-layout-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  font-size: 24px !important;
+  font-weight: 600;
+  color: #282d86;
+}
+
 .form-layout-content {
   display: flex;
   flex-direction: column;
@@ -55,6 +68,10 @@
   font-weight: 600;
   color: #282d86;
   margin: 0;
+}
+
+.form-input {
+  width: 100% !important;
 }
 
 .form-input,
@@ -148,13 +165,15 @@
 
 /* Estilos para EntitySearch dentro de FormLayout */
 .user-search,
-.vehicle-search {
+.vehicle-search,
+.category-search {
   position: relative;
   width: 100%;
 }
 
 .user-dropdown,
-.vehicle-dropdown {
+.vehicle-dropdown,
+.category-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -170,7 +189,8 @@
 }
 
 .user-dropdown-item,
-.vehicle-dropdown-item {
+.vehicle-dropdown-item,
+.category-dropdown-item {
   padding: 12px 16px;
   cursor: pointer;
   border-bottom: 1px solid #f8f9fa;
@@ -178,12 +198,15 @@
 }
 
 .user-dropdown-item:hover,
-.vehicle-dropdown-item:hover {
-  background-color: #f8f9fa;
+.vehicle-dropdown-item:hover,
+.category-dropdown-item:hover {
+  background-color: #fe9000;
+  color: white;
 }
 
 .user-dropdown-item:last-child,
-.vehicle-dropdown-item:last-child {
+.vehicle-dropdown-item:last-child,
+.category-dropdown-item:last-child {
   border-bottom: none;
 }
 
@@ -200,6 +223,53 @@
 
 .selected-entity span {
   font-weight: 500;
+}
+
+/* Estilos para checkbox */
+.checkbox-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-checkbox {
+  width: 18px !important;
+  height: 18px;
+  accent-color: #fe9000;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 16px;
+  color: #282d86 !important;
+  cursor: pointer;
+  user-select: none;
+  margin: 0 !important;
+  font-weight: 500;
+}
+
+/* Estilos para display fields */
+.display-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.display-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
 /* Responsive */
@@ -226,10 +296,6 @@
     align-self: flex-end;
     padding: 6px 12px;
     font-size: 13px;
-  }
-
-  .title {
-    font-size: 24px;
   }
 
   .section-title {

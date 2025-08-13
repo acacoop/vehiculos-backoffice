@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { getAllUsers } from "../services/users";
 import { getVehicles } from "../services/vehicles";
+import { getMaintenanceCategories } from "../services/maintenances";
 import type { User } from "../types/user";
 import type { Vehicle } from "../types/vehicle";
+import type { Maintenance } from "../types/maintenance";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,6 +112,63 @@ export function useVehicleSearch() {
     selectedVehicle,
     searchVehicles,
     selectVehicle,
+    clearSelection,
+    setShowDropdown,
+  };
+}
+
+export function useCategorySearch() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [availableCategories, setAvailableCategories] = useState<Maintenance[]>(
+    []
+  );
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
+    null
+  );
+
+  const searchCategories = async (term: string) => {
+    setSearchTerm(term);
+    if (term.length >= 1) {
+      try {
+        const response = await getMaintenanceCategories({
+          page: 1,
+          limit: 100,
+        });
+        if (response.success) {
+          const filtered = response.data.filter((category: Maintenance) =>
+            category.name.toLowerCase().includes(term.toLowerCase())
+          );
+          setAvailableCategories(filtered);
+          setShowDropdown(true);
+        }
+      } catch (error) {
+        setAvailableCategories([]);
+        setShowDropdown(false);
+      }
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const selectCategory = (category: Maintenance) => {
+    setSelectedCategory(category);
+    setSearchTerm(category.name);
+    setShowDropdown(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedCategory(null);
+    setSearchTerm("");
+  };
+
+  return {
+    searchTerm,
+    availableCategories,
+    showDropdown,
+    selectedCategory,
+    searchCategories,
+    selectCategory,
     clearSelection,
     setShowDropdown,
   };

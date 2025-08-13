@@ -9,11 +9,10 @@ import {
 } from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
-import { useUserSearch, useVehicleSearch } from "../../hooks";
-import {
-  UserSearch,
-  VehicleSearch,
-} from "../../components/EntitySearch/EntitySearch";
+import { useUserSearch, useVehicleSearch, useConfirmDialog } from "../../hooks";
+import { useNotification } from "../../hooks/useNotification";
+import FormLayout from "../../components/FormLayout/FormLayout";
+import type { FormSection } from "../../components/FormLayout/FormLayout";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import {
@@ -22,8 +21,6 @@ import {
   ConfirmButton,
   ButtonGroup,
 } from "../../components/Buttons/Buttons";
-import { useConfirmDialog } from "../../hooks";
-import { useNotification } from "../../hooks/useNotification";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
@@ -347,218 +344,196 @@ export default function EditAssignment() {
     );
   }
 
+  // Construir secciones para FormLayout
+  const sections: FormSection[] = [];
+
+  // Sección de datos del usuario (solo si hay usuario seleccionado/asignado)
+  const currentUser =
+    assignment?.user || userSearch.selectedUser || preloadedUser;
+  if (currentUser) {
+    sections.push({
+      title: "Datos del Usuario",
+      horizontal: true,
+      actionButton: canChangeUser()
+        ? {
+            text: "Cambiar usuario",
+            onClick: () => userSearch.clearSelection(),
+            className: "action-button",
+          }
+        : undefined,
+      fields: [
+        {
+          key: "userDni",
+          label: "DNI",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentUser.dni?.toLocaleString() || "",
+        },
+        {
+          key: "userFirstName",
+          label: "Nombre",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentUser.firstName || "",
+        },
+        {
+          key: "userLastName",
+          label: "Apellido",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentUser.lastName || "",
+        },
+        {
+          key: "userEmail",
+          label: "Email",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentUser.email || "",
+        },
+      ],
+    });
+  } else {
+    // Sección para buscar usuario
+    sections.push({
+      title: "Seleccionar Usuario",
+      fields: [
+        {
+          key: "userSearch",
+          label: "Buscar usuario (por nombre, apellido, DNI o email)",
+          type: "userSearch",
+          value: "",
+          onChange: () => {},
+          entitySearch: true,
+          searchTerm: userSearch.searchTerm,
+          onSearchChange: userSearch.searchUsers,
+          availableUsers: userSearch.availableUsers,
+          showDropdown: userSearch.showDropdown,
+          onUserSelect: userSearch.selectUser,
+          onDropdownToggle: userSearch.setShowDropdown,
+          placeholder: "Buscar por nombre, apellido, DNI o email...",
+          required: true,
+        },
+      ],
+    });
+  }
+
+  // Sección de datos del vehículo (solo si hay vehículo seleccionado/asignado)
+  const currentVehicle =
+    assignment?.vehicle || preloadedVehicle || vehicleSearch.selectedVehicle;
+  if (currentVehicle) {
+    sections.push({
+      title: "Datos del Vehículo",
+      horizontal: true,
+      actionButton: canChangeVehicle()
+        ? {
+            text: "Cambiar vehículo",
+            onClick: () => vehicleSearch.clearSelection(),
+            className: "action-button",
+          }
+        : undefined,
+      fields: [
+        {
+          key: "vehicleLicensePlate",
+          label: "Patente",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentVehicle.licensePlate || "",
+        },
+        {
+          key: "vehicleBrand",
+          label: "Marca",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentVehicle.brand || "",
+        },
+        {
+          key: "vehicleModel",
+          label: "Modelo",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentVehicle.model || "",
+        },
+        {
+          key: "vehicleYear",
+          label: "Año",
+          type: "display",
+          value: "",
+          onChange: () => {},
+          displayValue: currentVehicle.year?.toString() || "",
+        },
+      ],
+    });
+  } else {
+    // Sección para buscar vehículo
+    sections.push({
+      title: "Seleccionar Vehículo",
+      fields: [
+        {
+          key: "vehicleSearch",
+          label: "Buscar vehículo (por patente, marca, modelo o año)",
+          type: "vehicleSearch",
+          value: "",
+          onChange: () => {},
+          entitySearch: true,
+          searchTerm: vehicleSearch.searchTerm,
+          onSearchChange: vehicleSearch.searchVehicles,
+          availableVehicles: vehicleSearch.availableVehicles,
+          showDropdown: vehicleSearch.showDropdown,
+          onVehicleSelect: vehicleSearch.selectVehicle,
+          onDropdownToggle: vehicleSearch.setShowDropdown,
+          placeholder: "Buscar por patente, marca, modelo o año...",
+          required: true,
+        },
+      ],
+    });
+  }
+
+  // Sección de período de asignación
+  sections.push({
+    title: "Período de Asignación",
+    fields: [
+      {
+        key: "startDate",
+        label: "Fecha Desde",
+        type: "date",
+        value: startDate,
+        onChange: (_key, value) => setStartDate(value as string),
+        required: true,
+      },
+      {
+        key: "isIndefinite",
+        label: "Asignación indefinida (sin fecha de fin)",
+        type: "checkbox",
+        value: isIndefinite ? 1 : 0,
+        checked: isIndefinite,
+        onChange: (_key, value) => setIsIndefinite(value === 1),
+      },
+      {
+        key: "endDate",
+        label: "Fecha Hasta",
+        type: "date",
+        value: endDate,
+        onChange: (_key, value) => setEndDate(value as string),
+        condition: () => !isIndefinite,
+        minDate: startDate,
+      },
+    ],
+  });
+
   return (
-    <div className="edit-assignment-container">
-      <div className="edit-assignment-card">
-        <h1 className="title">
-          {isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
-        </h1>
-
-        {}
-        {assignment?.user || userSearch.selectedUser || preloadedUser ? (
-          <div className="user-info">
-            <h2 className="section-title">
-              Datos del Usuario
-              {canChangeUser() && (
-                <button
-                  onClick={userSearch.clearSelection}
-                  className="clear-selection-btn"
-                  style={{
-                    marginLeft: "10px",
-                    fontSize: "0.8rem",
-                    padding: "4px 8px",
-                  }}
-                >
-                  Cambiar usuario
-                </button>
-              )}
-            </h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">DNI:</span>
-                <span className="value">
-                  {(
-                    assignment?.user?.dni ||
-                    userSearch.selectedUser?.dni ||
-                    preloadedUser?.dni
-                  )?.toLocaleString()}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Nombre:</span>
-                <span className="value">
-                  {assignment?.user?.firstName ||
-                    userSearch.selectedUser?.firstName ||
-                    preloadedUser?.firstName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Apellido:</span>
-                <span className="value">
-                  {assignment?.user?.lastName ||
-                    userSearch.selectedUser?.lastName ||
-                    preloadedUser?.lastName}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Email:</span>
-                <span className="value">
-                  {assignment?.user?.email ||
-                    userSearch.selectedUser?.email ||
-                    preloadedUser?.email}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="user-info">
-            <h2 className="section-title">Seleccionar Usuario</h2>
-            <div className="user-search">
-              <div className="form-group">
-                <label htmlFor="userSearch" className="form-label">
-                  Buscar usuario (por nombre, apellido, DNI o email)
-                </label>
-                <UserSearch
-                  searchTerm={userSearch.searchTerm}
-                  onSearchChange={userSearch.searchUsers}
-                  availableUsers={userSearch.availableUsers}
-                  showDropdown={userSearch.showDropdown}
-                  onUserSelect={userSearch.selectUser}
-                  onDropdownToggle={userSearch.setShowDropdown}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {}
-        {assignment?.vehicle ||
-        preloadedVehicle ||
-        vehicleSearch.selectedVehicle ? (
-          <div className="user-info">
-            <h2 className="section-title">
-              Datos del Vehículo
-              {canChangeVehicle() && (
-                <button
-                  onClick={vehicleSearch.clearSelection}
-                  className="clear-selection-btn"
-                  style={{
-                    marginLeft: "10px",
-                    fontSize: "0.8rem",
-                    padding: "4px 8px",
-                  }}
-                >
-                  Cambiar vehículo
-                </button>
-              )}
-            </h2>
-            <div className="user-details">
-              <div className="detail-item">
-                <span className="label">Patente:</span>
-                <span className="value">
-                  {assignment?.vehicle?.licensePlate ||
-                    preloadedVehicle?.licensePlate ||
-                    vehicleSearch.selectedVehicle?.licensePlate}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Marca:</span>
-                <span className="value">
-                  {assignment?.vehicle?.brand ||
-                    preloadedVehicle?.brand ||
-                    vehicleSearch.selectedVehicle?.brand}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Modelo:</span>
-                <span className="value">
-                  {assignment?.vehicle?.model ||
-                    preloadedVehicle?.model ||
-                    vehicleSearch.selectedVehicle?.model}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Año:</span>
-                <span className="value">
-                  {assignment?.vehicle?.year ||
-                    preloadedVehicle?.year ||
-                    vehicleSearch.selectedVehicle?.year}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="user-info">
-            <h2 className="section-title">Seleccionar Vehículo</h2>
-            <div className="vehicle-search">
-              <div className="form-group">
-                <label htmlFor="vehicleSearch" className="form-label">
-                  Buscar vehículo (por patente, marca, modelo o año)
-                </label>
-                <VehicleSearch
-                  searchTerm={vehicleSearch.searchTerm}
-                  onSearchChange={vehicleSearch.searchVehicles}
-                  availableVehicles={vehicleSearch.availableVehicles}
-                  showDropdown={vehicleSearch.showDropdown}
-                  onVehicleSelect={vehicleSearch.selectVehicle}
-                  onDropdownToggle={vehicleSearch.setShowDropdown}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {}
-        <div className="assignment-form">
-          <h2 className="section-title">Período de Asignación</h2>
-
-          <div className="form-group">
-            <label htmlFor="startDate" className="form-label">
-              Fecha Desde <span className="required">*</span>
-            </label>
-            <input
-              type="date"
-              id="startDate"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="form-input"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <div className="checkbox-group">
-              <input
-                type="checkbox"
-                id="isIndefinite"
-                checked={isIndefinite}
-                onChange={(e) => setIsIndefinite(e.target.checked)}
-                className="form-checkbox"
-              />
-              <label htmlFor="isIndefinite" className="checkbox-label">
-                Asignación indefinida (sin fecha de fin)
-              </label>
-            </div>
-          </div>
-
-          {!isIndefinite && (
-            <div className="form-group">
-              <label htmlFor="endDate" className="form-label">
-                Fecha Hasta
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="form-input"
-                min={startDate}
-              />
-            </div>
-          )}
-        </div>
-
-        {}
+    <>
+      <FormLayout
+        title={isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
+        sections={sections}
+        className="edit-assignment"
+      >
         <ButtonGroup>
           <CancelButton text="Cancelar" onClick={handleCancel} />
           {!isCreateMode && (
@@ -572,9 +547,8 @@ export default function EditAssignment() {
             onClick={handleSave}
           />
         </ButtonGroup>
-      </div>
+      </FormLayout>
 
-      {}
       <ConfirmDialog
         open={isConfirmOpen}
         message={confirmMessage}
@@ -582,15 +556,12 @@ export default function EditAssignment() {
         onCancel={confirmDialogCancel}
       />
 
-      {}
-      {notification.isOpen && (
-        <NotificationToast
-          message={notification.message}
-          type={notification.type}
-          isOpen={notification.isOpen}
-          onClose={closeNotification}
-        />
-      )}
-    </div>
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+      />
+    </>
   );
 }
