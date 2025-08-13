@@ -25,12 +25,12 @@ export default function DateTimePicker({
   disabled = false,
   minDate,
 }: DateTimePickerProps) {
-  // Calcular fecha mínima (hoy si no se especifica)
+  
   const minimumDate = minDate || new Date().toISOString().split("T")[0];
 
   return (
     <div className="datetime-picker">
-      {/* Fila de inicio: Fecha de inicio y Hora de inicio */}
+      {}
       <div className="datetime-row">
         <div className="datetime-field">
           <label htmlFor="startDate" className="datetime-label">
@@ -64,7 +64,7 @@ export default function DateTimePicker({
         </div>
       </div>
 
-      {/* Fila de fin: Fecha de fin y Hora de fin */}
+      {}
       <div className="datetime-row">
         <div className="datetime-field">
           <label htmlFor="endDate" className="datetime-label">

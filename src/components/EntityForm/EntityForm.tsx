@@ -8,7 +8,7 @@ import NotificationToast from "../NotificationToast/NotificationToast";
 import { useNotification } from "../../hooks/useNotification";
 import "./EntityForm.css";
 
-// Tipos para los campos del formulario
+
 type FieldType = "text" | "email" | "number";
 
 type FormField = {
@@ -22,7 +22,7 @@ type FormField = {
 
 type EntityType = "user" | "vehicle" | "technical";
 
-// Configuración de campos para cada tipo de entidad
+
 const ENTITY_CONFIGS: Record<
   EntityType,
   {
@@ -106,9 +106,9 @@ const ENTITY_CONFIGS: Record<
 type Props = {
   entityType: EntityType;
   entityId?: string;
-  data?: any; // Datos pasados desde el componente padre
+  data?: any; 
   onDataChange?: (data: any) => void;
-  isActive?: boolean; // Para vehículos
+  isActive?: boolean; 
   showActions?: boolean;
   className?: string;
 };
@@ -125,7 +125,7 @@ export default function EntityForm({
   const [searchParams] = useSearchParams();
   const { id: paramId } = useParams<{ id: string }>();
 
-  // Determinar el ID de la entidad
+  
   const entityId = propEntityId || paramId || searchParams.get("id");
   const isEditMode = Boolean(entityId);
 
@@ -135,13 +135,13 @@ export default function EntityForm({
   const [showDialog, setShowDialog] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  // Hook de notificaciones
+  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
   const config = ENTITY_CONFIGS[entityType];
 
-  // Inicializar datos por defecto según el tipo de entidad
+  
   const getDefaultData = () => {
     switch (entityType) {
       case "user":
@@ -175,14 +175,14 @@ export default function EntityForm({
 
   useEffect(() => {
     const fetchData = async () => {
-      // Si hay datos pasados como prop, úsalos
+      
       if (propData) {
         setFormData(propData);
         setLoading(false);
         return;
       }
 
-      // Si no hay entityId, usa datos por defecto
+      
       if (!entityId) {
         const defaultData = getDefaultData();
         setFormData(defaultData);
@@ -202,7 +202,7 @@ export default function EntityForm({
             response = await getVehicleById(entityId);
             break;
           case "technical":
-            // Para técnico, usar datos hardcodeados por ahora
+            
             const technicalData = getDefaultData();
             setFormData(technicalData);
             setLoading(false);
@@ -228,7 +228,7 @@ export default function EntityForm({
     fetchData();
   }, [entityId, entityType, propData]);
 
-  // Notificar cambios al componente padre
+  
   useEffect(() => {
     if (onDataChange) {
       onDataChange(formData);
@@ -253,7 +253,7 @@ export default function EntityForm({
       switch (entityType) {
         case "vehicle":
           if (entityId) {
-            // Modo edición - actualizar vehículo existente
+            
             const response = await updateVehicle(entityId, {
               licensePlate: formData.licensePlate,
               brand: formData.brand,
@@ -271,7 +271,7 @@ export default function EntityForm({
               showError(errorMessage);
             }
           } else {
-            // Modo registro - guardar datos localmente
+            
             setShowDialog(false);
             showSuccess(
               "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
@@ -285,7 +285,7 @@ export default function EntityForm({
           break;
 
         case "user":
-          // Para usuarios, solo mostrar confirmación (son read-only)
+          
           setShowDialog(false);
           break;
 
@@ -398,7 +398,7 @@ export default function EntityForm({
         />
       )}
 
-      {/* Sistema de notificaciones */}
+      {}
       <NotificationToast
         message={notification.message}
         type={notification.type}

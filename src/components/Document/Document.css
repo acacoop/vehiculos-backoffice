@@ -219,7 +219,7 @@
   animation: slideOut 0.195s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Animaciones */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -360,7 +360,7 @@
   background-color: #fe9000;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .document {
     padding: 15px;

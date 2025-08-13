@@ -26,14 +26,14 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#282D86", // azul institucional
-  "#FE9000", // naranja institucional
-  "#888888", // gris medio
-  "#bdbdbd", // gris claro
-  "#616161", // gris oscuro
-  "#a6a6a6", // gris suave
-  "#cfd8dc", // gris muy claro
-  "#424242", // gris fuerte
+  "#282D86",
+  "#FE9000",
+  "#888888",
+  "#bdbdbd",
+  "#616161",
+  "#a6a6a6",
+  "#cfd8dc",
+  "#424242",
 ];
 
 type UnifiedMetricsType =
@@ -60,7 +60,6 @@ export default function UnifiedMetrics({
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Crear el objeto de estilos con width y height si se proporcionan
   const containerStyle: React.CSSProperties = {};
   if (width) containerStyle.width = width;
   if (height) containerStyle.height = height;
@@ -75,7 +74,6 @@ export default function UnifiedMetrics({
           setMetrics(response.data);
         }
       } catch (error) {
-        // Error silencioso - se maneja con el estado de loading
       } finally {
         setLoading(false);
       }
@@ -104,11 +102,9 @@ export default function UnifiedMetrics({
     );
   }
 
-  // Renderizado tipo Dashboard (combina UserMetrics y ReserveMetrics)
   if (type === "dashboard") {
     return (
       <div className="unified-metrics-container" style={containerStyle}>
-        {/* Sección de Usuarios */}
         <div className="unified-metrics-row">
           <div className="unified-metrics-card">
             <h3 className="unified-metrics-title">Usuarios activos</h3>
@@ -170,7 +166,6 @@ export default function UnifiedMetrics({
           </div>
         </div>
 
-        {/* Sección de Reservas */}
         <div className="unified-metrics-card wide">
           <h3 className="unified-metrics-title">Reservas por mes</h3>
           {metrics.reservations.byMonth.length === 0 ? (
@@ -245,7 +240,6 @@ export default function UnifiedMetrics({
     );
   }
 
-  // Renderizados específicos por tipo
   if (type === "usuariosPie") {
     return (
       <div className="unified-metrics-container" style={containerStyle}>
@@ -455,7 +449,6 @@ export default function UnifiedMetrics({
     );
   }
 
-  // Fallback por defecto
   return (
     <div className="unified-metrics-container" style={containerStyle}>
       <div className="unified-metrics-card">

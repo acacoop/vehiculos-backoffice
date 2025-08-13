@@ -11,7 +11,7 @@ import { useMemo } from "react";
 export default function Assignment() {
   const navigate = useNavigate();
 
-  // Definir las columnas directamente sin useMemo para forzar recreación
+  
   const assignmentColumns: GridColDef<Assignment>[] = [
     {
       field: "user.dni",
@@ -135,7 +135,7 @@ export default function Assignment() {
     },
   ];
 
-  // Función para obtener asignaciones con paginación
+  
   const getAssignmentsData = useMemo(
     () =>
       async (
@@ -156,7 +156,7 @@ export default function Assignment() {
     []
   );
 
-  // Callback para agregar nueva asignación
+  
   const handleAddButtonClick = () => navigate("/assignment/create");
 
   return (

@@ -22,7 +22,6 @@ export default function UserEdit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Definición de columnas para la tabla de vehículos asignados
   const vehicleColumns: GridColDef<Assignment>[] = [
     {
       field: "vehicle.licensePlate",
@@ -77,7 +76,6 @@ export default function UserEdit() {
     },
   ];
 
-  // Definición de columnas para la tabla de reservas
   const reservationColumns: GridColDef<any>[] = [
     {
       field: "vehicle",
@@ -185,7 +183,6 @@ export default function UserEdit() {
     },
   ];
 
-  // Función para obtener asignaciones del usuario
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     if (!userId) {
       return {
@@ -221,7 +218,6 @@ export default function UserEdit() {
     }
   };
 
-  // Función para obtener reservas del usuario
   const getReservationsForTable = async (
     paginationParams: PaginationParams
   ) => {
@@ -338,9 +334,7 @@ export default function UserEdit() {
           entityId={userData.id}
           entityType="user"
           active={userData.active ?? false}
-          onToggle={(_newState: boolean) => {
-            // Usuario actualizado
-          }}
+          onToggle={(_newState: boolean) => {}}
         />
       </div>
 

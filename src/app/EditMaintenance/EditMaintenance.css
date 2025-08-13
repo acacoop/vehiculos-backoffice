@@ -162,11 +162,21 @@
 }
 
 .btn-secondary {
-  background-color: #dc3545;
+  background-color: #fe9000;
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
+  background-color: #fe9000;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
   background-color: #c82333;
   transform: translateY(-2px);
 }
@@ -201,7 +211,6 @@
   }
 }
 
-/* Estilos para los dropdowns de búsqueda */
 .category-search {
   position: relative;
 }
@@ -236,7 +245,6 @@
   border-bottom: none;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .edit-maintenance-form {
     width: 100%;

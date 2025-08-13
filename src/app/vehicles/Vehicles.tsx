@@ -14,7 +14,6 @@ const columns = [
 export default function Vehicles() {
   const navigate = useNavigate();
 
-  // Función para obtener vehículos con paginación
   const getVehiclesData = async (
     pagination: PaginationParams
   ): Promise<ServiceResponse<any[]>> => {

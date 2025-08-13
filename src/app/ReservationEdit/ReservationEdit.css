@@ -1,4 +1,4 @@
-/* Contenedor principal de ReservationEdit */
+
 .reservation-edit-container {
   display: flex;
   justify-content: center;
@@ -28,7 +28,7 @@
   text-align: center;
 }
 
-/* Formulario de reserva */
+
 .reservation-form {
   background: white;
   border-radius: 20px;
@@ -91,7 +91,7 @@
   opacity: 1;
 }
 
-/* Estilos para búsqueda de usuarios */
+
 .user-search {
   position: relative;
 }
@@ -125,7 +125,7 @@
   border-bottom: none;
 }
 
-/* Estilos para búsqueda de vehículos */
+
 .vehicle-search {
   position: relative;
 }
@@ -159,7 +159,7 @@
   border-bottom: none;
 }
 
-/* Botones de acción específicos para reservations */
+
 .reservation-form-actions {
   display: flex;
   gap: 15px;
@@ -207,7 +207,7 @@
   cursor: not-allowed;
 }
 
-/* Estados de carga y error */
+
 .loading-spinner {
   display: flex;
   justify-content: center;
@@ -229,7 +229,7 @@
   border-radius: 8px;
 }
 
-/* Responsive design */
+
 @media (max-width: 1300px) {
   .reservation-edit-header,
   .reservation-form,
@@ -271,7 +271,7 @@
   }
 }
 
-/* Botón para cambiar selección */
+
 .clear-selection-btn {
   background-color: #fe9000;
   color: white;

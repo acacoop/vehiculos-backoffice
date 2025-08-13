@@ -13,7 +13,7 @@ import "./maintenances.css";
 export default function MaintenancePage() {
   const navigate = useNavigate();
 
-  // Definición de columnas para la tabla de categorías
+  
   const maintenanceColumns: GridColDef<Maintenance>[] = [
     {
       field: "name",
@@ -24,7 +24,7 @@ export default function MaintenancePage() {
     },
   ];
 
-  // Definición de columnas para la tabla de mantenimientos posibles
+  
   const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
     [
       {
@@ -44,7 +44,7 @@ export default function MaintenancePage() {
       },
     ];
 
-  // Función para obtener categorías para la tabla
+  
   const getMaintenancesForTable = async (
     paginationParams: PaginationParams
   ) => {
@@ -81,7 +81,7 @@ export default function MaintenancePage() {
     }
   };
 
-  // Función para obtener mantenimientos posibles para la tabla
+  
   const getPossibleMaintenancesForTable = async (
     paginationParams: PaginationParams
   ) => {
@@ -130,7 +130,7 @@ export default function MaintenancePage() {
 
   return (
     <div className="maintenances-container">
-      {/* Tabla de Categorías de Mantenimiento */}
+      {}
       <Table<Maintenance>
         getRows={getMaintenancesForTable}
         columns={maintenanceColumns}
@@ -145,10 +145,10 @@ export default function MaintenancePage() {
         maxWidth="900px"
       />
 
-      {/* Separador */}
+      {}
       <div style={{ margin: "40px 0" }} />
 
-      {/* Tabla de Mantenimientos Posibles */}
+      {}
       <Table<MaintenancePossibleNormalized>
         getRows={getPossibleMaintenancesForTable}
         columns={possibleMaintenanceColumns}

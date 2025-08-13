@@ -34,7 +34,6 @@
   background-color: #fe9000;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .table-header {
     flex-direction: column;

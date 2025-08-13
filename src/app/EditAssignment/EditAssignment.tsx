@@ -33,7 +33,7 @@ export default function EditAssignment() {
 
   const isCreateMode = location.pathname.includes("/create");
 
-  // Obtener userId de los query parameters
+  
   const searchParams = new URLSearchParams(location.search);
   const userIdFromQuery = searchParams.get("userId");
 
@@ -41,13 +41,13 @@ export default function EditAssignment() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados para modo crear
+  
   const [preloadedVehicle, setPreloadedVehicle] = useState<Vehicle | null>(
     null
   );
   const [preloadedUser, setPreloadedUser] = useState<User | null>(null);
 
-  // Hooks para búsqueda de entidades
+  
   const userSearch = useUserSearch();
   const vehicleSearch = useVehicleSearch();
 
@@ -55,7 +55,7 @@ export default function EditAssignment() {
   const [endDate, setEndDate] = useState<string>("");
   const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
 
-  // Hook para diálogos de confirmación
+  
   const {
     isOpen: isConfirmOpen,
     message: confirmMessage,
@@ -64,7 +64,7 @@ export default function EditAssignment() {
     handleCancel: confirmDialogCancel,
   } = useConfirmDialog();
 
-  // Hook para notificaciones
+  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -75,7 +75,7 @@ export default function EditAssignment() {
         setStartDate(today);
 
         if (isCreateMode) {
-          // Modo crear: cargar datos del vehículo si se proporciona vehicleId
+          
           if (vehicleId) {
             const vehicleResponse = await getVehicleById(vehicleId);
             if (vehicleResponse.success) {
@@ -83,7 +83,7 @@ export default function EditAssignment() {
             }
           }
 
-          // Modo crear: cargar datos del usuario si se proporciona userId en query params
+          
           if (userIdFromQuery) {
             const userResponse = await getUserById(userIdFromQuery);
             if (userResponse.success) {
@@ -122,30 +122,30 @@ export default function EditAssignment() {
     fetchAssignment();
   }, [assignmentId, vehicleId, userIdFromQuery, isCreateMode]);
 
-  // Función para verificar si se puede cambiar el usuario
+  
   const canChangeUser = () => {
-    // No se puede cambiar si estamos en modo editar (ya tiene usuario asignado)
+    
     if (!isCreateMode) return false;
 
-    // No se puede cambiar si el usuario viene precargado desde la URL
+    
     if (preloadedUser) return false;
 
-    // Solo se puede cambiar si el usuario fue seleccionado manualmente (no precargado)
+    
     return userSearch.selectedUser !== null;
   };
 
-  // Función para verificar si se puede cambiar el vehículo
+  
   const canChangeVehicle = () => {
-    // No se puede cambiar si estamos en modo editar (ya tiene vehículo asignado)
+    
     if (!isCreateMode) return false;
 
-    // No se puede cambiar si el vehículo viene precargado desde la URL
+    
     if (preloadedVehicle) return false;
 
-    // Solo se puede cambiar si el vehículo fue seleccionado manualmente
+    
     return vehicleSearch.selectedVehicle !== null;
   };
-  // Función para verificar si ya existe una asignación activa
+  
   const checkExistingAssignment = async (
     userId: string,
     vehicleId: string
@@ -157,17 +157,17 @@ export default function EditAssignment() {
       });
 
       if (response.success && response.data.length > 0) {
-        // Verificar si alguna asignación está activa (no tiene fecha de fin o la fecha de fin es futura)
+        
         const hasActiveAssignment = response.data.some((assignment) => {
-          if (!assignment.endDate) return true; // Sin fecha de fin = indefinida = activa
+          if (!assignment.endDate) return true; 
           const endDate = new Date(assignment.endDate);
-          return endDate > new Date(); // Fecha de fin en el futuro = activa
+          return endDate > new Date(); 
         });
         return hasActiveAssignment;
       }
       return false;
     } catch (error) {
-      // En caso de error en la verificación, permitir continuar
+      
       return false;
     }
   };
@@ -188,7 +188,7 @@ export default function EditAssignment() {
         return;
       }
 
-      // Mostrar diálogo de confirmación para crear asignación
+      
       showConfirm(
         "¿Está seguro que desea crear esta nueva asignación?",
         async () => {
@@ -202,7 +202,7 @@ export default function EditAssignment() {
               return;
             }
 
-            // Verificar si ya existe una asignación activa para este usuario y vehículo
+            
             const hasExistingAssignment = await checkExistingAssignment(
               finalUser.id,
               finalVehicle.id
@@ -226,19 +226,19 @@ export default function EditAssignment() {
 
             if (response.success) {
               showSuccess("Nueva asignación creada exitosamente");
-              // Esperar un poco para que se muestre la notificación antes de navegar
+              
               setTimeout(() => {
                 navigate(-1);
               }, 1500);
             } else {
-              // Verificar si es un error de asignación duplicada
+              
               const errorMessage = response.message || "";
               if (
                 errorMessage.toLowerCase().includes("already assigned") ||
                 errorMessage.toLowerCase().includes("ya asignado") ||
                 errorMessage.toLowerCase().includes("duplicate") ||
                 errorMessage.toLowerCase().includes("duplicado") ||
-                errorMessage.includes("500") || // Internal server error que podría indicar conflicto
+                errorMessage.includes("500") || 
                 errorMessage.toLowerCase().includes("conflict")
               ) {
                 showError(
@@ -254,7 +254,7 @@ export default function EditAssignment() {
         }
       );
     } else {
-      // Mostrar diálogo de confirmación para actualizar asignación
+      
       showConfirm(
         "¿Está seguro que desea guardar los cambios en esta asignación?",
         async () => {
@@ -264,7 +264,7 @@ export default function EditAssignment() {
               return;
             }
 
-            // Preparar las fechas en formato ISO
+            
             const startDateISO = new Date(
               startDate + "T00:00:00.000Z"
             ).toISOString();
@@ -278,7 +278,7 @@ export default function EditAssignment() {
               endDate: endDateISO,
             };
 
-            // Solo incluir userId y vehicleId si han cambiado
+            
             if (
               userSearch.selectedUser &&
               userSearch.selectedUser.id !== assignment.user.id
@@ -296,7 +296,7 @@ export default function EditAssignment() {
 
             if (response.success) {
               showSuccess("Asignación actualizada exitosamente");
-              // Esperar un poco para que se muestre la notificación antes de navegar
+              
               setTimeout(() => {
                 navigate(-1);
               }, 1500);
@@ -327,12 +327,12 @@ export default function EditAssignment() {
             return;
           }
 
-          // Usar el servicio para finalizar la asignación
+          
           const response = await finishAssignment(assignmentId);
 
           if (response.success) {
             showSuccess("Vehículo desasignado exitosamente");
-            // Esperar un poco para que se muestre la notificación antes de navegar
+            
             setTimeout(() => {
               navigate(-1);
             }, 1500);
@@ -374,7 +374,7 @@ export default function EditAssignment() {
           {isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
         </h1>
 
-        {/* Información del usuario */}
+        {}
         {assignment?.user || userSearch.selectedUser || preloadedUser ? (
           <div className="user-info">
             <h2 className="section-title">
@@ -451,7 +451,7 @@ export default function EditAssignment() {
           </div>
         )}
 
-        {/* Información del vehículo */}
+        {}
         {assignment?.vehicle ||
         preloadedVehicle ||
         vehicleSearch.selectedVehicle ? (
@@ -528,7 +528,7 @@ export default function EditAssignment() {
           </div>
         )}
 
-        {/* Formulario de asignación */}
+        {}
         <div className="assignment-form">
           <h2 className="section-title">Período de Asignación</h2>
 
@@ -578,7 +578,7 @@ export default function EditAssignment() {
           )}
         </div>
 
-        {/* Botones de acción */}
+        {}
         <div className="action-buttons">
           <button onClick={handleCancel} className="button-cancel">
             Cancelar
@@ -594,7 +594,7 @@ export default function EditAssignment() {
         </div>
       </div>
 
-      {/* Diálogo de confirmación */}
+      {}
       <ConfirmDialog
         open={isConfirmOpen}
         message={confirmMessage}
@@ -602,7 +602,7 @@ export default function EditAssignment() {
         onCancel={confirmDialogCancel}
       />
 
-      {/* Componente de notificación */}
+      {}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}

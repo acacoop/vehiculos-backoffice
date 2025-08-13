@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import "./NotificationToast.css";
 
-// Definimos los tipos de notificación
+
 export type NotificationType = "success" | "error" | "warning" | "info";
 
-// Props que va a recibir el componente
+
 interface NotificationToastProps {
   message: string;
   type?: NotificationType;
@@ -20,7 +20,7 @@ export default function NotificationToast({
   onClose,
   duration = 3000,
 }: NotificationToastProps) {
-  // Auto-cerrar después del tiempo especificado
+  
   useEffect(() => {
     if (isOpen && duration > 0) {
       const timer = setTimeout(() => {
@@ -31,7 +31,7 @@ export default function NotificationToast({
     }
   }, [isOpen, duration, onClose]);
 
-  // Si no está abierto, no renderizar nada
+  
   if (!isOpen) {
     return null;
   }

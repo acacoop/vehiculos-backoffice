@@ -38,7 +38,7 @@
   text-align: start;
 }
 
-/* Información del usuario */
+
 .user-info {
   margin-bottom: 30px;
 }
@@ -72,7 +72,7 @@
   border: 1px solid #e9ecef;
 }
 
-/* Información del vehículo */
+
 .vehicle-info {
   margin-bottom: 30px;
 }
@@ -84,7 +84,7 @@
   margin-bottom: 20px;
 }
 
-/* Formulario de asignación */
+
 .assignment-form {
   margin-bottom: 30px;
 }
@@ -143,7 +143,7 @@
   margin: 0 !important;
 }
 
-/* Botones de acción */
+
 .action-buttons {
   display: flex;
   gap: 15px;
@@ -173,7 +173,7 @@
 }
 
 .button-confirm:hover {
-  background-color: #1e2366; /* Más oscuro que #282d86 */
+  background-color: #1e2366; 
 }
 
 .button-cancel {
@@ -189,7 +189,7 @@
 }
 
 .button-cancel:hover {
-  background-color: #c62828; /* Más oscuro que #e53935 */
+  background-color: #c62828; 
 }
 
 .button-unassign {
@@ -206,10 +206,10 @@
 }
 
 .button-unassign:hover {
-  background-color: #f57c00; /* Más oscuro que #ff9800 */
+  background-color: #f57c00; 
 }
 
-/* Estados de carga y error */
+
 .loading,
 .error {
   text-align: center;
@@ -226,7 +226,7 @@
   margin: 20px 0;
 }
 
-/* Estilos para búsqueda de usuarios */
+
 .user-search {
   position: relative;
 }
@@ -290,7 +290,7 @@
   font-size: 0.85rem;
 }
 
-/* Estilos para búsqueda de vehículos */
+
 .vehicle-search {
   position: relative;
 }
@@ -310,7 +310,7 @@
   background-color: #e57c00;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .edit-assignment-container {
     padding: 10px;

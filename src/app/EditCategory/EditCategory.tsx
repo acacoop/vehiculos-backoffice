@@ -17,16 +17,16 @@ export default function EditCategory() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Determinar si estamos en modo creación o edición
+  
   const isCreateMode = !id;
 
-  // Estados
+  
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
 
-  // ConfirmDialog hook
+  
   const {
     isOpen,
     message,
@@ -35,7 +35,7 @@ export default function EditCategory() {
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
 
-  // Notification hook
+  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -53,7 +53,7 @@ export default function EditCategory() {
       const response = await getMaintenanceById(categoryId);
 
       if (response.success && response.data) {
-        // La respuesta tiene estructura anidada: response.data.data.name
+        
         const responseData = response.data as any;
         const actualData = responseData.data || responseData;
         const nameValue = actualData.name;
@@ -104,7 +104,7 @@ export default function EditCategory() {
             : "Categoría actualizada exitosamente";
           showSuccess(successMessage);
 
-          // Pequeño delay para que se vea la notificación antes de navegar
+          
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);
@@ -138,7 +138,7 @@ export default function EditCategory() {
         if (response.success) {
           showSuccess("Categoría eliminada exitosamente");
 
-          // Pequeño delay para que se vea la notificación antes de navegar
+          
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);

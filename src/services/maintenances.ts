@@ -30,11 +30,7 @@ export async function getMaintenanceCategories(
       }
     }
 
-    // Llamar directamente al fetch para evitar la transformación del httpService
-    const baseUrl = "http://localhost:3000"; // Ajustar según tu configuración
-    const fullUrl = `${baseUrl}${uri}`;
-
-    const response = await fetch(fullUrl);
+    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -361,9 +357,9 @@ export interface MaintenancePossibleNormalized {
 /**
  * Obtiene todos los mantenimientos posibles con información de categoría
  */
-export async function getMaintenancePossibles(
-  pagination?: PaginationParams
-): Promise<ServiceResponse<MaintenancePossibleNormalized[]>> {
+export async function getMaintenancePossibles(): Promise<
+  ServiceResponse<MaintenancePossibleNormalized[]>
+> {
   try {
     const uri = "/maintenance/posibles";
 
@@ -416,3 +412,213 @@ export async function getMaintenancePossibles(
     };
   }
 }
+
+/**
+ * Interfaz para crear/actualizar un mantenimiento individual
+ */
+export interface MaintenanceItemData {
+  title: string;
+  categoryId: string;
+  frequencyKm: number;
+  frequencyDays: number;
+  observations?: string;
+  instructions?: string;
+}
+
+/**
+ * Crear un nuevo mantenimiento individual (maintenance possible)
+ */
+export const createMaintenanceItem = async (
+  maintenanceData: MaintenanceItemData
+): Promise<ServiceResponse<MaintenancePossible>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/posibles`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: maintenanceData.title,
+          categoryId: maintenanceData.categoryId,
+          frequencyKm: maintenanceData.frequencyKm,
+          frequencyDays: maintenanceData.frequencyDays,
+          observations: maintenanceData.observations,
+          instructions: maintenanceData.instructions,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: data as MaintenancePossible,
+      message: "Mantenimiento creado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as MaintenancePossible,
+      message: "Error al crear el mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Actualizar un mantenimiento individual existente
+ */
+export const updateMaintenanceItem = async (
+  id: string,
+  maintenanceData: Partial<MaintenanceItemData>
+): Promise<ServiceResponse<MaintenancePossible>> => {
+  try {
+    const bodyData: any = {};
+
+    if (maintenanceData.title) bodyData.name = maintenanceData.title;
+    if (maintenanceData.categoryId)
+      bodyData.categoryId = maintenanceData.categoryId;
+    if (maintenanceData.frequencyKm)
+      bodyData.frequencyKm = maintenanceData.frequencyKm;
+    if (maintenanceData.frequencyDays)
+      bodyData.frequencyDays = maintenanceData.frequencyDays;
+    if (maintenanceData.observations !== undefined)
+      bodyData.observations = maintenanceData.observations;
+    if (maintenanceData.instructions !== undefined)
+      bodyData.instructions = maintenanceData.instructions;
+
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bodyData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: data as MaintenancePossible,
+      message: "Mantenimiento actualizado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as MaintenancePossible,
+      message: "Error al actualizar el mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Eliminar un mantenimiento individual
+ */
+export const deleteMaintenanceItem = async (
+  id: string
+): Promise<ServiceResponse<null>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return {
+      success: true,
+      data: null,
+      message: "Mantenimiento eliminado exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al eliminar el mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
+ * Obtener un mantenimiento individual específico por ID
+ */
+export const getMaintenanceItemById = async (
+  id: string
+): Promise<ServiceResponse<MaintenancePossibleNormalized>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
+    );
+
+    if (!response.ok) {
+      // Si el endpoint específico falla, usar fallback
+      const allMaintenancesResponse = await getMaintenancePossibles();
+
+      if (allMaintenancesResponse.success) {
+        const maintenance = allMaintenancesResponse.data.find(
+          (m) => m.id === id
+        );
+
+        if (maintenance) {
+          return {
+            success: true,
+            data: maintenance,
+            message: "Mantenimiento obtenido exitosamente (fallback)",
+          };
+        } else {
+          return {
+            success: false,
+            data: {} as MaintenancePossibleNormalized,
+            message: "Mantenimiento no encontrado",
+          };
+        }
+      }
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const rawData = await response.json();
+
+    // Normalizar los datos
+    const normalizedData: MaintenancePossibleNormalized = {
+      id: rawData.id,
+      name: rawData.name,
+      maintenanceCategoryName:
+        rawData.maintenancecategoryname ||
+        rawData.maintenanceCategoryName ||
+        "Sin categoría",
+    };
+
+    return {
+      success: true,
+      data: normalizedData,
+      message: "Mantenimiento obtenido exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as MaintenancePossibleNormalized,
+      message: "Error al obtener el mantenimiento",
+      error: error as any,
+    };
+  }
+};

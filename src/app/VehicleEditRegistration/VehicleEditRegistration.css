@@ -1,4 +1,3 @@
-/* Estilos para VehicleEditRegistration */
 .vehicle-edit-registration-container {
   display: flex;
   flex-direction: column;
@@ -45,7 +44,6 @@
   opacity: 0.6;
 }
 
-/* Espaciado entre componentes */
 .vehicle-edit-registration-container > * {
   margin-bottom: 30px;
 }
@@ -54,7 +52,6 @@
   margin-bottom: 0;
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
   .vehicle-edit-registration-container {
     padding: 15px;

@@ -74,7 +74,6 @@ export default function StatusToggle({
         if (response.success) {
           setIsActive(newState);
           if (onToggle) onToggle(newState);
-          // Mostrar notificación de éxito
           const successMessage = newState
             ? `Usuario desbloqueado exitosamente`
             : `Usuario bloqueado exitosamente`;
@@ -88,14 +87,11 @@ export default function StatusToggle({
           );
         }
       } else {
-        // Para vehículos, por ahora simulamos la respuesta exitosa
-        // Cuando tengas el servicio updateVehicleStatus, reemplaza esto:
-        // const response = await updateVehicleStatus(entityId, newState);
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         setIsActive(newState);
         if (onToggle) onToggle(newState);
-        // Mostrar notificación de éxito para vehículos
+
         const successMessage = newState
           ? `Vehículo reactivado exitosamente`
           : `Vehículo dado de baja exitosamente`;
@@ -175,7 +171,7 @@ export default function StatusToggle({
         title={config.dialogTitle}
       />
 
-      {/* Componente de notificación */}
+      {}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}

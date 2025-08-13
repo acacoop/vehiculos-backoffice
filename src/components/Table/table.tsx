@@ -34,7 +34,6 @@ interface GenericTableProps<T extends GridValidRowModel> {
   showEditColumn?: boolean;
   editRoute?: string;
   additionalRouteParams?: string;
-  // Nuevas props para el header
   showTableHeader?: boolean;
   headerTitle?: string;
   showAddButton?: boolean;
@@ -53,7 +52,6 @@ export function Table<T extends GridValidRowModel>({
   showEditColumn = false,
   editRoute = "/user/edit",
   additionalRouteParams = "",
-  // Nuevas props con valores por defecto
   showTableHeader = false,
   headerTitle = "",
   showAddButton = false,
@@ -77,13 +75,11 @@ export function Table<T extends GridValidRowModel>({
   const fetchData = async (page: number, pageSize: number) => {
     setLoading(true);
     try {
-      // MUI usa páginas base 0, pero el backend usa páginas base 1
       const response = await getRows({ page: page + 1, limit: pageSize });
 
       if (response.success) {
         setRows(response.data);
 
-        // Actualizar información de paginación si está disponible
         if (response.pagination) {
           setRowCount(response.pagination.total);
         } else {

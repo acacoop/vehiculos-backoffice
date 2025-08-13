@@ -12,26 +12,26 @@ export default function KilometersEdit() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const isCreateMode = true; // Siempre es crear para registros de kilometraje
+  const isCreateMode = true; 
   const preloadedVehicleId = vehicleId || searchParams.get("vehicleId");
 
-  // Estados del formulario
+  
   const [mileage, setMileage] = useState("");
   const [observations, setObservations] = useState("");
   const [registrationDate, setRegistrationDate] = useState(
     new Date().toISOString().split("T")[0]
   );
 
-  // Estados de control
+  
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
 
-  // Hook para notificaciones
+  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
-  // Cargar datos del vehículo
+  
   useEffect(() => {
     const loadVehicleData = async () => {
       if (!preloadedVehicleId) {
@@ -60,7 +60,7 @@ export default function KilometersEdit() {
     loadVehicleData();
   }, [preloadedVehicleId]);
 
-  // Validar formulario
+  
   const validateForm = () => {
     if (!mileage || mileage.trim() === "") {
       showError("Debe ingresar el kilometraje");
@@ -88,7 +88,7 @@ export default function KilometersEdit() {
     return true;
   };
 
-  // Guardar registro de kilometraje
+  
   const handleSave = async () => {
     if (!validateForm()) return;
 
@@ -99,18 +99,18 @@ export default function KilometersEdit() {
         mileage: parseInt(mileage),
         observations: observations.trim() || "Sin observaciones",
         registrationDate: registrationDate,
-        createdBy: "Administrador", // Por ahora hardcodeado
+        createdBy: "Administrador", 
       };
 
-      // TODO: Implementar servicio para crear registro de kilometraje
-      // const response = await createMileageRecord(mileageData);
+      
+      
 
-      // Simulamos una respuesta exitosa por ahora
+      
       const response = { success: true };
 
       if (response.success) {
         showSuccess("Registro de kilometraje creado exitosamente");
-        // Esperar un poco para que se muestre la notificación antes de navegar
+        
         setTimeout(() => {
           navigate(-1);
         }, 1500);
@@ -124,7 +124,7 @@ export default function KilometersEdit() {
     }
   };
 
-  // Cancelar
+  
   const handleCancel = () => {
     navigate(-1);
   };
@@ -154,7 +154,7 @@ export default function KilometersEdit() {
       <div className="edit-assignment-card">
         <h1 className="title">Nuevo Registro de Kilometraje</h1>
 
-        {/* Información del vehículo */}
+        {}
         <div className="user-info">
           <h2 className="section-title">Datos del Vehículo</h2>
           <div className="user-details">
@@ -177,7 +177,7 @@ export default function KilometersEdit() {
           </div>
         </div>
 
-        {/* Formulario de registro de kilometraje */}
+        {}
         <div className="assignment-form">
           <h2 className="section-title">Registro de Kilometraje</h2>
 
@@ -234,7 +234,7 @@ export default function KilometersEdit() {
           </div>
         </div>
 
-        {/* Botones de acción */}
+        {}
         <div className="action-buttons">
           <button
             onClick={handleCancel}
@@ -253,7 +253,7 @@ export default function KilometersEdit() {
         </div>
       </div>
 
-      {/* Componente de notificación */}
+      {}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}

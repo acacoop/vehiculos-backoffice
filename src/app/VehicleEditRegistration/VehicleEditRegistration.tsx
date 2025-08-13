@@ -30,7 +30,6 @@ export default function VehicleEditRegistration() {
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [refreshTables, setRefreshTables] = useState(0);
 
-  // Hook para notificaciones
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -225,7 +224,6 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  // Columnas para la tabla de kilometraje
   const mileageColumns: GridColDef[] = [
     {
       field: "date",
@@ -379,13 +377,10 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  // Función para obtener datos de kilometraje (mock data por ahora)
   const getMileageForTable = async (
     paginationParams: PaginationParams
   ): Promise<ServiceResponse<any[]>> => {
     try {
-      // TODO: Implementar servicio real para obtener historiales de kilometraje
-      // Por ahora devolvemos datos mock
       const mockMileageData = [
         {
           id: "1",
@@ -467,14 +462,11 @@ export default function VehicleEditRegistration() {
         brand: vehicleData.brand,
         model: vehicleData.model,
         year: vehicleData.year,
-        imgUrl:
-          vehicleData.imgUrl ||
-          "https://www.toyota.com/imgix/content/dam/toyota/vehicles/2023/rav4/mlp/desktop/2023-rav4-xle-magnetic-gray-d.png",
+        imgUrl: vehicleData.imgUrl || "https://via.placeholder.com/150",
       });
 
       if (response.success) {
         showSuccess("¡Vehículo registrado exitosamente!");
-        // Esperar un poco para que se muestre la notificación antes de navegar
         setTimeout(() => {
           navigate("/vehicles");
         }, 1500);
@@ -642,7 +634,6 @@ export default function VehicleEditRegistration() {
         </div>
       )}
 
-      {/* Componente de notificación */}
       {notification.isOpen && (
         <NotificationToast
           message={notification.message}

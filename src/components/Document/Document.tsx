@@ -22,10 +22,10 @@ export default function Document({
   title = "Documentos",
   initialDocuments = [],
 }: DocumentProps) {
-  // Documentos iniciales basados en props o valores por defecto
+  
   const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
 
-  // Estados para el formulario
+  
   const [showForm, setShowForm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentItem | null>(
@@ -36,7 +36,7 @@ export default function Document({
   const [hasExpiration, setHasExpiration] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Hooks para notificaciones y confirmación
+  
   const { notification, showSuccess, showError, showInfo, closeNotification } =
     useNotification();
   const {
@@ -77,13 +77,13 @@ export default function Document({
   };
 
   const handleDownload = (doc: DocumentItem) => {
-    // Simular descarga del archivo
-    // En una aplicación real, esto haría una petición al servidor para obtener el archivo
+    
+    
     showInfo(`Descargando archivo: ${doc.fileName}`);
 
-    // Crear un enlace temporal para simular la descarga
+    
     const link = document.createElement("a");
-    link.href = "#"; // En una app real, sería la URL del archivo
+    link.href = "#"; 
     link.download = doc.fileName;
     link.click();
   };
@@ -123,7 +123,7 @@ export default function Document({
     }
 
     if (editingDocument) {
-      // Editar documento existente
+      
       const updatedDocument: DocumentItem = {
         ...editingDocument,
         title: newTitle.trim(),
@@ -138,7 +138,7 @@ export default function Document({
       );
       showSuccess("Documento actualizado exitosamente");
     } else {
-      // Crear nuevo documento
+      
       const newDocument: DocumentItem = {
         id: Date.now().toString(),
         title: newTitle.trim(),
@@ -151,7 +151,7 @@ export default function Document({
       showSuccess("Documento agregado exitosamente");
     }
 
-    // Iniciar animación de cierre
+    
     handleCloseForm();
   };
 
@@ -162,7 +162,7 @@ export default function Document({
   const handleCloseForm = () => {
     setIsClosing(true);
     setTimeout(() => {
-      // Limpiar formulario
+      
       setNewTitle("");
       setNewExpirationDate("");
       setHasExpiration(false);
@@ -171,12 +171,12 @@ export default function Document({
       setShowForm(false);
       setIsClosing(false);
 
-      // Reset file input
+      
       const fileInput = document.getElementById(
         "file-input"
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
-    }, 195); // Duración de la animación de salida
+    }, 195); 
   };
   return (
     <div className="document">
@@ -186,7 +186,7 @@ export default function Document({
           + Agregar Documento
         </button>
       </div>
-      {/* Lista de documentos existentes */}
+      {}
       <div className="documents-list">
         {documents.map((doc) => (
           <div key={doc.id} className="document-item">
@@ -217,7 +217,7 @@ export default function Document({
               </div>
             </div>
 
-            {/* Botones de acción */}
+            {}
             <div className="document-actions">
               <button
                 className="action-btn download-btn"
@@ -253,7 +253,7 @@ export default function Document({
           </div>
         ))}
       </div>{" "}
-      {/* Formulario para agregar documento */}
+      {}
       {showForm && (
         <div
           className={`document-form-overlay ${isClosing ? "closing" : ""}`}
@@ -342,14 +342,14 @@ export default function Document({
           </div>
         </div>
       )}
-      {/* Sistema de notificaciones */}
+      {}
       <NotificationToast
         message={notification.message}
         type={notification.type}
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-      {/* Diálogo de confirmación */}
+      {}
       <ConfirmDialog
         open={confirmDialogOpen}
         title="Confirmar eliminación"

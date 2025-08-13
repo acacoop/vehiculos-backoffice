@@ -1,4 +1,4 @@
-/* Estilos base para el componente NotificationToast */
+
 .notification-toast {
   position: fixed;
   top: 20px;
@@ -15,7 +15,7 @@
   animation: slideIn 0.3s ease-out;
 }
 
-/* Animación de entrada */
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -27,7 +27,7 @@
   }
 }
 
-/* Estilos para el texto */
+
 .notification-toast p {
   margin: 0;
   flex: 1;
@@ -36,7 +36,7 @@
   line-height: 1.4;
 }
 
-/* Botón de cerrar */
+
 .notification-close {
   background: none;
   border: none;
@@ -58,7 +58,7 @@
   opacity: 1;
 }
 
-/* Tipos de notificación */
+
 .notification-success {
   background-color: #d4edda;
   border-left: 4px solid #28a745;
@@ -99,7 +99,7 @@
   color: #0c5460;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .notification-toast {
     right: 10px;

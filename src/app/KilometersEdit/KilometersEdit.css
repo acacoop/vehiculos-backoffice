@@ -1,4 +1,4 @@
-/* Importar estilos de EditAssignment para mantener consistencia */
+
 @import "../EditAssignment/EditAssignment.css";
 
 .kilometers-edit-container {
@@ -24,14 +24,14 @@
   border: 1px solid #ffcdd2;
 }
 
-/* Estilos específicos para textarea */
+
 .textarea-input {
   min-height: 100px;
   resize: vertical;
   font-family: inherit;
 }
 
-/* Campo de solo lectura */
+
 .readonly-field {
   padding: 12px;
   background-color: #f5f5f5;

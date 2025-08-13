@@ -1,12 +1,19 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getMaintenanceCategories } from "../../services/maintenances";
+import {
+  getMaintenanceCategories,
+  getMaintenancePossibles,
+  createMaintenanceItem,
+  updateMaintenanceItem,
+  deleteMaintenanceItem,
+  type MaintenanceItemData,
+} from "../../services/maintenances";
 import { CategorySearch } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { useConfirmDialog } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
-import type { Maintenance, MaintenanceItem } from "../../types/maintenance";
+import type { Maintenance } from "../../types/maintenance";
 import "./EditMaintenance.css";
 
 export default function EditMaintenance() {
@@ -16,12 +23,11 @@ export default function EditMaintenance() {
 
   const isCreateMode = location.pathname.includes("/create");
 
-  // Estados principales
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados del formulario
   const [title, setTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Maintenance | null>(
     null
@@ -31,15 +37,12 @@ export default function EditMaintenance() {
   const [observations, setObservations] = useState("");
   const [instructions, setInstructions] = useState("");
 
-  // Estados para búsqueda de categorías
   const [categorySearchTerm, setCategorySearchTerm] = useState("");
   const [availableCategories, setAvailableCategories] = useState<Maintenance[]>(
     []
   );
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [allCategories, setAllCategories] = useState<Maintenance[]>([]);
-
-  // Hooks
   const {
     isOpen,
     message,
@@ -52,10 +55,13 @@ export default function EditMaintenance() {
 
   useEffect(() => {
     loadCategories();
-    if (!isCreateMode && maintenanceId) {
+  }, []);
+
+  useEffect(() => {
+    if (!isCreateMode && maintenanceId && allCategories.length > 0) {
       loadMaintenance(maintenanceId);
     }
-  }, [maintenanceId, isCreateMode]);
+  }, [maintenanceId, isCreateMode, allCategories]);
 
   const loadCategories = async () => {
     try {
@@ -72,34 +78,48 @@ export default function EditMaintenance() {
   const loadMaintenance = async (id: string) => {
     setLoading(true);
     try {
-      // TODO: Implementar servicio para obtener mantenimiento por ID
-      // const response = await getMaintenanceItemById(id);
-      // if (response.success && response.data) {
-      //   const maintenance = response.data;
-      //   setTitle(maintenance.title);
-      //   setFrequencyKm(maintenance.frequencyKm);
-      //   setFrequencyDays(maintenance.frequencyDays);
-      //   setObservations(maintenance.observations || "");
-      //   setInstructions(maintenance.instructions || "");
-      //
-      //   // Buscar y setear la categoría
-      //   if (maintenance.categoryId) {
-      //     const category = allCategories.find(c => c.id === maintenance.categoryId);
-      //     if (category) {
-      //       setSelectedCategory(category);
-      //       setCategorySearchTerm(category.name);
-      //     }
-      //   }
-      // }
-      console.log("Loading maintenance:", id);
+      const response = await getMaintenancePossibles();
+
+      if (response.success && response.data) {
+        const maintenance = response.data.find((item) => item.id === id);
+
+        if (maintenance) {
+          setTitle(maintenance.name);
+
+          setFrequencyKm(10000);
+          setFrequencyDays(365);
+          setObservations("");
+          setInstructions("");
+
+          if (maintenance.maintenanceCategoryName && allCategories.length > 0) {
+            const category = allCategories.find(
+              (c) =>
+                c.name.toLowerCase() ===
+                maintenance.maintenanceCategoryName.toLowerCase()
+            );
+            if (category) {
+              setSelectedCategory(category);
+              setCategorySearchTerm(category.name);
+            } else {
+              setCategorySearchTerm(maintenance.maintenanceCategoryName);
+            }
+          }
+        } else {
+          setError("Mantenimiento no encontrado");
+        }
+      } else {
+        setError("Error al cargar el mantenimiento");
+      }
     } catch (err) {
-      setError("Error al cargar el mantenimiento");
+      setError(
+        "Error al cargar el mantenimiento: " +
+          (err instanceof Error ? err.message : String(err))
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Búsqueda de categorías
   useEffect(() => {
     if (categorySearchTerm.length >= 1) {
       const filtered = allCategories.filter((category) =>
@@ -128,7 +148,6 @@ export default function EditMaintenance() {
   };
 
   const handleSave = async () => {
-    // Validaciones
     if (!title.trim()) {
       showError("El título es obligatorio");
       return;
@@ -154,7 +173,7 @@ export default function EditMaintenance() {
       setError(null);
 
       try {
-        const maintenanceData: Partial<MaintenanceItem> = {
+        const maintenanceData: MaintenanceItemData = {
           title: title.trim(),
           categoryId: selectedCategory.id,
           frequencyKm,
@@ -163,30 +182,30 @@ export default function EditMaintenance() {
           instructions: instructions.trim() || undefined,
         };
 
-        // TODO: Implementar servicios para crear/actualizar mantenimientos
-        // let response;
-        // if (isCreateMode) {
-        //   response = await createMaintenanceItem(maintenanceData);
-        // } else if (maintenanceId) {
-        //   response = await updateMaintenanceItem(maintenanceId, maintenanceData);
-        // }
+        let response;
+        if (isCreateMode) {
+          response = await createMaintenanceItem(maintenanceData);
+        } else if (maintenanceId) {
+          response = await updateMaintenanceItem(
+            maintenanceId,
+            maintenanceData
+          );
+        }
 
-        // Simulamos éxito por ahora
-        // if (response?.success) {
-        const successMessage = isCreateMode
-          ? "Mantenimiento creado exitosamente"
-          : "Mantenimiento actualizado exitosamente";
-        showSuccess(successMessage);
+        if (response?.success) {
+          const successMessage = isCreateMode
+            ? "Mantenimiento creado exitosamente"
+            : "Mantenimiento actualizado exitosamente";
+          showSuccess(successMessage);
 
-        setTimeout(() => {
-          navigate("/maintenances");
-        }, 1500);
-        // } else {
-        //   showError(
-        //     response?.message ||
-        //       `Error al ${actionText} el mantenimiento`
-        //   );
-        // }
+          setTimeout(() => {
+            navigate("/maintenances");
+          }, 1500);
+        } else {
+          showError(
+            response?.message || `Error al ${actionText} el mantenimiento`
+          );
+        }
       } catch (err) {
         showError(`Error al ${actionText} el mantenimiento`);
       } finally {
@@ -197,6 +216,35 @@ export default function EditMaintenance() {
 
   const handleCancel = () => {
     navigate("/maintenances");
+  };
+
+  const handleDelete = () => {
+    if (!maintenanceId) return;
+
+    showConfirm(
+      "¿Está seguro que desea eliminar este mantenimiento? Esta acción no se puede deshacer.",
+      async () => {
+        setDeleting(true);
+        setError(null);
+
+        try {
+          const response = await deleteMaintenanceItem(maintenanceId);
+
+          if (response.success) {
+            showSuccess("Mantenimiento eliminado exitosamente");
+            setTimeout(() => {
+              navigate("/maintenances");
+            }, 1500);
+          } else {
+            showError(response.message || "Error al eliminar el mantenimiento");
+          }
+        } catch (err) {
+          showError("Error al eliminar el mantenimiento");
+        } finally {
+          setDeleting(false);
+        }
+      }
+    );
   };
 
   if (loading) {
@@ -316,16 +364,27 @@ export default function EditMaintenance() {
             type="button"
             className="btn btn-secondary"
             onClick={handleCancel}
-            disabled={saving}
+            disabled={saving || deleting}
           >
             Cancelar
           </button>
+
+          {!isCreateMode && (
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleDelete}
+              disabled={saving || deleting}
+            >
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </button>
+          )}
 
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || deleting}
           >
             {saving
               ? "Guardando..."
