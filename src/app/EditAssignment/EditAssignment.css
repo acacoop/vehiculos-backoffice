@@ -38,7 +38,6 @@
   text-align: start;
 }
 
-
 .user-info {
   margin-bottom: 30px;
 }
@@ -72,7 +71,6 @@
   border: 1px solid #e9ecef;
 }
 
-
 .vehicle-info {
   margin-bottom: 30px;
 }
@@ -83,7 +81,6 @@
   gap: 15px;
   margin-bottom: 20px;
 }
-
 
 .assignment-form {
   margin-bottom: 30px;
@@ -143,7 +140,6 @@
   margin: 0 !important;
 }
 
-
 .action-buttons {
   display: flex;
   gap: 15px;
@@ -173,7 +169,7 @@
 }
 
 .button-confirm:hover {
-  background-color: #1e2366; 
+  background-color: #1e2366;
 }
 
 .button-cancel {
@@ -189,7 +185,7 @@
 }
 
 .button-cancel:hover {
-  background-color: #c62828; 
+  background-color: #c62828;
 }
 
 .button-unassign {
@@ -206,9 +202,8 @@
 }
 
 .button-unassign:hover {
-  background-color: #f57c00; 
+  background-color: #f57c00;
 }
-
 
 .loading,
 .error {
@@ -225,7 +220,6 @@
   border-radius: 8px;
   margin: 20px 0;
 }
-
 
 .user-search {
   position: relative;
@@ -262,7 +256,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 998;
 }
 
 .user-dropdown-item {
@@ -290,7 +284,6 @@
   font-size: 0.85rem;
 }
 
-
 .vehicle-search {
   position: relative;
 }
@@ -309,7 +302,6 @@
 .clear-selection-btn:hover {
   background-color: #e57c00;
 }
-
 
 @media (max-width: 768px) {
   .edit-assignment-container {

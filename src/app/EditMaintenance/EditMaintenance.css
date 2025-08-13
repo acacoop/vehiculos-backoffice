@@ -4,7 +4,6 @@
   align-items: center;
   flex-direction: column;
   padding: 120px 20px 20px 20px;
-  min-height: 100vh;
 }
 
 .edit-maintenance-header {
@@ -14,7 +13,7 @@
 
 .edit-maintenance-title {
   color: #282d86;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 600;
   margin: 0;
 }
@@ -29,7 +28,7 @@
 .form-section {
   margin-bottom: 40px;
   padding-bottom: 30px;
-  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-section:last-child {
@@ -72,6 +71,7 @@
   transition: border-color 0.3s, box-shadow 0.3s;
   box-sizing: border-box;
   background: white;
+  z-index: 0;
 }
 
 .form-input:focus {
@@ -226,7 +226,7 @@
   border-radius: 0 0 12px 12px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 998;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 

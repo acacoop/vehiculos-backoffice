@@ -194,7 +194,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1010;
   animation: fadeIn 0.225s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -218,7 +218,6 @@
 .document-form-overlay.closing .document-form {
   animation: slideOut 0.195s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 
 @keyframes fadeIn {
   from {
@@ -359,7 +358,6 @@
 .document-submit-btn:hover {
   background-color: #fe9000;
 }
-
 
 @media (max-width: 768px) {
   .document {
