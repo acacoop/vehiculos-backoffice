@@ -305,20 +305,6 @@ export default function ReservationEdit() {
     navigate(-1);
   };
 
-  // Handlers para FormLayout
-  const handleUserChange = () => {
-    // Los datos del usuario son readonly cuando están precargados
-  };
-
-  const handleVehicleChange = () => {
-    // Los datos del vehículo son readonly cuando están precargados
-  };
-
-  const handleFormChange = (_key: string, _value: string | number) => {
-    // Este handler es para campos que no necesitan lógica específica
-    // Los campos específicos como datetime se manejan directamente en sus componentes
-  };
-
   if (loading) {
     return (
       <div className="reservation-edit-container">
@@ -343,7 +329,7 @@ export default function ReservationEdit() {
           label: "DNI:",
           type: "text",
           value: userSearch.selectedUser.dni?.toLocaleString() || "",
-          onChange: handleUserChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -351,7 +337,7 @@ export default function ReservationEdit() {
           label: "Nombre:",
           type: "text",
           value: userSearch.selectedUser.firstName || "",
-          onChange: handleUserChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -359,7 +345,7 @@ export default function ReservationEdit() {
           label: "Apellido:",
           type: "text",
           value: userSearch.selectedUser.lastName || "",
-          onChange: handleUserChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -367,7 +353,7 @@ export default function ReservationEdit() {
           label: "Email:",
           type: "email",
           value: userSearch.selectedUser.email || "",
-          onChange: handleUserChange,
+          onChange: () => {},
           disabled: true,
         },
       ],
@@ -382,7 +368,7 @@ export default function ReservationEdit() {
           label: "Buscar usuario (por nombre o DNI)",
           type: "userSearch",
           value: "",
-          onChange: handleFormChange,
+          onChange: () => {},
           entitySearch: true,
           searchTerm: userSearch.searchTerm,
           onSearchChange: userSearch.searchUsers,
@@ -408,7 +394,7 @@ export default function ReservationEdit() {
           label: "Patente:",
           type: "text",
           value: vehicleSearch.selectedVehicle.licensePlate || "",
-          onChange: handleVehicleChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -416,7 +402,7 @@ export default function ReservationEdit() {
           label: "Marca:",
           type: "text",
           value: vehicleSearch.selectedVehicle.brand || "",
-          onChange: handleVehicleChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -424,7 +410,7 @@ export default function ReservationEdit() {
           label: "Modelo:",
           type: "text",
           value: vehicleSearch.selectedVehicle.model || "",
-          onChange: handleVehicleChange,
+          onChange: () => {},
           disabled: true,
         },
         {
@@ -432,7 +418,7 @@ export default function ReservationEdit() {
           label: "Año:",
           type: "number",
           value: vehicleSearch.selectedVehicle.year || 0,
-          onChange: handleVehicleChange,
+          onChange: () => {},
           disabled: true,
         },
       ],
@@ -447,7 +433,7 @@ export default function ReservationEdit() {
           label: "Buscar vehículo (por patente, marca, modelo o año)",
           type: "vehicleSearch",
           value: "",
-          onChange: handleFormChange,
+          onChange: () => {},
           entitySearch: true,
           searchTerm: vehicleSearch.searchTerm,
           onSearchChange: vehicleSearch.searchVehicles,
@@ -471,7 +457,7 @@ export default function ReservationEdit() {
         label: "Seleccionar fechas y horarios",
         type: "datetime",
         value: "",
-        onChange: handleFormChange,
+        onChange: () => {},
         dateTimePicker: true,
         startDate,
         startTime,
