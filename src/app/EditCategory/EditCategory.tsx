@@ -11,22 +11,25 @@ import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import { useNotification } from "../../hooks/useNotification";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import {
+  CancelButton,
+  DeleteButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import "./EditCategory.css";
 
 export default function EditCategory() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  
   const isCreateMode = !id;
 
-  
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
 
-  
   const {
     isOpen,
     message,
@@ -35,7 +38,6 @@ export default function EditCategory() {
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
 
-  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -53,7 +55,6 @@ export default function EditCategory() {
       const response = await getMaintenanceById(categoryId);
 
       if (response.success && response.data) {
-        
         const responseData = response.data as any;
         const actualData = responseData.data || responseData;
         const nameValue = actualData.name;
@@ -104,7 +105,6 @@ export default function EditCategory() {
             : "Categoría actualizada exitosamente";
           showSuccess(successMessage);
 
-          
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);
@@ -138,7 +138,6 @@ export default function EditCategory() {
         if (response.success) {
           showSuccess("Categoría eliminada exitosamente");
 
-          
           setTimeout(() => {
             navigate("/maintenances");
           }, 1500);
@@ -205,46 +204,29 @@ export default function EditCategory() {
           </div>
         </div>
 
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn btn-secondary"
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
             disabled={saving}
-          >
-            Cancelar
-          </button>
+          />
 
           {!isCreateMode && (
-            <button
-              type="button"
-              className="btn btn-danger"
+            <DeleteButton
+              text="Eliminar"
               onClick={handleDelete}
               disabled={saving}
-              style={{
-                marginLeft: "10px",
-                backgroundColor: "#dc3545",
-                color: "white",
-              }}
-            >
-              {saving ? "Eliminando..." : "Eliminar"}
-            </button>
+              loading={saving}
+            />
           )}
 
-          <button
-            type="button"
-            className="btn btn-primary"
+          <ConfirmButton
+            text={isCreateMode ? "Crear Categoría" : "Actualizar Categoría"}
             onClick={handleSave}
             disabled={saving}
-            style={{ marginLeft: "10px" }}
-          >
-            {saving
-              ? "Guardando..."
-              : isCreateMode
-              ? "Crear Categoría"
-              : "Actualizar Categoría"}
-          </button>
-        </div>
+            loading={saving}
+          />
+        </ButtonGroup>
       </div>
 
       <ConfirmDialog

@@ -9,6 +9,12 @@ import {
 } from "../../services/maintenances";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import {
+  CancelButton,
+  DeleteButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import { useConfirmDialog, useCategorySearch } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
 import "./EditMaintenance.css";
@@ -360,40 +366,31 @@ export default function EditMaintenance() {
 
         {error && <div className="error-message">{error}</div>}
 
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn btn-secondary"
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
             disabled={saving || deleting}
-          >
-            Cancelar
-          </button>
+          />
 
           {!isCreateMode && (
-            <button
-              type="button"
-              className="btn btn-danger"
+            <DeleteButton
+              text="Eliminar"
               onClick={handleDelete}
               disabled={saving || deleting}
-            >
-              {deleting ? "Eliminando..." : "Eliminar"}
-            </button>
+              loading={deleting}
+            />
           )}
 
-          <button
-            type="button"
-            className="btn btn-primary"
+          <ConfirmButton
+            text={
+              isCreateMode ? "Crear Mantenimiento" : "Actualizar Mantenimiento"
+            }
             onClick={handleSave}
             disabled={saving || deleting}
-          >
-            {saving
-              ? "Guardando..."
-              : isCreateMode
-              ? "Crear Mantenimiento"
-              : "Actualizar Mantenimiento"}
-          </button>
-        </div>
+            loading={saving}
+          />
+        </ButtonGroup>
       </div>
 
       <ConfirmDialog

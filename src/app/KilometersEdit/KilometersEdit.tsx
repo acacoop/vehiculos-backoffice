@@ -4,6 +4,11 @@ import { CircularProgress } from "@mui/material";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks/useNotification";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import {
+  CancelButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import type { Vehicle } from "../../types/vehicle";
 import "./KilometersEdit.css";
 
@@ -12,26 +17,22 @@ export default function KilometersEdit() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const isCreateMode = true; 
+  const isCreateMode = true;
   const preloadedVehicleId = vehicleId || searchParams.get("vehicleId");
 
-  
   const [mileage, setMileage] = useState("");
   const [observations, setObservations] = useState("");
   const [registrationDate, setRegistrationDate] = useState(
     new Date().toISOString().split("T")[0]
   );
 
-  
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
 
-  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
-  
   useEffect(() => {
     const loadVehicleData = async () => {
       if (!preloadedVehicleId) {
@@ -60,7 +61,6 @@ export default function KilometersEdit() {
     loadVehicleData();
   }, [preloadedVehicleId]);
 
-  
   const validateForm = () => {
     if (!mileage || mileage.trim() === "") {
       showError("Debe ingresar el kilometraje");
@@ -88,7 +88,6 @@ export default function KilometersEdit() {
     return true;
   };
 
-  
   const handleSave = async () => {
     if (!validateForm()) return;
 
@@ -99,18 +98,14 @@ export default function KilometersEdit() {
         mileage: parseInt(mileage),
         observations: observations.trim() || "Sin observaciones",
         registrationDate: registrationDate,
-        createdBy: "Administrador", 
+        createdBy: "Administrador",
       };
 
-      
-      
-
-      
       const response = { success: true };
 
       if (response.success) {
         showSuccess("Registro de kilometraje creado exitosamente");
-        
+
         setTimeout(() => {
           navigate(-1);
         }, 1500);
@@ -124,7 +119,6 @@ export default function KilometersEdit() {
     }
   };
 
-  
   const handleCancel = () => {
     navigate(-1);
   };
@@ -235,22 +229,19 @@ export default function KilometersEdit() {
         </div>
 
         {}
-        <div className="action-buttons">
-          <button
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
-            className="button-cancel"
             disabled={saving}
-          >
-            Cancelar
-          </button>
-          <button
+          />
+          <ConfirmButton
+            text="Crear Registro"
             onClick={handleSave}
-            className="button-confirm"
             disabled={saving}
-          >
-            {saving ? "Guardando..." : "Crear Registro"}
-          </button>
-        </div>
+            loading={saving}
+          />
+        </ButtonGroup>
       </div>
 
       {}

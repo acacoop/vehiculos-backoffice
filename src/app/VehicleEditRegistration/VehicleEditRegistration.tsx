@@ -6,6 +6,7 @@ import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import Table from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import { ConfirmButton, ButtonGroup } from "../../components/Buttons/Buttons";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
@@ -619,19 +620,14 @@ export default function VehicleEditRegistration() {
       />
 
       {isCreateMode && (
-        <div className="registration-actions">
-          <button
-            className="register-button"
+        <ButtonGroup>
+          <ConfirmButton
+            text="Registrar Vehículo"
             onClick={handleVehicleRegistration}
             disabled={isRegistering}
-            style={{
-              opacity: isRegistering ? 0.6 : 1,
-              cursor: isRegistering ? "not-allowed" : "pointer",
-            }}
-          >
-            {isRegistering ? "Registrando..." : "Registrar Vehículo"}
-          </button>
-        </div>
+            loading={isRegistering}
+          />
+        </ButtonGroup>
       )}
 
       {notification.isOpen && (

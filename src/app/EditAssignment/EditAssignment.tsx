@@ -16,6 +16,12 @@ import {
 } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import {
+  CancelButton,
+  DeleteButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import { useConfirmDialog } from "../../hooks";
 import { useNotification } from "../../hooks/useNotification";
 import type { Assignment } from "../../types/assignment";
@@ -33,7 +39,6 @@ export default function EditAssignment() {
 
   const isCreateMode = location.pathname.includes("/create");
 
-  
   const searchParams = new URLSearchParams(location.search);
   const userIdFromQuery = searchParams.get("userId");
 
@@ -41,13 +46,11 @@ export default function EditAssignment() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   const [preloadedVehicle, setPreloadedVehicle] = useState<Vehicle | null>(
     null
   );
   const [preloadedUser, setPreloadedUser] = useState<User | null>(null);
 
-  
   const userSearch = useUserSearch();
   const vehicleSearch = useVehicleSearch();
 
@@ -55,7 +58,6 @@ export default function EditAssignment() {
   const [endDate, setEndDate] = useState<string>("");
   const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
 
-  
   const {
     isOpen: isConfirmOpen,
     message: confirmMessage,
@@ -64,7 +66,6 @@ export default function EditAssignment() {
     handleCancel: confirmDialogCancel,
   } = useConfirmDialog();
 
-  
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -75,7 +76,6 @@ export default function EditAssignment() {
         setStartDate(today);
 
         if (isCreateMode) {
-          
           if (vehicleId) {
             const vehicleResponse = await getVehicleById(vehicleId);
             if (vehicleResponse.success) {
@@ -83,7 +83,6 @@ export default function EditAssignment() {
             }
           }
 
-          
           if (userIdFromQuery) {
             const userResponse = await getUserById(userIdFromQuery);
             if (userResponse.success) {
@@ -122,30 +121,22 @@ export default function EditAssignment() {
     fetchAssignment();
   }, [assignmentId, vehicleId, userIdFromQuery, isCreateMode]);
 
-  
   const canChangeUser = () => {
-    
     if (!isCreateMode) return false;
 
-    
     if (preloadedUser) return false;
 
-    
     return userSearch.selectedUser !== null;
   };
 
-  
   const canChangeVehicle = () => {
-    
     if (!isCreateMode) return false;
 
-    
     if (preloadedVehicle) return false;
 
-    
     return vehicleSearch.selectedVehicle !== null;
   };
-  
+
   const checkExistingAssignment = async (
     userId: string,
     vehicleId: string
@@ -157,17 +148,15 @@ export default function EditAssignment() {
       });
 
       if (response.success && response.data.length > 0) {
-        
         const hasActiveAssignment = response.data.some((assignment) => {
-          if (!assignment.endDate) return true; 
+          if (!assignment.endDate) return true;
           const endDate = new Date(assignment.endDate);
-          return endDate > new Date(); 
+          return endDate > new Date();
         });
         return hasActiveAssignment;
       }
       return false;
     } catch (error) {
-      
       return false;
     }
   };
@@ -188,7 +177,6 @@ export default function EditAssignment() {
         return;
       }
 
-      
       showConfirm(
         "¿Está seguro que desea crear esta nueva asignación?",
         async () => {
@@ -202,7 +190,6 @@ export default function EditAssignment() {
               return;
             }
 
-            
             const hasExistingAssignment = await checkExistingAssignment(
               finalUser.id,
               finalVehicle.id
@@ -226,19 +213,18 @@ export default function EditAssignment() {
 
             if (response.success) {
               showSuccess("Nueva asignación creada exitosamente");
-              
+
               setTimeout(() => {
                 navigate(-1);
               }, 1500);
             } else {
-              
               const errorMessage = response.message || "";
               if (
                 errorMessage.toLowerCase().includes("already assigned") ||
                 errorMessage.toLowerCase().includes("ya asignado") ||
                 errorMessage.toLowerCase().includes("duplicate") ||
                 errorMessage.toLowerCase().includes("duplicado") ||
-                errorMessage.includes("500") || 
+                errorMessage.includes("500") ||
                 errorMessage.toLowerCase().includes("conflict")
               ) {
                 showError(
@@ -254,7 +240,6 @@ export default function EditAssignment() {
         }
       );
     } else {
-      
       showConfirm(
         "¿Está seguro que desea guardar los cambios en esta asignación?",
         async () => {
@@ -264,7 +249,6 @@ export default function EditAssignment() {
               return;
             }
 
-            
             const startDateISO = new Date(
               startDate + "T00:00:00.000Z"
             ).toISOString();
@@ -278,7 +262,6 @@ export default function EditAssignment() {
               endDate: endDateISO,
             };
 
-            
             if (
               userSearch.selectedUser &&
               userSearch.selectedUser.id !== assignment.user.id
@@ -296,7 +279,7 @@ export default function EditAssignment() {
 
             if (response.success) {
               showSuccess("Asignación actualizada exitosamente");
-              
+
               setTimeout(() => {
                 navigate(-1);
               }, 1500);
@@ -327,12 +310,11 @@ export default function EditAssignment() {
             return;
           }
 
-          
           const response = await finishAssignment(assignmentId);
 
           if (response.success) {
             showSuccess("Vehículo desasignado exitosamente");
-            
+
             setTimeout(() => {
               navigate(-1);
             }, 1500);
@@ -359,9 +341,7 @@ export default function EditAssignment() {
       <div className="edit-assignment-container">
         <div className="error">
           {error || "No se pudo cargar la asignación"}
-          <button onClick={handleCancel} className="button secondary">
-            Volver
-          </button>
+          <CancelButton text="Volver" onClick={handleCancel} />
         </div>
       </div>
     );
@@ -579,19 +559,19 @@ export default function EditAssignment() {
         </div>
 
         {}
-        <div className="action-buttons">
-          <button onClick={handleCancel} className="button-cancel">
-            Cancelar
-          </button>
+        <ButtonGroup>
+          <CancelButton text="Cancelar" onClick={handleCancel} />
           {!isCreateMode && (
-            <button onClick={handleUnassign} className="button-unassign">
-              Desasignar Vehículo
-            </button>
+            <DeleteButton
+              text="Eliminar asignación del vehículo"
+              onClick={handleUnassign}
+            />
           )}
-          <button onClick={handleSave} className="button-confirm">
-            {isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
-          </button>
-        </div>
+          <ConfirmButton
+            text={isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
+            onClick={handleSave}
+          />
+        </ButtonGroup>
       </div>
 
       {}

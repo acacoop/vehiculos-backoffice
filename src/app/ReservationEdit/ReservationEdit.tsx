@@ -18,6 +18,11 @@ import {
 } from "../../components/EntitySearch/EntitySearch";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import DateTimePicker from "../../components/DateTimePicker/DateTimePicker";
+import {
+  CancelButton,
+  ConfirmButton,
+  ButtonGroup,
+} from "../../components/Buttons/Buttons";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import "./ReservationEdit.css";
@@ -566,26 +571,19 @@ export default function ReservationEdit() {
         </div>
 
         {}
-        <div className="action-buttons">
-          <button
+        <ButtonGroup>
+          <CancelButton
+            text="Cancelar"
             onClick={handleCancel}
-            className="button-cancel"
             disabled={saving}
-          >
-            Cancelar
-          </button>
-          <button
+          />
+          <ConfirmButton
+            text={isCreateMode ? "Crear Reserva" : "Actualizar Reserva"}
             onClick={handleSave}
-            className="button-confirm"
             disabled={saving}
-          >
-            {saving
-              ? "Guardando..."
-              : isCreateMode
-              ? "Crear Reserva"
-              : "Actualizar Reserva"}
-          </button>
-        </div>
+            loading={saving}
+          />
+        </ButtonGroup>
       </div>
 
       {}
