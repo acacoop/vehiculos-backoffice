@@ -31,6 +31,21 @@
   gap: 10px;
 }
 
+.entity-title-container {
+  display: flex;
+  align-items: center;
+  border-left: 4px solid #fe9000;
+  border-radius: 4px;
+}
+
+.entity-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  padding-left: 12px;
+  color: #282d86;
+}
+
 .entity-label {
   font-weight: bold;
   color: #282d86;

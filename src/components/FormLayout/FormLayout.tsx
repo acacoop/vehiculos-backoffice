@@ -74,7 +74,7 @@ export interface FormSection {
   title: string;
   fields: FormField[];
   className?: string;
-  horizontal?: boolean; // Nueva propiedad para layout horizontal
+  horizontal?: boolean;
   actionButton?: {
     text: string;
     onClick: () => void;

@@ -334,11 +334,10 @@ export default function EntityForm({
     <div className={`entity-form ${className}`}>
       <div className="entity-form-header">
         <div className="entity-info">
-          <div>
-            <h2 style={{ color: "#282d86", fontSize: 20 }}>
-              {config.title(isEditMode)}
-            </h2>
+          <div className="entity-title-container">
+            <h2 className="entity-title">{config.title(isEditMode)}</h2>
           </div>
+
           {config.fields.map((field) => (
             <div key={field.key} className="entity-field">
               <p className="entity-label">{field.label}</p>

@@ -13,7 +13,6 @@ import "./maintenances.css";
 export default function MaintenancePage() {
   const navigate = useNavigate();
 
-  
   const maintenanceColumns: GridColDef<Maintenance>[] = [
     {
       field: "name",
@@ -24,7 +23,6 @@ export default function MaintenancePage() {
     },
   ];
 
-  
   const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
     [
       {
@@ -44,7 +42,6 @@ export default function MaintenancePage() {
       },
     ];
 
-  
   const getMaintenancesForTable = async (
     paginationParams: PaginationParams
   ) => {
@@ -81,7 +78,6 @@ export default function MaintenancePage() {
     }
   };
 
-  
   const getPossibleMaintenancesForTable = async (
     paginationParams: PaginationParams
   ) => {
@@ -146,22 +142,25 @@ export default function MaintenancePage() {
       />
 
       {}
-      <div style={{ margin: "40px 0" }} />
+      <div style={{ padding: "40px 0" }} />
 
       {}
-      <Table<MaintenancePossibleNormalized>
-        getRows={getPossibleMaintenancesForTable}
-        columns={possibleMaintenanceColumns}
-        title=""
-        showEditColumn={true}
-        editRoute="/maintenance/possible/edit"
-        showTableHeader={true}
-        headerTitle="Mantenimientos Posibles"
-        showAddButton={true}
-        addButtonText="+ Nuevo Mantenimiento"
-        onAddButtonClick={handleCreatePossibleMaintenance}
-        maxWidth="900px"
-      />
+      <div style={{ padding: "40px 0" }}>
+        <Table<MaintenancePossibleNormalized>
+          getRows={getPossibleMaintenancesForTable}
+          columns={possibleMaintenanceColumns}
+          title=""
+          showEditColumn={true}
+          editRoute="/maintenance/possible/edit"
+          showTableHeader={true}
+          headerTitle="Mantenimientos Posibles"
+          showAddButton={true}
+          addButtonText="+ Nuevo Mantenimiento"
+          onAddButtonClick={handleCreatePossibleMaintenance}
+          maxWidth="900px"
+          maxHeight="600px"
+        />
+      </div>
     </div>
   );
 }
