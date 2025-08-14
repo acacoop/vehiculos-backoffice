@@ -1,0 +1,389 @@
+import { API_CONFIG } from "../common/constants";
+import type {
+  VehicleKilometersLog,
+  CreateKilometersLogRequest,
+  ApiResponse,
+  ApiError,
+  GetKilometersParams,
+} from "../types/kilometer";
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
+
+/**
+ * Custom error class for API errors
+ */
+export class KilometersApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public type?: string,
+    public title?: string
+  ) {
+    super(message);
+    this.name = "KilometersApiError";
+  }
+}
+
+/**
+ * Utility function to validate UUID format
+ */
+const isValidUUID = (uuid: string): boolean => {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
+/**
+ * Utility function to handle API responses and errors
+ */
+const handleApiResponse = async <T>(
+  response: Response
+): Promise<ApiResponse<T>> => {
+  const contentType = response.headers.get("content-type");
+
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new KilometersApiError(
+      "Invalid response format from server",
+      response.status
+    );
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const apiError = data as ApiError;
+    throw new KilometersApiError(
+      apiError.message || "Unknown API error",
+      apiError.statusCode || response.status,
+      apiError.type,
+      apiError.title
+    );
+  }
+
+  return data;
+};
+
+/**
+ * Vehicle Kilometers Service
+ * Handles all API operations related to vehicle kilometers logging
+ */
+export class VehicleKilometersService {
+  /**
+   * Get all kilometers logs for a specific vehicle
+   * @param vehicleId - UUID of the vehicle
+   * @param params - Optional query parameters
+   * @returns Promise with array of kilometers logs
+   */
+  static async getVehicleKilometers(
+    vehicleId: string,
+    params?: GetKilometersParams
+  ): Promise<VehicleKilometersLog[]> {
+    // Client-side validation
+    if (!vehicleId) {
+      throw new KilometersApiError("Vehicle ID is required", 400);
+    }
+
+    if (!isValidUUID(vehicleId)) {
+      throw new KilometersApiError(
+        "Invalid vehicle ID format. Must be a valid UUID.",
+        400
+      );
+    }
+
+    try {
+      // Build query string if params provided
+      const queryString = params
+        ? "?" +
+          new URLSearchParams(
+            Object.entries(params)
+              .filter(([, value]) => value !== undefined)
+              .map(([key, value]) => [key, String(value)])
+          ).toString()
+        : "";
+
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/${vehicleId}/kilometers${queryString}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const apiResponse = await handleApiResponse<VehicleKilometersLog[]>(
+        response
+      );
+
+      // Transform date strings to Date objects
+      const transformedData = apiResponse.data.map((log) => ({
+        ...log,
+        date: new Date(log.date),
+        createdAt: log.createdAt ? new Date(log.createdAt) : undefined,
+      }));
+
+      return transformedData;
+    } catch (error) {
+      if (error instanceof KilometersApiError) {
+        throw error;
+      }
+
+      // Network or other errors
+      console.error("Network error in getVehicleKilometers:", error);
+      throw new KilometersApiError(
+        "Failed to fetch vehicle kilometers. Please check your connection.",
+        0
+      );
+    }
+  }
+
+  /**
+   * Create a new kilometers log for a vehicle
+   * @param vehicleId - UUID of the vehicle
+   * @param logData - Data for the new kilometers log
+   * @returns Promise with created kilometers log
+   */
+  static async createKilometersLog(
+    vehicleId: string,
+    logData: CreateKilometersLogRequest
+  ): Promise<VehicleKilometersLog> {
+    // Client-side validations
+    if (!vehicleId) {
+      throw new KilometersApiError("Vehicle ID is required", 400);
+    }
+
+    if (!isValidUUID(vehicleId)) {
+      throw new KilometersApiError(
+        "Invalid vehicle ID format. Must be a valid UUID.",
+        400
+      );
+    }
+
+    if (!logData.userId) {
+      throw new KilometersApiError("User ID is required", 400);
+    }
+
+    if (!isValidUUID(logData.userId)) {
+      throw new KilometersApiError(
+        "Invalid user ID format. Must be a valid UUID.",
+        400
+      );
+    }
+
+    if (!logData.date) {
+      throw new KilometersApiError("Date is required", 400);
+    }
+
+    if (logData.kilometers < 0) {
+      throw new KilometersApiError(
+        "Kilometers must be a non-negative number",
+        400
+      );
+    }
+
+    if (!Number.isInteger(logData.kilometers)) {
+      throw new KilometersApiError("Kilometers must be an integer", 400);
+    }
+
+    try {
+      // Ensure date is in ISO string format
+      const requestData: CreateKilometersLogRequest = {
+        ...logData,
+        date:
+          logData.date instanceof Date
+            ? logData.date.toISOString()
+            : logData.date,
+      };
+
+      const response = await fetch(
+        `${API_BASE_URL}/vehicles/${vehicleId}/kilometers`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      const apiResponse = await handleApiResponse<VehicleKilometersLog>(
+        response
+      );
+
+      // Transform date strings to Date objects
+      const transformedData: VehicleKilometersLog = {
+        ...apiResponse.data,
+        date: new Date(apiResponse.data.date),
+        createdAt: apiResponse.data.createdAt
+          ? new Date(apiResponse.data.createdAt)
+          : undefined,
+      };
+
+      return transformedData;
+    } catch (error) {
+      if (error instanceof KilometersApiError) {
+        throw error;
+      }
+
+      // Network or other errors
+      console.error("Network error in createKilometersLog:", error);
+      throw new KilometersApiError(
+        "Failed to create kilometers log. Please check your connection.",
+        0
+      );
+    }
+  }
+
+  /**
+   * Get the latest kilometers reading for a vehicle
+   * @param vehicleId - UUID of the vehicle
+   * @returns Promise with the latest kilometers log or null if none found
+   */
+  static async getLatestKilometers(
+    vehicleId: string
+  ): Promise<VehicleKilometersLog | null> {
+    try {
+      const logs = await this.getVehicleKilometers(vehicleId);
+
+      if (logs.length === 0) {
+        return null;
+      }
+
+      // Return the log with the most recent date
+      return logs.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      )[0];
+    } catch (error) {
+      // Re-throw the error to maintain error handling consistency
+      throw error;
+    }
+  }
+
+  /**
+   * Validate if new kilometers reading is consistent with existing logs
+   * @param vehicleId - UUID of the vehicle
+   * @param newKilometers - New kilometers reading
+   * @param newDate - Date of new reading
+   * @returns Promise with validation result
+   */
+  static async validateKilometersConsistency(
+    vehicleId: string,
+    newKilometers: number,
+    newDate: Date
+  ): Promise<{ valid: boolean; message?: string }> {
+    try {
+      const logs = await this.getVehicleKilometers(vehicleId);
+
+      if (logs.length === 0) {
+        return { valid: true };
+      }
+
+      // Check against previous logs
+      const previousLogs = logs.filter((log) => new Date(log.date) < newDate);
+      const futureLogs = logs.filter((log) => new Date(log.date) > newDate);
+
+      // Check if kilometers are less than any previous reading
+      const maxPrevious = Math.max(
+        ...previousLogs.map((log) => log.kilometers)
+      );
+      if (previousLogs.length > 0 && newKilometers < maxPrevious) {
+        return {
+          valid: false,
+          message: `New kilometers (${newKilometers}) cannot be less than previous maximum (${maxPrevious})`,
+        };
+      }
+
+      // Check if kilometers are more than any future reading
+      const minFuture = Math.min(...futureLogs.map((log) => log.kilometers));
+      if (futureLogs.length > 0 && newKilometers > minFuture) {
+        return {
+          valid: false,
+          message: `New kilometers (${newKilometers}) cannot be more than future minimum (${minFuture})`,
+        };
+      }
+
+      return { valid: true };
+    } catch (error) {
+      console.warn("Could not validate kilometers consistency:", error);
+      // Return valid: true if we can't validate to avoid blocking the user
+      return { valid: true };
+    }
+  }
+
+  /**
+   * Get vehicle kilometers formatted for table display
+   * @param vehicleId - UUID of the vehicle
+   * @param paginationParams - Pagination parameters
+   * @returns Promise with formatted kilometers data for table
+   */
+  static async getVehicleKilometersForTable(
+    vehicleId: string,
+    paginationParams: { page?: number; limit?: number; pageSize?: number }
+  ): Promise<{
+    success: boolean;
+    data: Array<{
+      id: string;
+      date: string;
+      mileage: number;
+      notes?: string;
+      createdBy?: string;
+    }>;
+    message: string;
+    pagination?: {
+      page: number;
+      pageSize: number;
+      total: number;
+      pages: number;
+    };
+    error?: any;
+  }> {
+    try {
+      const { page = 1, limit = 20, pageSize = limit } = paginationParams;
+
+      // Get all kilometers logs from the API
+      const logs = await this.getVehicleKilometers(vehicleId);
+
+      // Sort by date (most recent first)
+      const sortedLogs = logs.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      // Apply pagination
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedLogs = sortedLogs.slice(startIndex, endIndex);
+
+      // Format data for table
+      const formattedData = paginatedLogs.map((log) => ({
+        id: log.id || `${log.vehicleId}-${new Date(log.date).getTime()}`,
+        date: new Date(log.date).toISOString(),
+        mileage: log.kilometers,
+        notes: "Registro de kilometraje", // Default note since API might not have notes
+        createdBy: log.userId, // We'll use userId as createdBy for now
+      }));
+
+      return {
+        success: true,
+        data: formattedData,
+        message: "Datos de kilometraje obtenidos correctamente",
+        pagination: {
+          page,
+          pageSize,
+          total: sortedLogs.length,
+          pages: Math.ceil(sortedLogs.length / pageSize),
+        },
+      };
+    } catch (error) {
+      console.error("Error in getVehicleKilometersForTable:", error);
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener historial de kilometraje: ${
+          (error as Error)?.message
+        }`,
+        error: error as any,
+      };
+    }
+  }
+}
+export default VehicleKilometersService;

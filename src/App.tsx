@@ -15,12 +15,14 @@ import EditCategory from "./app/EditCategory/EditCategory";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
+import LogIn from "./app/LogIn/LogIn";
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
+        <Route path="/login" element={<LogIn />} />
         <Route path="/" element={<Home />} />
         <Route path="/users" element={<Users />} />
         <Route path="/user/edit/:id" element={<UserEdit />} />

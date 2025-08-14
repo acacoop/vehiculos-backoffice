@@ -10,6 +10,7 @@ import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getReservationsByVehicle } from "../../services/reservations";
+import { VehicleKilometersService } from "../../services/kilometers";
 import { useNotification } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
@@ -380,55 +381,48 @@ export default function VehicleEditRegistration() {
   const getMileageForTable = async (
     paginationParams: PaginationParams
   ): Promise<ServiceResponse<any[]>> => {
-    try {
-      const mockMileageData = [
-        {
-          id: "1",
-          date: "2024-08-01T00:00:00Z",
-          mileage: 15000,
-          notes: "Registro mensual rutinario",
-          createdBy: "Juan Pérez",
-        },
-        {
-          id: "2",
-          date: "2024-07-01T00:00:00Z",
-          mileage: 14500,
-          notes: "Registro después de mantenimiento",
-          createdBy: "María González",
-        },
-        {
-          id: "3",
-          date: "2024-06-01T00:00:00Z",
-          mileage: 14200,
-          notes: "Registro mensual",
-          createdBy: "Carlos López",
-        },
-      ];
-
-      const { page = 1, limit = 20 } = paginationParams;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedData = mockMileageData.slice(startIndex, endIndex);
-
+    if (!vehicleId) {
       return {
-        success: true,
-        data: paginatedData,
-        message: "Datos de kilometraje obtenidos correctamente",
-        pagination: {
-          page,
-          pageSize: limit,
-          total: mockMileageData.length,
-          pages: Math.ceil(mockMileageData.length / limit),
+        success: false,
+        data: [],
+        message: "ID del vehículo no disponible",
+        error: {
+          type: "validation_error",
+          title: "Vehicle ID Required",
+          status: 400,
+          detail: "Vehicle ID is required to fetch kilometers data",
         },
       };
+    }
+
+    try {
+      const result =
+        await VehicleKilometersService.getVehicleKilometersForTable(
+          vehicleId,
+          paginationParams
+        );
+
+      return {
+        success: result.success,
+        data: result.data,
+        message: result.message,
+        pagination: result.pagination,
+        error: result.error,
+      };
     } catch (error) {
+      console.error("Error fetching kilometers data:", error);
       return {
         success: false,
         data: [],
         message: `Error al obtener historial de kilometraje: ${
           (error as Error)?.message
         }`,
-        error: error as any,
+        error: {
+          type: "api_error",
+          title: "Failed to fetch kilometers",
+          status: 500,
+          detail: (error as Error)?.message,
+        },
       };
     }
   };

@@ -1,0 +1,42 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(34, 37, 212, 0.24);
+  min-height: 400px;
+  min-width: 400px;
+  gap: 50px;
+}
+
+.login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #fe9000;
+  transition: 0.5s;
+}
+
+.login-button:hover {
+  background-color: #282d86;
+  color: white;
+}
+
+.microsoft-icon {
+  width: 50px;
+  height: 50px;
+}
