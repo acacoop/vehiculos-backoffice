@@ -10,7 +10,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: white;
   padding: 2rem;
   border: 1px solid #ccc;
   border-radius: 20px;
@@ -34,11 +33,16 @@
   cursor: pointer;
   border: 1px solid #fe9000;
   transition: 0.5s;
+  background-color: #282d86;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  gap: 10px;
 }
 
 .login-button:hover {
-  background-color: #282d86;
-  color: white;
+  background-color: white;
+  color: #282d86;
 }
 
 .microsoft-icon {
