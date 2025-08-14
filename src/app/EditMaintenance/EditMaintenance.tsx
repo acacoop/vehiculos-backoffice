@@ -8,18 +8,21 @@ import {
   deleteMaintenanceItem,
   type MaintenanceItemData,
 } from "../../services/maintenances";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import FormLayout from "../../components/FormLayout/FormLayout";
-import type { FormSection } from "../../components/FormLayout/FormLayout";
 import {
+  FormLayout,
+  ConfirmDialog,
+  NotificationToast,
   CancelButton,
   DeleteButton,
   ConfirmButton,
   ButtonGroup,
-} from "../../components/Buttons/Buttons";
-import { useConfirmDialog, useCategorySearch } from "../../hooks";
-import { useNotification } from "../../hooks/useNotification";
+} from "../../components";
+import type { FormSection } from "../../components";
+import {
+  useConfirmDialog,
+  useCategorySearch,
+  useNotification,
+} from "../../hooks";
 import type { Maintenance } from "../../types/maintenance";
 import "./EditMaintenance.css";
 

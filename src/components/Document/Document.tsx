@@ -1,8 +1,7 @@
 import { useState } from "react";
 import NotificationToast from "../NotificationToast/NotificationToast";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
-import { useNotification } from "../../hooks/useNotification";
-import { useConfirmDialog } from "../../hooks/useConfirmDialog";
+import { useNotification, useConfirmDialog } from "../../hooks";
 import "./Document.css";
 
 interface DocumentItem {
@@ -22,10 +21,8 @@ export default function Document({
   title = "Documentos",
   initialDocuments = [],
 }: DocumentProps) {
-  
   const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
 
-  
   const [showForm, setShowForm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentItem | null>(
@@ -36,7 +33,6 @@ export default function Document({
   const [hasExpiration, setHasExpiration] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  
   const { notification, showSuccess, showError, showInfo, closeNotification } =
     useNotification();
   const {
@@ -77,13 +73,10 @@ export default function Document({
   };
 
   const handleDownload = (doc: DocumentItem) => {
-    
-    
     showInfo(`Descargando archivo: ${doc.fileName}`);
 
-    
     const link = document.createElement("a");
-    link.href = "#"; 
+    link.href = "#";
     link.download = doc.fileName;
     link.click();
   };
@@ -123,7 +116,6 @@ export default function Document({
     }
 
     if (editingDocument) {
-      
       const updatedDocument: DocumentItem = {
         ...editingDocument,
         title: newTitle.trim(),
@@ -138,7 +130,6 @@ export default function Document({
       );
       showSuccess("Documento actualizado exitosamente");
     } else {
-      
       const newDocument: DocumentItem = {
         id: Date.now().toString(),
         title: newTitle.trim(),
@@ -151,7 +142,6 @@ export default function Document({
       showSuccess("Documento agregado exitosamente");
     }
 
-    
     handleCloseForm();
   };
 
@@ -162,7 +152,6 @@ export default function Document({
   const handleCloseForm = () => {
     setIsClosing(true);
     setTimeout(() => {
-      
       setNewTitle("");
       setNewExpirationDate("");
       setHasExpiration(false);
@@ -171,12 +160,11 @@ export default function Document({
       setShowForm(false);
       setIsClosing(false);
 
-      
       const fileInput = document.getElementById(
         "file-input"
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
-    }, 195); 
+    }, 195);
   };
   return (
     <div className="document">

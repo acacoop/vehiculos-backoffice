@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import Table from "../../components/Table/table";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import "./VehicleResponsibles.css";

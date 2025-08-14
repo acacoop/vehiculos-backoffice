@@ -28,6 +28,7 @@
   padding: 20px;
   border-radius: 20px;
   gap: 20px;
+  border: 1px solid #e9ecef;
 }
 
 .form-section {

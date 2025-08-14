@@ -3,9 +3,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
 } from "@mui/material";
 import { COLORS } from "../../common/colors";
+import { ConfirmButton, CancelButton } from "../index";
 
 type Props = {
   open: boolean;
@@ -36,53 +36,17 @@ export default function ConfirmDialog({
         },
       }}
     >
-      <DialogTitle style={{ color: COLORS.primary }}>{title}</DialogTitle>
+      <DialogTitle
+        style={{ color: COLORS.primary, fontFamily: '"Urbanist", sans-serif' }}
+      >
+        {title}
+      </DialogTitle>
       <DialogContent>
-        <p>{message}</p>
+        <p style={{ fontFamily: '"Urbanist", sans-serif' }}>{message}</p>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onCancel}
-          color="inherit"
-          style={{
-            textTransform: "none",
-            padding: "8px 20px",
-            backgroundColor: "#e53935",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "14px",
-            transition: "background-color 0.3s",
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "#fe9000")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = "#e53935")
-          }
-        >
-          {cancelText}
-        </Button>
-        <Button
-          onClick={onConfirm}
-          style={{
-            backgroundColor: COLORS.primary,
-            color: "#fff",
-            transition: "background-color 0.2s",
-            textTransform: "none",
-            padding: "8px 20px",
-            borderRadius: "6px",
-          }}
-          variant="contained"
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = COLORS.secondary)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = COLORS.primary)
-          }
-        >
-          {confirmText}
-        </Button>
+        <CancelButton text={cancelText} onClick={onCancel} />
+        <ConfirmButton text={confirmText} onClick={onConfirm} />
       </DialogActions>
     </Dialog>
   );

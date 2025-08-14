@@ -10,8 +10,7 @@ import {
 import { getAllAssignments } from "../../services/assignments";
 import { getUserById } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
-import { useUserSearch, useVehicleSearch } from "../../hooks";
-import { useNotification } from "../../hooks/useNotification";
+import { useUserSearch, useVehicleSearch, useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";
 import type { FormSection } from "../../components/FormLayout/FormLayout";
@@ -372,7 +371,7 @@ export default function ReservationEdit() {
       fields: [
         {
           key: "userSearch",
-          label: "Buscar usuario (por nombre o DNI)",
+          label: "Buscar usuario (por nombre, apellido, DNI)",
           type: "userSearch",
           value: "",
           onChange: () => {},
@@ -383,7 +382,7 @@ export default function ReservationEdit() {
           showDropdown: userSearch.showDropdown,
           onUserSelect: userSearch.selectUser,
           onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre o DNI...",
+          placeholder: "Buscar por nombre, apellido o DNI...",
           required: true,
         },
       ],

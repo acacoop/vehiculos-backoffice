@@ -7,8 +7,7 @@ import {
   updateMaintenance,
   deleteMaintenance,
 } from "../../services/maintenances";
-import { useConfirmDialog } from "../../hooks/useConfirmDialog";
-import { useNotification } from "../../hooks/useNotification";
+import { useConfirmDialog, useNotification } from "../../hooks";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";

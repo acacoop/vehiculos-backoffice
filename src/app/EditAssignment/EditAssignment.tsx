@@ -9,18 +9,22 @@ import {
 } from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
-import { useUserSearch, useVehicleSearch, useConfirmDialog } from "../../hooks";
-import { useNotification } from "../../hooks/useNotification";
-import FormLayout from "../../components/FormLayout/FormLayout";
-import type { FormSection } from "../../components/FormLayout/FormLayout";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import {
+  useUserSearch,
+  useVehicleSearch,
+  useConfirmDialog,
+  useNotification,
+} from "../../hooks";
+import {
+  FormLayout,
+  ConfirmDialog,
+  NotificationToast,
   CancelButton,
   DeleteButton,
   ConfirmButton,
   ButtonGroup,
-} from "../../components/Buttons/Buttons";
+} from "../../components";
+import type { FormSection } from "../../components";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
@@ -364,35 +368,35 @@ export default function EditAssignment() {
       fields: [
         {
           key: "userDni",
-          label: "DNI",
-          type: "display",
-          value: "",
+          label: "DNI:",
+          type: "text",
+          value: currentUser.dni?.toLocaleString() || "",
           onChange: () => {},
-          displayValue: currentUser.dni?.toLocaleString() || "",
+          disabled: true,
         },
         {
           key: "userFirstName",
-          label: "Nombre",
-          type: "display",
-          value: "",
+          label: "Nombre:",
+          type: "text",
+          value: currentUser.firstName || "",
           onChange: () => {},
-          displayValue: currentUser.firstName || "",
+          disabled: true,
         },
         {
           key: "userLastName",
-          label: "Apellido",
-          type: "display",
-          value: "",
+          label: "Apellido:",
+          type: "text",
+          value: currentUser.lastName || "",
           onChange: () => {},
-          displayValue: currentUser.lastName || "",
+          disabled: true,
         },
         {
           key: "userEmail",
-          label: "Email",
-          type: "display",
-          value: "",
+          label: "Email:",
+          type: "email",
+          value: currentUser.email || "",
           onChange: () => {},
-          displayValue: currentUser.email || "",
+          disabled: true,
         },
       ],
     });
@@ -403,7 +407,7 @@ export default function EditAssignment() {
       fields: [
         {
           key: "userSearch",
-          label: "Buscar usuario (por nombre, apellido, DNI o email)",
+          label: "Buscar usuario (por nombre, apellido, DNI)",
           type: "userSearch",
           value: "",
           onChange: () => {},
@@ -414,7 +418,7 @@ export default function EditAssignment() {
           showDropdown: userSearch.showDropdown,
           onUserSelect: userSearch.selectUser,
           onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre, apellido, DNI o email...",
+          placeholder: "Buscar por nombre, apellido o DNI...",
           required: true,
         },
       ],
@@ -438,35 +442,35 @@ export default function EditAssignment() {
       fields: [
         {
           key: "vehicleLicensePlate",
-          label: "Patente",
-          type: "display",
-          value: "",
+          label: "Patente:",
+          type: "text",
+          value: currentVehicle.licensePlate || "",
           onChange: () => {},
-          displayValue: currentVehicle.licensePlate || "",
+          disabled: true,
         },
         {
           key: "vehicleBrand",
-          label: "Marca",
-          type: "display",
-          value: "",
+          label: "Marca:",
+          type: "text",
+          value: currentVehicle.brand || "",
           onChange: () => {},
-          displayValue: currentVehicle.brand || "",
+          disabled: true,
         },
         {
           key: "vehicleModel",
-          label: "Modelo",
-          type: "display",
-          value: "",
+          label: "Modelo:",
+          type: "text",
+          value: currentVehicle.model || "",
           onChange: () => {},
-          displayValue: currentVehicle.model || "",
+          disabled: true,
         },
         {
           key: "vehicleYear",
-          label: "Año",
-          type: "display",
-          value: "",
+          label: "Año:",
+          type: "number",
+          value: currentVehicle.year || 0,
           onChange: () => {},
-          displayValue: currentVehicle.year?.toString() || "",
+          disabled: true,
         },
       ],
     });

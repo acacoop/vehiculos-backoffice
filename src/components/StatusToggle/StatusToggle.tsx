@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { COLORS } from "../../common/colors";
 import { updateUserStatus } from "../../services/users";
-import { useConfirmDialog } from "../../hooks/useConfirmDialog";
-import { useNotification } from "../../hooks/useNotification";
-import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../NotificationToast/NotificationToast";
+import { useConfirmDialog, useNotification } from "../../hooks";
+import {
+  ConfirmDialog,
+  NotificationToast,
+  ConfirmButton,
+  DeleteButton,
+} from "../";
 import "./StatusToggle.css";
 
 type EntityType = "user" | "vehicle";
@@ -130,36 +133,21 @@ export default function StatusToggle({
           >
             {isActive ? config.activeText : config.inactiveText}
           </span>
-          <button
-            onClick={handleToggle}
-            disabled={isLoading}
-            style={{
-              background: isLoading ? "#ccc" : COLORS.primary,
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              padding: "0.5rem 1.2rem",
-              fontWeight: 500,
-              cursor: isLoading ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => {
-              if (!isLoading)
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  COLORS.secondary;
-            }}
-            onMouseOut={(e) => {
-              if (!isLoading)
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  COLORS.primary;
-            }}
-          >
-            {isLoading
-              ? "Procesando..."
-              : isActive
-              ? config.deactivateButton
-              : config.activateButton}
-          </button>
+          {isActive ? (
+            <DeleteButton
+              text={isLoading ? "Procesando..." : config.deactivateButton}
+              onClick={handleToggle}
+              disabled={isLoading}
+              loading={isLoading}
+            />
+          ) : (
+            <ConfirmButton
+              text={isLoading ? "Procesando..." : config.activateButton}
+              onClick={handleToggle}
+              disabled={isLoading}
+              loading={isLoading}
+            />
+          )}
         </div>
       </div>
 

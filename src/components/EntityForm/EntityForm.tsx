@@ -3,9 +3,8 @@ import { useSearchParams, useParams } from "react-router-dom";
 import { CircularProgress, Alert } from "@mui/material";
 import { getVehicleById, updateVehicle } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
-import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../NotificationToast/NotificationToast";
-import { useNotification } from "../../hooks/useNotification";
+import { ConfirmDialog, NotificationToast, ConfirmButton } from "../";
+import { useNotification } from "../../hooks";
 import "./EntityForm.css";
 
 type FieldType = "text" | "email" | "number";
@@ -362,17 +361,14 @@ export default function EntityForm({
 
       {showActions && !config.fields.every((f) => f.readOnly) && (
         <div className="entity-actions">
-          <button
-            className="confirm-button"
+          <ConfirmButton
+            text={
+              updating ? "Guardando..." : config.confirmButtonText(isEditMode)
+            }
             onClick={handleConfirmClick}
             disabled={updating}
-            style={{
-              opacity: updating ? 0.5 : 1,
-              cursor: updating ? "not-allowed" : "pointer",
-            }}
-          >
-            {updating ? "Guardando..." : config.confirmButtonText(isEditMode)}
-          </button>
+            loading={updating}
+          />
         </div>
       )}
 

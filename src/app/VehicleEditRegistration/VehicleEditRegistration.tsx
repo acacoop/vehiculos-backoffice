@@ -10,7 +10,7 @@ import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getReservationsByVehicle } from "../../services/reservations";
-import { useNotification } from "../../hooks/useNotification";
+import { useNotification } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
 import type { ReservationWithUser } from "../../types/reservation";

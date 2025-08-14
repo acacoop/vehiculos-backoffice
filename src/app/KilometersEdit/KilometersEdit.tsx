@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 import { getVehicleById } from "../../services/vehicles";
-import { useNotification } from "../../hooks/useNotification";
+import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";
 import type { FormSection } from "../../components/FormLayout/FormLayout";
@@ -22,7 +22,6 @@ export default function KilometersEdit() {
   const preloadedVehicleId = vehicleId || searchParams.get("vehicleId");
 
   const [mileage, setMileage] = useState("");
-  const [observations, setObservations] = useState("");
   const [registrationDate, setRegistrationDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -157,11 +156,6 @@ export default function KilometersEdit() {
         break;
       case "mileage":
         setMileage(value.toString());
-        break;
-      case "observations":
-        setObservations(value as string);
-        break;
-      default:
         break;
     }
   };
