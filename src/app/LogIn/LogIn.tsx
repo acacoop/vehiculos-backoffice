@@ -6,7 +6,7 @@ export default function LogIn() {
   return (
     <div className="login-container">
       <div className="login-form">
-        <img src={Logo} alt="Logo" />
+        <img className="logo" src={Logo} alt="Logo" />
         <button className="login-button">
           <img className="microsoft-icon" src={Microsoft} alt="" />
           Iniciar sesión

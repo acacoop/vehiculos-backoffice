@@ -20,11 +20,16 @@
   gap: 50px;
 }
 
+.logo {
+  width: 200px;
+  height: auto;
+}
+
 .login-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 150px;
+  width: 200px;
   border-radius: 5px;
   cursor: pointer;
   border: 1px solid #fe9000;
