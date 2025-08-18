@@ -96,33 +96,25 @@ export default function VehicleEditRegistration() {
 
   const maintenanceColumns: GridColDef<any>[] = [
     {
-      field: "id",
-      headerName: "ID Asignación",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => params.row.id?.slice(0, 8) + "..." || "N/A",
-    },
-    {
       field: "maintenance_category_name",
-      headerName: "Categoría de Mantenimiento",
-      width: 300,
+      headerName: "Categoría Mantenimiento",
+      width: 250,
       flex: 1,
       renderCell: (params) =>
         params.row.maintenance_category_name ||
-        params.row.name ||
+        params.row.category ||
         "Sin categoría",
     },
     {
-      field: "kilometers_frequency",
-      headerName: "Frecuencia (KM)",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const km = params.row.kilometers_frequency;
-        return km ? `${km.toLocaleString()} km` : "N/A";
-      },
+      field: "name",
+      headerName: "Nombre de Mantenimiento",
+      width: 300,
+      flex: 1,
+      renderCell: (params) =>
+        params.row.name ||
+        params.row.title ||
+        params.row.maintenance_name ||
+        "Sin nombre",
     },
     {
       field: "days_frequency",
@@ -133,6 +125,17 @@ export default function VehicleEditRegistration() {
       renderCell: (params) => {
         const days = params.row.days_frequency;
         return days ? `${days} días` : "N/A";
+      },
+    },
+    {
+      field: "kilometers_frequency",
+      headerName: "Frecuencia (KM)",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.kilometers_frequency;
+        return km ? `${km.toLocaleString()} km` : "N/A";
       },
     },
   ];
