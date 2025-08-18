@@ -457,7 +457,7 @@ export default function EditMaintenance() {
               title || "Sin título"
             }`}
             showAddButton={false}
-            maxHeight="400px"
+            maxHeight="600px"
             containerClassName="maintenance-vehicles-table"
           />
         </div>
