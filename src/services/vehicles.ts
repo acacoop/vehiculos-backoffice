@@ -182,3 +182,66 @@ export async function createVehicle(
     };
   }
 }
+
+/**
+ * Obtiene los vehículos que tienen asignado un mantenimiento específico
+ */
+export async function getVehiclesByMaintenanceId(
+  maintenanceId: string,
+  pagination?: PaginationParams
+): Promise<ServiceResponse<Vehicle[]>> {
+  try {
+    const paginationParams = buildQueryParams(pagination || {});
+    const response: BackendResponse<any[]> = await httpService.get({
+      uri: `/maintenance/posibles/${maintenanceId}/vehicles?${paginationParams.toString()}`,
+    });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: [],
+        message: response.message || "Error al obtener vehículos del mantenimiento",
+      };
+    }
+
+    const vehicles: Vehicle[] = response.data.map((item: any) => ({
+      id: item.vehicleId,
+      licensePlate: item.licensePlate,
+      brand: item.brand,
+      model: item.model,
+      year: item.year,
+      imgUrl: item.imgUrl,
+    }));
+
+    return {
+      success: true,
+      data: vehicles,
+      pagination: response.pagination ? {
+        page: response.pagination.page,
+        pageSize: response.pagination.limit,
+        total: response.pagination.total,
+        pages: response.pagination.pages,
+      } : {
+        page: pagination?.page || 1,
+        pageSize: pagination?.limit || 20,
+        total: vehicles.length,
+        pages: Math.ceil(vehicles.length / (pagination?.limit || 20)),
+      },
+    };
+  } catch (error) {
+    if ((error as any)?.status === 404) {
+      return {
+        success: true,
+        data: [],
+        message: "No hay vehículos asignados a este mantenimiento",
+      };
+    }
+    
+    return {
+      success: false,
+      data: [],
+      message: "Error al obtener vehículos del mantenimiento",
+      error: error as any,
+    };
+  }
+}

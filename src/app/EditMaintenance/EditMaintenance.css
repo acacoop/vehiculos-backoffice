@@ -36,8 +36,27 @@
   }
 }
 
+.vehicles-table-section {
+  width: 100%;
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.maintenance-vehicles-table {
+  width: 100%;
+}
+
 @media (max-width: 768px) {
   .edit-maintenance-container {
     padding: 10px;
+  }
+
+  .vehicles-table-section {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 15px;
   }
 }

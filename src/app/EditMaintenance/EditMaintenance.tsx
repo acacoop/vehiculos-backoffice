@@ -8,6 +8,8 @@ import {
   deleteMaintenanceItem,
   type MaintenanceItemData,
 } from "../../services/maintenances";
+import { getVehiclesByMaintenanceId } from "../../services/vehicles";
+import type { Vehicle } from "../../types/vehicle";
 import {
   FormLayout,
   ConfirmDialog,
@@ -16,6 +18,7 @@ import {
   DeleteButton,
   ConfirmButton,
   ButtonGroup,
+  Table,
 } from "../../components";
 import type { FormSection } from "../../components";
 import {
@@ -24,6 +27,7 @@ import {
   useNotification,
 } from "../../hooks";
 import type { Maintenance } from "../../types/maintenance";
+import type { ServiceResponse, PaginationParams } from "../../common";
 import "./EditMaintenance.css";
 
 export default function EditMaintenance() {
@@ -54,6 +58,64 @@ export default function EditMaintenance() {
   } = useConfirmDialog();
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  // Column definition for vehicles table
+  const vehicleColumns = [
+    { field: "licensePlate", headerName: "Patente", flex: 1 },
+    { field: "brand", headerName: "Marca", flex: 1 },
+    { field: "model", headerName: "Modelo", flex: 1 },
+    { field: "year", headerName: "Año", flex: 1 },
+  ];
+
+  // Function to get vehicles assigned to this maintenance
+  const getVehiclesData = async (
+    pagination: PaginationParams
+  ): Promise<ServiceResponse<any[]>> => {
+    if (!maintenanceId || isCreateMode) {
+      return {
+        success: true,
+        data: [],
+        message: "No hay vehículos para mostrar",
+      };
+    }
+
+    try {
+      const response = await getVehiclesByMaintenanceId(
+        maintenanceId,
+        pagination
+      );
+
+      if (response.success) {
+        const mappedData = response.data.map(
+          (vehicle: Vehicle, index: number) => ({
+            id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+            licensePlate: vehicle.licensePlate || "N/A",
+            brand: vehicle.brand || "N/A",
+            model: vehicle.model || "N/A",
+            year: vehicle.year?.toString() || "N/A",
+          })
+        );
+
+        return {
+          success: true,
+          data: mappedData,
+          pagination: response.pagination,
+        };
+      } else {
+        return {
+          success: false,
+          data: [],
+          message: response.message || "Error al cargar vehículos",
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: "Error al cargar vehículos del mantenimiento",
+      };
+    }
+  };
 
   useEffect(() => {
     loadCategories();
@@ -380,6 +442,26 @@ export default function EditMaintenance() {
           />
         </ButtonGroup>
       </FormLayout>
+
+      {/* Tabla de vehículos asignados - solo en modo edición */}
+      {!isCreateMode && maintenanceId && (
+        <div className="vehicles-table-section">
+          <Table
+            getRows={getVehiclesData}
+            columns={vehicleColumns}
+            title=""
+            showEditColumn={true}
+            editRoute="/vehicle/edit"
+            showTableHeader={true}
+            headerTitle={`Vehículos con mantenimiento: ${
+              title || "Sin título"
+            }`}
+            showAddButton={false}
+            maxHeight="400px"
+            containerClassName="maintenance-vehicles-table"
+          />
+        </div>
+      )}
 
       <ConfirmDialog
         open={isOpen}

@@ -1,6 +1,6 @@
 /* Estilos base para botones */
 .btn {
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -14,6 +14,7 @@
   justify-content: center;
   gap: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
 }
 
 .btn:disabled {
@@ -39,7 +40,10 @@
 }
 
 .btn-cancel:not(:disabled):hover {
-  background-color: #e67e00;
+  background-color: white;
+  border: 1px solid #fe9000;
+  border-radius: 0px;
+  color: #fe9000;
 }
 
 .btn-cancel:not(:disabled):active {
@@ -53,7 +57,10 @@
 }
 
 .btn-delete:not(:disabled):hover {
-  background-color: #d32f2f;
+  background-color: white;
+  border: 1px solid #e53935;
+  border-radius: 0px;
+  color: #e53935;
 }
 
 .btn-delete:not(:disabled):active {
@@ -67,7 +74,10 @@
 }
 
 .btn-confirm:not(:disabled):hover {
-  background-color: #1e2366;
+  background-color: white;
+  border: 1px solid #282d86;
+  border-radius: 0px;
+  color: #282d86;
 }
 
 .btn-confirm:not(:disabled):active {
