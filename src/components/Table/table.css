@@ -28,10 +28,16 @@
   font-size: 14px;
   font-weight: 500;
   transition: background-color 0.3s;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .table-add-btn:hover {
-  background-color: #fe9000;
+  background-color: white;
+  border: 1px solid #fe9000;
+  border-radius: 0px;
+  color: #fe9000;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

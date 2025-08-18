@@ -200,7 +200,8 @@ export async function getVehiclesByMaintenanceId(
       return {
         success: false,
         data: [],
-        message: response.message || "Error al obtener vehículos del mantenimiento",
+        message:
+          response.message || "Error al obtener vehículos del mantenimiento",
       };
     }
 
@@ -216,17 +217,19 @@ export async function getVehiclesByMaintenanceId(
     return {
       success: true,
       data: vehicles,
-      pagination: response.pagination ? {
-        page: response.pagination.page,
-        pageSize: response.pagination.limit,
-        total: response.pagination.total,
-        pages: response.pagination.pages,
-      } : {
-        page: pagination?.page || 1,
-        pageSize: pagination?.limit || 20,
-        total: vehicles.length,
-        pages: Math.ceil(vehicles.length / (pagination?.limit || 20)),
-      },
+      pagination: response.pagination
+        ? {
+            page: response.pagination.page,
+            pageSize: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages,
+          }
+        : {
+            page: pagination?.page || 1,
+            pageSize: pagination?.limit || 20,
+            total: vehicles.length,
+            pages: Math.ceil(vehicles.length / (pagination?.limit || 20)),
+          },
     };
   } catch (error) {
     if ((error as any)?.status === 404) {
@@ -236,7 +239,7 @@ export async function getVehiclesByMaintenanceId(
         message: "No hay vehículos asignados a este mantenimiento",
       };
     }
-    
+
     return {
       success: false,
       data: [],

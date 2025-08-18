@@ -4,7 +4,12 @@ export type {
   VehicleFilterParams,
   VehiclesApiResponse,
 } from "./vehicle";
-export type { Maintenance, MaintenanceAssignment, MaintenanceItem, MaintenanceVehicleAssignment } from "./maintenance";
+export type {
+  Maintenance,
+  MaintenanceAssignment,
+  MaintenanceItem,
+  MaintenanceVehicleAssignment,
+} from "./maintenance";
 export type {
   Reservation,
   ReservationFilterParams,
