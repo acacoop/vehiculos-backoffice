@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   getMaintenancePossibles,
+  getVehicleMaintenances,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
 import { getVehicleById } from "../../services/vehicles";
@@ -188,6 +189,29 @@ export default function MaintenanceAssignment() {
 
     setLoading(true);
     try {
+      // First, check if the maintenance is already assigned to this vehicle
+      const existingMaintenances = await getVehicleMaintenances(
+        vehicleSearch.selectedVehicle.id.toString()
+      );
+
+      if (existingMaintenances.success && existingMaintenances.data) {
+        // Check if this maintenance is already assigned
+        const isAlreadyAssigned = existingMaintenances.data.some(
+          (assignment: any) =>
+            assignment.maintenance_id?.toString() === currentMaintenanceId ||
+            assignment.maintenanceId?.toString() === currentMaintenanceId ||
+            assignment.id?.toString() === currentMaintenanceId
+        );
+
+        if (isAlreadyAssigned) {
+          showError(
+            "Este mantenimiento ya se encuentra asignado a este vehículo"
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       // Create maintenance assignment directly via API
       // Match the exact structure expected by the API as shown in Swagger
       const assignmentData = {
