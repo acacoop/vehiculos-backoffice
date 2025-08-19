@@ -17,6 +17,7 @@ import {
   ConfirmButton,
   ButtonGroup,
   Table,
+  LoadingSpinner,
 } from "../../components";
 import { PencilIcon } from "../../components/Table/table";
 import type { FormSection } from "../../components";
@@ -291,14 +292,7 @@ export default function EditMaintenance() {
   };
 
   if (loading) {
-    return (
-      <div className="edit-maintenance-container">
-        <div className="edit-maintenance-loading">
-          <div className="loading-spinner"></div>
-          <p>Cargando...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando datos del mantenimiento..." />;
   }
 
   // Helper functions for form sections

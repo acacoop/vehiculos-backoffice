@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CircularProgress, Alert } from "@mui/material";
+import { Alert } from "@mui/material";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
 import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
+import { LoadingSpinner } from "../../components";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
@@ -283,22 +284,7 @@ export default function UserEdit() {
   }, [userId]);
 
   if (loading) {
-    return (
-      <main className="user-edit-container">
-        <div className="user-edit-header">
-          <h1 className="user-edit-title">Editar usuario</h1>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "2rem",
-          }}
-        >
-          <CircularProgress />
-        </div>
-      </main>
-    );
+    return <LoadingSpinner message="Cargando datos del usuario..." />;
   }
 
   if (error) {

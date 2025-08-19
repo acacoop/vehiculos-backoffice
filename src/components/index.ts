@@ -11,6 +11,7 @@ export { default as FormLayout } from "./FormLayout/FormLayout";
 export type { FormSection, FormField } from "./FormLayout/FormLayout";
 export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog";
 export { default as NotificationToast } from "./NotificationToast/NotificationToast";
+export { LoadingSpinner } from "./LoadingSpinner";
 export { Table } from "./Table/table";
 
 // Entity Search

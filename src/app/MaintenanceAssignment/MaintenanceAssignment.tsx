@@ -4,6 +4,7 @@ import {
   getMaintenancePossibles,
   getVehicleMaintenances,
   deleteMaintenanceAssignment,
+  updateMaintenanceAssignment,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
 import { getVehicleById } from "../../services/vehicles";
@@ -15,6 +16,7 @@ import {
   ButtonGroup,
   DeleteButton,
   ConfirmDialog,
+  LoadingSpinner,
 } from "../../components";
 import type { FormSection } from "../../components";
 import {
@@ -228,12 +230,56 @@ export default function MaintenanceAssignment() {
 
     const loadEditModeData = async () => {
       try {
-        // Load both vehicle and maintenance data
-        await Promise.all([loadVehicleData(), loadMaintenanceDataById()]);
+        // Load both vehicle and maintenance data, and current assignment data
+        await Promise.all([
+          loadVehicleData(),
+          loadMaintenanceDataById(),
+          loadCurrentAssignmentData(),
+        ]);
       } catch (error) {
         console.error("Error loading edit mode data:", error);
         showError("Error al cargar los datos");
         setLoadingData(false);
+      }
+    };
+
+    const loadCurrentAssignmentData = async () => {
+      try {
+        // Get all assignments for the vehicle and find the specific one
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`
+        );
+
+        if (response.ok) {
+          const assignmentData = await response.json();
+
+          // Find the specific assignment
+          const assignments = assignmentData.data || assignmentData;
+          const currentAssignment = Array.isArray(assignments)
+            ? assignments.find((a) => a.id === assignmentId)
+            : assignments;
+
+          if (currentAssignment) {
+            // Try both camelCase and snake_case field names
+            const kmFreq =
+              currentAssignment.kilometersFrequency ||
+              currentAssignment.kilometers_frequency;
+            const daysFreq =
+              currentAssignment.daysFrequency ||
+              currentAssignment.days_frequency;
+
+            if (kmFreq !== undefined) {
+              setKilometersFrequency(kmFreq);
+            }
+            if (daysFreq !== undefined) {
+              setDaysFrequency(daysFreq);
+            }
+          }
+        } else {
+          console.error("Error loading assignment data:", response.status);
+        }
+      } catch (error) {
+        console.error("Error loading current assignment data:", error);
       }
     };
 
@@ -379,6 +425,45 @@ export default function MaintenanceAssignment() {
     } catch (error) {
       console.error("Error creating maintenance assignment:", error);
       showError("Error al asignar mantenimiento");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!assignmentId) {
+      showError("ID de asignación no válido");
+      return;
+    }
+
+    if (kilometersFrequency <= 0 && daysFrequency <= 0) {
+      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updateData = {
+        kilometersFrequency: kilometersFrequency || 0,
+        daysFrequency: daysFrequency || 0,
+      };
+
+      const response = await updateMaintenanceAssignment(
+        assignmentId,
+        updateData
+      );
+
+      if (response.success) {
+        showSuccess("Asignación actualizada exitosamente");
+        setTimeout(() => {
+          navigate(getNavigationUrl());
+        }, 1500);
+      } else {
+        showError(response.message || "Error al actualizar la asignación");
+      }
+    } catch (error) {
+      console.error("Error updating maintenance assignment:", error);
+      showError("Error al actualizar la asignación de mantenimiento");
     } finally {
       setLoading(false);
     }
@@ -611,22 +696,25 @@ export default function MaintenanceAssignment() {
   return (
     <>
       {loadingData ? (
-        <div className="maintenance-assignment-container">
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <p>{getLoadingText()}</p>
-          </div>
-        </div>
+        <LoadingSpinner message={getLoadingText()} />
       ) : (
         <div className="maintenance-assignment-container">
           <FormLayout title={getPageTitle()} sections={formSections}>
             <ButtonGroup>
               <CancelButton text="Cancelar" onClick={handleCancel} />
               {isEditMode ? (
-                <DeleteButton
-                  text="Eliminar Asignación"
-                  onClick={handleDelete}
-                  loading={loading}
-                />
+                <>
+                  <ConfirmButton
+                    text="Guardar Cambios"
+                    onClick={handleUpdate}
+                    loading={loading}
+                  />
+                  <DeleteButton
+                    text="Eliminar Asignación"
+                    onClick={handleDelete}
+                    loading={loading}
+                  />
+                </>
               ) : (
                 <ConfirmButton
                   text="Asignar Mantenimiento"

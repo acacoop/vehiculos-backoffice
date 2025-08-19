@@ -6,6 +6,7 @@ import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import { LoadingSpinner } from "../../components";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleMaintenances } from "../../services/maintenances";
@@ -486,179 +487,183 @@ export default function VehicleEditRegistration() {
   }
 
   return (
-    <div className="vehicle-edit-registration-container">
-      <h2 className="title">
-        {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
-      </h2>
+    <>
+      {isRegistering && <LoadingSpinner message="Registrando vehículo..." />}
+      <div className="vehicle-edit-registration-container">
+        <h2 className="title">
+          {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
+        </h2>
 
-      {!isCreateMode && vehicleId && (
-        <StatusToggle
-          entityId={vehicleId}
+        {!isCreateMode && vehicleId && (
+          <StatusToggle
+            entityId={vehicleId}
+            entityType="vehicle"
+            active={isVehicleActive}
+            onToggle={handleVehicleStatusChange}
+          />
+        )}
+
+        <EntityForm
           entityType="vehicle"
-          active={isVehicleActive}
-          onToggle={handleVehicleStatusChange}
+          entityId={isCreateMode ? undefined : vehicleId}
+          onDataChange={isCreateMode ? handleVehicleChange : undefined}
+          isActive={isVehicleActive}
+          showActions={!isCreateMode}
         />
-      )}
 
-      <EntityForm
-        entityType="vehicle"
-        entityId={isCreateMode ? undefined : vehicleId}
-        onDataChange={isCreateMode ? handleVehicleChange : undefined}
-        isActive={isVehicleActive}
-        showActions={!isCreateMode}
-      />
+        <EntityForm entityType="technical" showActions={!isCreateMode} />
 
-      <EntityForm entityType="technical" showActions={!isCreateMode} />
+        {!isCreateMode && vehicleId && (
+          <Table<any>
+            getRows={getMaintenancesForTable}
+            columns={maintenanceColumns}
+            title=""
+            showEditColumn={true}
+            customEditCell={(params) => (
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  const maintenanceId =
+                    params.row.maintenance_id ||
+                    params.row.maintenanceId ||
+                    params.row.id;
+                  const assignmentId =
+                    params.row.id || params.row.assignment_id;
+                  navigate(
+                    `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
+                  );
+                }}
+              >
+                <PencilIcon />
+              </span>
+            )}
+            showTableHeader={true}
+            headerTitle="Mantenimientos del Vehículo"
+            maxWidth="900px"
+            tableWidth="900px"
+            showAddButton={true}
+            addButtonText="+ Agregar mantenimiento"
+            onAddButtonClick={() =>
+              navigate(`/vehicle-maintenance-assignment/${vehicleId}`)
+            }
+          />
+        )}
 
-      {!isCreateMode && vehicleId && (
-        <Table<any>
-          getRows={getMaintenancesForTable}
-          columns={maintenanceColumns}
-          title=""
-          showEditColumn={true}
-          customEditCell={(params) => (
-            <span
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                const maintenanceId =
-                  params.row.maintenance_id ||
-                  params.row.maintenanceId ||
-                  params.row.id;
-                const assignmentId = params.row.id || params.row.assignment_id;
-                navigate(
-                  `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
-                );
+        {!isCreateMode && vehicleId && (
+          <Table<Assignment>
+            getRows={getAssignmentsForTable}
+            columns={assignmentColumns}
+            title=""
+            showEditColumn={true}
+            editRoute="/assignment/edit"
+            showTableHeader={true}
+            headerTitle="Asignar Usuarios al Vehículo"
+            showAddButton={true}
+            addButtonText="+ Agregar Asignación"
+            onAddButtonClick={() =>
+              navigate(
+                vehicleId
+                  ? `/assignment/create/${vehicleId}`
+                  : "/assignment/create"
+              )
+            }
+            maxWidth="900px"
+          />
+        )}
+
+        {!isCreateMode && vehicleId && (
+          <Table<ReservationWithUser>
+            key={`reservations-${vehicleId}-${refreshTables}`}
+            getRows={getReservationsForTable}
+            columns={reservationColumns}
+            title=""
+            showEditColumn={true}
+            editRoute="/reservation/edit"
+            showTableHeader={true}
+            headerTitle="Reservas del Vehículo"
+            showAddButton={true}
+            addButtonText="+ Nueva Reserva"
+            onAddButtonClick={() =>
+              navigate(`/reservation/create?vehicleId=${vehicleId}`)
+            }
+            maxWidth="900px"
+          />
+        )}
+
+        {!isCreateMode && vehicleId && (
+          <Table<any>
+            getRows={getMileageForTable}
+            columns={mileageColumns}
+            title=""
+            showEditColumn={false}
+            showTableHeader={true}
+            headerTitle="Historial de Kilometraje registrado"
+            showAddButton={true}
+            addButtonText="+ Agregar nuevo registro"
+            onAddButtonClick={() => navigate(`/kilometers/create/${vehicleId}`)}
+            maxWidth="900px"
+            tableWidth="900px"
+          />
+        )}
+
+        <Document
+          title="Documentos del Vehículo"
+          initialDocuments={[
+            {
+              id: "1",
+              title: "Registro del Vehículo",
+              expirationDate: "2024-12-31",
+              fileName: "registro_vehiculo.pdf",
+              uploadDate: "2024-01-15",
+            },
+            {
+              id: "2",
+              title: "Seguro del Vehículo",
+              expirationDate: "2024-08-15",
+              fileName: "seguro_auto.pdf",
+              uploadDate: "2024-02-01",
+            },
+            {
+              id: "3",
+              title: "Revisión Técnica",
+              expirationDate: "2024-10-20",
+              fileName: "revision_tecnica.pdf",
+              uploadDate: "2024-03-10",
+            },
+            {
+              id: "4",
+              title: "Manual del Usuario",
+              fileName: "manual_usuario.pdf",
+              uploadDate: "2024-01-01",
+            },
+          ]}
+        />
+
+        {isCreateMode && (
+          <div className="registration-actions">
+            <button
+              className="register-button"
+              onClick={handleVehicleRegistration}
+              disabled={isRegistering}
+              style={{
+                opacity: isRegistering ? 0.6 : 1,
+                cursor: isRegistering ? "not-allowed" : "pointer",
               }}
             >
-              <PencilIcon />
-            </span>
-          )}
-          showTableHeader={true}
-          headerTitle="Mantenimientos del Vehículo"
-          maxWidth="900px"
-          tableWidth="900px"
-          showAddButton={true}
-          addButtonText="+ Agregar mantenimiento"
-          onAddButtonClick={() =>
-            navigate(`/vehicle-maintenance-assignment/${vehicleId}`)
-          }
-        />
-      )}
+              {isRegistering ? "Registrando..." : "Registrar Vehículo"}
+            </button>
+          </div>
+        )}
 
-      {!isCreateMode && vehicleId && (
-        <Table<Assignment>
-          getRows={getAssignmentsForTable}
-          columns={assignmentColumns}
-          title=""
-          showEditColumn={true}
-          editRoute="/assignment/edit"
-          showTableHeader={true}
-          headerTitle="Asignar Usuarios al Vehículo"
-          showAddButton={true}
-          addButtonText="+ Agregar Asignación"
-          onAddButtonClick={() =>
-            navigate(
-              vehicleId
-                ? `/assignment/create/${vehicleId}`
-                : "/assignment/create"
-            )
-          }
-          maxWidth="900px"
-        />
-      )}
-
-      {!isCreateMode && vehicleId && (
-        <Table<ReservationWithUser>
-          key={`reservations-${vehicleId}-${refreshTables}`}
-          getRows={getReservationsForTable}
-          columns={reservationColumns}
-          title=""
-          showEditColumn={true}
-          editRoute="/reservation/edit"
-          showTableHeader={true}
-          headerTitle="Reservas del Vehículo"
-          showAddButton={true}
-          addButtonText="+ Nueva Reserva"
-          onAddButtonClick={() =>
-            navigate(`/reservation/create?vehicleId=${vehicleId}`)
-          }
-          maxWidth="900px"
-        />
-      )}
-
-      {!isCreateMode && vehicleId && (
-        <Table<any>
-          getRows={getMileageForTable}
-          columns={mileageColumns}
-          title=""
-          showEditColumn={false}
-          showTableHeader={true}
-          headerTitle="Historial de Kilometraje registrado"
-          showAddButton={true}
-          addButtonText="+ Agregar nuevo registro"
-          onAddButtonClick={() => navigate(`/kilometers/create/${vehicleId}`)}
-          maxWidth="900px"
-          tableWidth="900px"
-        />
-      )}
-
-      <Document
-        title="Documentos del Vehículo"
-        initialDocuments={[
-          {
-            id: "1",
-            title: "Registro del Vehículo",
-            expirationDate: "2024-12-31",
-            fileName: "registro_vehiculo.pdf",
-            uploadDate: "2024-01-15",
-          },
-          {
-            id: "2",
-            title: "Seguro del Vehículo",
-            expirationDate: "2024-08-15",
-            fileName: "seguro_auto.pdf",
-            uploadDate: "2024-02-01",
-          },
-          {
-            id: "3",
-            title: "Revisión Técnica",
-            expirationDate: "2024-10-20",
-            fileName: "revision_tecnica.pdf",
-            uploadDate: "2024-03-10",
-          },
-          {
-            id: "4",
-            title: "Manual del Usuario",
-            fileName: "manual_usuario.pdf",
-            uploadDate: "2024-01-01",
-          },
-        ]}
-      />
-
-      {isCreateMode && (
-        <div className="registration-actions">
-          <button
-            className="register-button"
-            onClick={handleVehicleRegistration}
-            disabled={isRegistering}
-            style={{
-              opacity: isRegistering ? 0.6 : 1,
-              cursor: isRegistering ? "not-allowed" : "pointer",
-            }}
-          >
-            {isRegistering ? "Registrando..." : "Registrar Vehículo"}
-          </button>
-        </div>
-      )}
-
-      {notification.isOpen && (
-        <NotificationToast
-          message={notification.message}
-          type={notification.type}
-          isOpen={notification.isOpen}
-          onClose={closeNotification}
-        />
-      )}
-    </div>
+        {notification.isOpen && (
+          <NotificationToast
+            message={notification.message}
+            type={notification.type}
+            isOpen={notification.isOpen}
+            onClose={closeNotification}
+          />
+        )}
+      </div>
+    </>
   );
 }

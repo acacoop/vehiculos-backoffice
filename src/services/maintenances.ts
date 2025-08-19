@@ -661,3 +661,51 @@ export const deleteMaintenanceAssignment = async (assignmentId: string) => {
     };
   }
 };
+
+/**
+ * Actualiza una asignación de mantenimiento existente
+ */
+export async function updateMaintenanceAssignment(
+  assignmentId: string,
+  updateData: {
+    kilometersFrequency?: number;
+    daysFrequency?: number;
+  }
+): Promise<ServiceResponse<any>> {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/assignments/${assignmentId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        data: null,
+        message:
+          data.message || "Error al actualizar la asignación de mantenimiento",
+      };
+    }
+
+    return {
+      success: true,
+      data: data.data,
+      message: data.message || "Asignación actualizada exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al actualizar la asignación de mantenimiento",
+      error: error as any,
+    };
+  }
+}

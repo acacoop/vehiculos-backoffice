@@ -23,6 +23,7 @@ import {
   DeleteButton,
   ConfirmButton,
   ButtonGroup,
+  LoadingSpinner,
 } from "../../components";
 import type { FormSection } from "../../components";
 import type { Assignment } from "../../types/assignment";
@@ -330,11 +331,7 @@ export default function EditAssignment() {
   };
 
   if (loading) {
-    return (
-      <div className="edit-assignment-container">
-        <div className="loading">Cargando datos de la asignación...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando datos de la asignación..." />;
   }
 
   if (error || (!assignment && !isCreateMode)) {
