@@ -67,6 +67,13 @@ export default function EditMaintenance() {
     { field: "year", headerName: "Año", flex: 1 },
   ];
 
+  // Function to navigate to maintenance assignment page
+  const handleAddVehicle = () => {
+    if (maintenanceId) {
+      navigate(`/maintenance-assignment/${maintenanceId}`);
+    }
+  };
+
   // Function to get vehicles assigned to this maintenance
   const getVehiclesData = async (
     pagination: PaginationParams
@@ -456,7 +463,9 @@ export default function EditMaintenance() {
             headerTitle={`Vehículos con mantenimiento: ${
               title || "Sin título"
             }`}
-            showAddButton={false}
+            showAddButton={true}
+            addButtonText="+ Agregar Vehículo"
+            onAddButtonClick={handleAddVehicle}
             maxHeight="600px"
             containerClassName="maintenance-vehicles-table"
           />

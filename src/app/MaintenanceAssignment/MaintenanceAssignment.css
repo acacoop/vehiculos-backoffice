@@ -1,0 +1,23 @@
+.maintenance-assignment-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.maintenance-assignment-header {
+  margin-bottom: 30px;
+}
+
+.maintenance-assignment-header h1 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.maintenance-assignment-subtitle {
+  color: #7f8c8d;
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.5;
+}
