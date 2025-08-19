@@ -93,16 +93,14 @@ export default function EditMaintenance() {
       );
 
       if (response.success) {
-        const mappedData = response.data.map(
-          (vehicle: any, index: number) => ({
-            id: vehicle.id || `vehicle-${Date.now()}-${index}`,
-            assignmentId: vehicle.assignmentId,
-            licensePlate: vehicle.licensePlate || "N/A",
-            brand: vehicle.brand || "N/A",
-            model: vehicle.model || "N/A",
-            year: vehicle.year?.toString() || "N/A",
-          })
-        );
+        const mappedData = response.data.map((vehicle: any, index: number) => ({
+          id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+          assignmentId: vehicle.assignmentId,
+          licensePlate: vehicle.licensePlate || "N/A",
+          brand: vehicle.brand || "N/A",
+          model: vehicle.model || "N/A",
+          year: vehicle.year?.toString() || "N/A",
+        }));
 
         return {
           success: true,
@@ -466,12 +464,16 @@ export default function EditMaintenance() {
                   // Navigate to edit maintenance assignment page
                   const vehicleId = params.row.id;
                   const assignmentId = params.row.assignmentId;
-                  
+
                   if (assignmentId) {
-                    navigate(`/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=maintenance`);
+                    navigate(
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=maintenance`
+                    );
                   } else {
                     // Fallback if assignmentId is not available
-                    navigate(`/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/auto?from=maintenance`);
+                    navigate(
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/auto?from=maintenance`
+                    );
                   }
                 }}
               >
