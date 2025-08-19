@@ -4,7 +4,7 @@ import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Document from "../../components/Document/Document";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
-import Table from "../../components/Table/table";
+import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
@@ -515,7 +515,24 @@ export default function VehicleEditRegistration() {
           getRows={getMaintenancesForTable}
           columns={maintenanceColumns}
           title=""
-          showEditColumn={false}
+          showEditColumn={true}
+          customEditCell={(params) => (
+            <span
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                const maintenanceId =
+                  params.row.maintenance_id ||
+                  params.row.maintenanceId ||
+                  params.row.id;
+                const assignmentId = params.row.id || params.row.assignment_id;
+                navigate(
+                  `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}`
+                );
+              }}
+            >
+              <PencilIcon />
+            </span>
+          )}
           showTableHeader={true}
           headerTitle="Mantenimientos del Vehículo"
           maxWidth="900px"

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import {
   getMaintenancePossibles,
   getVehicleMaintenances,
+  deleteMaintenanceAssignment,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
 import { getVehicleById } from "../../services/vehicles";
@@ -12,22 +13,30 @@ import {
   CancelButton,
   ConfirmButton,
   ButtonGroup,
+  DeleteButton,
+  ConfirmDialog,
 } from "../../components";
 import type { FormSection } from "../../components";
-import { useVehicleSearch, useMaintenanceSearch } from "../../hooks";
+import {
+  useVehicleSearch,
+  useMaintenanceSearch,
+  useConfirmDialog,
+} from "../../hooks";
 import { API_CONFIG } from "../../common";
 import "./MaintenanceAssignment.css";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
-  const { maintenanceId, vehicleId } = useParams<{
+  const { maintenanceId, vehicleId, assignmentId } = useParams<{
     maintenanceId?: string;
     vehicleId?: string;
+    assignmentId?: string;
   }>();
 
-  // Determine the flow: maintenance-to-vehicle or vehicle-to-maintenance
-  const isMaintenanceToVehicle = !!maintenanceId;
-  const isVehicleToMaintenance = !!vehicleId;
+  // Determine the flow: maintenance-to-vehicle, vehicle-to-maintenance, or edit existing
+  const isMaintenanceToVehicle = !!maintenanceId && !vehicleId && !assignmentId;
+  const isVehicleToMaintenance = !!vehicleId && !maintenanceId && !assignmentId;
+  const isEditMode = !!vehicleId && !!maintenanceId && !!assignmentId;
 
   const [maintenanceData, setMaintenanceData] =
     useState<MaintenancePossibleNormalized | null>(null);
@@ -45,6 +54,15 @@ export default function MaintenanceAssignment() {
   // Use search hooks
   const vehicleSearch = useVehicleSearch();
   const maintenanceSearch = useMaintenanceSearch();
+
+  // Use confirmation dialog
+  const {
+    isOpen: isConfirmOpen,
+    message: confirmMessage,
+    showConfirm,
+    handleConfirm,
+    handleCancel: handleConfirmCancel,
+  } = useConfirmDialog();
 
   const showError = (message: string) => {
     setNotification({ isOpen: true, message, type: "error" });
@@ -65,9 +83,62 @@ export default function MaintenanceAssignment() {
         await loadMaintenanceData();
       } else if (isVehicleToMaintenance && vehicleId) {
         await loadVehicleData();
+      } else if (isEditMode && vehicleId && maintenanceId) {
+        await loadEditModeData();
       } else {
         showError("Parámetros de URL no válidos");
         setLoadingData(false);
+      }
+    };
+
+    const loadEditModeData = async () => {
+      try {
+        // Load both vehicle and maintenance data
+        await Promise.all([loadVehicleData(), loadMaintenanceDataById()]);
+      } catch (error) {
+        console.error("Error loading edit mode data:", error);
+        showError("Error al cargar los datos");
+        setLoadingData(false);
+      }
+    };
+
+    const loadMaintenanceDataById = async () => {
+      try {
+        const directResponse = await fetch(
+          `${API_CONFIG.BASE_URL}/maintenance/posibles/${maintenanceId}`
+        );
+
+        if (directResponse.ok) {
+          const apiResponse = await directResponse.json();
+          const maintenanceData = apiResponse.data || apiResponse;
+
+          if (
+            maintenanceData &&
+            (maintenanceData.id ||
+              maintenanceData.name ||
+              maintenanceData.title)
+          ) {
+            // Pre-select the maintenance in the search
+            maintenanceSearch.selectMaintenance({
+              id: maintenanceData.id || maintenanceId,
+              name:
+                maintenanceData.name || maintenanceData.title || "Sin título",
+            });
+
+            setMaintenanceData({
+              id: maintenanceData.id || maintenanceId,
+              name:
+                maintenanceData.name || maintenanceData.title || "Sin título",
+              maintenanceCategoryName:
+                maintenanceData.maintenanceCategoryName ||
+                maintenanceData.categoryName ||
+                maintenanceData.category_name ||
+                "Sin categoría",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error loading maintenance data by ID:", error);
       }
     };
 
@@ -157,8 +228,10 @@ export default function MaintenanceAssignment() {
   }, [
     maintenanceId,
     vehicleId,
+    assignmentId,
     isMaintenanceToVehicle,
     isVehicleToMaintenance,
+    isEditMode,
   ]);
 
   const handleSubmit = async () => {
@@ -258,10 +331,48 @@ export default function MaintenanceAssignment() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!assignmentId) {
+      showError("ID de asignación no válido");
+      return;
+    }
+
+    showConfirm(
+      "¿Está seguro que desea eliminar esta asignación de mantenimiento?",
+      async () => {
+        setLoading(true);
+        try {
+          const response = await deleteMaintenanceAssignment(assignmentId);
+
+          if (response.success) {
+            showSuccess("Asignación eliminada exitosamente");
+            setTimeout(() => {
+              // Navigate back to vehicle edit page
+              if (vehicleId) {
+                navigate(`/vehicle/edit/${vehicleId}`);
+              } else {
+                navigate("/vehicles");
+              }
+            }, 1500);
+          } else {
+            showError(response.message || "Error al eliminar la asignación");
+          }
+        } catch (error) {
+          console.error("Error deleting maintenance assignment:", error);
+          showError("Error al eliminar la asignación de mantenimiento");
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+  };
+
   const handleCancel = () => {
     if (isMaintenanceToVehicle && maintenanceId) {
       navigate(`/maintenance/edit/${maintenanceId}`);
     } else if (isVehicleToMaintenance && vehicleId) {
+      navigate(`/vehicle/edit/${vehicleId}`);
+    } else if (isEditMode && vehicleId) {
       navigate(`/vehicle/edit/${vehicleId}`);
     } else {
       navigate("/vehicles");
@@ -269,6 +380,68 @@ export default function MaintenanceAssignment() {
   };
 
   const formSections: FormSection[] = [];
+
+  // Edit Mode: Show both vehicle and maintenance data (disabled)
+  if (isEditMode) {
+    // Vehicle data section
+    if (vehicleSearch.selectedVehicle) {
+      formSections.push({
+        title: "Datos del Vehículo",
+        horizontal: true,
+        fields: [
+          {
+            key: "patente",
+            label: "Patente:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.licensePlate || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "marca",
+            label: "Marca:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.brand || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "modelo",
+            label: "Modelo:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.model || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "anio",
+            label: "Año:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.year?.toString() || "",
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      });
+    }
+
+    // Maintenance data section
+    if (maintenanceSearch.selectedMaintenance) {
+      formSections.push({
+        title: "Mantenimiento Asignado",
+        fields: [
+          {
+            key: "maintenanceName",
+            label: "Mantenimiento:",
+            type: "text",
+            value: maintenanceSearch.selectedMaintenance.name || "",
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      });
+    }
+  }
 
   // First section: Show information about the preloaded entity
   if (isMaintenanceToVehicle && maintenanceData) {
@@ -475,7 +648,9 @@ export default function MaintenanceAssignment() {
   });
 
   const getPageTitle = () => {
-    if (isMaintenanceToVehicle) {
+    if (isEditMode) {
+      return "Editar Asignación de Mantenimiento";
+    } else if (isMaintenanceToVehicle) {
       return "Asignar Mantenimiento a Vehículo";
     } else if (isVehicleToMaintenance) {
       return "Asignar Mantenimiento al Vehículo";
@@ -484,7 +659,9 @@ export default function MaintenanceAssignment() {
   };
 
   const getLoadingText = () => {
-    if (isMaintenanceToVehicle) {
+    if (isEditMode) {
+      return "Cargando datos de la asignación...";
+    } else if (isMaintenanceToVehicle) {
       return "Cargando datos del mantenimiento...";
     } else if (isVehicleToMaintenance) {
       return "Cargando datos del vehículo...";
@@ -505,11 +682,19 @@ export default function MaintenanceAssignment() {
           <FormLayout title={getPageTitle()} sections={formSections}>
             <ButtonGroup>
               <CancelButton text="Cancelar" onClick={handleCancel} />
-              <ConfirmButton
-                text="Asignar Mantenimiento"
-                onClick={handleSubmit}
-                loading={loading}
-              />
+              {isEditMode ? (
+                <DeleteButton
+                  text="Eliminar Asignación"
+                  onClick={handleDelete}
+                  loading={loading}
+                />
+              ) : (
+                <ConfirmButton
+                  text="Asignar Mantenimiento"
+                  onClick={handleSubmit}
+                  loading={loading}
+                />
+              )}
             </ButtonGroup>
           </FormLayout>
         </div>
@@ -520,6 +705,13 @@ export default function MaintenanceAssignment() {
         type={notification.type}
         isOpen={notification.isOpen}
         onClose={closeNotification}
+      />
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        message={confirmMessage}
+        onConfirm={handleConfirm}
+        onCancel={handleConfirmCancel}
       />
     </>
   );

@@ -622,3 +622,42 @@ export const getMaintenanceItemById = async (
     };
   }
 };
+
+/**
+ * Eliminar una asignación de mantenimiento
+ */
+export const deleteMaintenanceAssignment = async (assignmentId: string) => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/assignments/${assignmentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Error ${response.status}: ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      data: null,
+      message: data.message || "Asignación eliminada exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al eliminar la asignación de mantenimiento",
+      error: error as any,
+    };
+  }
+};

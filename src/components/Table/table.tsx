@@ -27,6 +27,8 @@ const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export { PencilIcon };
+
 interface GenericTableProps<T extends GridValidRowModel> {
   getRows(pagination: PaginationParams): Promise<ServiceResponse<T[]>>;
   columns: GridColDef<T>[];
@@ -34,6 +36,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   showEditColumn?: boolean;
   editRoute?: string;
   additionalRouteParams?: string;
+  customEditCell?: (params: any) => React.ReactNode;
   showTableHeader?: boolean;
   headerTitle?: string;
   showAddButton?: boolean;
@@ -53,6 +56,7 @@ export function Table<T extends GridValidRowModel>({
   showEditColumn = false,
   editRoute = "/user/edit",
   additionalRouteParams = "",
+  customEditCell,
   showTableHeader = false,
   headerTitle = "",
   showAddButton = false,
@@ -136,18 +140,21 @@ export function Table<T extends GridValidRowModel>({
             align: "center" as const,
             headerAlign: "center" as const,
             disableColumnMenu: true,
-            renderCell: (params: any) => (
-              <span
-                style={{ cursor: "pointer" }}
-                onClick={() =>
-                  navigate(
-                    `${editRoute}/${params.row.id}${additionalRouteParams}`
-                  )
-                }
-              >
-                <PencilIcon />
-              </span>
-            ),
+            renderCell: (params: any) =>
+              customEditCell ? (
+                customEditCell(params)
+              ) : (
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    navigate(
+                      `${editRoute}/${params.row.id}${additionalRouteParams}`
+                    )
+                  }
+                >
+                  <PencilIcon />
+                </span>
+              ),
           } as GridColDef<T>,
         ]
       : []),
