@@ -6,158 +6,127 @@ import type { ServiceResponse, PaginationParams } from "../../common";
 import { type GridColDef } from "@mui/x-data-grid";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+
+// Utility function to check if assignment is active
+const isAssignmentActive = (endDate: string | null | undefined): boolean => {
+  if (!endDate) return true;
+
+  try {
+    const endDateTime = new Date(endDate);
+    return endDateTime > new Date();
+  } catch {
+    return false;
+  }
+};
+
+// Utility function to format date
+const formatDate = (date: string | null | undefined): string => {
+  if (!date) return "Sin fecha";
+
+  try {
+    const dateObj = new Date(date);
+    return isNaN(dateObj.getTime())
+      ? "Fecha inválida"
+      : dateObj.toLocaleDateString("es-AR");
+  } catch {
+    return "Fecha inválida";
+  }
+};
+
+const assignmentColumns: GridColDef<Assignment>[] = [
+  {
+    field: "user.dni",
+    headerName: "DNI Usuario",
+    width: 90,
+    renderCell: (params) => params.row.user.dni?.toLocaleString() || "Sin DNI",
+  },
+  {
+    field: "user.name",
+    headerName: "Usuario",
+    width: 200,
+    valueGetter: (_, row) => `${row.user.firstName} ${row.user.lastName}`,
+    renderCell: (params) =>
+      `${params.row.user.firstName} ${params.row.user.lastName}`,
+  },
+  {
+    field: "vehicle.licensePlate",
+    headerName: "Patente",
+    width: 120,
+    valueGetter: (_, row) => row.vehicle?.licensePlate || "N/A",
+    renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
+  },
+  {
+    field: "vehicle.info",
+    headerName: "Vehículo",
+    width: 200,
+    valueGetter: (_, row) => {
+      const vehicle = row.vehicle;
+      return vehicle
+        ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
+        : "N/A";
+    },
+    renderCell: (params) => {
+      const vehicle = params.row.vehicle;
+      return vehicle
+        ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
+        : "N/A";
+    },
+  },
+  {
+    field: "startDate",
+    headerName: "Fecha Inicio",
+    width: 130,
+    renderCell: (params) => formatDate(params.row.startDate),
+  },
+  {
+    field: "endDate",
+    headerName: "Fecha Fin",
+    width: 130,
+    renderCell: (params) =>
+      params.row.endDate ? formatDate(params.row.endDate) : "Sin fecha fin",
+  },
+  {
+    field: "status",
+    headerName: "Estado",
+    width: 100,
+    valueGetter: (_, row) =>
+      isAssignmentActive(row.endDate) ? "Activa" : "Finalizada",
+    renderCell: (params) => {
+      const isActive = isAssignmentActive(params.row.endDate);
+      return (
+        <Chip
+          label={isActive ? "Activa" : "Finalizada"}
+          color={isActive ? "success" : "default"}
+          size="small"
+          style={{
+            color: "#fff",
+            fontWeight: 600,
+            backgroundColor: isActive ? undefined : "#E53935",
+          }}
+        />
+      );
+    },
+  },
+];
+
+const getAssignmentsData = async (
+  paginationParams: PaginationParams
+): Promise<ServiceResponse<Assignment[]>> => {
+  try {
+    return await getAssignments({}, paginationParams);
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      message: `Error al obtener asignaciones: ${
+        (error as Error)?.message || "Error desconocido"
+      }`,
+    };
+  }
+};
 
 export default function Assignment() {
   const navigate = useNavigate();
-
-  
-  const assignmentColumns: GridColDef<Assignment>[] = [
-    {
-      field: "user.dni",
-      headerName: "DNI Usuario",
-      width: 90,
-      renderCell: (params) =>
-        params.row.user.dni?.toLocaleString() || "Sin DNI",
-    },
-    {
-      field: "user.name",
-      headerName: "Usuario",
-      width: 200,
-      valueGetter: (_, row) => `${row.user.firstName} ${row.user.lastName}`,
-      renderCell: (params) =>
-        `${params.row.user.firstName} ${params.row.user.lastName}`,
-    },
-    {
-      field: "vehicle.licensePlate",
-      headerName: "Patente",
-      width: 120,
-      valueGetter: (_, row) => row.vehicle?.licensePlate || "N/A",
-      renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
-    },
-    {
-      field: "vehicle.info",
-      headerName: "Vehículo",
-      width: 200,
-      valueGetter: (_, row) => {
-        const vehicle = row.vehicle;
-        return vehicle
-          ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
-          : "N/A";
-      },
-      renderCell: (params) => {
-        const vehicle = params.row.vehicle;
-        return vehicle
-          ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
-          : "N/A";
-      },
-    },
-    {
-      field: "startDate",
-      headerName: "Fecha Inicio",
-      width: 130,
-      renderCell: (params) => {
-        if (params.row.startDate) {
-          try {
-            const date = new Date(params.row.startDate);
-            return date.toLocaleDateString("es-AR");
-          } catch {
-            return "Fecha inválida";
-          }
-        }
-        return "Sin fecha";
-      },
-    },
-    {
-      field: "endDate",
-      headerName: "Fecha Fin",
-      width: 130,
-      renderCell: (params) => {
-        if (
-          params.row.endDate &&
-          params.row.endDate !== null &&
-          params.row.endDate !== ""
-        ) {
-          try {
-            const date = new Date(params.row.endDate);
-            if (!isNaN(date.getTime())) {
-              return date.toLocaleDateString("es-AR");
-            }
-          } catch {
-            return "Fecha inválida";
-          }
-        }
-        return "Sin fecha fin";
-      },
-    },
-    {
-      field: "status",
-      headerName: "Estado",
-      width: 100,
-      valueGetter: (_, row) => {
-        let isActive = true;
-        if (row.endDate) {
-          try {
-            const endDate = new Date(row.endDate);
-            const now = new Date();
-            isActive = endDate > now;
-          } catch {
-            isActive = false;
-          }
-        }
-        return isActive ? "Activa" : "Finalizada";
-      },
-      renderCell: (params) => {
-        let isActive = true;
-        if (params.row.endDate) {
-          try {
-            const endDate = new Date(params.row.endDate);
-            const now = new Date();
-            isActive = endDate > now;
-          } catch {
-            isActive = false;
-          }
-        }
-
-        return (
-          <Chip
-            label={isActive ? "Activa" : "Finalizada"}
-            color={isActive ? "success" : "default"}
-            size="small"
-            style={{
-              color: "#fff",
-              fontWeight: 600,
-              backgroundColor: isActive ? undefined : "#E53935",
-            }}
-          />
-        );
-      },
-    },
-  ];
-
-  
-  const getAssignmentsData = useMemo(
-    () =>
-      async (
-        paginationParams: PaginationParams
-      ): Promise<ServiceResponse<Assignment[]>> => {
-        try {
-          return await getAssignments({}, paginationParams);
-        } catch (error) {
-          return {
-            success: false,
-            data: [],
-            message: `Error al obtener asignaciones: ${
-              (error as Error)?.message || "Error desconocido"
-            }`,
-          };
-        }
-      },
-    []
-  );
-
-  
-  const handleAddButtonClick = () => navigate("/assignment/create");
 
   return (
     <main className="assignment-container">
@@ -172,7 +141,7 @@ export default function Assignment() {
         maxWidth="1200px"
         showAddButton={true}
         addButtonText="+ Agregar Asignación"
-        onAddButtonClick={handleAddButtonClick}
+        onAddButtonClick={() => navigate("/assignment/create")}
       />
     </main>
   );

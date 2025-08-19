@@ -6,7 +6,6 @@ import {
   createMaintenanceItem,
   updateMaintenanceItem,
   deleteMaintenanceItem,
-  type MaintenanceItemData,
 } from "../../services/maintenances";
 import { getVehiclesByMaintenanceId } from "../../services/vehicles";
 import {
@@ -39,7 +38,6 @@ export default function EditMaintenance() {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const [title, setTitle] = useState("");
   const [frequencyKm, setFrequencyKm] = useState<number>(10000);
@@ -92,28 +90,28 @@ export default function EditMaintenance() {
         pagination
       );
 
-      if (response.success) {
-        const mappedData = response.data.map((vehicle: any, index: number) => ({
-          id: vehicle.id || `vehicle-${Date.now()}-${index}`,
-          assignmentId: vehicle.assignmentId,
-          licensePlate: vehicle.licensePlate || "N/A",
-          brand: vehicle.brand || "N/A",
-          model: vehicle.model || "N/A",
-          year: vehicle.year?.toString() || "N/A",
-        }));
-
-        return {
-          success: true,
-          data: mappedData,
-          pagination: response.pagination,
-        };
-      } else {
+      if (!response.success) {
         return {
           success: false,
           data: [],
           message: response.message || "Error al cargar vehículos",
         };
       }
+
+      const mappedData = response.data.map((vehicle: any, index: number) => ({
+        id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+        assignmentId: vehicle.assignmentId,
+        licensePlate: vehicle.licensePlate || "N/A",
+        brand: vehicle.brand || "N/A",
+        model: vehicle.model || "N/A",
+        year: vehicle.year?.toString() || "N/A",
+      }));
+
+      return {
+        success: true,
+        data: mappedData,
+        pagination: response.pagination,
+      };
     } catch (error) {
       return {
         success: false,
@@ -186,102 +184,110 @@ export default function EditMaintenance() {
     }
   };
 
-  const handleSave = async () => {
-    if (!title.trim()) {
-      showError("El título es obligatorio");
-      return;
-    }
-    if (!categorySearch.selectedCategory) {
-      showError("Debe seleccionar una categoría");
-      return;
-    }
-    if (frequencyKm <= 0) {
-      showError("La frecuencia en kilómetros debe ser mayor a 0");
-      return;
-    }
-    if (frequencyDays <= 0) {
-      showError("La frecuencia en días debe ser mayor a 0");
-      return;
-    }
-
-    const actionText = isCreateMode ? "crear" : "actualizar";
-    const confirmMessage = `¿Está seguro que desea ${actionText} este mantenimiento?`;
-
-    showConfirm(confirmMessage, async () => {
-      setSaving(true);
-
-      try {
-        const maintenanceData: MaintenanceItemData = {
-          title: title.trim(),
-          categoryId: categorySearch.selectedCategory!.id,
-          frequencyKm,
-          frequencyDays,
-          observations: observations.trim() || undefined,
-          instructions: instructions.trim() || undefined,
-        };
-
-        let response;
-        if (isCreateMode) {
-          response = await createMaintenanceItem(maintenanceData);
-        } else if (maintenanceId) {
-          response = await updateMaintenanceItem(
-            maintenanceId,
-            maintenanceData
-          );
-        }
-
-        if (response?.success) {
-          const successMessage = isCreateMode
-            ? "Mantenimiento creado exitosamente"
-            : "Mantenimiento actualizado exitosamente";
-          showSuccess(successMessage);
-
-          setTimeout(() => {
-            navigate("/maintenances");
-          }, 1500);
-        } else {
-          showError(
-            response?.message || `Error al ${actionText} el mantenimiento`
-          );
-        }
-      } catch (err) {
-        showError(`Error al ${actionText} el mantenimiento`);
-      } finally {
-        setSaving(false);
-      }
-    });
+  // Validation function
+  const validateForm = (): string | null => {
+    if (!title.trim()) return "El título es obligatorio";
+    if (!categorySearch.selectedCategory)
+      return "Debe seleccionar una categoría";
+    if (frequencyKm <= 0)
+      return "La frecuencia en kilómetros debe ser mayor a 0";
+    if (frequencyDays <= 0) return "La frecuencia en días debe ser mayor a 0";
+    return null;
   };
 
-  const handleCancel = () => {
-    navigate("/maintenances");
+  // Generic operation handler
+  const performOperation = async (
+    operation: "create" | "update" | "delete"
+  ) => {
+    const validationError = operation !== "delete" ? validateForm() : null;
+    if (validationError) {
+      showError(validationError);
+      return;
+    }
+
+    const actionText = {
+      create: "crear",
+      update: "actualizar",
+      delete: "eliminar",
+    }[operation];
+
+    showConfirm(
+      `¿Está seguro que desea ${actionText} este mantenimiento?${
+        operation === "delete" ? " Esta acción no se puede deshacer." : ""
+      }`,
+      async () => {
+        setSaving(true);
+
+        try {
+          let response;
+
+          switch (operation) {
+            case "create":
+              response = await createMaintenanceItem({
+                title: title.trim(),
+                categoryId: categorySearch.selectedCategory!.id,
+                frequencyKm,
+                frequencyDays,
+                observations: observations.trim() || undefined,
+                instructions: instructions.trim() || undefined,
+              });
+              break;
+            case "update":
+              if (!maintenanceId) return;
+              response = await updateMaintenanceItem(maintenanceId, {
+                title: title.trim(),
+                categoryId: categorySearch.selectedCategory!.id,
+                frequencyKm,
+                frequencyDays,
+                observations: observations.trim() || undefined,
+                instructions: instructions.trim() || undefined,
+              });
+              break;
+            case "delete":
+              if (!maintenanceId) return;
+              response = await deleteMaintenanceItem(maintenanceId);
+              break;
+          }
+
+          if (response?.success) {
+            const successMessages = {
+              create: "Mantenimiento creado exitosamente",
+              update: "Mantenimiento actualizado exitosamente",
+              delete: "Mantenimiento eliminado exitosamente",
+            };
+            showSuccess(successMessages[operation]);
+            setTimeout(() => navigate("/maintenances"), 1500);
+          } else {
+            showError(
+              response?.message || `Error al ${actionText} el mantenimiento`
+            );
+          }
+        } catch (err) {
+          showError(`Error al ${actionText} el mantenimiento`);
+        } finally {
+          setSaving(false);
+        }
+      }
+    );
+  };
+
+  const handleSave = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      showError(validationError);
+      return;
+    }
+
+    performOperation(isCreateMode ? "create" : "update");
   };
 
   const handleDelete = () => {
     if (!maintenanceId) return;
+    performOperation("delete");
+  };
 
-    showConfirm(
-      "¿Está seguro que desea eliminar este mantenimiento? Esta acción no se puede deshacer.",
-      async () => {
-        setDeleting(true);
-
-        try {
-          const response = await deleteMaintenanceItem(maintenanceId);
-
-          if (response.success) {
-            showSuccess("Mantenimiento eliminado exitosamente");
-            setTimeout(() => {
-              navigate("/maintenances");
-            }, 1500);
-          } else {
-            showError(response.message || "Error al eliminar el mantenimiento");
-          }
-        } catch (err) {
-          showError("Error al eliminar el mantenimiento");
-        } finally {
-          setDeleting(false);
-        }
-      }
-    );
+  const handleCancel = () => {
+    navigate("/maintenances");
   };
 
   if (loading) {
@@ -295,11 +301,8 @@ export default function EditMaintenance() {
     );
   }
 
-  // Configuración de secciones para FormLayout
-  const sections: FormSection[] = [];
-
-  // Sección 1: Información del mantenimiento
-  sections.push({
+  // Helper functions for form sections
+  const createMainInfoSection = (): FormSection => ({
     title: "Información del Mantenimiento",
     fields: [
       {
@@ -315,28 +318,29 @@ export default function EditMaintenance() {
     ],
   });
 
-  // Sección de categoría - dinámicamente según si hay selección
-  if (categorySearch.selectedCategory) {
-    sections.push({
-      title: "Datos de la Categoría",
-      horizontal: true,
-      actionButton: {
-        text: "Cambiar categoría",
-        onClick: () => categorySearch.clearSelection(),
-      },
-      fields: [
-        {
-          key: "categoryName",
-          label: "Nombre:",
-          type: "text",
-          value: categorySearch.selectedCategory.name || "",
-          onChange: () => {},
-          disabled: true,
+  const createCategorySection = (): FormSection => {
+    if (categorySearch.selectedCategory) {
+      return {
+        title: "Datos de la Categoría",
+        horizontal: true,
+        actionButton: {
+          text: "Cambiar categoría",
+          onClick: () => categorySearch.clearSelection(),
         },
-      ],
-    });
-  } else {
-    sections.push({
+        fields: [
+          {
+            key: "categoryName",
+            label: "Nombre:",
+            type: "text",
+            value: categorySearch.selectedCategory.name || "",
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      };
+    }
+
+    return {
       title: "Seleccionar Categoría",
       fields: [
         {
@@ -356,11 +360,10 @@ export default function EditMaintenance() {
           required: true,
         },
       ],
-    });
-  }
+    };
+  };
 
-  // Sección 2: Frecuencia (layout horizontal)
-  sections.push({
+  const createFrequencySection = (): FormSection => ({
     title: "Frecuencia",
     horizontal: true,
     fields: [
@@ -389,8 +392,7 @@ export default function EditMaintenance() {
     ],
   });
 
-  // Sección 3: Detalles adicionales
-  sections.push({
+  const createDetailsSection = (): FormSection => ({
     title: "Detalles Adicionales",
     fields: [
       {
@@ -414,6 +416,14 @@ export default function EditMaintenance() {
     ],
   });
 
+  // Form sections configuration
+  const sections: FormSection[] = [
+    createMainInfoSection(),
+    createCategorySection(),
+    createFrequencySection(),
+    createDetailsSection(),
+  ];
+
   return (
     <>
       <FormLayout
@@ -424,14 +434,14 @@ export default function EditMaintenance() {
           <CancelButton
             text="Cancelar"
             onClick={handleCancel}
-            disabled={saving || deleting}
+            disabled={saving}
           />
           {!isCreateMode && (
             <DeleteButton
               text="Eliminar"
               onClick={handleDelete}
-              disabled={saving || deleting}
-              loading={deleting}
+              disabled={saving}
+              loading={saving}
             />
           )}
           <ConfirmButton
@@ -443,7 +453,7 @@ export default function EditMaintenance() {
                 : "Actualizar Mantenimiento"
             }
             onClick={handleSave}
-            disabled={saving || deleting}
+            disabled={saving}
             loading={saving}
           />
         </ButtonGroup>

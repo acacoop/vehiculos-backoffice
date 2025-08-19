@@ -23,16 +23,12 @@ import "./EditCategory.css";
 export default function EditCategory() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  // Determinar si estamos en modo creación o edición
   const isCreateMode = !id;
 
-  // Estados
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categoryName, setCategoryName] = useState("");
 
-  // ConfirmDialog hook
   const {
     isOpen,
     message,
@@ -40,8 +36,6 @@ export default function EditCategory() {
     handleConfirm,
     handleCancel: handleDialogCancel,
   } = useConfirmDialog();
-
-  // Notification hook
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
@@ -53,17 +47,13 @@ export default function EditCategory() {
 
   const loadCategory = async (categoryId: string) => {
     setLoading(true);
-
     try {
       const response = await getMaintenanceById(categoryId);
 
       if (response.success && response.data) {
-        // La respuesta tiene estructura anidada: response.data.data.name
         const responseData = response.data as any;
         const actualData = responseData.data || responseData;
-        const nameValue = actualData.name;
-
-        setCategoryName(nameValue || "");
+        setCategoryName(actualData.name || "");
       } else {
         showError(
           response.message || "Error al cargar la categoría de mantenimiento"
@@ -71,96 +61,82 @@ export default function EditCategory() {
       }
     } catch (err) {
       showError(
-        "Error al cargar la categoría de mantenimiento: " +
-          (err instanceof Error ? err.message : String(err))
+        `Error al cargar la categoría: ${
+          err instanceof Error ? err.message : String(err)
+        }`
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
+  const performAction = async (action: "create" | "update" | "delete") => {
+    setSaving(true);
+    try {
+      let response;
+
+      switch (action) {
+        case "create":
+          response = await createMaintenance({ name: categoryName.trim() });
+          break;
+        case "update":
+          response = id
+            ? await updateMaintenance(id, { name: categoryName.trim() })
+            : null;
+          break;
+        case "delete":
+          response = id ? await deleteMaintenance(id) : null;
+          break;
+      }
+
+      if (response?.success) {
+        const messages = {
+          create: "Categoría creada exitosamente",
+          update: "Categoría actualizada exitosamente",
+          delete: "Categoría eliminada exitosamente",
+        };
+        showSuccess(messages[action]);
+        setTimeout(() => navigate("/maintenances"), 1500);
+      } else {
+        const actionText = {
+          create: "crear",
+          update: "actualizar",
+          delete: "eliminar",
+        }[action];
+        showError(response?.message || `Error al ${actionText} la categoría`);
+      }
+    } catch (err) {
+      const actionText = {
+        create: "crear",
+        update: "actualizar",
+        delete: "eliminar",
+      }[action];
+      showError(`Error al ${actionText} la categoría de mantenimiento`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSave = () => {
     if (!categoryName.trim()) {
       showError("La categoría de mantenimiento es obligatoria");
       return;
     }
 
     const actionText = isCreateMode ? "crear" : "actualizar";
-    const confirmMessage = `¿Está seguro que desea ${actionText} esta categoría de mantenimiento?`;
-
-    showConfirm(confirmMessage, async () => {
-      setSaving(true);
-
-      try {
-        let response;
-
-        if (isCreateMode) {
-          response = await createMaintenance({ name: categoryName.trim() });
-        } else if (id) {
-          response = await updateMaintenance(id, {
-            name: categoryName.trim(),
-          });
-        }
-
-        if (response?.success) {
-          const successMessage = isCreateMode
-            ? "Categoría creada exitosamente"
-            : "Categoría actualizada exitosamente";
-          showSuccess(successMessage);
-
-          // Pequeño delay para que se vea la notificación antes de navegar
-          setTimeout(() => {
-            navigate("/maintenances");
-          }, 1500);
-        } else {
-          showError(
-            response?.message ||
-              `Error al ${actionText} la categoría de mantenimiento`
-          );
-        }
-      } catch (err) {
-        showError(`Error al ${actionText} la categoría de mantenimiento`);
-      } finally {
-        setSaving(false);
-      }
-    });
+    showConfirm(
+      `¿Está seguro que desea ${actionText} esta categoría de mantenimiento?`,
+      () => performAction(isCreateMode ? "create" : "update")
+    );
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!id) return;
 
-    const confirmMessage =
-      "¿Está seguro que desea eliminar esta categoría de mantenimiento? Esta acción no se puede deshacer.";
-
-    showConfirm(confirmMessage, async () => {
-      setSaving(true);
-
-      try {
-        const response = await deleteMaintenance(id);
-
-        if (response.success) {
-          showSuccess("Categoría eliminada exitosamente");
-
-          // Pequeño delay para que se vea la notificación antes de navegar
-          setTimeout(() => {
-            navigate("/maintenances");
-          }, 1500);
-        } else {
-          showError(
-            response.message ||
-              "Error al eliminar la categoría de mantenimiento"
-          );
-        }
-      } catch (err) {
-        showError("Error al eliminar la categoría de mantenimiento");
-      } finally {
-        setSaving(false);
-      }
-    });
-  };
-
-  const handleCancel = () => {
-    navigate("/maintenances");
+    showConfirm(
+      "¿Está seguro que desea eliminar esta categoría de mantenimiento? Esta acción no se puede deshacer.",
+      () => performAction("delete")
+    );
   };
 
   if (loading) {
@@ -173,7 +149,6 @@ export default function EditCategory() {
     );
   }
 
-  // Configuración de secciones para FormLayout
   const sections: FormSection[] = [
     {
       title: "Información de la Categoría",
@@ -205,7 +180,7 @@ export default function EditCategory() {
         <ButtonGroup>
           <CancelButton
             text="Cancelar"
-            onClick={handleCancel}
+            onClick={() => navigate("/maintenances")}
             disabled={saving}
           />
           {!isCreateMode && (

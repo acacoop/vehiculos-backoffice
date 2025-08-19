@@ -11,48 +11,44 @@ const columns = [
   { field: "year", headerName: "Año", flex: 1 },
 ];
 
-export default function Vehicles() {
-  const navigate = useNavigate();
+const getVehiclesData = async (
+  pagination: PaginationParams
+): Promise<ServiceResponse<any[]>> => {
+  try {
+    const response = await getVehicles(undefined, pagination);
 
-  const getVehiclesData = async (
-    pagination: PaginationParams
-  ): Promise<ServiceResponse<any[]>> => {
-    try {
-      const response = await getVehicles(undefined, pagination);
-
-      if (response.success) {
-        const mappedData = response.data.map((vehicle: any, index: number) => {
-          const mappedItem = {
-            id: vehicle.id || `vehicle-${Date.now()}-${index}`,
-            licensePlate: vehicle.licensePlate || "N/A",
-            brand: vehicle.brand || "N/A",
-            model: vehicle.model || "N/A",
-            year: vehicle.year?.toString() || "N/A",
-          };
-
-          return mappedItem;
-        });
-
-        return {
-          success: true,
-          data: mappedData,
-          pagination: response.pagination,
-        };
-      } else {
-        return {
-          success: false,
-          data: [],
-          message: response.message,
-        };
-      }
-    } catch (error) {
+    if (!response.success) {
       return {
         success: false,
         data: [],
-        message: "Error al cargar vehículos",
+        message: response.message,
       };
     }
-  };
+
+    const mappedData = response.data.map((vehicle: any, index: number) => ({
+      id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+      licensePlate: vehicle.licensePlate || "N/A",
+      brand: vehicle.brand || "N/A",
+      model: vehicle.model || "N/A",
+      year: vehicle.year?.toString() || "N/A",
+    }));
+
+    return {
+      success: true,
+      data: mappedData,
+      pagination: response.pagination,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      message: "Error al cargar vehículos",
+    };
+  }
+};
+
+export default function Vehicles() {
+  const navigate = useNavigate();
 
   return (
     <div className="vehicles-container">

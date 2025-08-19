@@ -10,123 +10,86 @@ import type { Maintenance } from "../../types/maintenance";
 import type { PaginationParams } from "../../common";
 import "./maintenances.css";
 
-export default function MaintenancePage() {
-  const navigate = useNavigate();
+const maintenanceColumns: GridColDef<Maintenance>[] = [
+  {
+    field: "name",
+    headerName: "Categoría",
+    width: 300,
+    flex: 1,
+    renderCell: (params) => params.row.name || "Sin nombre",
+  },
+];
 
-  const maintenanceColumns: GridColDef<Maintenance>[] = [
+const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
+  [
+    {
+      field: "maintenanceCategoryName",
+      headerName: "Nombre de Categoría",
+      width: 250,
+      flex: 1,
+      renderCell: (params) =>
+        params.row.maintenanceCategoryName || "Sin categoría",
+    },
     {
       field: "name",
-      headerName: "Categoría",
+      headerName: "Mantenimiento",
       width: 300,
       flex: 1,
       renderCell: (params) => params.row.name || "Sin nombre",
     },
   ];
 
-  const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
-    [
-      {
-        field: "maintenanceCategoryName",
-        headerName: "Nombre de Categoría",
-        width: 250,
-        flex: 1,
-        renderCell: (params) =>
-          params.row.maintenanceCategoryName || "Sin categoría",
-      },
-      {
-        field: "name",
-        headerName: "Mantenimiento",
-        width: 300,
-        flex: 1,
-        renderCell: (params) => params.row.name || "Sin nombre",
-      },
-    ];
-
-  const getMaintenancesForTable = async (
-    paginationParams: PaginationParams
-  ) => {
+const createTableDataHandler =
+  (serviceCall: any, errorMessage: string) =>
+  async (paginationParams: PaginationParams) => {
     try {
-      const response = await getMaintenanceCategories(paginationParams);
+      const response = await serviceCall(paginationParams);
 
-      if (response.success) {
-        return {
-          success: true,
-          data: response.data,
-          message: response.message,
-          pagination: {
-            page: paginationParams.page || 1,
-            pageSize: paginationParams.limit || 20,
-            total: response.data.length,
-            pages: Math.ceil(
-              response.data.length / (paginationParams.limit || 20)
-            ),
-          },
-        };
-      } else {
+      if (!response.success) {
         return {
           success: false,
           data: [],
           message: response.message,
         };
       }
+
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+        pagination: {
+          page: paginationParams.page || 1,
+          pageSize: paginationParams.limit || 20,
+          total: response.data.length,
+          pages: Math.ceil(
+            response.data.length / (paginationParams.limit || 20)
+          ),
+        },
+      };
     } catch (error) {
       return {
         success: false,
         data: [],
-        message: `Error al obtener categorías: ${(error as Error)?.message}`,
+        message: `${errorMessage}: ${(error as Error)?.message}`,
       };
     }
   };
 
-  const getPossibleMaintenancesForTable = async (
-    paginationParams: PaginationParams
-  ) => {
-    try {
-      const response = await getMaintenancePossibles(paginationParams);
+const getMaintenancesForTable = createTableDataHandler(
+  getMaintenanceCategories,
+  "Error al obtener categorías"
+);
 
-      if (response.success) {
-        return {
-          success: true,
-          data: response.data,
-          message: response.message,
-          pagination: {
-            page: paginationParams.page || 1,
-            pageSize: paginationParams.limit || 20,
-            total: response.data.length,
-            pages: Math.ceil(
-              response.data.length / (paginationParams.limit || 20)
-            ),
-          },
-        };
-      } else {
-        return {
-          success: false,
-          data: [],
-          message: response.message,
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        data: [],
-        message: `Error al obtener mantenimientos: ${
-          (error as Error)?.message
-        }`,
-      };
-    }
-  };
+const getPossibleMaintenancesForTable = createTableDataHandler(
+  getMaintenancePossibles,
+  "Error al obtener mantenimientos"
+);
 
-  const handleCreateMaintenance = () => {
-    navigate("/category/create");
-  };
-
-  const handleCreatePossibleMaintenance = () => {
-    navigate("/maintenance/create");
-  };
+export default function MaintenancePage() {
+  const navigate = useNavigate();
 
   return (
     <div className="maintenances-container">
-      {}
       <Table<Maintenance>
         getRows={getMaintenancesForTable}
         columns={maintenanceColumns}
@@ -137,14 +100,12 @@ export default function MaintenancePage() {
         headerTitle="Categorías de Mantenimiento"
         showAddButton={true}
         addButtonText="+ Nueva Categoría"
-        onAddButtonClick={handleCreateMaintenance}
+        onAddButtonClick={() => navigate("/category/create")}
         maxWidth="900px"
       />
 
-      {}
       <div style={{ padding: "40px 0" }} />
 
-      {}
       <div style={{ padding: "40px 0" }}>
         <Table<MaintenancePossibleNormalized>
           getRows={getPossibleMaintenancesForTable}
@@ -156,7 +117,7 @@ export default function MaintenancePage() {
           headerTitle="Mantenimientos Posibles"
           showAddButton={true}
           addButtonText="+ Nuevo Mantenimiento"
-          onAddButtonClick={handleCreatePossibleMaintenance}
+          onAddButtonClick={() => navigate("/maintenance/create")}
           maxWidth="900px"
           maxHeight="600px"
         />
