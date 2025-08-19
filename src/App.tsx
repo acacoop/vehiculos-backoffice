@@ -56,6 +56,10 @@ function App() {
           element={<MaintenanceAssignment />}
         />
         <Route
+          path="/vehicle-maintenance-assignment/:vehicleId"
+          element={<MaintenanceAssignment />}
+        />
+        <Route
           path="/maintenance/possible/edit/:maintenanceId"
           element={<EditMaintenance />}
         />

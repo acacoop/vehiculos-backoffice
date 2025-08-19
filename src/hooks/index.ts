@@ -4,4 +4,5 @@ export {
   useUserSearch,
   useVehicleSearch,
   useCategorySearch,
+  useMaintenanceSearch,
 } from "./useEntitySearch";

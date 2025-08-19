@@ -4,6 +4,7 @@ import {
   UserSearch,
   VehicleSearch,
   CategorySearch,
+  MaintenanceSearch,
 } from "../EntitySearch/EntitySearch";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
@@ -23,6 +24,7 @@ export interface FormField {
     | "userSearch"
     | "vehicleSearch"
     | "categorySearch"
+    | "maintenanceSearch"
     | "checkbox"
     | "display";
   placeholder?: string;
@@ -54,10 +56,12 @@ export interface FormField {
   availableUsers?: User[];
   availableVehicles?: Vehicle[];
   availableCategories?: Maintenance[];
+  availableMaintenances?: Maintenance[];
   showDropdown?: boolean;
   onUserSelect?: (user: User) => void;
   onVehicleSelect?: (vehicle: Vehicle) => void;
   onCategorySelect?: (category: Maintenance) => void;
+  onMaintenanceSelect?: (maintenance: Maintenance) => void;
   onDropdownToggle?: (show: boolean) => void;
 
   // Checkbox props
@@ -135,10 +139,12 @@ const FormLayout: React.FC<FormLayoutProps> = ({
       availableUsers,
       availableVehicles,
       availableCategories,
+      availableMaintenances,
       showDropdown,
       onUserSelect,
       onVehicleSelect,
       onCategorySelect,
+      onMaintenanceSelect,
       onDropdownToggle,
     } = field;
 
@@ -220,6 +226,27 @@ const FormLayout: React.FC<FormLayoutProps> = ({
             availableCategories={availableCategories || []}
             showDropdown={showDropdown || false}
             onCategorySelect={onCategorySelect || (() => {})}
+            onDropdownToggle={onDropdownToggle || (() => {})}
+            placeholder={placeholder}
+            className="form-input"
+          />
+        </div>
+      );
+    }
+
+    // MaintenanceSearch component
+    if (type === "maintenanceSearch" && entitySearch) {
+      return (
+        <div key={key} className={`form-field ${fieldClassName || ""}`}>
+          <label className="form-label">
+            {label} {required && <span className="required">*</span>}
+          </label>
+          <MaintenanceSearch
+            searchTerm={searchTerm || ""}
+            onSearchChange={onSearchChange || (() => {})}
+            availableMaintenances={availableMaintenances || []}
+            showDropdown={showDropdown || false}
+            onMaintenanceSelect={onMaintenanceSelect || (() => {})}
             onDropdownToggle={onDropdownToggle || (() => {})}
             placeholder={placeholder}
             className="form-input"

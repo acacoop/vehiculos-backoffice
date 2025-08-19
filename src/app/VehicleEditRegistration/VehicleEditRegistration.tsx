@@ -522,6 +522,9 @@ export default function VehicleEditRegistration() {
           tableWidth="900px"
           showAddButton={true}
           addButtonText="+ Agregar mantenimiento"
+          onAddButtonClick={() =>
+            navigate(`/vehicle-maintenance-assignment/${vehicleId}`)
+          }
         />
       )}
 

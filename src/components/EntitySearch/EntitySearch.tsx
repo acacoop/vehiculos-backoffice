@@ -148,3 +148,52 @@ export function CategorySearch({
     </div>
   );
 }
+
+interface MaintenanceSearchProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  availableMaintenances: Maintenance[];
+  showDropdown: boolean;
+  onMaintenanceSelect: (maintenance: Maintenance) => void;
+  onDropdownToggle: (show: boolean) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function MaintenanceSearch({
+  searchTerm,
+  onSearchChange,
+  availableMaintenances,
+  showDropdown,
+  onMaintenanceSelect,
+  onDropdownToggle,
+  placeholder = "Buscar mantenimiento...",
+  className = "reservation-form-input",
+}: MaintenanceSearchProps) {
+  return (
+    <div className="maintenance-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => searchTerm.length >= 1 && onDropdownToggle(true)}
+        onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && availableMaintenances.length > 0 && (
+        <div className="maintenance-dropdown">
+          {availableMaintenances.map((maintenance) => (
+            <div
+              key={maintenance.id}
+              className="maintenance-dropdown-item"
+              onClick={() => onMaintenanceSelect(maintenance)}
+            >
+              {maintenance.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

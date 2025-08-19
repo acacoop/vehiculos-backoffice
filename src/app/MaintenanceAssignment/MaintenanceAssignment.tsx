@@ -4,6 +4,7 @@ import {
   getMaintenancePossibles,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
+import { getVehicleById } from "../../services/vehicles";
 import {
   FormLayout,
   NotificationToast,
@@ -12,16 +13,24 @@ import {
   ButtonGroup,
 } from "../../components";
 import type { FormSection } from "../../components";
-import { useVehicleSearch } from "../../hooks";
+import { useVehicleSearch, useMaintenanceSearch } from "../../hooks";
 import { API_CONFIG } from "../../common";
 import "./MaintenanceAssignment.css";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
-  const { maintenanceId } = useParams<{ maintenanceId: string }>();
+  const { maintenanceId, vehicleId } = useParams<{
+    maintenanceId?: string;
+    vehicleId?: string;
+  }>();
+
+  // Determine the flow: maintenance-to-vehicle or vehicle-to-maintenance
+  const isMaintenanceToVehicle = !!maintenanceId;
+  const isVehicleToMaintenance = !!vehicleId;
 
   const [maintenanceData, setMaintenanceData] =
     useState<MaintenancePossibleNormalized | null>(null);
+  const [vehicleData, setVehicleData] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [kilometersFrequency, setKilometersFrequency] = useState<number>(0);
   const [daysFrequency, setDaysFrequency] = useState<number>(30);
@@ -32,8 +41,9 @@ export default function MaintenanceAssignment() {
     type: "success" as "success" | "error",
   });
 
-  // Use vehicle search hook
+  // Use search hooks
   const vehicleSearch = useVehicleSearch();
+  const maintenanceSearch = useMaintenanceSearch();
 
   const showError = (message: string) => {
     setNotification({ isOpen: true, message, type: "error" });
@@ -49,13 +59,18 @@ export default function MaintenanceAssignment() {
 
   // Load maintenance data
   useEffect(() => {
-    const loadMaintenanceData = async () => {
-      if (!maintenanceId) {
-        showError("ID de mantenimiento no válido");
+    const loadData = async () => {
+      if (isMaintenanceToVehicle && maintenanceId) {
+        await loadMaintenanceData();
+      } else if (isVehicleToMaintenance && vehicleId) {
+        await loadVehicleData();
+      } else {
+        showError("Parámetros de URL no válidos");
         setLoadingData(false);
-        return;
       }
+    };
 
+    const loadMaintenanceData = async () => {
       try {
         // First try to get the specific maintenance directly
         const directResponse = await fetch(
@@ -118,8 +133,32 @@ export default function MaintenanceAssignment() {
       }
     };
 
-    loadMaintenanceData();
-  }, [maintenanceId]);
+    const loadVehicleData = async () => {
+      try {
+        const response = await getVehicleById(vehicleId!);
+
+        if (response.success && response.data) {
+          // Pre-select the vehicle in the vehicle search
+          vehicleSearch.selectVehicle(response.data);
+          setVehicleData(response.data);
+        } else {
+          showError(`No se encontró el vehículo con ID: ${vehicleId}`);
+        }
+      } catch (error) {
+        console.error("Error loading vehicle data:", error);
+        showError("Error al cargar el vehículo");
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, [
+    maintenanceId,
+    vehicleId,
+    isMaintenanceToVehicle,
+    isVehicleToMaintenance,
+  ]);
 
   const handleSubmit = async () => {
     if (!vehicleSearch.selectedVehicle) {
@@ -127,8 +166,18 @@ export default function MaintenanceAssignment() {
       return;
     }
 
-    if (!maintenanceId) {
-      showError("ID de mantenimiento no válido");
+    // Determine maintenance ID based on flow
+    let currentMaintenanceId: string;
+    if (isMaintenanceToVehicle && maintenanceId) {
+      currentMaintenanceId = maintenanceId;
+    } else if (
+      isVehicleToMaintenance &&
+      maintenanceSearch.selectedMaintenance
+    ) {
+      currentMaintenanceId =
+        maintenanceSearch.selectedMaintenance.id.toString();
+    } else {
+      showError("Debe seleccionar un mantenimiento");
       return;
     }
 
@@ -143,7 +192,7 @@ export default function MaintenanceAssignment() {
       // Match the exact structure expected by the API as shown in Swagger
       const assignmentData = {
         vehicleId: vehicleSearch.selectedVehicle.id,
-        maintenanceId,
+        maintenanceId: currentMaintenanceId,
         kilometersFrequency: kilometersFrequency || 0,
         daysFrequency: daysFrequency || 0,
       };
@@ -179,11 +228,20 @@ export default function MaintenanceAssignment() {
   };
 
   const handleCancel = () => {
-    navigate(`/maintenance/edit/${maintenanceId}`);
+    if (isMaintenanceToVehicle && maintenanceId) {
+      navigate(`/maintenance/edit/${maintenanceId}`);
+    } else if (isVehicleToMaintenance && vehicleId) {
+      navigate(`/vehicles/edit/${vehicleId}`);
+    } else {
+      navigate("/vehicles");
+    }
   };
 
-  const formSections: FormSection[] = [
-    {
+  const formSections: FormSection[] = [];
+
+  // First section: Show information about the preloaded entity
+  if (isMaintenanceToVehicle && maintenanceData) {
+    formSections.push({
       title: "Información del Mantenimiento",
       fields: [
         {
@@ -195,18 +253,14 @@ export default function MaintenanceAssignment() {
           readOnly: true,
         },
       ],
-    },
-  ];
+    });
+  }
 
-  // Sección de vehículo - dinámicamente según si hay selección
-  if (vehicleSearch.selectedVehicle) {
+  // For vehicle-to-maintenance: show vehicle data (grayed out/disabled)
+  if (isVehicleToMaintenance && vehicleSearch.selectedVehicle) {
     formSections.push({
       title: "Datos del Vehículo",
       horizontal: true,
-      actionButton: {
-        text: "Cambiar vehículo",
-        onClick: () => vehicleSearch.clearSelection(),
-      },
       fields: [
         {
           key: "patente",
@@ -242,28 +296,123 @@ export default function MaintenanceAssignment() {
         },
       ],
     });
-  } else {
-    formSections.push({
-      title: "Seleccionar Vehículo",
-      fields: [
-        {
-          key: "vehicle",
-          label: "Vehículo",
-          type: "vehicleSearch",
-          value: "",
-          onChange: () => {},
-          placeholder: "Buscar vehículo por patente, marca o modelo...",
-          required: true,
-          entitySearch: true,
-          searchTerm: vehicleSearch.searchTerm,
-          onSearchChange: vehicleSearch.searchVehicles,
-          availableVehicles: vehicleSearch.availableVehicles,
-          showDropdown: vehicleSearch.showDropdown,
-          onVehicleSelect: vehicleSearch.selectVehicle,
-          onDropdownToggle: vehicleSearch.setShowDropdown,
+  }
+
+  // Second section: Search for the other entity
+  // For maintenance-to-vehicle: search vehicles
+  if (isMaintenanceToVehicle) {
+    if (vehicleSearch.selectedVehicle) {
+      formSections.push({
+        title: "Datos del Vehículo",
+        horizontal: true,
+        actionButton: {
+          text: "Cambiar vehículo",
+          onClick: () => vehicleSearch.clearSelection(),
         },
-      ],
-    });
+        fields: [
+          {
+            key: "patente",
+            label: "Patente:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.licensePlate || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "marca",
+            label: "Marca:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.brand || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "modelo",
+            label: "Modelo:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.model || "",
+            onChange: () => {},
+            disabled: true,
+          },
+          {
+            key: "anio",
+            label: "Año:",
+            type: "text",
+            value: vehicleSearch.selectedVehicle.year?.toString() || "",
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      });
+    } else {
+      formSections.push({
+        title: "Seleccionar Vehículo",
+        fields: [
+          {
+            key: "vehicle",
+            label: "Vehículo",
+            type: "vehicleSearch",
+            value: "",
+            onChange: () => {},
+            placeholder: "Buscar vehículo por patente, marca o modelo...",
+            required: true,
+            entitySearch: true,
+            searchTerm: vehicleSearch.searchTerm,
+            onSearchChange: vehicleSearch.searchVehicles,
+            availableVehicles: vehicleSearch.availableVehicles,
+            showDropdown: vehicleSearch.showDropdown,
+            onVehicleSelect: vehicleSearch.selectVehicle,
+            onDropdownToggle: vehicleSearch.setShowDropdown,
+          },
+        ],
+      });
+    }
+  }
+
+  // For vehicle-to-maintenance: search maintenances
+  if (isVehicleToMaintenance) {
+    if (maintenanceSearch.selectedMaintenance) {
+      formSections.push({
+        title: "Mantenimiento Seleccionado",
+        horizontal: true,
+        actionButton: {
+          text: "Cambiar mantenimiento",
+          onClick: () => maintenanceSearch.clearSelection(),
+        },
+        fields: [
+          {
+            key: "maintenanceName",
+            label: "Mantenimiento:",
+            type: "text",
+            value: maintenanceSearch.selectedMaintenance.name || "",
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      });
+    } else {
+      formSections.push({
+        title: "Seleccionar Mantenimiento",
+        fields: [
+          {
+            key: "maintenance",
+            label: "Mantenimiento",
+            type: "maintenanceSearch",
+            value: "",
+            onChange: () => {},
+            placeholder: "Buscar mantenimiento...",
+            required: true,
+            entitySearch: true,
+            searchTerm: maintenanceSearch.searchTerm,
+            onSearchChange: maintenanceSearch.searchMaintenances,
+            availableMaintenances: maintenanceSearch.availableMaintenances,
+            showDropdown: maintenanceSearch.showDropdown,
+            onMaintenanceSelect: maintenanceSearch.selectMaintenance,
+            onDropdownToggle: maintenanceSearch.setShowDropdown,
+          },
+        ],
+      });
+    }
   }
 
   // Agregar las secciones restantes
@@ -294,20 +443,35 @@ export default function MaintenanceAssignment() {
     ],
   });
 
+  const getPageTitle = () => {
+    if (isMaintenanceToVehicle) {
+      return "Asignar Mantenimiento a Vehículo";
+    } else if (isVehicleToMaintenance) {
+      return "Asignar Mantenimiento al Vehículo";
+    }
+    return "Asignar Mantenimiento";
+  };
+
+  const getLoadingText = () => {
+    if (isMaintenanceToVehicle) {
+      return "Cargando datos del mantenimiento...";
+    } else if (isVehicleToMaintenance) {
+      return "Cargando datos del vehículo...";
+    }
+    return "Cargando datos...";
+  };
+
   return (
     <>
       {loadingData ? (
         <div className="maintenance-assignment-container">
           <div style={{ textAlign: "center", padding: "50px" }}>
-            <p>Cargando datos del mantenimiento...</p>
+            <p>{getLoadingText()}</p>
           </div>
         </div>
       ) : (
         <div className="maintenance-assignment-container">
-          <FormLayout
-            title="Asignar Mantenimiento a Vehículo"
-            sections={formSections}
-          >
+          <FormLayout title={getPageTitle()} sections={formSections}>
             <ButtonGroup>
               <CancelButton text="Cancelar" onClick={handleCancel} />
               <ConfirmButton

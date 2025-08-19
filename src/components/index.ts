@@ -18,4 +18,5 @@ export {
   UserSearch,
   VehicleSearch,
   CategorySearch,
+  MaintenanceSearch,
 } from "./EntitySearch/EntitySearch";

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { getAllUsers } from "../services/users";
 import { getVehicles } from "../services/vehicles";
-import { getMaintenanceCategories } from "../services/maintenances";
+import {
+  getMaintenanceCategories,
+  getMaintenancePossibles,
+} from "../services/maintenances";
 import type { User } from "../types/user";
 import type { Vehicle } from "../types/vehicle";
 import type { Maintenance } from "../types/maintenance";
@@ -169,6 +172,60 @@ export function useCategorySearch() {
     selectedCategory,
     searchCategories,
     selectCategory,
+    clearSelection,
+    setShowDropdown,
+  };
+}
+
+export function useMaintenanceSearch() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [availableMaintenances, setAvailableMaintenances] = useState<
+    Maintenance[]
+  >([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedMaintenance, setSelectedMaintenance] =
+    useState<Maintenance | null>(null);
+
+  const searchMaintenances = async (term: string) => {
+    setSearchTerm(term);
+    if (term.length >= 1) {
+      try {
+        // Use getMaintenancePossibles instead of getMaintenanceCategories
+        const response = await getMaintenancePossibles();
+        if (response.success) {
+          const filtered = response.data.filter((maintenance: Maintenance) =>
+            maintenance.name.toLowerCase().includes(term.toLowerCase())
+          );
+          setAvailableMaintenances(filtered);
+          setShowDropdown(true);
+        }
+      } catch (error) {
+        setAvailableMaintenances([]);
+        setShowDropdown(false);
+      }
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const selectMaintenance = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setSearchTerm(maintenance.name);
+    setShowDropdown(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedMaintenance(null);
+    setSearchTerm("");
+  };
+
+  return {
+    searchTerm,
+    availableMaintenances,
+    showDropdown,
+    selectedMaintenance,
+    searchMaintenances,
+    selectMaintenance,
     clearSelection,
     setShowDropdown,
   };
