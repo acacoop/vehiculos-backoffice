@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   getMaintenancePossibles,
@@ -27,11 +27,16 @@ import "./MaintenanceAssignment.css";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { maintenanceId, vehicleId, assignmentId } = useParams<{
     maintenanceId?: string;
     vehicleId?: string;
     assignmentId?: string;
   }>();
+
+  // Get the 'from' parameter to know where the user came from
+  const searchParams = new URLSearchParams(location.search);
+  const fromPage = searchParams.get('from'); // 'vehicle' or 'maintenance'
 
   // Determine the flow: maintenance-to-vehicle, vehicle-to-maintenance, or edit existing
   const isMaintenanceToVehicle = !!maintenanceId && !vehicleId && !assignmentId;
@@ -347,8 +352,21 @@ export default function MaintenanceAssignment() {
           if (response.success) {
             showSuccess("Asignación eliminada exitosamente");
             setTimeout(() => {
-              // Navigate back to vehicle edit page
-              if (vehicleId) {
+              // Use the fromPage parameter to determine where to redirect
+              if (isEditMode) {
+                if (fromPage === 'maintenance' && maintenanceId) {
+                  navigate(`/maintenance/edit/${maintenanceId}`);
+                } else if (fromPage === 'vehicle' && vehicleId) {
+                  navigate(`/vehicle/edit/${vehicleId}`);
+                } else if (vehicleId) {
+                  // Default to vehicle page if fromPage is not specified
+                  navigate(`/vehicle/edit/${vehicleId}`);
+                } else {
+                  navigate("/vehicles");
+                }
+              } else if (isMaintenanceToVehicle && maintenanceId) {
+                navigate(`/maintenance/edit/${maintenanceId}`);
+              } else if (isVehicleToMaintenance && vehicleId) {
                 navigate(`/vehicle/edit/${vehicleId}`);
               } else {
                 navigate("/vehicles");
@@ -368,11 +386,21 @@ export default function MaintenanceAssignment() {
   };
 
   const handleCancel = () => {
-    if (isMaintenanceToVehicle && maintenanceId) {
+    // Use the fromPage parameter to determine where to redirect
+    if (isEditMode) {
+      if (fromPage === 'maintenance' && maintenanceId) {
+        navigate(`/maintenance/edit/${maintenanceId}`);
+      } else if (fromPage === 'vehicle' && vehicleId) {
+        navigate(`/vehicle/edit/${vehicleId}`);
+      } else if (vehicleId) {
+        // Default to vehicle page if fromPage is not specified
+        navigate(`/vehicle/edit/${vehicleId}`);
+      } else {
+        navigate("/vehicles");
+      }
+    } else if (isMaintenanceToVehicle && maintenanceId) {
       navigate(`/maintenance/edit/${maintenanceId}`);
     } else if (isVehicleToMaintenance && vehicleId) {
-      navigate(`/vehicle/edit/${vehicleId}`);
-    } else if (isEditMode && vehicleId) {
       navigate(`/vehicle/edit/${vehicleId}`);
     } else {
       navigate("/vehicles");

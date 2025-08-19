@@ -526,7 +526,7 @@ export default function VehicleEditRegistration() {
                   params.row.id;
                 const assignmentId = params.row.id || params.row.assignment_id;
                 navigate(
-                  `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}`
+                  `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
                 );
               }}
             >

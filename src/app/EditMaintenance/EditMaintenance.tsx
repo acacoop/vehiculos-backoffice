@@ -9,7 +9,6 @@ import {
   type MaintenanceItemData,
 } from "../../services/maintenances";
 import { getVehiclesByMaintenanceId } from "../../services/vehicles";
-import type { Vehicle } from "../../types/vehicle";
 import {
   FormLayout,
   ConfirmDialog,
@@ -20,6 +19,7 @@ import {
   ButtonGroup,
   Table,
 } from "../../components";
+import { PencilIcon } from "../../components/Table/table";
 import type { FormSection } from "../../components";
 import {
   useConfirmDialog,
@@ -94,8 +94,9 @@ export default function EditMaintenance() {
 
       if (response.success) {
         const mappedData = response.data.map(
-          (vehicle: Vehicle, index: number) => ({
+          (vehicle: any, index: number) => ({
             id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+            assignmentId: vehicle.assignmentId,
             licensePlate: vehicle.licensePlate || "N/A",
             brand: vehicle.brand || "N/A",
             model: vehicle.model || "N/A",
@@ -458,7 +459,25 @@ export default function EditMaintenance() {
             columns={vehicleColumns}
             title=""
             showEditColumn={true}
-            editRoute="/vehicle/edit"
+            customEditCell={(params) => (
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  // Navigate to edit maintenance assignment page
+                  const vehicleId = params.row.id;
+                  const assignmentId = params.row.assignmentId;
+                  
+                  if (assignmentId) {
+                    navigate(`/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=maintenance`);
+                  } else {
+                    // Fallback if assignmentId is not available
+                    navigate(`/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/auto?from=maintenance`);
+                  }
+                }}
+              >
+                <PencilIcon />
+              </span>
+            )}
             showTableHeader={true}
             headerTitle={`Vehículos con mantenimiento: ${
               title || "Sin título"

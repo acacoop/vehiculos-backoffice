@@ -207,6 +207,7 @@ export async function getVehiclesByMaintenanceId(
 
     const vehicles: Vehicle[] = response.data.map((item: any) => ({
       id: item.vehicleId,
+      assignmentId: item.assignmentId || item.id, // Include assignment ID
       licensePlate: item.licensePlate,
       brand: item.brand,
       model: item.model,

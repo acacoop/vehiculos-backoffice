@@ -1,5 +1,6 @@
 export interface Vehicle {
   id: string; // UUID format
+  assignmentId?: string; // For maintenance assignment contexts
   licensePlate: string;
   brand: string;
   model: string;
