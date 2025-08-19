@@ -217,7 +217,14 @@ export default function MaintenanceAssignment() {
       await response.json();
       showSuccess("Mantenimiento asignado exitosamente");
       setTimeout(() => {
-        navigate(`/maintenance/edit/${maintenanceId}`);
+        // Navigate back to the correct page based on the flow
+        if (isMaintenanceToVehicle && maintenanceId) {
+          navigate(`/maintenance/edit/${maintenanceId}`);
+        } else if (isVehicleToMaintenance && vehicleId) {
+          navigate(`/vehicle/edit/${vehicleId}`);
+        } else {
+          navigate("/vehicles");
+        }
       }, 1500);
     } catch (error) {
       console.error("Error creating maintenance assignment:", error);
@@ -231,7 +238,7 @@ export default function MaintenanceAssignment() {
     if (isMaintenanceToVehicle && maintenanceId) {
       navigate(`/maintenance/edit/${maintenanceId}`);
     } else if (isVehicleToMaintenance && vehicleId) {
-      navigate(`/vehicles/edit/${vehicleId}`);
+      navigate(`/vehicle/edit/${vehicleId}`);
     } else {
       navigate("/vehicles");
     }
