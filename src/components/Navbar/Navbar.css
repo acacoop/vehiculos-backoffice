@@ -18,6 +18,7 @@
   right: 16px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   color: #fff;
 }
@@ -27,12 +28,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  height: 25px;
 }
 
 .logout-icon {
   background: transparent;
   border: none;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.logout-icon:hover {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.logout-icon:hover img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
 }
 
 .navbar-icons {

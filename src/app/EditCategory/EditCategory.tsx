@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CircularProgress } from "@mui/material";
+import { LoadingSpinner } from "../../components";
 import {
   getMaintenanceById,
   createMaintenance,
@@ -140,13 +140,7 @@ export default function EditCategory() {
   };
 
   if (loading) {
-    return (
-      <div className="edit-category-container">
-        <div className="loading-spinner">
-          <CircularProgress />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando datos de la categoría..." />;
   }
 
   const sections: FormSection[] = [

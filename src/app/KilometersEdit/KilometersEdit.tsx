@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { CircularProgress } from "@mui/material";
+import { LoadingSpinner } from "../../components";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
@@ -125,13 +125,7 @@ export default function KilometersEdit() {
   };
 
   if (loading) {
-    return (
-      <div className="kilometers-edit-container">
-        <div className="loading-spinner">
-          <CircularProgress />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando datos del vehículo..." />;
   }
 
   if (!vehicleData) {

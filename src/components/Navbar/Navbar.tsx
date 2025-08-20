@@ -13,7 +13,7 @@ import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
-import IconLogout from "../../assets/icons/security.svg";
+import IconLogout from "../../assets/icons/logout.svg";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
