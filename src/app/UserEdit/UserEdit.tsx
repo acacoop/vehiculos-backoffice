@@ -150,7 +150,9 @@ export default function UserEdit() {
         const startDate = new Date(row.startDate);
         const endDate = new Date(row.endDate);
 
-        if (now >= startDate && now <= endDate) {
+        if (now < startDate) {
+          return "Programada";
+        } else if (now >= startDate && now <= endDate) {
           return "Activa";
         } else {
           return "Finalizada";
@@ -169,7 +171,13 @@ export default function UserEdit() {
         const startDate = new Date(params.row.startDate);
         const endDate = new Date(params.row.endDate);
 
-        if (now >= startDate && now <= endDate) {
+        if (now < startDate) {
+          return (
+            <span style={{ color: "#FF9800", fontWeight: "bold" }}>
+              Programada
+            </span>
+          );
+        } else if (now >= startDate && now <= endDate) {
           return (
             <span style={{ color: "#4caf50", fontWeight: "bold" }}>Activa</span>
           );
