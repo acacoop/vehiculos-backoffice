@@ -24,17 +24,21 @@
 .add-document-btn {
   background-color: #282d86;
   color: white;
-  border: none;
+  border: 1px solid transparent;
   padding: 12px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
 }
 
 .add-document-btn:hover {
-  background-color: #fe9000;
+  background-color: #fff;
+  border: 1px solid #282d86;
+  color: #282d86;
+  font-weight: 600;
+  border-radius: 0px;
 }
 
 .documents-list {
