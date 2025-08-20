@@ -11,6 +11,7 @@ import {
   HTTP_METHODS,
   METHODS_WITH_BODY,
 } from "./constants";
+import { getAccessToken } from "./auth";
 
 // Clase de error personalizada para errores de API
 export class ApiException extends Error {
@@ -24,15 +25,13 @@ export class ApiException extends Error {
 }
 
 // Construir query string desde parámetros
-function buildQueryString(params: Record<string, any>): string {
+function buildQueryString(params: Record<string, unknown>): string {
   const filteredParams = Object.entries(params)
-    .filter(
-      ([_, value]) => value !== undefined && value !== null && value !== ""
-    )
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
-    )
+    .filter((entry) => {
+      const value = entry[1];
+      return value !== undefined && value !== null && value !== "";
+    })
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
     .join("&");
 
   return filteredParams ? `?${filteredParams}` : "";
@@ -40,10 +39,10 @@ function buildQueryString(params: Record<string, any>): string {
 
 // Combinar parámetros de query con paginación
 function buildParams(
-  queryParams?: Record<string, any>,
+  queryParams?: Record<string, unknown>,
   pagination?: PaginationParams
-): Record<string, any> {
-  const params: Record<string, any> = { ...queryParams };
+): Record<string, unknown> {
+  const params: Record<string, unknown> = { ...(queryParams || {}) };
 
   if (pagination) {
     params.page = pagination.page ?? API_CONFIG.DEFAULT_PAGE;
@@ -67,10 +66,17 @@ async function makeRequest<T>(
     const url = `${API_CONFIG.BASE_URL}${uri}${queryString}`;
 
     // Configurar headers
-    const requestHeaders = {
+  const requestHeaders: Record<string, string> = {
       ...DEFAULT_HEADERS,
       ...headers,
     };
+
+    // Add Authorization header if token available
+    const token = await getAccessToken();
+    if (token) {
+      requestHeaders["Authorization"] = `Bearer ${token}`;
+      if (import.meta.env.DEV) console.log(token);
+    }
 
     // Configurar request
     const requestConfig: RequestInit = {
@@ -79,7 +85,8 @@ async function makeRequest<T>(
     };
 
     // Agregar body si es necesario
-    if (body && METHODS_WITH_BODY.includes(method as any)) {
+  const METHODS_WITH_BODY_SET = new Set<string>(METHODS_WITH_BODY as readonly string[]);
+  if (body && METHODS_WITH_BODY_SET.has(method)) {
       requestConfig.body = JSON.stringify(body);
     }
 

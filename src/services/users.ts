@@ -34,12 +34,12 @@ export async function getAllUsers(
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       data: [],
       message: "Error al obtener usuarios",
-      error: error as any,
+      error: error as never,
     };
   }
 }
@@ -79,12 +79,12 @@ export async function getUsers(
           }
         : undefined,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       data: [],
       message: "Error al obtener usuarios",
-      error: error as any,
+      error: error as never,
     };
   }
 }
@@ -107,12 +107,12 @@ export async function getUserById(id: string): Promise<ServiceResponse<User>> {
       success: true,
       data: response.data,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       data: {} as User,
       message: "Error al obtener usuario",
-      error: error as any,
+      error: error as never,
     };
   }
 }
@@ -141,12 +141,41 @@ export async function updateUserStatus(
       data: response.data,
       message: "Estado del usuario actualizado exitosamente",
     };
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       data: {} as User,
       message: "Error al actualizar el estado del usuario",
-      error: error as any,
+      error: error as never,
+    };
+  }
+}
+
+/**
+ * Obtiene el usuario actual (/me)
+ */
+export async function getMe(): Promise<ServiceResponse<User>> {
+  try {
+    const response: BackendResponse<User> = await httpService.get({ uri: "/me" });
+
+    if (response.status === ResponseStatus.ERROR) {
+      return {
+        success: false,
+        data: {} as User,
+        message: response.message || "Error al obtener el usuario actual",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: {} as User,
+      message: "Error al obtener el usuario actual",
+      error: error as never,
     };
   }
 }

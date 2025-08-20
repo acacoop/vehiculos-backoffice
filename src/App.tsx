@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
 import Home from "./app/home/Home";
@@ -17,61 +23,91 @@ import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssign
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 import LogIn from "./app/LogIn/LogIn";
+import { useMsal } from "@azure/msal-react";
+import { getActiveAccount } from "./common/auth";
+
+function ProtectedRoute() {
+  const { inProgress } = useMsal();
+  const isAuthenticated = !!getActiveAccount();
+  if (inProgress !== "none") {
+    return null; // optionally a spinner
+  }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
+}
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <Routes>
         <Route path="/login" element={<LogIn />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/user/edit/:id" element={<UserEdit />} />
-        <Route path="/assignment/create" element={<EditAssignment />} />
-        <Route
-          path="/assignment/create/:vehicleId"
-          element={<EditAssignment />}
-        />
-        <Route
-          path="/assignment/edit/:assignmentId"
-          element={<EditAssignment />}
-        />
-        <Route path="/reservation/create" element={<ReservationEdit />} />
-        <Route path="/reservation/edit/:id" element={<ReservationEdit />} />
-        <Route path="/metrics" element={<Metrics />} />
-        <Route path="/vehicles" element={<Vehicles />} />
-        <Route path="/vehicle/edit/:id" element={<VehicleEditRegistration />} />
-        <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
-        <Route path="/assignments" element={<Assignaments />} />
-        <Route path="/maintenances" element={<MaintenancePage />} />
-        <Route path="/category/create" element={<EditCategory />} />
-        <Route path="/category/edit/:id" element={<EditCategory />} />
-        <Route path="/maintenance/create" element={<EditMaintenance />} />
-        <Route
-          path="/maintenance/edit/:maintenanceId"
-          element={<EditMaintenance />}
-        />
-        <Route
-          path="/maintenance-assignment/:maintenanceId"
-          element={<MaintenanceAssignment />}
-        />
-        <Route
-          path="/vehicle-maintenance-assignment/:vehicleId"
-          element={<MaintenanceAssignment />}
-        />
-        <Route
-          path="/edit-maintenance-assignment/:vehicleId/:maintenanceId/:assignmentId"
-          element={<MaintenanceAssignment />}
-        />
-        <Route
-          path="/maintenance/possible/edit/:maintenanceId"
-          element={<EditMaintenance />}
-        />
-        <Route
-          path="/kilometers/create/:vehicleId"
-          element={<KilometersEdit />}
-        />
-        <Route path="/vehicle-responsibles" element={<VehicleResponsibles />} />
+
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/user/edit/:id" element={<UserEdit />} />
+          <Route path="/assignment/create" element={<EditAssignment />} />
+          <Route
+            path="/assignment/create/:vehicleId"
+            element={<EditAssignment />}
+          />
+          <Route
+            path="/assignment/edit/:assignmentId"
+            element={<EditAssignment />}
+          />
+          <Route path="/reservation/create" element={<ReservationEdit />} />
+          <Route path="/reservation/edit/:id" element={<ReservationEdit />} />
+          <Route path="/metrics" element={<Metrics />} />
+          <Route path="/vehicles" element={<Vehicles />} />
+          <Route
+            path="/vehicle/edit/:id"
+            element={<VehicleEditRegistration />}
+          />
+          <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
+          <Route path="/assignments" element={<Assignaments />} />
+          <Route path="/maintenances" element={<MaintenancePage />} />
+          <Route path="/category/create" element={<EditCategory />} />
+          <Route path="/category/edit/:id" element={<EditCategory />} />
+          <Route path="/maintenance/create" element={<EditMaintenance />} />
+          <Route
+            path="/maintenance/edit/:maintenanceId"
+            element={<EditMaintenance />}
+          />
+          <Route
+            path="/maintenance-assignment/:maintenanceId"
+            element={<MaintenanceAssignment />}
+          />
+          <Route
+            path="/vehicle-maintenance-assignment/:vehicleId"
+            element={<MaintenanceAssignment />}
+          />
+          <Route
+            path="/edit-maintenance-assignment/:vehicleId/:maintenanceId/:assignmentId"
+            element={<MaintenanceAssignment />}
+          />
+          <Route
+            path="/maintenance/possible/edit/:maintenanceId"
+            element={<EditMaintenance />}
+          />
+          <Route
+            path="/kilometers/create/:vehicleId"
+            element={<KilometersEdit />}
+          />
+          <Route
+            path="/vehicle-responsibles"
+            element={<VehicleResponsibles />}
+          />
+
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Route>
       </Routes>
     </Router>
   );

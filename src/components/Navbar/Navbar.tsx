@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../../assets/brand/Logo.png";
 import IconDashboard from "../../assets/icons/dashboard.svg";
@@ -9,9 +9,37 @@ import IconMetrics from "../../assets/icons/metrics.svg";
 import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
 import IconResponsible from "../../assets/icons/assignment.svg";
+import { isAuthenticated, appLogout } from "../../common/auth";
+import { getMe } from "../../services/users";
+import type { User } from "../../types/user";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import IconLogout from "../../assets/icons/security.svg";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState<string>("");
+  const [askLogout, setAskLogout] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!isAuthenticated()) return;
+      const res = await getMe();
+      if (!cancelled && res.success && res.data) {
+        const user = res.data as User;
+        const name =
+          user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "Usuario";
+        setDisplayName(name);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <nav className="navbar">
@@ -24,6 +52,33 @@ function Navbar() {
       </button>
       <div className="navbar-logo">
         <img src={logo} alt="ACA Logo" />
+      </div>
+      <div className="navbar-user">
+        {isAuthenticated() && (
+          <>
+            <span className="navbar-username">{displayName || ""}</span>
+            <button
+              className="logout-icon"
+              title="Cerrar sesión"
+              onClick={() => setAskLogout(true)}
+            >
+              <img className="icon-navbar" src={IconLogout} alt="Salir" />
+            </button>
+            <ConfirmDialog
+              open={askLogout}
+              title="Cerrar sesión"
+              message="¿Querés cerrar la sesión de la aplicación?"
+              confirmText="Cerrar sesión"
+              cancelText="Cancelar"
+              onConfirm={async () => {
+                setAskLogout(false);
+                await appLogout();
+                navigate("/login", { replace: true });
+              }}
+              onCancel={() => setAskLogout(false)}
+            />
+          </>
+        )}
       </div>
       <aside className={`navbar-sidebar${open ? " open" : ""}`}>
         <ul>
@@ -86,6 +141,7 @@ function Navbar() {
             </Link>
           </li>
         </ul>
+        {/* Logout moved to top bar next to user name */}
       </aside>
     </nav>
   );

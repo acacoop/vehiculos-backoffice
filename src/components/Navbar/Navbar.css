@@ -13,6 +13,28 @@
   height: 48px;
 }
 
+.navbar-user {
+  position: absolute;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+}
+
+.navbar-username {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .navbar-icons {
   display: flex;
   align-items: center;
