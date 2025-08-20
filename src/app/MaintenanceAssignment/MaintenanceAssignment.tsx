@@ -48,7 +48,9 @@ export default function MaintenanceAssignment() {
   const [maintenanceData, setMaintenanceData] =
     useState<MaintenancePossibleNormalized | null>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [kilometersFrequency, setKilometersFrequency] = useState<number | null>(null);
+  const [kilometersFrequency, setKilometersFrequency] = useState<number | null>(
+    null
+  );
   const [daysFrequency, setDaysFrequency] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
@@ -160,8 +162,10 @@ export default function MaintenanceAssignment() {
       return "Debe seleccionar un mantenimiento";
     }
 
-    if ((kilometersFrequency === null || kilometersFrequency <= 0) && 
-        (daysFrequency === null || daysFrequency <= 0)) {
+    if (
+      (kilometersFrequency === null || kilometersFrequency <= 0) &&
+      (daysFrequency === null || daysFrequency <= 0)
+    ) {
       return "Debe especificar al menos una frecuencia (kilómetros o días)";
     }
 
@@ -437,8 +441,10 @@ export default function MaintenanceAssignment() {
       return;
     }
 
-    if ((kilometersFrequency === null || kilometersFrequency <= 0) && 
-        (daysFrequency === null || daysFrequency <= 0)) {
+    if (
+      (kilometersFrequency === null || kilometersFrequency <= 0) &&
+      (daysFrequency === null || daysFrequency <= 0)
+    ) {
       showError("Debe especificar al menos una frecuencia (kilómetros o días)");
       return;
     }
@@ -657,7 +663,9 @@ export default function MaintenanceAssignment() {
         value: kilometersFrequency ?? "",
         onChange: (_key: string, value: string | number) => {
           const numValue = Number(value);
-          setKilometersFrequency(isNaN(numValue) || numValue === 0 ? null : numValue);
+          setKilometersFrequency(
+            isNaN(numValue) || numValue === 0 ? null : numValue
+          );
         },
         min: 1,
         placeholder: "Ingrese kilómetros (obligatorio si no especifica días)",
