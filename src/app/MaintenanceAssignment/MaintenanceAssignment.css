@@ -21,3 +21,33 @@
   margin: 0;
   line-height: 1.5;
 }
+
+/* Ocultar spinners en campos de número de frecuencia */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Específicamente para campos de frecuencia */
+.form-section input[type="number"][placeholder*="kilómetros"],
+.form-section input[type="number"][placeholder*="días"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form-section input[type="number"][placeholder*="kilómetros"]::-webkit-outer-spin-button,
+.form-section input[type="number"][placeholder*="kilómetros"]::-webkit-inner-spin-button,
+.form-section input[type="number"][placeholder*="días"]::-webkit-outer-spin-button,
+.form-section input[type="number"][placeholder*="días"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}

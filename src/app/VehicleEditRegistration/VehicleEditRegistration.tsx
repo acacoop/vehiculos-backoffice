@@ -118,25 +118,33 @@ export default function VehicleEditRegistration() {
         "Sin nombre",
     },
     {
-      field: "days_frequency",
+      field: "daysFrequency",
       headerName: "Frecuencia (Días)",
       width: 150,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        const days = params.row.days_frequency;
-        return days ? `${days} días` : "N/A";
+        // Buscar en múltiples campos posibles para días
+        const days =
+          params.row.daysFrequency ||
+          params.row.days_frequency ||
+          params.row.dayFrequency;
+        return days && days > 0 ? `${days} días` : "N/A";
       },
     },
     {
-      field: "kilometers_frequency",
+      field: "kilometersFrequency",
       headerName: "Frecuencia (KM)",
       width: 150,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        const km = params.row.kilometers_frequency;
-        return km ? `${km.toLocaleString()} km` : "N/A";
+        // Buscar en múltiples campos posibles para kilómetros
+        const km =
+          params.row.kilometersFrequency ||
+          params.row.kilometers_frequency ||
+          params.row.kmFrequency;
+        return km && km > 0 ? `${km.toLocaleString()} km` : "N/A";
       },
     },
   ];

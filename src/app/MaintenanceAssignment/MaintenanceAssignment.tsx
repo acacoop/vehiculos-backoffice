@@ -48,8 +48,8 @@ export default function MaintenanceAssignment() {
   const [maintenanceData, setMaintenanceData] =
     useState<MaintenancePossibleNormalized | null>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [kilometersFrequency, setKilometersFrequency] = useState<number>(0);
-  const [daysFrequency, setDaysFrequency] = useState<number>(30);
+  const [kilometersFrequency, setKilometersFrequency] = useState<number | null>(null);
+  const [daysFrequency, setDaysFrequency] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
     isOpen: false,
@@ -160,7 +160,8 @@ export default function MaintenanceAssignment() {
       return "Debe seleccionar un mantenimiento";
     }
 
-    if (kilometersFrequency <= 0 && daysFrequency <= 0) {
+    if ((kilometersFrequency === null || kilometersFrequency <= 0) && 
+        (daysFrequency === null || daysFrequency <= 0)) {
       return "Debe especificar al menos una frecuencia (kilómetros o días)";
     }
 
@@ -398,8 +399,8 @@ export default function MaintenanceAssignment() {
       const assignmentData = {
         vehicleId: vehicleSearch.selectedVehicle!.id,
         maintenanceId: currentMaintenanceId,
-        kilometersFrequency: kilometersFrequency || 0,
-        daysFrequency: daysFrequency || 0,
+        kilometersFrequency: kilometersFrequency ?? 0,
+        daysFrequency: daysFrequency ?? 0,
       };
 
       const response = await fetch(
@@ -436,7 +437,8 @@ export default function MaintenanceAssignment() {
       return;
     }
 
-    if (kilometersFrequency <= 0 && daysFrequency <= 0) {
+    if ((kilometersFrequency === null || kilometersFrequency <= 0) && 
+        (daysFrequency === null || daysFrequency <= 0)) {
       showError("Debe especificar al menos una frecuencia (kilómetros o días)");
       return;
     }
@@ -444,8 +446,8 @@ export default function MaintenanceAssignment() {
     setLoading(true);
     try {
       const updateData = {
-        kilometersFrequency: kilometersFrequency || 0,
-        daysFrequency: daysFrequency || 0,
+        kilometersFrequency: kilometersFrequency ?? 0,
+        daysFrequency: daysFrequency ?? 0,
       };
 
       const response = await updateMaintenanceAssignment(
@@ -652,21 +654,27 @@ export default function MaintenanceAssignment() {
         key: "kilometersFrequency",
         label: "Frecuencia en Kilómetros",
         type: "number",
-        value: kilometersFrequency,
-        onChange: (_key: string, value: string | number) =>
-          setKilometersFrequency(Number(value) || 0),
-        min: 0,
-        placeholder: "0 = No aplicar por kilómetros",
+        value: kilometersFrequency ?? "",
+        onChange: (_key: string, value: string | number) => {
+          const numValue = Number(value);
+          setKilometersFrequency(isNaN(numValue) || numValue === 0 ? null : numValue);
+        },
+        min: 1,
+        placeholder: "Ingrese kilómetros (obligatorio si no especifica días)",
+        required: daysFrequency === null || daysFrequency <= 0,
       },
       {
         key: "daysFrequency",
         label: "Frecuencia en Días",
         type: "number",
-        value: daysFrequency,
-        onChange: (_key: string, value: string | number) =>
-          setDaysFrequency(Number(value) || 0),
-        min: 0,
-        placeholder: "0 = No aplicar por días",
+        value: daysFrequency ?? "",
+        onChange: (_key: string, value: string | number) => {
+          const numValue = Number(value);
+          setDaysFrequency(isNaN(numValue) || numValue === 0 ? null : numValue);
+        },
+        min: 1,
+        placeholder: "Ingrese días (obligatorio si no especifica kilómetros)",
+        required: kilometersFrequency === null || kilometersFrequency <= 0,
       },
     ],
   });
