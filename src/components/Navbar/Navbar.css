@@ -57,15 +57,15 @@
   flex-direction: column;
 }
 
-.navbar-icon {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 30px;
-  width: 30px;
-  gap: 6px;
-  transition: 0.3s;
+.navbar-menu-icon {
+  width: 25px;
+  height: 25px;
+  transition: filter 0.2s;
+}
+
+.navbar-toggle:hover .navbar-menu-icon {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
 }
 
 .icon-navbar {
@@ -73,20 +73,6 @@
   height: 25px;
   transition: filter 0.2s;
   border-radius: 5px;
-}
-
-.navbar-icon:hover {
-  cursor: pointer;
-  background-color: #ff9800;
-  border-radius: 5px;
-}
-
-.bar {
-  width: 80%;
-  height: 4px;
-  background-color: #fff;
-  border-radius: 5px;
-  border: 1px solid #fff;
 }
 
 .navbar-toggle {

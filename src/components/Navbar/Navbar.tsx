@@ -9,6 +9,7 @@ import IconMetrics from "../../assets/icons/metrics.svg";
 import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
 import IconResponsible from "../../assets/icons/assignment.svg";
+import IconNavbar from "../../assets/icons/navbar.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
@@ -44,11 +45,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <button className="navbar-toggle" onClick={() => setOpen(!open)}>
-        <span className="navbar-icon">
-          <span className="bar"></span>
-          <span className="bar"></span>
-          <span className="bar"></span>
-        </span>
+        <img className="navbar-menu-icon" src={IconNavbar} alt="Menu" />
       </button>
       <div className="navbar-logo">
         <img src={logo} alt="ACA Logo" />

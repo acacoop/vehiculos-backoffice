@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
-import { CircularProgress, Alert } from "@mui/material";
+import { Alert } from "@mui/material";
 import { getVehicleById, updateVehicle } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
-import { ConfirmDialog, NotificationToast, ConfirmButton } from "../";
+import {
+  ConfirmDialog,
+  NotificationToast,
+  ConfirmButton,
+  LoadingSpinner,
+} from "../";
 import { useNotification } from "../../hooks";
 import "./EntityForm.css";
 
@@ -297,20 +302,7 @@ export default function EntityForm({
   };
 
   if (loading) {
-    return (
-      <div className={`entity-form ${className}`}>
-        <h1>Cargando...</h1>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "2rem",
-          }}
-        >
-          <CircularProgress />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando datos..." />;
   }
 
   if (error) {
