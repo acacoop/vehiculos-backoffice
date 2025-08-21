@@ -42,11 +42,24 @@ export default function ConfirmDialog({
         {title}
       </DialogTitle>
       <DialogContent>
-        <p style={{ fontFamily: '"Urbanist", sans-serif' }}>{message}</p>
+        <p
+          style={{ fontFamily: '"Urbanist", sans-serif', padding: "16px 24px" }}
+        >
+          {message}
+        </p>
       </DialogContent>
       <DialogActions>
-        <CancelButton text={cancelText} onClick={onCancel} />
-        <ConfirmButton text={confirmText} onClick={onConfirm} />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            alignItems: "center",
+          }}
+        >
+          <CancelButton text={cancelText} onClick={onCancel} />
+          <ConfirmButton text={confirmText} onClick={onConfirm} />
+        </div>
       </DialogActions>
     </Dialog>
   );

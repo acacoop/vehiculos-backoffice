@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Document from "../../components/Document/Document";
-import StatusToggle from "../../components/StatusToggle/StatusToggle";
+/* import StatusToggle from "../../components/StatusToggle/StatusToggle"; */
 import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { LoadingSpinner } from "../../components";
@@ -447,9 +447,9 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  const handleVehicleStatusChange = (isActive: boolean) => {
+  /*   const handleVehicleStatusChange = (isActive: boolean) => {
     setIsVehicleActive(isActive);
-  };
+  }; */
 
   const handleVehicleChange = (vehicle: Vehicle | null) => {
     setVehicleData(vehicle);
@@ -510,14 +510,14 @@ export default function VehicleEditRegistration() {
           {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
         </h2>
 
-        {!isCreateMode && vehicleId && (
+        {/*  {!isCreateMode && vehicleId && (
           <StatusToggle
             entityId={vehicleId}
             entityType="vehicle"
             active={isVehicleActive}
             onToggle={handleVehicleStatusChange}
           />
-        )}
+        )} */}
 
         <EntityForm
           entityType="vehicle"
