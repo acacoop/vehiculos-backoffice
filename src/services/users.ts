@@ -17,7 +17,12 @@ export async function getAllUsers(
   }
 ): Promise<ServiceResponse<User[]>> {
   try {
-    const queryParams = buildQueryParams(params);
+    // Agregamos un límite muy alto para obtener todos los usuarios
+    const allParams = {
+      ...params,
+      limit: 10000, // Límite alto para obtener todos los registros
+    };
+    const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<User[]> = await httpService.get({
       uri: `/users?${queryParams.toString()}`,
     });
@@ -156,7 +161,9 @@ export async function updateUserStatus(
  */
 export async function getMe(): Promise<ServiceResponse<User>> {
   try {
-    const response: BackendResponse<User> = await httpService.get({ uri: "/me" });
+    const response: BackendResponse<User> = await httpService.get({
+      uri: "/me",
+    });
 
     if (response.status === ResponseStatus.ERROR) {
       return {

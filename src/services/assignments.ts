@@ -19,7 +19,12 @@ export async function getAllAssignments(
   params?: AssignmentFilterParams
 ): Promise<ServiceResponse<Assignment[]>> {
   try {
-    const queryParams = buildQueryParams(params);
+    // Agregamos un límite muy alto para obtener todas las asignaciones
+    const allParams = {
+      ...params,
+      limit: 10000, // Límite alto para obtener todos los registros
+    };
+    const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<Assignment[]> = await httpService.get({
       uri: `/assignments?${queryParams.toString()}`,
     });

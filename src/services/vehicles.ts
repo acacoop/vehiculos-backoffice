@@ -15,7 +15,12 @@ export async function getAllVehicles(
   params?: VehicleFilterParams
 ): Promise<ServiceResponse<Vehicle[]>> {
   try {
-    const queryParams = buildQueryParams(params);
+    // Agregamos un límite muy alto para obtener todos los vehículos
+    const allParams = {
+      ...params,
+      limit: 10000, // Límite alto para obtener todos los registros
+    };
+    const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<Vehicle[]> = await httpService.get({
       uri: `/vehicles?${queryParams.toString()}`,
     });

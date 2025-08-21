@@ -136,32 +136,31 @@ export default function UnifiedMetrics({
             </div>
           </div>
           <div className="unified-metrics-card">
-            <h3 className="unified-metrics-title">Total de usuarios</h3>
+            <h3 className="unified-metrics-title">Vehículos por marca</h3>
             <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: "Total", value: metrics.users.total },
-                    { name: "Activos", value: metrics.users.active },
-                  ]}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={70}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  <Cell key="total" fill="#FE9000" />
-                  <Cell key="active" fill="#282D86" />
-                </Pie>
+              <RadarChart
+                data={metrics.vehicles.byBrand.map((item) => ({
+                  brand: item.brand,
+                  count: item.count,
+                }))}
+              >
+                <PolarGrid />
+                <PolarAngleAxis dataKey="brand" />
+                <PolarRadiusAxis angle={90} domain={[0, "dataMax"]} />
+                <Radar
+                  name="Vehículos"
+                  dataKey="count"
+                  stroke="#282D86"
+                  fill="#282D86"
+                  fillOpacity={0.3}
+                  strokeWidth={2}
+                />
                 <Tooltip />
                 <Legend />
-              </PieChart>
+              </RadarChart>
             </ResponsiveContainer>
             <div className="unified-metrics-footer">
-              <b>{metrics.users.total}</b> usuarios en total
+              <b>{metrics.vehicles.total}</b> vehículos registrados
             </div>
           </div>
         </div>
