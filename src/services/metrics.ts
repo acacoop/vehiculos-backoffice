@@ -34,9 +34,6 @@ export interface DashboardMetrics {
   };
 }
 
-/**
- * Obtiene métricas de usuarios
- */
 export async function getUserMetrics(): Promise<ServiceResponse<UserMetrics>> {
   try {
     const usersResponse = await getAllUsers();

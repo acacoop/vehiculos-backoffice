@@ -12,17 +12,13 @@ import {
 } from "../common";
 import { ResponseStatus } from "../types/common";
 
-/**
- * Obtiene todas las asignaciones (sin paginación)
- */
 export async function getAllAssignments(
   params?: AssignmentFilterParams
 ): Promise<ServiceResponse<Assignment[]>> {
   try {
-    // Agregamos un límite muy alto para obtener todas las asignaciones
     const allParams = {
       ...params,
-      limit: 10000, // Límite alto para obtener todos los registros
+      limit: 10000,
     };
     const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<Assignment[]> = await httpService.get({
@@ -51,9 +47,6 @@ export async function getAllAssignments(
   }
 }
 
-/**
- * Obtiene asignaciones con paginación
- */
 export async function getAssignments(
   params?: AssignmentFilterParams,
   pagination?: PaginationParams
@@ -126,9 +119,6 @@ export async function createAssignment(
   }
 }
 
-/**
- * Actualiza una asignación existente
- */
 export async function updateAssignment(
   assignmentId: string,
   assignmentData: Partial<AssignmentInput>
@@ -165,9 +155,6 @@ export async function updateAssignment(
   }
 }
 
-/**
- * Finaliza una asignación estableciendo la fecha de fin
- */
 export async function finishAssignment(
   assignmentId: string,
   endDate?: string
@@ -203,18 +190,12 @@ export async function finishAssignment(
   }
 }
 
-/**
- * Obtiene asignaciones de un usuario específico (sin paginación)
- */
 export async function getAllAssignmentsByUser(
   userId: string
 ): Promise<ServiceResponse<Assignment[]>> {
   return getAllAssignments({ userId });
 }
 
-/**
- * Obtiene asignaciones de un usuario específico (con paginación)
- */
 export async function getAssignmentsByUser(
   userId: string,
   pagination?: PaginationParams
@@ -222,18 +203,12 @@ export async function getAssignmentsByUser(
   return getAssignments({ userId }, pagination);
 }
 
-/**
- * Obtiene asignaciones de un vehículo específico (sin paginación)
- */
 export async function getAllAssignmentsByVehicle(
   vehicleId: string
 ): Promise<ServiceResponse<Assignment[]>> {
   return getAllAssignments({ vehicleId });
 }
 
-/**
- * Obtiene asignaciones de un vehículo específico (con paginación)
- */
 export async function getAssignmentsByVehicle(
   vehicleId: string,
   pagination?: PaginationParams
@@ -241,9 +216,6 @@ export async function getAssignmentsByVehicle(
   return getAssignments({ vehicleId }, pagination);
 }
 
-/**
- * Obtiene una asignación específica por usuario y vehículo
- */
 export async function getAssignmentByUserAndVehicle(
   userId: string,
   vehicleId: string
@@ -259,7 +231,6 @@ export async function getAssignmentByUserAndVehicle(
       };
     }
 
-    // Retornar la primera asignación encontrada o null si no hay ninguna
     const assignment =
       response.data && response.data.length > 0 ? response.data[0] : null;
 
@@ -280,14 +251,10 @@ export async function getAssignmentByUserAndVehicle(
   }
 }
 
-/**
- * Obtiene una asignación específica por ID con datos completos
- */
 export async function getAssignmentById(
   assignmentId: string
 ): Promise<ServiceResponse<Assignment>> {
   try {
-    // Usar getAllAssignments sin paginación para obtener datos completos
     const response = await getAssignments({}, { page: 1, limit: 1000 });
 
     if (!response.success) {
@@ -298,7 +265,6 @@ export async function getAssignmentById(
       };
     }
 
-    // Buscar la asignación específica en los resultados
     const assignment = response.data.find((a) => a.id === assignmentId);
 
     if (!assignment) {

@@ -8,19 +8,15 @@ import {
 } from "../common";
 import { ResponseStatus } from "../types/common";
 
-/**
- * Obtiene todos los usuarios (sin paginación)
- */
 export async function getAllUsers(
   params?: UserFilterParams & {
     includeInactive?: boolean;
   }
 ): Promise<ServiceResponse<User[]>> {
   try {
-    // Agregamos un límite muy alto para obtener todos los usuarios
     const allParams = {
       ...params,
-      limit: 10000, // Límite alto para obtener todos los registros
+      limit: 10000,
     };
     const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<User[]> = await httpService.get({
@@ -49,9 +45,6 @@ export async function getAllUsers(
   }
 }
 
-/**
- * Obtiene usuarios con paginación
- */
 export async function getUsers(
   params?: UserFilterParams & {
     includeInactive?: boolean;

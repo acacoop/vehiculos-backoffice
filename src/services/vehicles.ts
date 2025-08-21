@@ -8,17 +8,13 @@ import {
 } from "../common";
 import { ResponseStatus } from "../types/common";
 
-/**
- * Obtiene todos los vehículos (sin paginación)
- */
 export async function getAllVehicles(
   params?: VehicleFilterParams
 ): Promise<ServiceResponse<Vehicle[]>> {
   try {
-    // Agregamos un límite muy alto para obtener todos los vehículos
     const allParams = {
       ...params,
-      limit: 10000, // Límite alto para obtener todos los registros
+      limit: 10000,
     };
     const queryParams = buildQueryParams(allParams);
     const response: BackendResponse<Vehicle[]> = await httpService.get({
@@ -47,9 +43,6 @@ export async function getAllVehicles(
   }
 }
 
-/**
- * Obtiene vehículos con paginación
- */
 export async function getVehicles(
   params?: VehicleFilterParams,
   pagination?: PaginationParams

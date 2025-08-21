@@ -12,9 +12,6 @@ import {
 } from "../common";
 import { ResponseStatus } from "../types/common";
 
-/**
- * Obtiene todas las reservas (sin paginación)
- */
 export async function getAllReservations(
   params?: ReservationFilterParams
 ): Promise<ServiceResponse<Reservation[]>> {
