@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import "./Home.css";
 import BentoHome from "../../components/BentoHome/BentoHome";
 import IconUserBlue from "../../assets/icons/user blue.svg";
@@ -8,15 +9,39 @@ import IconMetricsBlue from "../../assets/icons/metrics blue.svg";
 import UnifiedMetrics from "../../components/UnifiedMetrics/UnifiedMetrics";
 import { useNavigate } from "react-router-dom";
 import IconResponsible from "../../assets/icons/assignment blue.svg";
+import { isAuthenticated } from "../../common/auth";
+import { getMe } from "../../services/users";
+import type { User } from "../../types/user";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!isAuthenticated()) return;
+      const res = await getMe();
+      if (!cancelled && res.success && res.data) {
+        const user = res.data as User;
+        const name =
+          user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "Usuario";
+        setDisplayName(name);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="home">
       <div className="home-content">
         <div className="home-header">
-          <h1>Bienvenido @User </h1>
+          <h1>Bienvenido {displayName || "Usuario"} </h1>
         </div>
         <div className="bento-home-container">
           <BentoHome
