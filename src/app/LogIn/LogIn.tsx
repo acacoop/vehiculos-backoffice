@@ -44,6 +44,15 @@ export default function LogIn() {
           <img className="microsoft-icon" src={Microsoft} alt="" />
           Iniciar sesión
         </button>
+        <p>
+          ¿Algo salió mal?{" "}
+          <a
+            href="https://acacoop.atlassian.net/jira/servicedesk"
+            target="_blank"
+          >
+            Contactate con soporte
+          </a>
+        </p>
       </div>
     </div>
   );
