@@ -4,6 +4,20 @@ import {
   type ServiceResponse,
   API_CONFIG,
 } from "../common";
+import { getAccessToken } from "../common/auth";
+
+// Helper to build headers including Authorization when token is available
+async function buildAuthHeaders(includeJson = false) {
+  const headers: Record<string, string> = {};
+  if (includeJson) headers["Content-Type"] = "application/json";
+  try {
+    const token = await getAccessToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  } catch (err) {
+    // ignore token errors here; requests will be unauthenticated
+  }
+  return headers;
+}
 
 /**
  * Obtiene todas las categorías de mantenimiento
@@ -30,7 +44,9 @@ export async function getMaintenanceCategories(
       }
     }
 
-    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`);
+    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`, {
+      headers: await buildAuthHeaders(false),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -85,7 +101,10 @@ export async function getMaintenanceCategories(
 export const getVehicleMaintenances = async (vehicleId: string) => {
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`
+      `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
     );
 
     if (!response.ok) {
@@ -141,9 +160,7 @@ export const saveVehicleMaintenances = async (
 
     const response = await fetch(url, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await buildAuthHeaders(true),
       body: JSON.stringify({
         maintenanceIds: maintenanceIds,
       }),
@@ -179,7 +196,10 @@ export const getMaintenanceById = async (
   try {
     // Intentar primero el endpoint específico
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`
+      `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
     );
 
     if (response.ok) {
@@ -234,9 +254,7 @@ export const createMaintenance = async (
       `${API_CONFIG.BASE_URL}/maintenance/categories`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(true),
         body: JSON.stringify(maintenance),
       }
     );
@@ -274,9 +292,7 @@ export const updateMaintenance = async (
       `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(true),
         body: JSON.stringify(maintenance),
       }
     );
@@ -313,6 +329,7 @@ export const deleteMaintenance = async (
       `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
       {
         method: "DELETE",
+        headers: await buildAuthHeaders(false),
       }
     );
 
@@ -363,7 +380,9 @@ export async function getMaintenancePossibles(): Promise<
   try {
     const uri = "/maintenance/posibles";
 
-    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`);
+    const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`, {
+      headers: await buildAuthHeaders(false),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -436,9 +455,7 @@ export const createMaintenanceItem = async (
       `${API_CONFIG.BASE_URL}/maintenance/posibles`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(true),
         body: JSON.stringify({
           name: maintenanceData.title, // 🔹 mapear title → name
           categoryId: maintenanceData.categoryId,
@@ -497,9 +514,7 @@ export const updateMaintenanceItem = async (
       `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(true),
         body: JSON.stringify(bodyData),
       }
     );
@@ -536,6 +551,7 @@ export const deleteMaintenanceItem = async (
       `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
       {
         method: "DELETE",
+        headers: await buildAuthHeaders(false),
       }
     );
 
@@ -566,7 +582,10 @@ export const getMaintenanceItemById = async (
 ): Promise<ServiceResponse<MaintenancePossibleNormalized>> => {
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
     );
 
     if (!response.ok) {
@@ -632,9 +651,7 @@ export const deleteMaintenanceAssignment = async (assignmentId: string) => {
       `${API_CONFIG.BASE_URL}/maintenance/assignments/${assignmentId}`,
       {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(false),
       }
     );
 
@@ -663,6 +680,55 @@ export const deleteMaintenanceAssignment = async (assignmentId: string) => {
 };
 
 /**
+ * Crear una asignación de mantenimiento
+ */
+export const createMaintenanceAssignment = async (payload: {
+  vehicleId: string;
+  maintenanceId: string;
+  kilometersFrequency?: number;
+  daysFrequency?: number;
+  observations?: string;
+  instructions?: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/assignments`,
+      {
+        method: "POST",
+        headers: await buildAuthHeaders(true),
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        data: null,
+        message:
+          errorData.message ||
+          `Error ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json().catch(() => ({}));
+
+    return {
+      success: true,
+      data: data.data || data,
+      message: data.message || "Asignación creada exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al crear la asignación de mantenimiento",
+      error: error as any,
+    };
+  }
+};
+
+/**
  * Actualiza una asignación de mantenimiento existente
  */
 export async function updateMaintenanceAssignment(
@@ -677,9 +743,7 @@ export async function updateMaintenanceAssignment(
       `${API_CONFIG.BASE_URL}/maintenance/assignments/${assignmentId}`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAuthHeaders(true),
         body: JSON.stringify(updateData),
       }
     );
@@ -718,7 +782,10 @@ export const getMaintenancePossibleById = async (
 ): Promise<ServiceResponse<MaintenanceItem>> => {
   try {
     const response = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

@@ -47,7 +47,7 @@ export default function LogIn() {
         <p>
           ¿Algo salió mal?{" "}
           <a
-            href="https://acacoop.atlassian.net/jira/servicedesk"
+            href="https://acacoop.atlassian.net/servicedesk/customer/portals"
             target="_blank"
           >
             Contactate con soporte

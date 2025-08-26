@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import {
   getMaintenancePossibles,
   getVehicleMaintenances,
+  getMaintenancePossibleById,
+  createMaintenanceAssignment,
   deleteMaintenanceAssignment,
   updateMaintenanceAssignment,
   type MaintenancePossibleNormalized,
@@ -252,53 +254,46 @@ export default function MaintenanceAssignment() {
 
     const loadCurrentAssignmentData = async () => {
       try {
-        // Get all assignments for the vehicle and find the specific one
-        const response = await fetch(
-          `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`
-        );
-
-        if (response.ok) {
-          const assignmentData = await response.json();
-
-          // Find the specific assignment
-          const assignments = assignmentData.data || assignmentData;
+        // Use service that attaches auth header
+        const assignmentsResp = await getVehicleMaintenances(vehicleId!);
+        if (assignmentsResp.success && assignmentsResp.data) {
+          const assignments = assignmentsResp.data;
           const currentAssignment = Array.isArray(assignments)
             ? assignments.find((a) => a.id === assignmentId)
             : assignments;
 
           if (currentAssignment) {
-            // Try both camelCase and snake_case field names
             const kmFreq =
-              currentAssignment.kilometersFrequency ||
-              currentAssignment.kilometers_frequency;
+              (currentAssignment as any).kilometersFrequency ||
+              (currentAssignment as any).kilometers_frequency ||
+              (currentAssignment as any).kilometers_freq;
             const daysFreq =
-              currentAssignment.daysFrequency ||
-              currentAssignment.days_frequency;
+              (currentAssignment as any).daysFrequency ||
+              (currentAssignment as any).days_frequency ||
+              (currentAssignment as any).days_freq;
 
-            if (kmFreq !== undefined) {
-              setKilometersFrequency(kmFreq);
-            }
-            if (daysFreq !== undefined) {
-              setDaysFrequency(daysFreq);
-            }
-            // Load any assignment-level observations/instructions or joined maintenance fields
+            if (kmFreq !== undefined) setKilometersFrequency(kmFreq);
+            if (daysFreq !== undefined) setDaysFrequency(daysFreq);
+
             const assignObs =
-              currentAssignment.observations ||
-              currentAssignment.maintenance_observations ||
-              currentAssignment.observations_text ||
-              currentAssignment.notes ||
+              (currentAssignment as any).observations ||
+              (currentAssignment as any).maintenance_observations ||
+              (currentAssignment as any).observations_text ||
               "";
             const assignInstr =
-              currentAssignment.instructions ||
-              currentAssignment.maintenance_instructions ||
-              currentAssignment.instructions_text ||
+              (currentAssignment as any).instructions ||
+              (currentAssignment as any).maintenance_instructions ||
+              (currentAssignment as any).instructions_text ||
               "";
 
             setObservations(assignObs || "");
             setInstructions(assignInstr || "");
           }
         } else {
-          console.error("Error loading assignment data:", response.status);
+          console.error(
+            "Error loading assignment data:",
+            assignmentsResp.message
+          );
         }
       } catch (error) {
         console.error("Error loading current assignment data:", error);
@@ -331,11 +326,27 @@ export default function MaintenanceAssignment() {
 
     const loadMaintenanceData = async () => {
       try {
-        // Try to get the specific maintenance directly
-        const data = await loadMaintenanceFromAPI(maintenanceId!);
+        // Try to load the maintenance with full details (frequencies + details)
+        const resp = await getMaintenancePossibleById(maintenanceId!);
 
-        if (data) {
-          setMaintenanceData(data);
+        if (resp.success && resp.data) {
+          const full = resp.data;
+          // set minimal maintenanceData for display in lists
+          setMaintenanceData({
+            id: full.id,
+            name: full.title || full.id,
+            maintenanceCategoryName: full.categoryName || full.categoryId || "",
+          });
+
+          // Prefill frequencies and details from the maintenance defaults
+          if (full.frequencyKm !== undefined && full.frequencyKm !== null)
+            setKilometersFrequency(full.frequencyKm);
+          if (full.frequencyDays !== undefined && full.frequencyDays !== null)
+            setDaysFrequency(full.frequencyDays);
+          if (full.observations !== undefined)
+            setObservations(full.observations || "");
+          if (full.instructions !== undefined)
+            setInstructions(full.instructions || "");
         } else {
           // Fallback: Get all maintenance possibles and find the specific one
           const response = await getMaintenancePossibles();
@@ -428,9 +439,8 @@ export default function MaintenanceAssignment() {
         }
       }
 
-      // Create maintenance assignment directly via API
-      // Match the exact structure expected by the API as shown in Swagger
-      const assignmentData = {
+      // Create maintenance assignment via service (adds auth headers)
+      const payload = {
         vehicleId: vehicleSearch.selectedVehicle!.id,
         maintenanceId: currentMaintenanceId,
         kilometersFrequency: kilometersFrequency ?? 0,
@@ -439,24 +449,12 @@ export default function MaintenanceAssignment() {
         instructions: instructions || undefined,
       };
 
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}/maintenance/assignments`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(assignmentData),
-        }
-      );
+      const response = await createMaintenanceAssignment(payload);
 
-      if (!response.ok) {
-        throw new Error(
-          `Error al crear la asignación de mantenimiento: ${response.status}`
-        );
+      if (!response.success) {
+        throw new Error(response.message || "Error creando asignación");
       }
 
-      await response.json();
       showSuccess("Mantenimiento asignado exitosamente");
       setTimeout(() => navigate(getNavigationUrl()), 1500);
     } catch (error) {
