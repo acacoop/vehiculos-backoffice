@@ -1,4 +1,4 @@
-import type { Maintenance } from "../types/maintenance";
+import type { Maintenance, MaintenanceItem } from "../types/maintenance";
 import {
   type PaginationParams,
   type ServiceResponse,
@@ -440,10 +440,10 @@ export const createMaintenanceItem = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: maintenanceData.title,
+          name: maintenanceData.title, // 🔹 mapear title → name
           categoryId: maintenanceData.categoryId,
-          frequencyKm: maintenanceData.frequencyKm,
-          frequencyDays: maintenanceData.frequencyDays,
+          kilometers_frequency: maintenanceData.frequencyKm, // 🔹 mapear correctamente
+          days_frequency: maintenanceData.frequencyDays, // 🔹 mapear correctamente
           observations: maintenanceData.observations,
           instructions: maintenanceData.instructions,
         }),
@@ -484,10 +484,10 @@ export const updateMaintenanceItem = async (
     if (maintenanceData.title) bodyData.name = maintenanceData.title;
     if (maintenanceData.categoryId)
       bodyData.categoryId = maintenanceData.categoryId;
-    if (maintenanceData.frequencyKm)
-      bodyData.frequencyKm = maintenanceData.frequencyKm;
-    if (maintenanceData.frequencyDays)
-      bodyData.frequencyDays = maintenanceData.frequencyDays;
+    if (maintenanceData.frequencyKm !== undefined)
+      bodyData.kilometers_frequency = maintenanceData.frequencyKm; // 🔹 FIX
+    if (maintenanceData.frequencyDays !== undefined)
+      bodyData.days_frequency = maintenanceData.frequencyDays; // 🔹 FIX
     if (maintenanceData.observations !== undefined)
       bodyData.observations = maintenanceData.observations;
     if (maintenanceData.instructions !== undefined)
@@ -709,3 +709,51 @@ export async function updateMaintenanceAssignment(
     };
   }
 }
+
+/**
+ * Obtener un mantenimiento posible por ID
+ */
+export const getMaintenancePossibleById = async (
+  id: string
+): Promise<ServiceResponse<MaintenanceItem>> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const raw = await response.json();
+
+    // Support wrapped responses: { status, data: { ... } } or direct object
+    const payload = raw && raw.data && (raw.status || raw.data) ? raw.data : raw;
+
+    // Normalize backend snake_case keys to MaintenanceItem shape
+    const normalized: MaintenanceItem = {
+      id: payload.id || payload.ID || "",
+      title: payload.name || payload.title || payload.nombre || "",
+      categoryId: payload.categoryId || payload.category_id || payload.maintenanceCategoryId || "",
+      categoryName:
+        payload.maintenancecategoryname || payload.maintenanceCategoryName || payload.categoryName || payload.category_name,
+      frequencyKm:
+        payload.kilometers_frequency || payload.kilometersFrequency || payload.frequencyKm || 0,
+      frequencyDays:
+        payload.days_frequency || payload.daysFrequency || payload.frequencyDays || 0,
+      observations: payload.observations || payload.observacion || payload.observaciones || payload.notes || "",
+      instructions: payload.instructions || payload.instruction || payload.instrucciones || "",
+    };
+
+    return {
+      success: true,
+      data: normalized,
+      message: "Mantenimiento posible obtenido exitosamente",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: {} as MaintenanceItem,
+      message: "Error al obtener el mantenimiento posible",
+      error: error as any,
+    };
+  }
+};

@@ -2,10 +2,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   getMaintenanceCategories,
-  getMaintenancePossibles,
   createMaintenanceItem,
   updateMaintenanceItem,
   deleteMaintenanceItem,
+  getMaintenancePossibleById,
 } from "../../services/maintenances";
 import { getVehiclesByMaintenanceId } from "../../services/vehicles";
 import {
@@ -26,7 +26,7 @@ import {
   useCategorySearch,
   useNotification,
 } from "../../hooks";
-import type { Maintenance } from "../../types/maintenance";
+import type { Maintenance, MaintenanceItem } from "../../types/maintenance";
 import type { ServiceResponse, PaginationParams } from "../../common";
 import "./EditMaintenance.css";
 
@@ -146,34 +146,26 @@ export default function EditMaintenance() {
   const loadMaintenance = async (id: string) => {
     setLoading(true);
     try {
-      const response = await getMaintenancePossibles();
-
+      const response = await getMaintenancePossibleById(id);
+      console.log("Maintenance fetch response:", response);
       if (response.success && response.data) {
-        const maintenance = response.data.find((item) => item.id === id);
-
-        if (maintenance) {
-          setTitle(maintenance.name);
-
-          setFrequencyKm(10000);
-          setFrequencyDays(365);
-          setObservations("");
-          setInstructions("");
-
-          if (maintenance.maintenanceCategoryName && allCategories.length > 0) {
-            const category = allCategories.find(
-              (c) =>
-                c.name.toLowerCase() ===
-                maintenance.maintenanceCategoryName.toLowerCase()
-            );
-            if (category) {
-              categorySearch.selectCategory(category);
-            }
+        const maintenance: MaintenanceItem = response.data;
+        setTitle(maintenance.title);
+        setFrequencyKm(maintenance.frequencyKm ?? 10000);
+        setFrequencyDays(maintenance.frequencyDays ?? 365);
+        setObservations(maintenance.observations ?? "");
+        setInstructions(maintenance.instructions ?? "");
+        if (maintenance.categoryName && allCategories.length > 0) {
+          const category = allCategories.find(
+            (c) =>
+              c.name.toLowerCase() === maintenance.categoryName!.toLowerCase()
+          );
+          if (category) {
+            categorySearch.selectCategory(category);
           }
-        } else {
-          showError("Mantenimiento no encontrado");
         }
       } else {
-        showError("Error al cargar el mantenimiento");
+        showError("Mantenimiento no encontrado");
       }
     } catch (err) {
       showError(

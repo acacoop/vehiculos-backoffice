@@ -1,6 +1,11 @@
 export interface Maintenance {
-  id: string; // UUID format
+  id: string;
+  categoryId: string;
   name: string;
+  kilometersFrequency?: number;
+  daysFrequency?: number;
+  observations?: string;
+  instructions?: string;
 }
 
 export interface MaintenanceItem {
@@ -13,6 +18,8 @@ export interface MaintenanceItem {
   observations?: string;
   instructions?: string;
 }
+
+export type MaintenancePossible = MaintenanceItem;
 
 export interface MaintenanceAssignment {
   id: string;
