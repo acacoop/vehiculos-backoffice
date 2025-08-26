@@ -726,21 +726,44 @@ export const getMaintenancePossibleById = async (
     const raw = await response.json();
 
     // Support wrapped responses: { status, data: { ... } } or direct object
-    const payload = raw && raw.data && (raw.status || raw.data) ? raw.data : raw;
+    const payload =
+      raw && raw.data && (raw.status || raw.data) ? raw.data : raw;
 
     // Normalize backend snake_case keys to MaintenanceItem shape
     const normalized: MaintenanceItem = {
       id: payload.id || payload.ID || "",
       title: payload.name || payload.title || payload.nombre || "",
-      categoryId: payload.categoryId || payload.category_id || payload.maintenanceCategoryId || "",
+      categoryId:
+        payload.categoryId ||
+        payload.category_id ||
+        payload.maintenanceCategoryId ||
+        "",
       categoryName:
-        payload.maintenancecategoryname || payload.maintenanceCategoryName || payload.categoryName || payload.category_name,
+        payload.maintenancecategoryname ||
+        payload.maintenanceCategoryName ||
+        payload.categoryName ||
+        payload.category_name,
       frequencyKm:
-        payload.kilometers_frequency || payload.kilometersFrequency || payload.frequencyKm || 0,
+        payload.kilometers_frequency ||
+        payload.kilometersFrequency ||
+        payload.frequencyKm ||
+        0,
       frequencyDays:
-        payload.days_frequency || payload.daysFrequency || payload.frequencyDays || 0,
-      observations: payload.observations || payload.observacion || payload.observaciones || payload.notes || "",
-      instructions: payload.instructions || payload.instruction || payload.instrucciones || "",
+        payload.days_frequency ||
+        payload.daysFrequency ||
+        payload.frequencyDays ||
+        0,
+      observations:
+        payload.observations ||
+        payload.observacion ||
+        payload.observaciones ||
+        payload.notes ||
+        "",
+      instructions:
+        payload.instructions ||
+        payload.instruction ||
+        payload.instrucciones ||
+        "",
     };
 
     return {
