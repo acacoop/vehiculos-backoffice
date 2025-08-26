@@ -52,6 +52,8 @@ export default function MaintenanceAssignment() {
     null
   );
   const [daysFrequency, setDaysFrequency] = useState<number | null>(null);
+  const [observations, setObservations] = useState<string>("");
+  const [instructions, setInstructions] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
     isOpen: false,
@@ -279,6 +281,21 @@ export default function MaintenanceAssignment() {
             if (daysFreq !== undefined) {
               setDaysFrequency(daysFreq);
             }
+            // Load any assignment-level observations/instructions or joined maintenance fields
+            const assignObs =
+              currentAssignment.observations ||
+              currentAssignment.maintenance_observations ||
+              currentAssignment.observations_text ||
+              currentAssignment.notes ||
+              "";
+            const assignInstr =
+              currentAssignment.instructions ||
+              currentAssignment.maintenance_instructions ||
+              currentAssignment.instructions_text ||
+              "";
+
+            setObservations(assignObs || "");
+            setInstructions(assignInstr || "");
           }
         } else {
           console.error("Error loading assignment data:", response.status);
@@ -294,8 +311,21 @@ export default function MaintenanceAssignment() {
         maintenanceSearch.selectMaintenance({
           id: data.id,
           name: data.name,
-        });
+        } as any);
         setMaintenanceData(data);
+        // If the maintenance payload contains default observations/instructions, use them
+        const obs =
+          (data as any).observations ||
+          (data as any).maintenance_observations ||
+          (data as any).observacion ||
+          "";
+        const instr =
+          (data as any).instructions ||
+          (data as any).maintenance_instructions ||
+          (data as any).instruction ||
+          "";
+        if (obs) setObservations(obs);
+        if (instr) setInstructions(instr);
       }
     };
 
@@ -405,6 +435,8 @@ export default function MaintenanceAssignment() {
         maintenanceId: currentMaintenanceId,
         kilometersFrequency: kilometersFrequency ?? 0,
         daysFrequency: daysFrequency ?? 0,
+        observations: observations || undefined,
+        instructions: instructions || undefined,
       };
 
       const response = await fetch(
@@ -454,6 +486,8 @@ export default function MaintenanceAssignment() {
       const updateData = {
         kilometersFrequency: kilometersFrequency ?? 0,
         daysFrequency: daysFrequency ?? 0,
+        observations: observations || undefined,
+        instructions: instructions || undefined,
       };
 
       const response = await updateMaintenanceAssignment(
@@ -683,6 +717,31 @@ export default function MaintenanceAssignment() {
         min: 1,
         placeholder: "Ingrese días (obligatorio si no especifica kilómetros)",
         required: kilometersFrequency === null || kilometersFrequency <= 0,
+      },
+    ],
+  });
+
+  // Details: observations and instructions (editable when assigning)
+  formSections.push({
+    title: "Detalles del Mantenimiento",
+    fields: [
+      {
+        key: "observations",
+        label: "Observaciones",
+        type: "textarea",
+        value: observations,
+        onChange: (_key: string, value: string | number) =>
+          setObservations(value as string),
+        placeholder: "Observaciones adicionales...",
+      },
+      {
+        key: "instructions",
+        label: "Instrucciones",
+        type: "textarea",
+        value: instructions,
+        onChange: (_key: string, value: string | number) =>
+          setInstructions(value as string),
+        placeholder: "Instrucciones para el mantenimiento...",
       },
     ],
   });
