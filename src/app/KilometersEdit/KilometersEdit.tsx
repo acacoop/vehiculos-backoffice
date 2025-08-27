@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingSpinner } from "../../components";
+import { getMe } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
@@ -29,6 +30,9 @@ export default function KilometersEdit() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [currentUserName, setCurrentUserName] =
+    useState<string>("Administrador");
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
@@ -59,6 +63,19 @@ export default function KilometersEdit() {
     };
 
     loadVehicleData();
+    // load current user
+    const loadCurrentUser = async () => {
+      try {
+        const res = await getMe();
+        if (res.success && res.data) {
+          setCurrentUser(res.data);
+          setCurrentUserName(`${res.data.firstName} ${res.data.lastName}`);
+        }
+      } catch (err) {
+        // ignore, keep default
+      }
+    };
+    loadCurrentUser();
   }, [preloadedVehicleId]);
 
   const validateForm = () => {
@@ -99,7 +116,7 @@ export default function KilometersEdit() {
       //   mileage: parseInt(mileage),
       //   observations: observations.trim() || "Sin observaciones",
       //   registrationDate: registrationDate,
-      //   createdBy: "Administrador",
+      //   createdBy: currentUser ? currentUser.id : "Administrador",
       // };
 
       const response = { success: true };
@@ -222,7 +239,7 @@ export default function KilometersEdit() {
           key: "registradoPor",
           label: "Registrado por",
           type: "text",
-          value: "Administrador",
+          value: currentUserName,
           onChange: () => {},
           disabled: true,
           className: "full-width",
