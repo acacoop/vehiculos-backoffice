@@ -2,8 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  padding-top: 120px;
+  padding: 120px 20px;
+
   flex-direction: column;
   gap: 50px;
 }
