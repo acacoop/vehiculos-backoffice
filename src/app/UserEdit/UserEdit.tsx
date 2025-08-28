@@ -290,9 +290,7 @@ export default function UserEdit() {
     fetchUser();
   }, [userId]);
 
-  if (loading) {
-    return <LoadingSpinner message="Cargando datos del usuario..." />;
-  }
+  // Keep the spinner mounted so it can fade out smoothly. Show errors/content below.
 
   if (error) {
     return (
@@ -308,8 +306,13 @@ export default function UserEdit() {
   }
 
   if (!userData) {
+    // Keep spinner mounted so it can fade out if loading toggles to false
     return (
       <main className="user-edit-container">
+        <LoadingSpinner
+          visible={loading}
+          message="Cargando datos del usuario..."
+        />
         <div className="user-edit-header">
           <h1 className="user-edit-title">Editar usuario</h1>
         </div>

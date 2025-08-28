@@ -491,7 +491,10 @@ export default function VehicleEditRegistration() {
 
   return (
     <>
-      {isRegistering && <LoadingSpinner message="Registrando vehículo..." />}
+      <LoadingSpinner
+        message="Registrando vehículo..."
+        visible={isRegistering}
+      />
       <div className="vehicle-edit-registration-container">
         <h2 className="title">
           {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
