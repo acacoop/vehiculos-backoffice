@@ -3,6 +3,61 @@ import { API_CONFIG } from "../common/constants";
 import { getAccessToken } from "../common/auth";
 import type { VehicleResponsible } from "../types/vehicleResponsible";
 
+// Normalize a single vehicle responsible item to a canonical shape used by the UI
+const normalizeVehicleResponsible = (item: any) => {
+  const rawUser = item.user ?? {};
+  const rawVehicle = item.vehicle ?? {};
+
+  const firstName =
+    rawUser.firstName ?? rawUser.first_name ?? rawUser.name ?? "";
+  const lastName = rawUser.lastName ?? rawUser.last_name ?? "";
+  const dni = rawUser.dni ?? rawUser.document ?? null;
+  const email = rawUser.email ?? rawUser.mail ?? "";
+
+  const licensePlate =
+    rawVehicle.licensePlate ??
+    rawVehicle.license_plate ??
+    rawVehicle.plate ??
+    "";
+  const brand = rawVehicle.brand ?? rawVehicle.make ?? "";
+  const model = rawVehicle.model ?? rawVehicle.modelo ?? "";
+  const year = rawVehicle.year ?? rawVehicle.anio ?? null;
+
+  return {
+    ...item,
+    user: {
+      id: rawUser.id ?? rawUser.userId ?? null,
+      firstName,
+      lastName,
+      dni,
+      email,
+      active: rawUser.active ?? true,
+    },
+    vehicle: {
+      id: rawVehicle.id ?? rawVehicle.vehicleId ?? null,
+      licensePlate,
+      brand,
+      model,
+      year,
+      imgUrl: rawVehicle.imgUrl ?? rawVehicle.img_url,
+      currentResponsible:
+        rawVehicle.currentResponsible ?? rawVehicle.current_responsible,
+    },
+    userFullName: `${firstName} ${lastName}`.trim(),
+    userDni: dni,
+    userEmail: email,
+    vehicleFullName: `${brand} ${model}`.trim(),
+    vehicleLicensePlate: licensePlate,
+    vehicleBrand: brand,
+    vehicleModel: model,
+    vehicleYear: year,
+    startDateFormatted: item.startDate
+      ? String(item.startDate).split("T")[0]
+      : null,
+    endDateFormatted: item.endDate ? String(item.endDate).split("T")[0] : null,
+  };
+};
+
 export async function getVehicleResponsibles(
   pagination?: PaginationParams
 ): Promise<ServiceResponse<VehicleResponsible[]>> {
@@ -30,7 +85,7 @@ export async function getVehicleResponsibles(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-    // Try to parse JSON, but guard so a non-json (HTML) response won't crash the app.
+
     const parsed = await res.json().catch(() => ({}));
 
     // Normalize response shapes (support array, { data }, or { items })
@@ -59,64 +114,7 @@ export async function getVehicleResponsibles(
       }
     }
 
-    // Helper: normalize each item to include convenient flat fields for the UI
-    const normalize = (item: any) => {
-      const rawUser = item.user ?? {};
-      const rawVehicle = item.vehicle ?? {};
-
-      const firstName =
-        rawUser.firstName ?? rawUser.first_name ?? rawUser.name ?? "";
-      const lastName = rawUser.lastName ?? rawUser.last_name ?? "";
-      const dni = rawUser.dni ?? rawUser.document ?? null;
-      const email = rawUser.email ?? rawUser.mail ?? "";
-
-      const licensePlate =
-        rawVehicle.licensePlate ??
-        rawVehicle.license_plate ??
-        rawVehicle.plate ??
-        "";
-      const brand = rawVehicle.brand ?? rawVehicle.make ?? "";
-      const model = rawVehicle.model ?? rawVehicle.modelo ?? "";
-      const year = rawVehicle.year ?? rawVehicle.anio ?? null;
-
-      return {
-        ...item,
-        user: {
-          id: rawUser.id ?? rawUser.userId ?? null,
-          firstName,
-          lastName,
-          dni,
-          email,
-          active: rawUser.active ?? true,
-        },
-        vehicle: {
-          id: rawVehicle.id ?? rawVehicle.vehicleId ?? null,
-          licensePlate,
-          brand,
-          model,
-          year,
-          imgUrl: rawVehicle.imgUrl ?? rawVehicle.img_url,
-          currentResponsible:
-            rawVehicle.currentResponsible ?? rawVehicle.current_responsible,
-        },
-        userFullName: `${firstName} ${lastName}`.trim(),
-        userDni: dni,
-        userEmail: email,
-        vehicleFullName: `${brand} ${model}`.trim(),
-        vehicleLicensePlate: licensePlate,
-        vehicleBrand: brand,
-        vehicleModel: model,
-        vehicleYear: year,
-        startDateFormatted: item.startDate
-          ? String(item.startDate).split("T")[0]
-          : null,
-        endDateFormatted: item.endDate
-          ? String(item.endDate).split("T")[0]
-          : null,
-      };
-    };
-
-    const items = itemsRaw.map(normalize);
+    const items = itemsRaw.map(normalizeVehicleResponsible);
 
     const paginationData = {
       page,
@@ -135,6 +133,144 @@ export async function getVehicleResponsibles(
       success: false,
       data: [],
       message: "Error al obtener responsables de vehículos",
+      error: error as any,
+    };
+  }
+}
+
+export async function getVehicleResponsibleById(
+  id: string
+): Promise<ServiceResponse<VehicleResponsible | null>> {
+  try {
+    const token = await getAccessToken().catch(() => undefined);
+    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const parsed = await res.json().catch(() => null);
+    if (!parsed) {
+      return { success: false, data: null, message: "Respuesta vacía" };
+    }
+
+    // Support various response shapes: { data: {...} }, { item: {...} }, { result: {...} }, or direct object
+    const payload =
+      (parsed &&
+        typeof parsed === "object" &&
+        (parsed.data ?? parsed.item ?? parsed.result)) ||
+      parsed;
+
+    if (!payload || typeof payload !== "object") {
+      return { success: false, data: null, message: "Respuesta inválida" };
+    }
+
+    return { success: true, data: normalizeVehicleResponsible(payload) as any };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al obtener responsable de vehículo",
+      error: error as any,
+    };
+  }
+}
+
+export async function createVehicleResponsible(payload: {
+  vehicleId: string;
+  userId: string;
+  startDate: string; // ISO
+  endDate?: string | null; // ISO or null
+}): Promise<ServiceResponse<any>> {
+  try {
+    const token = await getAccessToken().catch(() => undefined);
+    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const parsed = await res.json().catch(() => null);
+    if (!parsed)
+      return { success: false, data: null, message: "Respuesta inválida" };
+    return { success: true, data: normalizeVehicleResponsible(parsed) as any };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al crear responsable de vehículo",
+      error: error as any,
+    };
+  }
+}
+
+export async function updateVehicleResponsible(
+  id: string,
+  payload: Partial<{
+    vehicleId: string;
+    userId: string;
+    startDate: string;
+    endDate: string | null;
+  }>
+): Promise<ServiceResponse<any>> {
+  try {
+    const token = await getAccessToken().catch(() => undefined);
+    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const parsed = await res.json().catch(() => null);
+    if (!parsed)
+      return { success: false, data: null, message: "Respuesta inválida" };
+    return { success: true, data: normalizeVehicleResponsible(parsed) as any };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al actualizar responsable de vehículo",
+      error: error as any,
+    };
+  }
+}
+
+export async function deleteVehicleResponsible(
+  id: string
+): Promise<ServiceResponse<null>> {
+  try {
+    const token = await getAccessToken().catch(() => undefined);
+    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    // Some APIs return empty body on delete
+    if (res.status === 204) {
+      return { success: true, data: null };
+    }
+    const parsed = await res.json().catch(() => null);
+    return { success: true, data: null, message: parsed?.message };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: null,
+      message: "Error al eliminar responsable de vehículo",
       error: error as any,
     };
   }

@@ -21,6 +21,7 @@ import EditCategory from "./app/EditCategory/EditCategory";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
+import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 import LogIn from "./app/LogIn/LogIn";
 import { useMsal } from "@azure/msal-react";
@@ -104,6 +105,14 @@ function App() {
           <Route
             path="/vehicle-responsibles"
             element={<VehicleResponsibles />}
+          />
+          <Route
+            path="/edit-vehicle-responsibles"
+            element={<EditVehicleResponsibles />}
+          />
+          <Route
+            path="/edit-vehicle-responsibles/:id"
+            element={<EditVehicleResponsibles />}
           />
 
           <Route path="*" element={<Navigate to="/home" replace />} />

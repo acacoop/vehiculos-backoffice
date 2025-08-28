@@ -1,19 +1,9 @@
 import Table from "../../components/Table/table";
+import { useNavigate } from "react-router-dom";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import "./VehicleResponsibles.css";
 
-const columns = [
-  { field: "userFullName", headerName: "Responsable", minWidth: 180 },
-  { field: "userDni", headerName: "DNI", minWidth: 120 },
-  { field: "userEmail", headerName: "Email", minWidth: 220 },
-  { field: "vehicleFullName", headerName: "Vehículo", minWidth: 180 },
-  { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },
-  { field: "vehicleBrand", headerName: "Marca", minWidth: 120 },
-  { field: "vehicleModel", headerName: "Modelo", minWidth: 120 },
-  { field: "vehicleYear", headerName: "Año", minWidth: 100 },
-  { field: "startDateFormatted", headerName: "Inicio", minWidth: 120 },
-  { field: "endDateFormatted", headerName: "Fin", minWidth: 120 },
-];
+// columns are defined inside the component so we can use navigate in renderCell
 
 const getRows = async (pagination: any) => {
   const response = await getVehicleResponsibles(pagination);
@@ -32,6 +22,24 @@ const getRows = async (pagination: any) => {
 };
 
 export default function VehicleResponsibles() {
+  const navigate = useNavigate();
+  const columns = [
+    { field: "userFullName", headerName: "Responsable", minWidth: 180 },
+    { field: "userDni", headerName: "DNI", minWidth: 120 },
+
+    { field: "vehicleFullName", headerName: "Vehículo", minWidth: 120 },
+    { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },
+    { field: "startDateFormatted", headerName: "Inicio", minWidth: 120 },
+    {
+      field: "endDateFormatted",
+      headerName: "Fin",
+      minWidth: 120,
+      renderCell: (params: any) => {
+        const val = params?.row?.endDateFormatted ?? params?.value;
+        return <span>{val ? val : "Indefinida"}</span>;
+      },
+    },
+  ];
   return (
     <div className="vehicle-responsibles-container">
       <Table
@@ -42,6 +50,10 @@ export default function VehicleResponsibles() {
         headerTitle="Responsables de Vehículos"
         showAddButton={true}
         addButtonText="+ Agregar Responsable"
+        onAddButtonClick={() => navigate("/edit-vehicle-responsibles")}
+        showEditColumn={true}
+        editRoute="/edit-vehicle-responsibles"
+        editColumnWidth={100}
         maxWidth="1200px"
       />
     </div>
