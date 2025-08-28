@@ -12,6 +12,8 @@ import {
   useConfirmDialog,
   useNotification,
 } from "../../hooks";
+import { getVehicleById } from "../../services/vehicles";
+import { getUserById } from "../../services/users";
 import {
   FormLayout,
   ConfirmDialog,
@@ -64,9 +66,23 @@ export default function EditVehicleResponsibles() {
     const fetchData = async () => {
       try {
         if (isCreateMode) {
-          // set default start date to today
+          // prefill vehicleId/userId from query params if present
+          const search = new URLSearchParams(location.search);
+          const vehicleIdFromQuery = search.get("vehicleId");
+          const userIdFromQuery = search.get("userId");
+
           const today = new Date().toISOString().split("T")[0];
           setStartDate(today);
+
+          if (vehicleIdFromQuery) {
+            const vRes = await getVehicleById(vehicleIdFromQuery);
+            if (vRes.success) setPreloadedVehicle(vRes.data);
+          }
+          if (userIdFromQuery) {
+            const uRes = await getUserById(userIdFromQuery);
+            if (uRes.success) setPreloadedUser(uRes.data);
+          }
+
           setLoading(false);
           return;
         }

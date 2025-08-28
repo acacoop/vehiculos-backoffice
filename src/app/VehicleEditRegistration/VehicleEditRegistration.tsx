@@ -7,6 +7,7 @@ import NotificationToast from "../../components/NotificationToast/NotificationTo
 import { LoadingSpinner } from "../../components";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
+import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getReservationsByVehicle } from "../../services/reservations";
 import { VehicleKilometersService } from "../../services/kilometers";
@@ -613,6 +614,46 @@ export default function VehicleEditRegistration() {
               {isRegistering ? "Registrando..." : "Registrar Vehículo"}
             </button>
           </div>
+        )}
+
+        {!isCreateMode && vehicleId && (
+          <Table<any>
+            getRows={async (paginationParams) => {
+              try {
+                // call service and filter client-side by vehicleId if necessary
+                const response = await getVehicleResponsibles(paginationParams);
+                if (!response.success) return response as any;
+                const filtered = (response.data || []).filter(
+                  (r: any) => r.vehicle?.id === vehicleId || r.vehicleId === vehicleId || r.vehicle?.licensePlate === vehicleId
+                );
+
+        return {
+                  success: true,
+                  data: filtered,
+                  pagination: response.pagination,
+                } as ServiceResponse<any[]>;
+              } catch (error) {
+                return {
+                  success: false,
+                  data: [],
+                  message: `Error al obtener responsables: ${(error as Error)?.message}`,
+                  error: error as any,
+                };
+              }
+            }}
+            columns={assignmentColumns}
+            title=""
+            showEditColumn={true}
+            editRoute="/edit-vehicle-responsibles"
+            editColumnWidth={100}
+            showTableHeader={true}
+            headerTitle="Responsables del Vehículo"
+      showAddButton={true}
+      addButtonText={"+ Agregar Responsable"}
+      onAddButtonClick={() => navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)}
+            maxWidth="900px"
+            tableWidth="900px"
+          />
         )}
 
         {notification.isOpen && (
