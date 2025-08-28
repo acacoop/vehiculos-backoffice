@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
-/* import StatusToggle from "../../components/StatusToggle/StatusToggle"; */
 import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { LoadingSpinner } from "../../components";
@@ -446,10 +445,6 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  /*   const handleVehicleStatusChange = (isActive: boolean) => {
-    setIsVehicleActive(isActive);
-  }; */
-
   const handleVehicleChange = (vehicle: Vehicle | null) => {
     setVehicleData(vehicle);
   };
@@ -508,15 +503,6 @@ export default function VehicleEditRegistration() {
         <h2 className="title">
           {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
         </h2>
-
-        {/*  {!isCreateMode && vehicleId && (
-          <StatusToggle
-            entityId={vehicleId}
-            entityType="vehicle"
-            active={isVehicleActive}
-            onToggle={handleVehicleStatusChange}
-          />
-        )} */}
 
         <EntityForm
           entityType="vehicle"
