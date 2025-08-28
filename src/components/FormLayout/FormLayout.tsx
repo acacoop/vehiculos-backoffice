@@ -9,6 +9,7 @@ import {
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { Maintenance } from "../../types/maintenance";
+import type { MaintenancePossibleNormalized } from "../../services/maintenances";
 import "./FormLayout.css";
 
 export interface FormField {
@@ -56,12 +57,13 @@ export interface FormField {
   availableUsers?: User[];
   availableVehicles?: Vehicle[];
   availableCategories?: Maintenance[];
-  availableMaintenances?: Maintenance[];
+  // maintenance possibles are normalized objects coming from the service
+  availableMaintenances?: MaintenancePossibleNormalized[];
   showDropdown?: boolean;
   onUserSelect?: (user: User) => void;
   onVehicleSelect?: (vehicle: Vehicle) => void;
   onCategorySelect?: (category: Maintenance) => void;
-  onMaintenanceSelect?: (maintenance: Maintenance) => void;
+  onMaintenanceSelect?: (maintenance: MaintenancePossibleNormalized) => void;
   onDropdownToggle?: (show: boolean) => void;
 
   // Checkbox props

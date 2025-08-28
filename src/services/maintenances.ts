@@ -246,8 +246,13 @@ export const getMaintenanceById = async (
 /**
  * Crear un nuevo mantenimiento
  */
+// DTO for creating a maintenance category (frontend uses only a name)
+export interface CreateMaintenanceCategoryDto {
+  name: string;
+}
+
 export const createMaintenance = async (
-  maintenance: Omit<Maintenance, "id">
+  maintenance: CreateMaintenanceCategoryDto
 ): Promise<ServiceResponse<Maintenance>> => {
   try {
     const response = await fetch(

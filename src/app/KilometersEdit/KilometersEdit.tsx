@@ -30,7 +30,7 @@ export default function KilometersEdit() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  // we only need the display name in this form; no need to keep the entire user object
   const [currentUserName, setCurrentUserName] =
     useState<string>("Administrador");
 
@@ -63,12 +63,11 @@ export default function KilometersEdit() {
     };
 
     loadVehicleData();
-    // load current user
+    // load current user display name
     const loadCurrentUser = async () => {
       try {
         const res = await getMe();
         if (res.success && res.data) {
-          setCurrentUser(res.data);
           setCurrentUserName(`${res.data.firstName} ${res.data.lastName}`);
         }
       } catch (err) {

@@ -8,6 +8,7 @@ import {
 import type { User } from "../types/user";
 import type { Vehicle } from "../types/vehicle";
 import type { Maintenance } from "../types/maintenance";
+import type { MaintenancePossibleNormalized } from "../services/maintenances";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -179,8 +180,9 @@ export function useCategorySearch() {
 
 export function useMaintenanceSearch() {
   const [searchTerm, setSearchTerm] = useState("");
+  // Maintenance possibles come normalized from the service
   const [availableMaintenances, setAvailableMaintenances] = useState<
-    Maintenance[]
+    MaintenancePossibleNormalized[]
   >([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] =
@@ -193,8 +195,9 @@ export function useMaintenanceSearch() {
         // Use getMaintenancePossibles instead of getMaintenanceCategories
         const response = await getMaintenancePossibles();
         if (response.success) {
-          const filtered = response.data.filter((maintenance: Maintenance) =>
-            maintenance.name.toLowerCase().includes(term.toLowerCase())
+          const filtered = response.data.filter(
+            (maintenance: MaintenancePossibleNormalized) =>
+              maintenance.name.toLowerCase().includes(term.toLowerCase())
           );
           setAvailableMaintenances(filtered);
           setShowDropdown(true);
@@ -208,8 +211,15 @@ export function useMaintenanceSearch() {
     }
   };
 
-  const selectMaintenance = (maintenance: Maintenance) => {
-    setSelectedMaintenance(maintenance);
+  const selectMaintenance = (maintenance: MaintenancePossibleNormalized) => {
+    // Map normalized maintenance possible into the lightweight Maintenance shape
+    const mapped: Maintenance = {
+      id: maintenance.id,
+      categoryId: "",
+      name: maintenance.name,
+    };
+
+    setSelectedMaintenance(mapped);
     setSearchTerm(maintenance.name);
     setShowDropdown(false);
   };

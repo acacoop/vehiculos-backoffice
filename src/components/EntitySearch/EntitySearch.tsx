@@ -1,6 +1,7 @@
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { Maintenance } from "../../types/maintenance";
+import type { MaintenancePossibleNormalized } from "../../services/maintenances";
 
 interface UserSearchProps {
   searchTerm: string;
@@ -152,9 +153,9 @@ export function CategorySearch({
 interface MaintenanceSearchProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
-  availableMaintenances: Maintenance[];
+  availableMaintenances: MaintenancePossibleNormalized[];
   showDropdown: boolean;
-  onMaintenanceSelect: (maintenance: Maintenance) => void;
+  onMaintenanceSelect: (maintenance: MaintenancePossibleNormalized) => void;
   onDropdownToggle: (show: boolean) => void;
   placeholder?: string;
   className?: string;

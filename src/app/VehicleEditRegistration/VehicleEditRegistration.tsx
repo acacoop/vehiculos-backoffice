@@ -26,7 +26,7 @@ export default function VehicleEditRegistration() {
   const isCreateMode = location.pathname.includes("/create");
   const vehicleId = id;
 
-  const [isVehicleActive, setIsVehicleActive] = useState(true);
+  const [isVehicleActive, _setIsVehicleActive] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [refreshTables, setRefreshTables] = useState(0);
