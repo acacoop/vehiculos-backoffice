@@ -1,5 +1,6 @@
 import { API_CONFIG } from "../common/constants";
 import { getAccessToken } from "../common/auth";
+import { getAllUsers } from "./users";
 import type {
   VehicleKilometersLog,
   CreateKilometersLogRequest,
@@ -407,12 +408,26 @@ export class VehicleKilometersService {
       const paginatedLogs = sortedLogs.slice(startIndex, endIndex);
 
       // Format data for table
+      // Build userId -> display name map (single call to users service)
+      let userMap: Record<string, string> = {};
+      try {
+        const usersResp = await getAllUsers();
+        if (usersResp.success && Array.isArray(usersResp.data)) {
+          userMap = usersResp.data.reduce((acc, u) => {
+            if (u && u.id) acc[u.id] = `${u.firstName} ${u.lastName}`.trim();
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      } catch (err) {
+        // ignore and fallback to id
+      }
+
       const formattedData = paginatedLogs.map((log) => ({
         id: log.id || `${log.vehicleId}-${new Date(log.date).getTime()}`,
         date: new Date(log.date).toISOString(),
         mileage: log.kilometers,
-        notes: "Registro de kilometraje", // Default note since API might not have notes
-        createdBy: log.userId, // We'll use userId as createdBy for now
+        notes: "Registro de kilometraje",
+        createdBy: userMap[log.userId] || log.userId,
       }));
 
       return {
