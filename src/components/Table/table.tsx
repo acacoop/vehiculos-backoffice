@@ -36,7 +36,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   showEditColumn?: boolean;
   editRoute?: string;
   additionalRouteParams?: string;
-  customEditCell?: (params: any) => React.ReactNode;
+  // Nuevas props para el header
   showTableHeader?: boolean;
   headerTitle?: string;
   showAddButton?: boolean;
@@ -46,7 +46,6 @@ interface GenericTableProps<T extends GridValidRowModel> {
   maxWidth?: string;
   containerClassName?: string;
   tableWidth?: string;
-  maxHeight?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -56,7 +55,7 @@ export function Table<T extends GridValidRowModel>({
   showEditColumn = false,
   editRoute = "/user/edit",
   additionalRouteParams = "",
-  customEditCell,
+  // Nuevas props con valores por defecto
   showTableHeader = false,
   headerTitle = "",
   showAddButton = false,
@@ -66,7 +65,6 @@ export function Table<T extends GridValidRowModel>({
   maxWidth = "1200px",
   containerClassName = "",
   tableWidth = "100%",
-  maxHeight = "100%",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -81,11 +79,13 @@ export function Table<T extends GridValidRowModel>({
   const fetchData = async (page: number, pageSize: number) => {
     setLoading(true);
     try {
+      // MUI usa páginas base 0, pero el backend usa páginas base 1
       const response = await getRows({ page: page + 1, limit: pageSize });
 
       if (response.success) {
         setRows(response.data);
 
+        // Actualizar información de paginación si está disponible
         if (response.pagination) {
           setRowCount(response.pagination.total);
         } else {
@@ -140,21 +140,18 @@ export function Table<T extends GridValidRowModel>({
             align: "center" as const,
             headerAlign: "center" as const,
             disableColumnMenu: true,
-            renderCell: (params: any) =>
-              customEditCell ? (
-                customEditCell(params)
-              ) : (
-                <span
-                  style={{ cursor: "pointer" }}
-                  onClick={() =>
-                    navigate(
-                      `${editRoute}/${params.row.id}${additionalRouteParams}`
-                    )
-                  }
-                >
-                  <PencilIcon />
-                </span>
-              ),
+            renderCell: (params: any) => (
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() =>
+                  navigate(
+                    `${editRoute}/${params.row.id}${additionalRouteParams}`
+                  )
+                }
+              >
+                <PencilIcon />
+              </span>
+            ),
           } as GridColDef<T>,
         ]
       : []),
@@ -182,7 +179,7 @@ export function Table<T extends GridValidRowModel>({
           overflow: "auto",
           width: tableWidth,
           maxWidth: "1400px",
-          maxHeight: maxHeight,
+          maxHeight: "1000px",
         }}
       >
         <h2 style={{ textAlign: "start" }}>{title}</h2>

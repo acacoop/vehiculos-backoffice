@@ -3,79 +3,30 @@ import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import "./VehicleResponsibles.css";
 
 const columns = [
-  {
-    field: "userFullName",
-    headerName: "Responsable",
-    valueGetter: (params: any) =>
-      `${params.row.user.firstName} ${params.row.user.lastName}`,
-    minWidth: 180,
-  },
-  {
-    field: "user.dni",
-    headerName: "DNI",
-    valueGetter: (params: any) => params.row.user.dni,
-    minWidth: 120,
-  },
-  {
-    field: "user.email",
-    headerName: "Email",
-    valueGetter: (params: any) => params.row.user.email,
-    minWidth: 220,
-  },
-  {
-    field: "vehicleFullName",
-    headerName: "Vehículo",
-    valueGetter: (params: any) =>
-      `${params.row.vehicle.brand} ${params.row.vehicle.model}`,
-    minWidth: 180,
-  },
-  {
-    field: "vehicle.licensePlate",
-    headerName: "Patente",
-    valueGetter: (params: any) => params.row.vehicle.licensePlate,
-    minWidth: 120,
-  },
-  {
-    field: "vehicle.brand",
-    headerName: "Marca",
-    valueGetter: (params: any) => params.row.vehicle.brand,
-    minWidth: 120,
-  },
-  {
-    field: "vehicle.model",
-    headerName: "Modelo",
-    valueGetter: (params: any) => params.row.vehicle.model,
-    minWidth: 120,
-  },
-  {
-    field: "vehicle.year",
-    headerName: "Año",
-    valueGetter: (params: any) => params.row.vehicle.year,
-    minWidth: 100,
-  },
-  {
-    field: "startDate",
-    headerName: "Inicio",
-    valueGetter: (params: any) => params.row.startDate?.split("T")[0],
-    minWidth: 120,
-  },
-  {
-    field: "endDate",
-    headerName: "Fin",
-    valueGetter: (params: any) =>
-      params.row.endDate ? params.row.endDate.split("T")[0] : "-",
-    minWidth: 120,
-  },
+  { field: "userFullName", headerName: "Responsable", minWidth: 180 },
+  { field: "userDni", headerName: "DNI", minWidth: 120 },
+  { field: "userEmail", headerName: "Email", minWidth: 220 },
+  { field: "vehicleFullName", headerName: "Vehículo", minWidth: 180 },
+  { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },
+  { field: "vehicleBrand", headerName: "Marca", minWidth: 120 },
+  { field: "vehicleModel", headerName: "Modelo", minWidth: 120 },
+  { field: "vehicleYear", headerName: "Año", minWidth: 100 },
+  { field: "startDateFormatted", headerName: "Inicio", minWidth: 120 },
+  { field: "endDateFormatted", headerName: "Fin", minWidth: 120 },
 ];
 
 const getRows = async (pagination: any) => {
   const response = await getVehicleResponsibles(pagination);
+
+  // Ensure each item has an `id` and return as-is (service provides normalized fields)
+  const data = (response.data || []).map((item: any) => ({
+    id: item.id,
+    ...item,
+  }));
+
   return {
     ...response,
-    data: (response.data || []).map((item: any) => ({
-      id: item.id,
-      ...item,
-    })),
+    data,
     pagination: response.pagination,
   };
 };
