@@ -47,6 +47,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   maxWidth?: string;
   containerClassName?: string;
   tableWidth?: string;
+  maxHeight?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -66,6 +67,7 @@ export function Table<T extends GridValidRowModel>({
   maxWidth = "1200px",
   containerClassName = "",
   tableWidth = "100%",
+  maxHeight = "1200px",
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -183,7 +185,7 @@ export function Table<T extends GridValidRowModel>({
           overflow: "auto",
           width: tableWidth,
           maxWidth: "1400px",
-          maxHeight: "1000px",
+          maxHeight,
         }}
       >
         <h2 style={{ textAlign: "start" }}>{title}</h2>
