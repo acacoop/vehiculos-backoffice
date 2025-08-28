@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingSpinner } from "../../components";
 import { getMe } from "../../services/users";
+import VehicleKilometersService from "../../services/kilometers";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
@@ -109,28 +110,39 @@ export default function KilometersEdit() {
 
     setSaving(true);
     try {
-      // Aquí iría la llamada al servicio para crear el registro
-      // const mileageData = {
-      //   vehicleId: preloadedVehicleId,
-      //   mileage: parseInt(mileage),
-      //   observations: observations.trim() || "Sin observaciones",
-      //   registrationDate: registrationDate,
-      //   createdBy: currentUser ? currentUser.id : "Administrador",
-      // };
+      // Ensure we have a vehicleId
+      if (!preloadedVehicleId) {
+        showError("ID de vehículo no disponible");
+        return;
+      }
 
-      const response = { success: true };
+      // Get current user to set as createdBy
+      const me = await getMe();
+      if (!me.success || !me.data) {
+        showError("No se pudo obtener el usuario actual para el registro");
+        return;
+      }
 
-      if (response.success) {
+      const payload = {
+        userId: me.data.id,
+        date: registrationDate,
+        kilometers: parseInt(mileage, 10),
+      };
+
+      const created = await VehicleKilometersService.createKilometersLog(
+        preloadedVehicleId,
+        payload
+      );
+
+      if (created && created.id) {
         showSuccess("Registro de kilometraje creado exitosamente");
-
-        setTimeout(() => {
-          navigate(-1);
-        }, 1500);
+        setTimeout(() => navigate(-1), 1200);
       } else {
         showError("Error al crear el registro de kilometraje");
       }
     } catch (err) {
-      showError("Error al crear el registro de kilometraje");
+      const msg = err instanceof Error ? err.message : String(err);
+      showError(`Error al crear el registro de kilometraje: ${msg}`);
     } finally {
       setSaving(false);
     }
