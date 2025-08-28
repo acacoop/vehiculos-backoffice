@@ -270,14 +270,6 @@ export default function VehicleEditRegistration() {
       },
     },
     {
-      field: "notes",
-      headerName: "Observaciones",
-      flex: 1,
-      minWidth: 200,
-      renderCell: (params) =>
-        params.row.notes || params.row.observations || "Sin observaciones",
-    },
-    {
       field: "createdBy",
       headerName: "Registrado por",
       width: 180,
