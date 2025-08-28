@@ -1,4 +1,5 @@
 import { API_CONFIG } from "../common/constants";
+import { getAccessToken } from "../common/auth";
 import type {
   VehicleKilometersLog,
   CreateKilometersLogRequest,
@@ -39,28 +40,33 @@ const isValidUUID = (uuid: string): boolean => {
 const handleApiResponse = async <T>(
   response: Response
 ): Promise<ApiResponse<T>> => {
-  const contentType = response.headers.get("content-type");
-
-  if (!contentType || !contentType.includes("application/json")) {
+  // Try to parse JSON even if content-type is not strictly application/json
+  let data: any = null;
+  try {
+    data = await response.json();
+  } catch (err) {
+    // If parsing fails, throw a descriptive error
     throw new KilometersApiError(
-      "Invalid response format from server",
+      `Invalid response format from server: ${response.statusText}`,
       response.status
     );
   }
 
-  const data = await response.json();
-
   if (!response.ok) {
-    const apiError = data as ApiError;
+    // Try to map known error shapes
+    const apiError = (data && (data as ApiError)) || null;
+    const message =
+      apiError?.message || data?.detail || data?.error || response.statusText;
+    const statusCode = apiError?.statusCode || data?.status || response.status;
     throw new KilometersApiError(
-      apiError.message || "Unknown API error",
-      apiError.statusCode || response.status,
-      apiError.type,
-      apiError.title
+      message || "Unknown API error",
+      statusCode,
+      apiError?.type,
+      apiError?.title
     );
   }
 
-  return data;
+  return data as ApiResponse<T>;
 };
 
 /**
@@ -101,28 +107,72 @@ export class VehicleKilometersService {
           ).toString()
         : "";
 
+      const token = await getAccessToken().catch(() => undefined);
+
       const response = await fetch(
         `${API_BASE_URL}/vehicles/${vehicleId}/kilometers${queryString}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         }
       );
 
-      const apiResponse = await handleApiResponse<VehicleKilometersLog[]>(
-        response
-      );
+      // Parse JSON safely (backend might return either an array or a wrapper { status, data })
+      const parsed = await (async () => {
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          // try to read text for debugging
+          const text = await response.text().catch(() => "");
+          throw new KilometersApiError(
+            `Invalid response format from server: ${text.slice(0, 200)}`,
+            response.status
+          );
+        }
+        return response.json();
+      })();
 
-      // Transform date strings to Date objects
-      const transformedData = apiResponse.data.map((log) => ({
-        ...log,
-        date: new Date(log.date),
-        createdAt: log.createdAt ? new Date(log.createdAt) : undefined,
+      // Normalize possible shapes
+      // Case A: backend returns array directly
+      let logsRaw: any = [];
+      if (Array.isArray(parsed)) {
+        logsRaw = parsed;
+      } else if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed.data)) {
+          logsRaw = parsed.data;
+        } else if (parsed.status === "success" && Array.isArray(parsed.data)) {
+          logsRaw = parsed.data;
+        } else if (Array.isArray(parsed.items)) {
+          // alternative shape
+          logsRaw = parsed.items;
+        } else {
+          // Unexpected shape
+          throw new KilometersApiError(
+            "Unexpected response shape from kilometers endpoint",
+            response.status
+          );
+        }
+      } else {
+        throw new KilometersApiError(
+          "Unexpected response from server",
+          response.status
+        );
+      }
+
+      // Map/normalize each item to VehicleKilometersLog (keep dates as ISO strings or Date)
+      const normalized: VehicleKilometersLog[] = logsRaw.map((log: any) => ({
+        id: log.id,
+        vehicleId: log.vehicleId || log.vehicle_id,
+        userId: log.userId || log.user_id,
+        date: log.date,
+        kilometers: log.kilometers,
+        createdAt: log.createdAt || log.created_at,
       }));
 
-      return transformedData;
+      return normalized;
     } catch (error) {
       if (error instanceof KilometersApiError) {
         throw error;
@@ -195,12 +245,15 @@ export class VehicleKilometersService {
             : logData.date,
       };
 
+      const token = await getAccessToken().catch(() => undefined);
+
       const response = await fetch(
         `${API_BASE_URL}/vehicles/${vehicleId}/kilometers`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify(requestData),
         }
