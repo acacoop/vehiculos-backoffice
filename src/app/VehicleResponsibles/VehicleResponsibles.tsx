@@ -23,20 +23,37 @@ const getRows = async (pagination: any) => {
 
 export default function VehicleResponsibles() {
   const navigate = useNavigate();
+  const formatDate = (isoOrString: string | null | undefined) => {
+    if (!isoOrString) return null;
+    const d = new Date(isoOrString);
+    if (isNaN(d.getTime())) return isoOrString;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
   const columns = [
     { field: "userFullName", headerName: "Responsable", minWidth: 180 },
     { field: "userDni", headerName: "DNI", minWidth: 120 },
 
     { field: "vehicleFullName", headerName: "Vehículo", minWidth: 120 },
     { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },
-    { field: "startDateFormatted", headerName: "Inicio", minWidth: 120 },
+    {
+      field: "startDateFormatted",
+      headerName: "Inicio",
+      minWidth: 120,
+      renderCell: (params: any) => {
+        const val = params?.row?.startDateFormatted ?? params?.value;
+        return <span>{formatDate(val) || ""}</span>;
+      },
+    },
     {
       field: "endDateFormatted",
       headerName: "Fin",
       minWidth: 120,
       renderCell: (params: any) => {
         const val = params?.row?.endDateFormatted ?? params?.value;
-        return <span>{val ? val : "Indefinida"}</span>;
+        return <span>{val ? formatDate(val) : "Indefinida"}</span>;
       },
     },
   ];

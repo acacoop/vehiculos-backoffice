@@ -624,10 +624,13 @@ export default function VehicleEditRegistration() {
                 const response = await getVehicleResponsibles(paginationParams);
                 if (!response.success) return response as any;
                 const filtered = (response.data || []).filter(
-                  (r: any) => r.vehicle?.id === vehicleId || r.vehicleId === vehicleId || r.vehicle?.licensePlate === vehicleId
+                  (r: any) =>
+                    r.vehicle?.id === vehicleId ||
+                    r.vehicleId === vehicleId ||
+                    r.vehicle?.licensePlate === vehicleId
                 );
 
-        return {
+                return {
                   success: true,
                   data: filtered,
                   pagination: response.pagination,
@@ -636,7 +639,9 @@ export default function VehicleEditRegistration() {
                 return {
                   success: false,
                   data: [],
-                  message: `Error al obtener responsables: ${(error as Error)?.message}`,
+                  message: `Error al obtener responsables: ${
+                    (error as Error)?.message
+                  }`,
                   error: error as any,
                 };
               }
@@ -648,9 +653,11 @@ export default function VehicleEditRegistration() {
             editColumnWidth={100}
             showTableHeader={true}
             headerTitle="Responsables del Vehículo"
-      showAddButton={true}
-      addButtonText={"+ Agregar Responsable"}
-      onAddButtonClick={() => navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)}
+            showAddButton={true}
+            addButtonText={"+ Agregar Responsable"}
+            onAddButtonClick={() =>
+              navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)
+            }
             maxWidth="900px"
             tableWidth="900px"
           />
