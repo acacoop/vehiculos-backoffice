@@ -1,18 +1,40 @@
-import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError, EventType, type AuthenticationResult } from "@azure/msal-browser";
+import {
+  PublicClientApplication,
+  type AccountInfo,
+  InteractionRequiredAuthError,
+  EventType,
+  type AuthenticationResult,
+} from "@azure/msal-browser";
 
 const CLIENT_ID = import.meta.env.VITE_ENTRA_CLIENT_ID as string | undefined;
 const TENANT_ID = import.meta.env.VITE_ENTRA_TENANT_ID as string | undefined;
-const REDIRECT_URI = (import.meta.env.VITE_ENTRA_REDIRECT_URI as string | undefined) || window.location.origin;
+const REDIRECT_URI =
+  (import.meta.env.VITE_ENTRA_REDIRECT_URI as string | undefined) ||
+  window.location.origin;
+const RAW_API_SCOPE = import.meta.env.VITE_API_SCOPE as string | undefined;
 
-export const API_SCOPES: string[] = ["User.Read"];
+export const API_SCOPES: string[] = RAW_API_SCOPE
+  ? RAW_API_SCOPE.split(/[ ,]+/).filter(Boolean)
+  : ["User.Read"];
 
-const authority = TENANT_ID ? `https://login.microsoftonline.com/${TENANT_ID}` : "https://login.microsoftonline.com/common";
+const authority = TENANT_ID
+  ? `https://login.microsoftonline.com/${TENANT_ID}`
+  : "https://login.microsoftonline.com/common";
 
 if (!CLIENT_ID) {
-  console.warn("VITE_ENTRA_CLIENT_ID is not set. Authentication will not work until configured.");
+  console.warn(
+    "VITE_ENTRA_CLIENT_ID is not set. Authentication will not work until configured.",
+  );
 }
 if (!TENANT_ID) {
-  console.warn("VITE_ENTRA_TENANT_ID is not set. Defaulting to 'common' authority; set the tenant ID for best security.");
+  console.warn(
+    "VITE_ENTRA_TENANT_ID is not set. Defaulting to 'common' authority; set the tenant ID for best security.",
+  );
+}
+if (!RAW_API_SCOPE) {
+  console.warn(
+    "VITE_API_SCOPE is not set. Falling back to 'User.Read'. Define it to request your API scope.",
+  );
 }
 
 export const msalInstance = new PublicClientApplication({
@@ -89,10 +111,15 @@ export async function getAccessToken(): Promise<string | undefined> {
       if (e instanceof InteractionRequiredAuthError) {
         // Prefer popup to match desired UX, fallback to redirect in case of blockers
         try {
-          const result = await msalInstance.acquireTokenPopup({ scopes: API_SCOPES });
+          const result = await msalInstance.acquireTokenPopup({
+            scopes: API_SCOPES,
+          });
           return result.accessToken;
         } catch {
-          await msalInstance.loginRedirect({ scopes: API_SCOPES, prompt: "select_account" });
+          await msalInstance.loginRedirect({
+            scopes: API_SCOPES,
+            prompt: "select_account",
+          });
           return undefined;
         }
       }
@@ -100,17 +127,26 @@ export async function getAccessToken(): Promise<string | undefined> {
     }
   } catch {
     // As a last resort, redirect to login
-    await msalInstance.loginRedirect({ scopes: API_SCOPES, prompt: "select_account" });
+    await msalInstance.loginRedirect({
+      scopes: API_SCOPES,
+      prompt: "select_account",
+    });
     return undefined;
   }
 }
 
 export async function login(): Promise<void> {
   try {
-    const res = await msalInstance.loginPopup({ scopes: API_SCOPES, prompt: "select_account" });
+    const res = await msalInstance.loginPopup({
+      scopes: API_SCOPES,
+      prompt: "select_account",
+    });
     if (res.account) msalInstance.setActiveAccount(res.account);
   } catch {
-    await msalInstance.loginRedirect({ scopes: API_SCOPES, prompt: "select_account" });
+    await msalInstance.loginRedirect({
+      scopes: API_SCOPES,
+      prompt: "select_account",
+    });
   }
 }
 
