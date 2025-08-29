@@ -26,8 +26,12 @@ import {
   useMaintenanceSearch,
   useConfirmDialog,
 } from "../../hooks";
-import { API_CONFIG } from "../../common";
 import "./MaintenanceAssignment.css";
+import Table from "../../components/Table/table";
+import {
+  getMaintenanceRecordsByVehicle,
+  getMaintenanceRecordsByAssignedMaintenanceId,
+} from "../../services/maintenanceRecords";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
@@ -131,20 +135,9 @@ export default function MaintenanceAssignment() {
     id: string
   ): Promise<MaintenancePossibleNormalized | null> => {
     try {
-      const directResponse = await fetch(
-        `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
-      );
-
-      if (directResponse.ok) {
-        const apiResponse = await directResponse.json();
-        const maintenanceData = apiResponse.data || apiResponse;
-
-        if (
-          maintenanceData &&
-          (maintenanceData.id || maintenanceData.name || maintenanceData.title)
-        ) {
-          return normalizeMaintenanceData(maintenanceData, id);
-        }
+      const resp = await getMaintenancePossibleById(id);
+      if (resp.success && resp.data) {
+        return normalizeMaintenanceData(resp.data, id);
       }
       return null;
     } catch (error) {
@@ -797,6 +790,93 @@ export default function MaintenanceAssignment() {
               )}
             </ButtonGroup>
           </FormLayout>
+
+          {/* Maintenance records history (edit mode) */}
+          {isEditMode && (
+            <div style={{ marginTop: 24 }}>
+              <Table<any>
+                getRows={async (_pagination) => {
+                  try {
+                    if (assignmentId) {
+                      const resp =
+                        await getMaintenanceRecordsByAssignedMaintenanceId(
+                          assignmentId
+                        );
+                      if (resp.success) {
+                        const mapped = (resp.data || []).map(
+                          (r: any, i: number) => ({
+                            id: r.id || `mr-${i}`,
+                            ...r,
+                          })
+                        );
+                        return { success: true, data: mapped };
+                      }
+                    }
+
+                    if (vehicleId) {
+                      const resp = await getMaintenanceRecordsByVehicle(
+                        vehicleId
+                      );
+                      if (resp.success) {
+                        const mapped = (resp.data || []).map(
+                          (r: any, i: number) => ({
+                            id: r.id || `mr-${i}`,
+                            ...r,
+                          })
+                        );
+                        return { success: true, data: mapped };
+                      }
+                    }
+
+                    return { success: false, data: [] };
+                  } catch (error) {
+                    return { success: false, data: [] };
+                  }
+                }}
+                columns={[
+                  {
+                    field: "date",
+                    headerName: "Fecha",
+                    valueGetter: (params: any) => {
+                      const d =
+                        params?.row?.date ||
+                        params?.row?.dateRaw ||
+                        params?.row?.createdAt;
+                      if (!d) return "";
+                      try {
+                        return new Date(d).toLocaleDateString();
+                      } catch {
+                        return String(d);
+                      }
+                    },
+                  },
+                  {
+                    field: "kilometers",
+                    headerName: "Kilómetros",
+                    valueGetter: (params: any) =>
+                      params?.row?.kilometers ?? params?.row?.kms ?? "",
+                  },
+                  {
+                    field: "notes",
+                    headerName: "Observaciones",
+                    valueGetter: (params: any) =>
+                      params?.row?.notes ?? params?.row?.observations ?? "",
+                  },
+                  {
+                    field: "userId",
+                    headerName: "Usuario (ID)",
+                    valueGetter: (params: any) =>
+                      params?.row?.userId ?? params?.row?.user_id ?? "",
+                  },
+                ]}
+                title=""
+                showTableHeader
+                headerTitle="Historial de mantenimientos"
+                maxWidth="100%"
+                tableWidth="100%"
+              />
+            </div>
+          )}
         </div>
       )}
 

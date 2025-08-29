@@ -6,6 +6,7 @@ import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { LoadingSpinner } from "../../components";
+import Document from "../../components/Document/Document";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
@@ -381,6 +382,10 @@ export default function UserEdit() {
           }
           maxWidth="900px"
         />
+      </div>
+
+      <div className="user-edit-body">
+        <Document title="Documentos del usuario" initialDocuments={[] } />
       </div>
     </main>
   );
