@@ -9,10 +9,35 @@ import { LoadingSpinner } from "../../components";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
+import Document from "../../components/Document/Document";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams } from "../../common";
 import "./UserEdit.css";
+
+const mockDocuments = [
+  {
+    id: "1",
+    title: "Licencia de conducir",
+    expirationDate: "2026-05-01",
+    fileName: "licencia_miguel.pdf",
+    uploadDate: "2025-08-20",
+  },
+  {
+    id: "2",
+    title: "DNI",
+    expirationDate: "2028-01-15",
+    fileName: "dni_miguel.pdf",
+    uploadDate: "2025-08-21",
+  },
+  {
+    id: "3",
+    title: "Seguro del vehículo",
+    expirationDate: "2025-12-31",
+    fileName: "seguro_auto.pdf",
+    uploadDate: "2025-08-22",
+  },
+];
 
 export default function UserEdit() {
   const { id } = useParams<{ id: string }>();
@@ -321,7 +346,7 @@ export default function UserEdit() {
   }
 
   return (
-    <main className="user-edit-container">
+    <div className="user-edit-container">
       <div className="user-state">
         <StatusToggle
           entityId={userData.id}
@@ -379,6 +404,10 @@ export default function UserEdit() {
           maxWidth="900px"
         />
       </div>
-    </main>
+
+      <div className="user-edit-body">
+        <Document title="Documentos del usuario" initialDocuments={mockDocuments} />
+      </div>
+    </div>
   );
 }
