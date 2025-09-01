@@ -871,9 +871,11 @@ export default function MaintenanceAssignment() {
                 ]}
                 title=""
                 showTableHeader
+                showAddButton={true}
                 headerTitle="Historial de mantenimientos"
-                maxWidth="100%"
-                tableWidth="100%"
+                maxWidth="1200px"
+                tableWidth="1200px"
+                addButtonText={"+ Agregar Registro"}
               />
             </div>
           )}
