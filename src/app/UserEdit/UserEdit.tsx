@@ -406,7 +406,10 @@ export default function UserEdit() {
       </div>
 
       <div className="user-edit-body">
-        <Document title="Documentos del usuario" initialDocuments={mockDocuments} />
+        <Document
+          title="Documentos del usuario"
+          initialDocuments={mockDocuments}
+        />
       </div>
     </div>
   );
