@@ -835,6 +835,8 @@ export default function MaintenanceAssignment() {
                 headerTitle="Historial de mantenimientos"
                 maxWidth="1200px"
                 tableWidth="1200px"
+                showAddButton={true}
+                addButtonText="+ Agregar Registro"
               />
             </div>
           )}
