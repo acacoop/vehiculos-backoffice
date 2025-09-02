@@ -794,9 +794,39 @@ export default function MaintenanceAssignment() {
             <div style={{ marginTop: 24 }}>
               <Table
                 columns={[
-                  { field: "date", headerName: "Fecha", flex: 1 },
-                  { field: "kilometers", headerName: "Kilómetros", flex: 1 },
-                  { field: "notes", headerName: "Notas", flex: 2 },
+                  {
+                    field: "date",
+                    headerName: "Fecha",
+                    width: 150,
+                    headerAlign: "center",
+                    align: "center",
+                    renderCell: (params) => {
+                      if (params.row.date) {
+                        const date = new Date(params.row.date);
+                        return date.toLocaleDateString("es-AR");
+                      }
+                      return "Sin fecha";
+                    },
+                  },
+                  {
+                    field: "kilometers",
+                    headerName: "Kilómetros",
+                    width: 150,
+                    headerAlign: "center",
+                    align: "center",
+                    renderCell: (params) => {
+                      const km = params.row.kilometers;
+                      return km ? `${km.toLocaleString()} km` : "N/A";
+                    },
+                  },
+                  {
+                    field: "notes",
+                    headerName: "Observaciones",
+                    width: 300,
+                    flex: 1,
+                    renderCell: (params) =>
+                      params.row.notes || "Sin observaciones",
+                  },
                 ]}
                 getRows={async (_pagination) => {
                   try {
