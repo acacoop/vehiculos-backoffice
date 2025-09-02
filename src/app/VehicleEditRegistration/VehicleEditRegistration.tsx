@@ -9,6 +9,7 @@ import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
+import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { getReservationsByVehicle } from "../../services/reservations";
 import { VehicleKilometersService } from "../../services/kilometers";
 import { useNotification } from "../../hooks";
@@ -145,6 +146,42 @@ export default function VehicleEditRegistration() {
           params.row.kmFrequency;
         return km && km > 0 ? `${km.toLocaleString()} km` : "N/A";
       },
+    },
+  ];
+
+  // Columnas para registros de mantenimiento
+  const maintenanceRecordColumns: GridColDef<any>[] = [
+    {
+      field: "date",
+      headerName: "Fecha",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.date) {
+          const date = new Date(params.row.date);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "kilometers",
+      headerName: "Kilómetros",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.kilometers;
+        return km ? `${km.toLocaleString()} km` : "N/A";
+      },
+    },
+    {
+      field: "notes",
+      headerName: "Observaciones",
+      width: 300,
+      flex: 1,
+      renderCell: (params) => params.row.notes || "Sin observaciones",
     },
   ];
 
@@ -617,6 +654,55 @@ export default function VehicleEditRegistration() {
               {isRegistering ? "Registrando..." : "Registrar Vehículo"}
             </button>
           </div>
+        )}
+
+        {!isCreateMode && vehicleId && (
+          <Table<any>
+            getRows={async (_pagination) => {
+              try {
+                const response = await getMaintenanceRecordsByVehicle(
+                  vehicleId
+                );
+                if (response.success) {
+                  const mapped = (response.data || []).map(
+                    (r: any, i: number) => ({
+                      id: r.id || `mr-${i}`,
+                      ...r,
+                    })
+                  );
+                  return {
+                    success: true,
+                    data: mapped,
+                  };
+                }
+                return {
+                  success: false,
+                  data: [],
+                  message: "Error al obtener registros de mantenimiento",
+                };
+              } catch (error) {
+                return {
+                  success: false,
+                  data: [],
+                  message: `Error al obtener registros: ${
+                    (error as Error)?.message
+                  }`,
+                };
+              }
+            }}
+            columns={maintenanceRecordColumns}
+            title=""
+            showTableHeader={true}
+            headerTitle="Registros de Mantenimiento"
+            showAddButton={true}
+            addButtonText="+ Agregar Registro"
+            onAddButtonClick={() => {
+              // Navegar a página de registro con vehículo pre-cargado
+              navigate(`/maintenance-record-register-edit/${vehicleId}`);
+            }}
+            maxWidth="900px"
+            tableWidth="900px"
+          />
         )}
 
         {!isCreateMode && vehicleId && (

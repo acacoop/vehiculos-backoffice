@@ -13,6 +13,7 @@ import { getMe } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { getMaintenancePossibleById } from "../../services/maintenances";
 import { addMaintenanceRecord } from "../../services/maintenanceRecords";
+import { useMaintenanceSearch } from "../../hooks";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { MaintenancePossibleNormalized } from "../../services/maintenances";
@@ -30,6 +31,12 @@ export default function MaintenanceRecordRegisterEdit() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [maintenance, setMaintenance] =
     useState<MaintenancePossibleNormalized | null>(null);
+
+  // Hook para buscar mantenimientos cuando no se proporciona maintenanceId
+  const maintenanceSearch = useMaintenanceSearch();
+
+  // Determinar si necesitamos seleccionar mantenimiento
+  const needsMaintenanceSelection = !maintenanceId;
 
   // Estado para campos editables
   const [notes, setNotes] = useState<string>("");
@@ -106,8 +113,17 @@ export default function MaintenanceRecordRegisterEdit() {
   };
 
   const handleSubmit = async () => {
-    if (!currentUser || !vehicleId || !maintenanceId) {
+    if (!currentUser || !vehicleId) {
       showError("Faltan datos requeridos");
+      return;
+    }
+
+    // Obtener el ID del mantenimiento (desde parámetros o desde la búsqueda)
+    const selectedMaintenanceId =
+      maintenanceId || maintenanceSearch.selectedMaintenance?.id;
+
+    if (!selectedMaintenanceId) {
+      showError("Debe seleccionar un mantenimiento");
       return;
     }
 
@@ -126,7 +142,7 @@ export default function MaintenanceRecordRegisterEdit() {
 
       const payload = {
         vehicleId,
-        maintenanceId,
+        maintenanceId: selectedMaintenanceId.toString(),
         userId: currentUser.id,
         kilometers,
         date,
@@ -204,18 +220,48 @@ export default function MaintenanceRecordRegisterEdit() {
   }
 
   // Sección de datos del registro
-  formSections.push({
+  const registrationSection: FormSection = {
     title: "Datos del Registro",
     fields: [
-      // Campo de mantenimiento
-      {
-        key: "maintenance",
-        label: "Mantenimiento:",
-        type: "text" as const,
-        value: maintenance?.name || "Cargando...",
-        onChange: () => {},
-        disabled: true,
-      },
+      // Campo de mantenimiento (dinámico según el contexto)
+      needsMaintenanceSelection
+        ? maintenanceSearch.selectedMaintenance
+          ? {
+              key: "selectedMaintenance",
+              label: "Mantenimiento Seleccionado:",
+              type: "text" as const,
+              value: maintenanceSearch.selectedMaintenance.name,
+              onChange: () => {},
+              disabled: true,
+            }
+          : {
+              key: "maintenanceSelect",
+              label: "Seleccionar Mantenimiento:",
+              type: "maintenanceSearch" as const,
+              value: maintenanceSearch.searchTerm,
+              onChange: () => {}, // No se usa directamente
+              required: true,
+              placeholder: "Busque y seleccione un mantenimiento",
+              entitySearch: true,
+              searchTerm: maintenanceSearch.searchTerm,
+              onSearchChange: maintenanceSearch.searchMaintenances,
+              availableMaintenances: maintenanceSearch.availableMaintenances,
+              showDropdown: maintenanceSearch.showDropdown,
+              onMaintenanceSelect: (
+                maintenance: MaintenancePossibleNormalized
+              ) => {
+                maintenanceSearch.selectMaintenance(maintenance);
+              },
+              onDropdownToggle: maintenanceSearch.setShowDropdown,
+            }
+        : {
+            key: "maintenance",
+            label: "Mantenimiento:",
+            type: "text" as const,
+            value: maintenance?.name || "Cargando...",
+            onChange: () => {},
+            disabled: true,
+          },
       {
         key: "user",
         label: "Usuario que registra:",
@@ -256,7 +302,17 @@ export default function MaintenanceRecordRegisterEdit() {
         placeholder: "Observaciones del mantenimiento realizado...",
       },
     ],
-  });
+  };
+
+  // Agregar botón de acción si hay mantenimiento seleccionado
+  if (needsMaintenanceSelection && maintenanceSearch.selectedMaintenance) {
+    registrationSection.actionButton = {
+      text: "Cambiar mantenimiento",
+      onClick: () => maintenanceSearch.clearSelection(),
+    };
+  }
+
+  formSections.push(registrationSection);
 
   if (loading) {
     return <LoadingSpinner message="Cargando datos..." />;

@@ -100,6 +100,10 @@ function App() {
             element={<MaintenanceRecordRegisterEdit />}
           />
           <Route
+            path="/maintenance-record-register-edit/:vehicleId"
+            element={<MaintenanceRecordRegisterEdit />}
+          />
+          <Route
             path="/maintenance/possible/edit/:maintenanceId"
             element={<EditMaintenance />}
           />

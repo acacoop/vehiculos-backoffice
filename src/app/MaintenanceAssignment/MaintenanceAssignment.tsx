@@ -801,7 +801,6 @@ export default function MaintenanceAssignment() {
                 getRows={async (_pagination) => {
                   try {
                     if (vehicleId && maintenanceId) {
-                      // 🔹 Usa el nuevo servicio con vehicleId + maintenanceId
                       const resp =
                         await getMaintenanceRecordsByVehicleAndMaintenance(
                           vehicleId,
