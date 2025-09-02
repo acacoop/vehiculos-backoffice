@@ -45,9 +45,12 @@ export const getMaintenanceRecordById = async (
   id: string
 ): Promise<ServiceResponse<MaintenanceRecord | null>> => {
   try {
-    const resp = await fetch(`${API_CONFIG.BASE_URL}/maintenance/records/${id}`, {
-      headers: await buildAuthHeaders(false),
-    });
+    const resp = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/records/${id}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
+    );
 
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
@@ -71,7 +74,8 @@ export const getAllMaintenanceRecords = async (options?: {
     if (options?.page) params.append("page", String(options.page));
     if (options?.limit) params.append("limit", String(options.limit));
     if (options?.vehicleId) params.append("vehicleId", options.vehicleId);
-    if (options?.maintenanceId) params.append("maintenanceId", options.maintenanceId);
+    if (options?.maintenanceId)
+      params.append("maintenanceId", options.maintenanceId);
 
     const resp = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
@@ -117,7 +121,11 @@ export const addMaintenanceRecord = async (
     const raw = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      return { success: false, data: null, message: raw.message || `Error ${resp.status}` };
+      return {
+        success: false,
+        data: null,
+        message: raw.message || `Error ${resp.status}`,
+      };
     }
 
     return { success: true, data: raw.data || raw };
@@ -147,7 +155,39 @@ export const getMaintenanceRecordsByAssignedMaintenanceId = async (
     if (Array.isArray(raw)) return { success: true, data: raw };
     return { success: true, data: raw.data || [] };
   } catch (error) {
-    return { success: false, data: [], message: "Error al obtener registros por asignacion" };
+    return {
+      success: false,
+      data: [],
+      message: "Error al obtener registros por asignacion",
+    };
+  }
+};
+
+export const getMaintenanceRecordsByVehicleAndMaintenance = async (
+  vehicleId: string,
+  maintenanceId: string
+): Promise<ServiceResponse<MaintenanceRecord[]>> => {
+  try {
+    const resp = await fetch(
+      `${API_CONFIG.BASE_URL}/maintenance/records/vehicle/${vehicleId}/maintenance/${maintenanceId}`,
+      {
+        headers: await buildAuthHeaders(false),
+      }
+    );
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const raw = await resp.json().catch(() => ({}));
+
+    if (raw.status === "success") return { success: true, data: raw.data };
+    if (Array.isArray(raw)) return { success: true, data: raw };
+    return { success: true, data: raw.data || [] };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      message: "Error al obtener registros por vehículo y mantenimiento",
+    };
   }
 };
 

@@ -9,6 +9,8 @@ import {
   updateMaintenanceAssignment,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
+
+import { getMaintenanceRecordsByVehicleAndMaintenance } from "../../services/maintenanceRecords";
 import { getVehicleById } from "../../services/vehicles";
 import {
   FormLayout,
@@ -28,10 +30,6 @@ import {
 } from "../../hooks";
 import "./MaintenanceAssignment.css";
 import Table from "../../components/Table/table";
-import {
-  getMaintenanceRecordsByVehicle,
-  getMaintenanceRecordsByAssignedMaintenanceId,
-} from "../../services/maintenanceRecords";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
@@ -794,88 +792,49 @@ export default function MaintenanceAssignment() {
           {/* Maintenance records history (edit mode) */}
           {isEditMode && (
             <div style={{ marginTop: 24 }}>
-              <Table<any>
+              <Table
+                columns={[
+                  { field: "date", headerName: "Fecha", flex: 1 },
+                  { field: "kilometers", headerName: "Kilómetros", flex: 1 },
+                  { field: "notes", headerName: "Notas", flex: 2 },
+                ]}
                 getRows={async (_pagination) => {
                   try {
-                    if (assignmentId) {
+                    if (vehicleId && maintenanceId) {
+                      // 🔹 Usa el nuevo servicio con vehicleId + maintenanceId
                       const resp =
-                        await getMaintenanceRecordsByAssignedMaintenanceId(
-                          assignmentId
+                        await getMaintenanceRecordsByVehicleAndMaintenance(
+                          vehicleId,
+                          maintenanceId
                         );
                       if (resp.success) {
-                        const mapped = (resp.data || []).map(
-                          (r: any, i: number) => ({
-                            id: r.id || `mr-${i}`,
-                            ...r,
-                          })
-                        );
-                        return { success: true, data: mapped };
+                        const mapped = (resp.data || []).map((r, i) => ({
+                          id: r.id || `mr-${i}`,
+                          ...r,
+                        }));
+                        return {
+                          success: true,
+                          data: mapped,
+                        };
                       }
                     }
 
-                    if (vehicleId) {
-                      const resp = await getMaintenanceRecordsByVehicle(
-                        vehicleId
-                      );
-                      if (resp.success) {
-                        const mapped = (resp.data || []).map(
-                          (r: any, i: number) => ({
-                            id: r.id || `mr-${i}`,
-                            ...r,
-                          })
-                        );
-                        return { success: true, data: mapped };
-                      }
-                    }
-
-                    return { success: false, data: [] };
+                    return {
+                      success: false,
+                      data: [],
+                    };
                   } catch (error) {
-                    return { success: false, data: [] };
+                    return {
+                      success: false,
+                      data: [],
+                    };
                   }
                 }}
-                columns={[
-                  {
-                    field: "date",
-                    headerName: "Fecha",
-                    valueGetter: (params: any) => {
-                      const d =
-                        params?.row?.date ||
-                        params?.row?.dateRaw ||
-                        params?.row?.createdAt;
-                      if (!d) return "";
-                      try {
-                        return new Date(d).toLocaleDateString();
-                      } catch {
-                        return String(d);
-                      }
-                    },
-                  },
-                  {
-                    field: "kilometers",
-                    headerName: "Kilómetros",
-                    valueGetter: (params: any) =>
-                      params?.row?.kilometers ?? params?.row?.kms ?? "",
-                  },
-                  {
-                    field: "notes",
-                    headerName: "Observaciones",
-                    valueGetter: (params: any) =>
-                      params?.row?.notes ?? params?.row?.observations ?? "",
-                  },
-                  {
-                    field: "userId",
-                    headerName: "Usuario (ID)",
-                    valueGetter: (params: any) =>
-                      params?.row?.userId ?? params?.row?.user_id ?? "",
-                  },
-                ]}
                 title=""
                 showTableHeader
-                showAddButton={true}
                 headerTitle="Historial de mantenimientos"
                 maxWidth="1200px"
                 tableWidth="1200px"
-                addButtonText={"+ Agregar Registro"}
               />
             </div>
           )}

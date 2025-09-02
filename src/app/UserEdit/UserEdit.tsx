@@ -385,7 +385,7 @@ export default function UserEdit() {
       </div>
 
       <div className="user-edit-body">
-        <Document title="Documentos del usuario" initialDocuments={[] } />
+        <Document title="Documentos del usuario" initialDocuments={[]} />
       </div>
     </main>
   );
