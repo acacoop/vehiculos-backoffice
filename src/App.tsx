@@ -20,6 +20,7 @@ import MaintenancePage from "./app/maintenances/maintenances";
 import EditCategory from "./app/EditCategory/EditCategory";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
+import MaintenanceRecordRegisterEdit from "./app/MaintenanceRecordRegisterEdit/MaintenanceRecordRegisterEdit";
 import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
@@ -93,6 +94,10 @@ function App() {
           <Route
             path="/edit-maintenance-assignment/:vehicleId/:maintenanceId/:assignmentId"
             element={<MaintenanceAssignment />}
+          />
+          <Route
+            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId"
+            element={<MaintenanceRecordRegisterEdit />}
           />
           <Route
             path="/maintenance/possible/edit/:maintenanceId"

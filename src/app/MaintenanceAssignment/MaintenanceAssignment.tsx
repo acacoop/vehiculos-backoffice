@@ -837,6 +837,13 @@ export default function MaintenanceAssignment() {
                 tableWidth="1200px"
                 showAddButton={true}
                 addButtonText="+ Agregar Registro"
+                onAddButtonClick={() => {
+                  if (vehicleId && maintenanceId) {
+                    navigate(
+                      `/maintenance-record-register-edit/${vehicleId}/${maintenanceId}`
+                    );
+                  }
+                }}
               />
             </div>
           )}
