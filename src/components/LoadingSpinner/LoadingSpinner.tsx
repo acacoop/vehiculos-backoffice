@@ -5,15 +5,22 @@ import "./LoadingSpinner.css";
 interface LoadingSpinnerProps {
   message?: string;
   fullScreen?: boolean;
+
+  visible?: boolean;
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message = "Cargando...",
   fullScreen = true,
+  visible,
 }) => {
+  const isVisible = visible === undefined ? true : visible;
+
   return (
     <div
-      className={`loading-spinner-container ${fullScreen ? "full-screen" : ""}`}
+      className={`loading-spinner-container ${
+        fullScreen ? "full-screen" : ""
+      } ${isVisible ? "is-visible" : "is-hidden"}`}
     >
       <div className="loading-spinner-content">
         <CircularProgress

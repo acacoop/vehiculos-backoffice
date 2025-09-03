@@ -6,10 +6,10 @@ import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { LoadingSpinner } from "../../components";
+import Document from "../../components/Document/Document";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
-import Document from "../../components/Document/Document";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams } from "../../common";
@@ -315,9 +315,7 @@ export default function UserEdit() {
     fetchUser();
   }, [userId]);
 
-  if (loading) {
-    return <LoadingSpinner message="Cargando datos del usuario..." />;
-  }
+  // Keep the spinner mounted so it can fade out smoothly. Show errors/content below.
 
   if (error) {
     return (
@@ -333,8 +331,13 @@ export default function UserEdit() {
   }
 
   if (!userData) {
+    // Keep spinner mounted so it can fade out if loading toggles to false
     return (
       <main className="user-edit-container">
+        <LoadingSpinner
+          visible={loading}
+          message="Cargando datos del usuario..."
+        />
         <div className="user-edit-header">
           <h1 className="user-edit-title">Editar usuario</h1>
         </div>

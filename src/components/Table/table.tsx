@@ -37,6 +37,7 @@ interface GenericTableProps<T extends GridValidRowModel> {
   editRoute?: string;
   additionalRouteParams?: string;
   customEditCell?: (params: any) => React.ReactNode;
+  editColumnWidth?: number;
 
   showTableHeader?: boolean;
   headerTitle?: string;
@@ -68,6 +69,7 @@ export function Table<T extends GridValidRowModel>({
   containerClassName = "",
   tableWidth = "100%",
   maxHeight = "1200px",
+  editColumnWidth = 150,
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -135,9 +137,9 @@ export function Table<T extends GridValidRowModel>({
           {
             field: "edit",
             headerName: "Editar",
-            width: 150,
-            minWidth: 150,
-            maxWidth: 150,
+            width: editColumnWidth,
+            minWidth: editColumnWidth,
+            maxWidth: editColumnWidth,
             sortable: false,
             filterable: false,
             align: "center" as const,

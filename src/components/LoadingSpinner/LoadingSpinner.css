@@ -6,6 +6,10 @@
   align-items: center;
   background-color: rgb(255, 255, 255);
   z-index: 9999;
+  /* Prepare for opacity transition */
+  opacity: 1;
+  transition: opacity 300ms ease-in-out;
+  pointer-events: auto; /* allow blocking interactions while visible */
 }
 
 .loading-spinner-container.full-screen {
@@ -14,6 +18,17 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+}
+
+/* Hidden state for smooth fade out */
+.loading-spinner-container.is-hidden {
+  opacity: 0;
+  pointer-events: none; /* allow interactions when hidden */
+}
+
+.loading-spinner-container.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .loading-spinner-content {
@@ -39,20 +54,6 @@
   }
 }
 
-/* Animation for smooth appearance */
-.loading-spinner-container {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .loading-spinner {
@@ -68,19 +69,5 @@
 
   .loading-message {
     font-size: 1rem;
-  }
-}
-
-/* Animation for smooth appearance */
-.loading-spinner-container {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }

@@ -9,6 +9,8 @@ import {
   updateMaintenanceAssignment,
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
+
+import { getMaintenanceRecordsByVehicleAndMaintenance } from "../../services/maintenanceRecords";
 import { getVehicleById } from "../../services/vehicles";
 import {
   FormLayout,
@@ -26,8 +28,8 @@ import {
   useMaintenanceSearch,
   useConfirmDialog,
 } from "../../hooks";
-import { API_CONFIG } from "../../common";
 import "./MaintenanceAssignment.css";
+import Table from "../../components/Table/table";
 
 export default function MaintenanceAssignment() {
   const navigate = useNavigate();
@@ -131,20 +133,9 @@ export default function MaintenanceAssignment() {
     id: string
   ): Promise<MaintenancePossibleNormalized | null> => {
     try {
-      const directResponse = await fetch(
-        `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`
-      );
-
-      if (directResponse.ok) {
-        const apiResponse = await directResponse.json();
-        const maintenanceData = apiResponse.data || apiResponse;
-
-        if (
-          maintenanceData &&
-          (maintenanceData.id || maintenanceData.name || maintenanceData.title)
-        ) {
-          return normalizeMaintenanceData(maintenanceData, id);
-        }
+      const resp = await getMaintenancePossibleById(id);
+      if (resp.success && resp.data) {
+        return normalizeMaintenanceData(resp.data, id);
       }
       return null;
     } catch (error) {
@@ -797,6 +788,94 @@ export default function MaintenanceAssignment() {
               )}
             </ButtonGroup>
           </FormLayout>
+
+          {/* Maintenance records history (edit mode) */}
+          {isEditMode && (
+            <div style={{ marginTop: 24 }}>
+              <Table
+                columns={[
+                  {
+                    field: "date",
+                    headerName: "Fecha",
+                    width: 150,
+                    headerAlign: "center",
+                    align: "center",
+                    renderCell: (params) => {
+                      if (params.row.date) {
+                        const date = new Date(params.row.date);
+                        return date.toLocaleDateString("es-AR");
+                      }
+                      return "Sin fecha";
+                    },
+                  },
+                  {
+                    field: "kilometers",
+                    headerName: "Kilómetros",
+                    width: 150,
+                    headerAlign: "center",
+                    align: "center",
+                    renderCell: (params) => {
+                      const km = params.row.kilometers;
+                      return km ? `${km.toLocaleString()} km` : "N/A";
+                    },
+                  },
+                  {
+                    field: "notes",
+                    headerName: "Observaciones",
+                    width: 300,
+                    flex: 1,
+                    renderCell: (params) =>
+                      params.row.notes || "Sin observaciones",
+                  },
+                ]}
+                getRows={async (_pagination) => {
+                  try {
+                    if (vehicleId && maintenanceId) {
+                      const resp =
+                        await getMaintenanceRecordsByVehicleAndMaintenance(
+                          vehicleId,
+                          maintenanceId
+                        );
+                      if (resp.success) {
+                        const mapped = (resp.data || []).map((r, i) => ({
+                          id: r.id || `mr-${i}`,
+                          ...r,
+                        }));
+                        return {
+                          success: true,
+                          data: mapped,
+                        };
+                      }
+                    }
+
+                    return {
+                      success: false,
+                      data: [],
+                    };
+                  } catch (error) {
+                    return {
+                      success: false,
+                      data: [],
+                    };
+                  }
+                }}
+                title=""
+                showTableHeader
+                headerTitle="Historial de mantenimientos"
+                maxWidth="1200px"
+                tableWidth="1200px"
+                showAddButton={true}
+                addButtonText="+ Agregar Registro"
+                onAddButtonClick={() => {
+                  if (vehicleId && maintenanceId) {
+                    navigate(
+                      `/maintenance-record-register-edit/${vehicleId}/${maintenanceId}`
+                    );
+                  }
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
 

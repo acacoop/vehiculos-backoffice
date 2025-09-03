@@ -50,12 +50,15 @@ interface UnifiedMetricsProps {
   type: UnifiedMetricsType;
   width?: string | number;
   height?: string | number;
+  // optional callback when the metrics for this component have finished loading (success or error)
+  onLoad?: () => void;
 }
 
 export default function UnifiedMetrics({
   type,
   width,
   height,
+  onLoad,
 }: UnifiedMetricsProps) {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +79,10 @@ export default function UnifiedMetrics({
       } catch (error) {
       } finally {
         setLoading(false);
+        // notify parent that this block finished loading
+        try {
+          onLoad && onLoad();
+        } catch {}
       }
     };
 

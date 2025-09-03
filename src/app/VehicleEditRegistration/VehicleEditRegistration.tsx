@@ -7,13 +7,14 @@ import NotificationToast from "../../components/NotificationToast/NotificationTo
 import { LoadingSpinner } from "../../components";
 import { createVehicle } from "../../services/vehicles";
 import { getAssignments } from "../../services/assignments";
+import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
-import { getReservationsByVehicle } from "../../services/reservations";
+import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { VehicleKilometersService } from "../../services/kilometers";
+import { getReservationsByVehicle } from "../../services/reservations";
 import { useNotification } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
-import type { ReservationWithUser } from "../../types/reservation";
 import type { PaginationParams, ServiceResponse } from "../../common";
 import "./VehicleEditRegistration.css";
 
@@ -28,15 +29,12 @@ export default function VehicleEditRegistration() {
   const [isVehicleActive, _setIsVehicleActive] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
-  const [refreshTables, setRefreshTables] = useState(0);
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
   useEffect(() => {
-    const handleFocus = () => {
-      setRefreshTables((prev) => prev + 1);
-    };
+    const handleFocus = () => {};
 
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
@@ -147,18 +145,95 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  const reservationColumns: GridColDef<ReservationWithUser>[] = [
+  // Columnas para registros de mantenimiento
+  const maintenanceRecordColumns: GridColDef<any>[] = [
     {
-      field: "user.lastName",
-      headerName: "Apellido",
+      field: "date",
+      headerName: "Fecha",
       width: 150,
-      renderCell: (params) => params.row.user?.lastName || "N/A",
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.date) {
+          const date = new Date(params.row.date);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
     },
     {
-      field: "user.firstName",
-      headerName: "Nombre",
+      field: "kilometers",
+      headerName: "Kilómetros",
       width: 150,
-      renderCell: (params) => params.row.user?.firstName || "N/A",
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.kilometers;
+        return km ? `${km.toLocaleString()} km` : "N/A";
+      },
+    },
+    {
+      field: "notes",
+      headerName: "Observaciones",
+      width: 300,
+      flex: 1,
+      renderCell: (params) => params.row.notes || "Sin observaciones",
+    },
+  ];
+
+  const mileageColumns: GridColDef[] = [
+    {
+      field: "date",
+      headerName: "Fecha de Registro",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.date) {
+          const date = new Date(params.row.date);
+          return date.toLocaleDateString("es-AR");
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "mileage",
+      headerName: "Kilometraje",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const km = params.row.mileage || params.row.kilometers;
+        return km ? `${km.toLocaleString()} km` : "N/A";
+      },
+    },
+    {
+      field: "createdBy",
+      headerName: "Registrado por",
+      width: 180,
+      renderCell: (params) => params.row.createdBy || params.row.user || "N/A",
+    },
+  ];
+
+  const reservationColumns: GridColDef<any>[] = [
+    {
+      field: "user",
+      headerName: "Usuario",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_, row) => {
+        if (row.user) {
+          return `${row.user.firstName} ${row.user.lastName}`;
+        }
+        return row.userId || "N/A";
+      },
+      renderCell: (params) => {
+        if (params.row.user) {
+          return `${params.row.user.firstName} ${params.row.user.lastName}`;
+        }
+        return params.row.userId || "N/A";
+      },
     },
     {
       field: "startDate",
@@ -243,40 +318,6 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  const mileageColumns: GridColDef[] = [
-    {
-      field: "date",
-      headerName: "Fecha de Registro",
-      width: 180,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        if (params.row.date) {
-          const date = new Date(params.row.date);
-          return date.toLocaleDateString("es-AR");
-        }
-        return "Sin fecha";
-      },
-    },
-    {
-      field: "mileage",
-      headerName: "Kilometraje",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => {
-        const km = params.row.mileage || params.row.kilometers;
-        return km ? `${km.toLocaleString()} km` : "N/A";
-      },
-    },
-    {
-      field: "createdBy",
-      headerName: "Registrado por",
-      width: 180,
-      renderCell: (params) => params.row.createdBy || params.row.user || "N/A",
-    },
-  ];
-
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
       const filterParams = vehicleId ? { vehicleId } : {};
@@ -345,49 +386,6 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  const getReservationsForTable = async (
-    paginationParams: PaginationParams
-  ): Promise<ServiceResponse<ReservationWithUser[]>> => {
-    try {
-      if (!vehicleId) {
-        return {
-          success: false,
-          data: [],
-          message: "ID de vehículo no proporcionado",
-          error: undefined,
-        };
-      }
-
-      const response = await getReservationsByVehicle(
-        vehicleId,
-        paginationParams
-      );
-
-      if (response.success && response.data) {
-        return {
-          success: true,
-          data: response.data as ReservationWithUser[],
-          message: response.message,
-          pagination: response.pagination,
-        };
-      }
-
-      return {
-        success: false,
-        data: [],
-        message: response.message || "No se pudieron obtener las reservas",
-        error: response.error,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        data: [],
-        message: `Error al obtener reservas: ${(error as Error)?.message}`,
-        error: error as any,
-      };
-    }
-  };
-
   const getMileageForTable = async (
     paginationParams: PaginationParams
   ): Promise<ServiceResponse<any[]>> => {
@@ -433,6 +431,45 @@ export default function VehicleEditRegistration() {
           status: 500,
           detail: (error as Error)?.message,
         },
+      };
+    }
+  };
+
+  const getReservationsForTable = async (
+    paginationParams: PaginationParams
+  ) => {
+    if (!vehicleId) {
+      return {
+        success: false,
+        data: [],
+        message: "No se ha seleccionado ningún vehículo",
+      };
+    }
+
+    try {
+      const response = await getReservationsByVehicle(
+        vehicleId,
+        paginationParams
+      );
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data,
+          pagination: response.pagination,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          data: [],
+          message: response.message,
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener reservas: ${(error as Error)?.message}`,
       };
     }
   };
@@ -490,7 +527,10 @@ export default function VehicleEditRegistration() {
 
   return (
     <>
-      {isRegistering && <LoadingSpinner message="Registrando vehículo..." />}
+      <LoadingSpinner
+        message="Registrando vehículo..."
+        visible={isRegistering}
+      />
       <div className="vehicle-edit-registration-container">
         <h2 className="title">
           {isCreateMode ? "Registrar Nuevo Vehículo" : "Editar Vehículo"}
@@ -506,97 +546,191 @@ export default function VehicleEditRegistration() {
 
         <EntityForm entityType="technical" showActions={!isCreateMode} />
 
+        {/* Orden de tablas en modo edición */}
         {!isCreateMode && vehicleId && (
-          <Table<any>
-            getRows={getMaintenancesForTable}
-            columns={maintenanceColumns}
-            title=""
-            showEditColumn={true}
-            customEditCell={(params) => (
-              <span
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  const maintenanceId =
-                    params.row.maintenance_id ||
-                    params.row.maintenanceId ||
-                    params.row.id;
-                  const assignmentId =
-                    params.row.id || params.row.assignment_id;
-                  navigate(
-                    `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
+          <>
+            {/* 1. Responsable de vehículo */}
+            <Table<any>
+              getRows={async (paginationParams) => {
+                try {
+                  const response = await getVehicleResponsibles(
+                    paginationParams
                   );
-                }}
-              >
-                <PencilIcon />
-              </span>
-            )}
-            showTableHeader={true}
-            headerTitle="Mantenimientos del Vehículo"
-            maxWidth="900px"
-            tableWidth="900px"
-            showAddButton={true}
-            addButtonText="+ Agregar mantenimiento"
-            onAddButtonClick={() =>
-              navigate(`/vehicle-maintenance-assignment/${vehicleId}`)
-            }
-          />
-        )}
+                  if (!response.success) return response as any;
+                  const filtered = (response.data || []).filter(
+                    (r: any) =>
+                      r.vehicle?.id === vehicleId ||
+                      r.vehicleId === vehicleId ||
+                      r.vehicle?.licensePlate === vehicleId
+                  );
+                  return {
+                    success: true,
+                    data: filtered,
+                    pagination: response.pagination,
+                  } as ServiceResponse<any[]>;
+                } catch (error) {
+                  return {
+                    success: false,
+                    data: [],
+                    message: `Error al obtener responsables: ${
+                      (error as Error)?.message
+                    }`,
+                    error: error as any,
+                  };
+                }
+              }}
+              columns={assignmentColumns}
+              title=""
+              showEditColumn={true}
+              editRoute="/edit-vehicle-responsibles"
+              editColumnWidth={100}
+              showTableHeader={true}
+              headerTitle="Responsable de Vehículo"
+              showAddButton={true}
+              addButtonText={"+ Agregar Responsable"}
+              onAddButtonClick={() =>
+                navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)
+              }
+              maxWidth="900px"
+              tableWidth="900px"
+            />
 
-        {!isCreateMode && vehicleId && (
-          <Table<Assignment>
-            getRows={getAssignmentsForTable}
-            columns={assignmentColumns}
-            title=""
-            showEditColumn={true}
-            editRoute="/assignment/edit"
-            showTableHeader={true}
-            headerTitle="Asignar Usuarios al Vehículo"
-            showAddButton={true}
-            addButtonText="+ Agregar Asignación"
-            onAddButtonClick={() =>
-              navigate(
-                vehicleId
-                  ? `/assignment/create/${vehicleId}`
-                  : "/assignment/create"
-              )
-            }
-            maxWidth="900px"
-          />
-        )}
+            {/* 2. Asignar usuarios al vehículo */}
+            <Table<Assignment>
+              getRows={getAssignmentsForTable}
+              columns={assignmentColumns}
+              title=""
+              showEditColumn={true}
+              editRoute="/assignment/edit"
+              showTableHeader={true}
+              headerTitle="Asignar Usuarios al Vehículo"
+              showAddButton={true}
+              addButtonText="+ Agregar Asignación"
+              onAddButtonClick={() =>
+                navigate(
+                  vehicleId
+                    ? `/assignment/create/${vehicleId}`
+                    : "/assignment/create"
+                )
+              }
+              maxWidth="900px"
+            />
 
-        {!isCreateMode && vehicleId && (
-          <Table<ReservationWithUser>
-            key={`reservations-${vehicleId}-${refreshTables}`}
-            getRows={getReservationsForTable}
-            columns={reservationColumns}
-            title=""
-            showEditColumn={true}
-            editRoute="/reservation/edit"
-            showTableHeader={true}
-            headerTitle="Reservas del Vehículo"
-            showAddButton={true}
-            addButtonText="+ Nueva Reserva"
-            onAddButtonClick={() =>
-              navigate(`/reservation/create?vehicleId=${vehicleId}`)
-            }
-            maxWidth="900px"
-          />
-        )}
+            {/* 3. Historial de kilometraje */}
+            <Table<any>
+              getRows={getMileageForTable}
+              columns={mileageColumns}
+              title=""
+              showEditColumn={false}
+              showTableHeader={true}
+              headerTitle="Historial de Kilometraje registrado"
+              showAddButton={true}
+              addButtonText="+ Agregar nuevo registro"
+              onAddButtonClick={() =>
+                navigate(`/kilometers/create/${vehicleId}`)
+              }
+              maxWidth="900px"
+              tableWidth="900px"
+            />
 
-        {!isCreateMode && vehicleId && (
-          <Table<any>
-            getRows={getMileageForTable}
-            columns={mileageColumns}
-            title=""
-            showEditColumn={false}
-            showTableHeader={true}
-            headerTitle="Historial de Kilometraje registrado"
-            showAddButton={true}
-            addButtonText="+ Agregar nuevo registro"
-            onAddButtonClick={() => navigate(`/kilometers/create/${vehicleId}`)}
-            maxWidth="900px"
-            tableWidth="900px"
-          />
+            {/* 4. Mantenimiento de vehículo */}
+            <Table<any>
+              getRows={getMaintenancesForTable}
+              columns={maintenanceColumns}
+              title=""
+              showEditColumn={true}
+              customEditCell={(params) => (
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const maintenanceId =
+                      params.row.maintenance_id ||
+                      params.row.maintenanceId ||
+                      params.row.id;
+                    const assignmentId =
+                      params.row.id || params.row.assignment_id;
+                    navigate(
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
+                    );
+                  }}
+                >
+                  <PencilIcon />
+                </span>
+              )}
+              showTableHeader={true}
+              headerTitle="Mantenimiento de Vehículo"
+              maxWidth="900px"
+              tableWidth="900px"
+              showAddButton={true}
+              addButtonText="+ Agregar mantenimiento"
+              onAddButtonClick={() =>
+                navigate(`/vehicle-maintenance-assignment/${vehicleId}`)
+              }
+            />
+
+            {/* 5. Registro de mantenimiento */}
+            <Table<any>
+              getRows={async (_pagination) => {
+                try {
+                  const response = await getMaintenanceRecordsByVehicle(
+                    vehicleId
+                  );
+                  if (response.success) {
+                    const mapped = (response.data || []).map(
+                      (r: any, i: number) => ({
+                        id: r.id || `mr-${i}`,
+                        ...r,
+                      })
+                    );
+                    return {
+                      success: true,
+                      data: mapped,
+                    };
+                  }
+                  return {
+                    success: false,
+                    data: [],
+                    message: "Error al obtener registros de mantenimiento",
+                  };
+                } catch (error) {
+                  return {
+                    success: false,
+                    data: [],
+                    message: `Error al obtener registros: ${
+                      (error as Error)?.message
+                    }`,
+                  };
+                }
+              }}
+              columns={maintenanceRecordColumns}
+              title=""
+              showTableHeader={true}
+              headerTitle="Registro de Mantenimiento"
+              showAddButton={true}
+              addButtonText="+ Agregar Registro"
+              onAddButtonClick={() => {
+                navigate(`/maintenance-record-register-edit/${vehicleId}`);
+              }}
+              maxWidth="900px"
+              tableWidth="900px"
+            />
+
+            <Table<any>
+              getRows={getReservationsForTable}
+              columns={reservationColumns}
+              title=""
+              showEditColumn={true}
+              editRoute="/reservation/edit"
+              showTableHeader={true}
+              headerTitle="Reservas del Vehículo"
+              showAddButton={true}
+              addButtonText="+ Nueva Reserva"
+              onAddButtonClick={() =>
+                navigate(`/reservation/create?vehicleId=${vehicleId}`)
+              }
+              maxWidth="900px"
+            />
+          </>
         )}
 
         {isCreateMode && (
