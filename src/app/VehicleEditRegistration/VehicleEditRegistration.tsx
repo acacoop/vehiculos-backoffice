@@ -11,6 +11,7 @@ import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { VehicleKilometersService } from "../../services/kilometers";
+import { getReservationsByVehicle } from "../../services/reservations";
 import { useNotification } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
@@ -214,6 +215,109 @@ export default function VehicleEditRegistration() {
     },
   ];
 
+  const reservationColumns: GridColDef<any>[] = [
+    {
+      field: "user",
+      headerName: "Usuario",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_, row) => {
+        if (row.user) {
+          return `${row.user.firstName} ${row.user.lastName}`;
+        }
+        return row.userId || "N/A";
+      },
+      renderCell: (params) => {
+        if (params.row.user) {
+          return `${params.row.user.firstName} ${params.row.user.lastName}`;
+        }
+        return params.row.userId || "N/A";
+      },
+    },
+    {
+      field: "startDate",
+      headerName: "Fecha y Hora Inicio",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.startDate) {
+          const date = new Date(params.row.startDate);
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "Fecha y Hora Fin",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        if (params.row.endDate) {
+          const date = new Date(params.row.endDate);
+          const dateStr = date.toLocaleDateString("es-AR");
+          const timeStr = date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          return `${dateStr} ${timeStr}`;
+        }
+        return "Sin fecha";
+      },
+    },
+    {
+      field: "status",
+      headerName: "Estado",
+      width: 120,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_, row) => {
+        const now = new Date();
+        const startDate = new Date(row.startDate);
+        const endDate = new Date(row.endDate);
+
+        if (now < startDate) {
+          return "Programada";
+        } else if (now >= startDate && now <= endDate) {
+          return "Activa";
+        } else {
+          return "Finalizada";
+        }
+      },
+      renderCell: (params) => {
+        const now = new Date();
+        const startDate = new Date(params.row.startDate);
+        const endDate = new Date(params.row.endDate);
+
+        if (now < startDate) {
+          return (
+            <span style={{ color: "#FF9800", fontWeight: "bold" }}>
+              Programada
+            </span>
+          );
+        } else if (now >= startDate && now <= endDate) {
+          return (
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>Activa</span>
+          );
+        } else {
+          return (
+            <span style={{ color: "#E53935", fontWeight: "bold" }}>
+              Finalizada
+            </span>
+          );
+        }
+      },
+    },
+  ];
+
   const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
     try {
       const filterParams = vehicleId ? { vehicleId } : {};
@@ -327,6 +431,45 @@ export default function VehicleEditRegistration() {
           status: 500,
           detail: (error as Error)?.message,
         },
+      };
+    }
+  };
+
+  const getReservationsForTable = async (
+    paginationParams: PaginationParams
+  ) => {
+    if (!vehicleId) {
+      return {
+        success: false,
+        data: [],
+        message: "No se ha seleccionado ningún vehículo",
+      };
+    }
+
+    try {
+      const response = await getReservationsByVehicle(
+        vehicleId,
+        paginationParams
+      );
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data,
+          pagination: response.pagination,
+          message: response.message,
+        };
+      } else {
+        return {
+          success: false,
+          data: [],
+          message: response.message,
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener reservas: ${(error as Error)?.message}`,
       };
     }
   };
@@ -570,6 +713,22 @@ export default function VehicleEditRegistration() {
               }}
               maxWidth="900px"
               tableWidth="900px"
+            />
+
+            <Table<any>
+              getRows={getReservationsForTable}
+              columns={reservationColumns}
+              title=""
+              showEditColumn={true}
+              editRoute="/reservation/edit"
+              showTableHeader={true}
+              headerTitle="Reservas del Vehículo"
+              showAddButton={true}
+              addButtonText="+ Nueva Reserva"
+              onAddButtonClick={() =>
+                navigate(`/reservation/create?vehicleId=${vehicleId}`)
+              }
+              maxWidth="900px"
             />
           </>
         )}
