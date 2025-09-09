@@ -3,14 +3,14 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  dni: number;
+  cuit: number;
   active?: boolean; // Campo para indicar si el usuario está activo
 }
 
 // Parámetros para filtrar usuarios (coincide con OpenAPI)
 export interface UserFilterParams {
   email?: string;
-  dni?: string;
+  cuit?: string;
   firstName?: string;
   lastName?: string;
   active?: boolean; // Filtrar por estado activo/inactivo
@@ -18,7 +18,7 @@ export interface UserFilterParams {
 
 // Respuesta del backend según OpenAPI
 export interface ApiResponseData<T> {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: T;
   pagination?: {

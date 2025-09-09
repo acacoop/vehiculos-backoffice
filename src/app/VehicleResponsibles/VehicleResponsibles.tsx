@@ -34,7 +34,7 @@ export default function VehicleResponsibles() {
   };
   const columns = [
     { field: "userFullName", headerName: "Responsable", minWidth: 180 },
-    { field: "userDni", headerName: "DNI", minWidth: 120 },
+    { field: "userDni", headerName: "CUIT", minWidth: 120 },
 
     { field: "vehicleFullName", headerName: "Vehículo", minWidth: 120 },
     { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },

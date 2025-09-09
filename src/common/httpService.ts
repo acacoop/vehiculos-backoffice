@@ -31,7 +31,10 @@ function buildQueryString(params: Record<string, unknown>): string {
       const value = entry[1];
       return value !== undefined && value !== null && value !== "";
     })
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+    )
     .join("&");
 
   return filteredParams ? `?${filteredParams}` : "";
@@ -66,7 +69,7 @@ async function makeRequest<T>(
     const url = `${API_CONFIG.BASE_URL}${uri}${queryString}`;
 
     // Configurar headers
-  const requestHeaders: Record<string, string> = {
+    const requestHeaders: Record<string, string> = {
       ...DEFAULT_HEADERS,
       ...headers,
     };
@@ -85,8 +88,10 @@ async function makeRequest<T>(
     };
 
     // Agregar body si es necesario
-  const METHODS_WITH_BODY_SET = new Set<string>(METHODS_WITH_BODY as readonly string[]);
-  if (body && METHODS_WITH_BODY_SET.has(method)) {
+    const METHODS_WITH_BODY_SET = new Set<string>(
+      METHODS_WITH_BODY as readonly string[]
+    );
+    if (body && METHODS_WITH_BODY_SET.has(method)) {
       requestConfig.body = JSON.stringify(body);
     }
 

@@ -11,7 +11,7 @@ const normalizeVehicleResponsible = (item: any) => {
   const firstName =
     rawUser.firstName ?? rawUser.first_name ?? rawUser.name ?? "";
   const lastName = rawUser.lastName ?? rawUser.last_name ?? "";
-  const dni = rawUser.dni ?? rawUser.document ?? null;
+  const cuit = rawUser.cuit ?? rawUser.document ?? null;
   const email = rawUser.email ?? rawUser.mail ?? "";
 
   const licensePlate =
@@ -29,7 +29,7 @@ const normalizeVehicleResponsible = (item: any) => {
       id: rawUser.id ?? rawUser.userId ?? null,
       firstName,
       lastName,
-      dni,
+      cuit,
       email,
       active: rawUser.active ?? true,
     },
@@ -44,7 +44,7 @@ const normalizeVehicleResponsible = (item: any) => {
         rawVehicle.currentResponsible ?? rawVehicle.current_responsible,
     },
     userFullName: `${firstName} ${lastName}`.trim(),
-    userDni: dni,
+    userDni: cuit,
     userEmail: email,
     vehicleFullName: `${brand} ${model}`.trim(),
     vehicleLicensePlate: licensePlate,

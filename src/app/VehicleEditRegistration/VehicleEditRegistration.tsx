@@ -41,13 +41,13 @@ export default function VehicleEditRegistration() {
   }, []);
   const assignmentColumns: GridColDef<Assignment>[] = [
     {
-      field: "user.dni",
-      headerName: "DNI",
+      field: "user.cuit",
+      headerName: "CUIT",
       width: 110,
       headerAlign: "center",
       align: "center",
       renderCell: (params) =>
-        params.row.user.dni?.toLocaleString() || "Sin DNI",
+        params.row.user.cuit?.toLocaleString() || "Sin CUIT",
     },
     {
       field: "user.lastName",

@@ -25,7 +25,7 @@ const mockDocuments = [
   },
   {
     id: "2",
-    title: "DNI",
+    title: "CUIT",
     expirationDate: "2028-01-15",
     fileName: "dni_miguel.pdf",
     uploadDate: "2025-08-21",

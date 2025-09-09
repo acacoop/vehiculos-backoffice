@@ -60,8 +60,8 @@ const ENTITY_CONFIGS: Record<
         disabled: true,
       },
       {
-        key: "dni",
-        label: "DNI",
+        key: "cuit",
+        label: "CUIT",
         type: "text",
         readOnly: true,
         disabled: true,
@@ -148,7 +148,7 @@ export default function EntityForm({
           firstName: "",
           lastName: "",
           email: "",
-          dni: "",
+          cuit: "",
         };
       case "vehicle":
         return {

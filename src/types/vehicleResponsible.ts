@@ -6,7 +6,7 @@ export interface VehicleResponsible {
     id: string;
     firstName: string;
     lastName: string;
-    dni: number;
+    cuit: number;
     email: string;
     active: boolean;
   };

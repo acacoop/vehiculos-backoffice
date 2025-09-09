@@ -27,15 +27,6 @@ export class KilometersApiError extends Error {
 }
 
 /**
- * Utility function to validate UUID format
- */
-const isValidUUID = (uuid: string): boolean => {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-};
-
-/**
  * Utility function to handle API responses and errors
  */
 const handleApiResponse = async <T>(
@@ -88,13 +79,6 @@ export class VehicleKilometersService {
     // Client-side validation
     if (!vehicleId) {
       throw new KilometersApiError("Vehicle ID is required", 400);
-    }
-
-    if (!isValidUUID(vehicleId)) {
-      throw new KilometersApiError(
-        "Invalid vehicle ID format. Must be a valid UUID.",
-        400
-      );
     }
 
     try {
@@ -203,22 +187,8 @@ export class VehicleKilometersService {
       throw new KilometersApiError("Vehicle ID is required", 400);
     }
 
-    if (!isValidUUID(vehicleId)) {
-      throw new KilometersApiError(
-        "Invalid vehicle ID format. Must be a valid UUID.",
-        400
-      );
-    }
-
     if (!logData.userId) {
       throw new KilometersApiError("User ID is required", 400);
-    }
-
-    if (!isValidUUID(logData.userId)) {
-      throw new KilometersApiError(
-        "Invalid user ID format. Must be a valid UUID.",
-        400
-      );
     }
 
     if (!logData.date) {

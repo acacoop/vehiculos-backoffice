@@ -23,12 +23,11 @@ const maintenanceColumns: GridColDef<Maintenance>[] = [
 const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
   [
     {
-      field: "maintenanceCategoryName",
+      field: "categoryName",
       headerName: "Nombre de Categoría",
       width: 250,
       flex: 1,
-      renderCell: (params) =>
-        params.row.maintenanceCategoryName || "Sin categoría",
+      renderCell: (params) => params.row.categoryName || "Sin categoría",
     },
     {
       field: "name",

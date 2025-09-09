@@ -21,7 +21,7 @@ export function UserSearch({
   showDropdown,
   onUserSelect,
   onDropdownToggle,
-  placeholder = "Buscar por nombre o DNI...",
+  placeholder = "Buscar por nombre o CUIT...",
   className = "reservation-form-input",
 }: UserSearchProps) {
   return (
@@ -43,7 +43,7 @@ export function UserSearch({
               className="user-dropdown-item"
               onClick={() => onUserSelect(user)}
             >
-              {user.firstName} {user.lastName} - DNI: {user.dni}
+              {user.firstName} {user.lastName} - CUIT: {user.cuit}
             </div>
           ))}
         </div>

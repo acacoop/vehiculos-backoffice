@@ -6,7 +6,7 @@ import type { ServiceResponse } from "../../common";
 import type { User as UserType } from "../../types/user";
 
 const userColumns = [
-  { field: "dni", headerName: "DNI", width: 120 },
+  { field: "cuit", headerName: "CUIT", width: 120 },
   {
     field: "firstName",
     headerName: "Nombre",
