@@ -83,8 +83,7 @@ export default function MaintenanceRecordRegisterEdit() {
             const normalizedMaintenance = {
               id: maintenanceResponse.data.id,
               name: maintenanceResponse.data.title || maintenanceId,
-              maintenanceCategoryName:
-                maintenanceResponse.data.categoryName || "",
+              categoryName: maintenanceResponse.data.categoryName || "",
             };
             setMaintenance(normalizedMaintenance);
           }

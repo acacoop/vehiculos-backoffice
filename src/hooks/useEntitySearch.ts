@@ -27,7 +27,7 @@ export function useUserSearch() {
               `${user.firstName} ${user.lastName}`
                 .toLowerCase()
                 .includes(term.toLowerCase()) ||
-              user.dni?.toString().includes(term)
+              user.cuit?.toString().includes(term)
           );
           setAvailableUsers(filtered);
           setShowDropdown(true);

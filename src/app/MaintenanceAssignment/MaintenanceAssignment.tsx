@@ -121,8 +121,8 @@ export default function MaintenanceAssignment() {
   ): MaintenancePossibleNormalized => ({
     id: maintenanceData.id || id,
     name: maintenanceData.name || maintenanceData.title || "Sin título",
-    maintenanceCategoryName:
-      maintenanceData.maintenanceCategoryName ||
+    categoryName:
+      maintenanceData.categoryName ||
       maintenanceData.categoryName ||
       maintenanceData.category_name ||
       "Sin categoría",
@@ -326,7 +326,7 @@ export default function MaintenanceAssignment() {
           setMaintenanceData({
             id: full.id,
             name: full.title || full.id,
-            maintenanceCategoryName: full.categoryName || full.categoryId || "",
+            categoryName: full.categoryName || full.categoryId || "",
           });
 
           // Prefill frequencies and details from the maintenance defaults

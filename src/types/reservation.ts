@@ -23,7 +23,7 @@ export interface ReservationWithUser extends Reservation {
     id: string;
     firstName: string;
     lastName: string;
-    dni: number;
+    cuit: number;
     email: string;
   };
 }
@@ -34,7 +34,7 @@ export interface ReservationWithDetails extends Reservation {
     id: string;
     firstName: string;
     lastName: string;
-    dni: number;
+    cuit: number;
     email: string;
     active?: boolean;
   };

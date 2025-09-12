@@ -325,10 +325,10 @@ export default function ReservationEdit() {
         : undefined,
       fields: [
         {
-          key: "dni",
-          label: "DNI:",
+          key: "cuit",
+          label: "CUIT:",
           type: "text",
-          value: userSearch.selectedUser.dni?.toLocaleString() || "",
+          value: userSearch.selectedUser.cuit?.toLocaleString() || "",
           onChange: () => {},
           disabled: true,
         },
@@ -365,7 +365,7 @@ export default function ReservationEdit() {
       fields: [
         {
           key: "userSearch",
-          label: "Buscar usuario (por nombre, apellido, DNI)",
+          label: "Buscar usuario (por nombre, apellido, CUIT)",
           type: "userSearch",
           value: "",
           onChange: () => {},
@@ -376,7 +376,7 @@ export default function ReservationEdit() {
           showDropdown: userSearch.showDropdown,
           onUserSelect: userSearch.selectUser,
           onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre, apellido o DNI...",
+          placeholder: "Buscar por nombre, apellido o CUIT...",
           required: true,
         },
       ],

@@ -22,8 +22,11 @@ export const getMaintenanceRecordsByVehicle = async (
   vehicleId: string
 ): Promise<ServiceResponse<MaintenanceRecord[]>> => {
   try {
+    const params = new URLSearchParams();
+    params.append("vehicleId", vehicleId);
+
     const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records/vehicle/${vehicleId}`,
+      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
       {
         headers: await buildAuthHeaders(false),
       }
@@ -168,8 +171,12 @@ export const getMaintenanceRecordsByVehicleAndMaintenance = async (
   maintenanceId: string
 ): Promise<ServiceResponse<MaintenanceRecord[]>> => {
   try {
+    const params = new URLSearchParams();
+    params.append("vehicleId", vehicleId);
+    params.append("maintenanceId", maintenanceId);
+
     const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records/vehicle/${vehicleId}/maintenance/${maintenanceId}`,
+      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
       {
         headers: await buildAuthHeaders(false),
       }

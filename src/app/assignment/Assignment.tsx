@@ -35,10 +35,11 @@ const formatDate = (date: string | null | undefined): string => {
 
 const assignmentColumns: GridColDef<Assignment>[] = [
   {
-    field: "user.dni",
-    headerName: "DNI Usuario",
+    field: "user.cuit",
+    headerName: "CUIT Usuario",
     width: 90,
-    renderCell: (params) => params.row.user.dni?.toLocaleString() || "Sin DNI",
+    renderCell: (params) =>
+      params.row.user.cuit?.toLocaleString() || "Sin CUIT",
   },
   {
     field: "user.name",

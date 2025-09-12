@@ -363,8 +363,7 @@ export const deleteMaintenance = async (
 interface MaintenancePossible {
   id: string;
   name: string;
-  maintenanceCategoryName?: string; // Como viene del backend en camelCase
-  maintenancecategoryname?: string; // Como realmente viene del backend en lowercase
+  categoryName?: string;
 }
 
 /**
@@ -373,7 +372,7 @@ interface MaintenancePossible {
 export interface MaintenancePossibleNormalized {
   id: string;
   name: string;
-  maintenanceCategoryName: string;
+  categoryName: string;
 }
 
 /**
@@ -411,10 +410,8 @@ export async function getMaintenancePossibles(): Promise<
         return {
           id: item.id,
           name: item.name,
-          maintenanceCategoryName:
-            item.maintenancecategoryname ||
-            item.maintenanceCategoryName ||
-            "Sin categoría",
+          categoryName:
+            item.categoryName || item.categoryName || "Sin categoría",
         };
       }
     );
@@ -626,10 +623,8 @@ export const getMaintenanceItemById = async (
     const normalizedData: MaintenancePossibleNormalized = {
       id: rawData.id,
       name: rawData.name,
-      maintenanceCategoryName:
-        rawData.maintenancecategoryname ||
-        rawData.maintenanceCategoryName ||
-        "Sin categoría",
+      categoryName:
+        rawData.categoryName || rawData.categoryName || "Sin categoría",
     };
 
     return {
@@ -811,8 +806,8 @@ export const getMaintenancePossibleById = async (
         payload.maintenanceCategoryId ||
         "",
       categoryName:
-        payload.maintenancecategoryname ||
-        payload.maintenanceCategoryName ||
+        payload.categoryName ||
+        payload.categoryName ||
         payload.categoryName ||
         payload.category_name,
       frequencyKm:

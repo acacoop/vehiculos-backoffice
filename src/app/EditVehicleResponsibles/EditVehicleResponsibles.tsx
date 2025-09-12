@@ -268,9 +268,9 @@ export default function EditVehicleResponsibles() {
       fields: [
         {
           key: "userDni",
-          label: "DNI:",
+          label: "CUIT:",
           type: "text",
-          value: (currentUser.dni as any) || "",
+          value: (currentUser.cuit as any) || "",
           onChange: () => {},
           disabled: true,
         },
@@ -306,7 +306,7 @@ export default function EditVehicleResponsibles() {
       fields: [
         {
           key: "userSearch",
-          label: "Buscar usuario (por nombre, apellido, DNI)",
+          label: "Buscar usuario (por nombre, apellido, CUIT)",
           type: "userSearch",
           value: "",
           onChange: () => {},
@@ -317,7 +317,7 @@ export default function EditVehicleResponsibles() {
           showDropdown: userSearch.showDropdown,
           onUserSelect: userSearch.selectUser,
           onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre, apellido o DNI...",
+          placeholder: "Buscar por nombre, apellido o CUIT...",
           required: true,
         },
       ],
