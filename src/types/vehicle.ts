@@ -6,6 +6,11 @@ export interface Vehicle {
   model: string;
   year: number;
   imgUrl?: string;
+  chassisNumber?: string;
+  engineNumber?: string;
+  vehicleType?: string;
+  transmission?: string;
+  fuelType?: string;
 }
 
 // Parámetros para filtrar vehículos (camelCase para uso interno)

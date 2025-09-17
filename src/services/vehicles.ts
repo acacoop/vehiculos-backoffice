@@ -211,6 +211,11 @@ export async function getVehiclesByMaintenanceId(
       model: item.model,
       year: item.year,
       imgUrl: item.imgUrl,
+      chassisNumber: item.chassisNumber,
+      engineNumber: item.engineNumber,
+      vehicleType: item.vehicleType,
+      transmission: item.transmission,
+      fuelType: item.fuelType,
     }));
 
     return {

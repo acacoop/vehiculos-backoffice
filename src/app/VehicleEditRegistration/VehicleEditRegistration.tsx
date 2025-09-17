@@ -544,7 +544,11 @@ export default function VehicleEditRegistration() {
           showActions={!isCreateMode}
         />
 
-        <EntityForm entityType="technical" showActions={!isCreateMode} />
+        <EntityForm
+          entityType="technical"
+          entityId={isCreateMode ? undefined : vehicleId}
+          showActions={!isCreateMode}
+        />
 
         {/* Orden de tablas en modo edición */}
         {!isCreateMode && vehicleId && (

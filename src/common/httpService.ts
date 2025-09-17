@@ -95,11 +95,13 @@ async function makeRequest<T>(
       requestConfig.body = JSON.stringify(body);
     }
 
+
     // Hacer el request
     const response = await fetch(url, requestConfig);
 
     // Parsear respuesta
     const responseData: BackendResponse<T> = await response.json();
+
 
     // Si la respuesta no es exitosa, lanzar error
     if (!response.ok || responseData.status === "error") {
