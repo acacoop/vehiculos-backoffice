@@ -405,13 +405,13 @@ export default function EntityForm({
               <p className="entity-label">{field.label}</p>
               {field.type === "select" ? (
                 <select
-                  className={field.className || ""}
+                  className={`entity-select${field.className ? ` ${field.className}` : ""}`}
                   value={formData[field.key] ?? ""}
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   disabled={isFieldDisabled(field)}
                 >
                   {(field.options || []).map((opt) => (
-                    <option key={opt.value} value={opt.value}>
+                    <option key={opt.value} value={opt.value} className="entity-option">
                       {opt.label}
                     </option>
                   ))}
