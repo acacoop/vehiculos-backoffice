@@ -6,6 +6,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
+import Footer from "./components/Footer/Footer";
 import "./App.css";
 import Home from "./app/home/Home";
 import Users from "./app/Users/Users";
@@ -25,6 +26,7 @@ import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 import LogIn from "./app/LogIn/LogIn";
+
 import { useMsal } from "@azure/msal-react";
 import { getActiveAccount } from "./common/auth";
 
@@ -41,6 +43,7 @@ function ProtectedRoute() {
     <>
       <Navbar />
       <Outlet />
+      <Footer />
     </>
   );
 }

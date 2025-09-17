@@ -740,7 +740,7 @@ export default function VehicleEditRegistration() {
         {isCreateMode && (
           <div className="registration-actions">
             <button
-              className="register-button"
+              className="table-add-btn"
               onClick={handleVehicleRegistration}
               disabled={isRegistering}
               style={{
