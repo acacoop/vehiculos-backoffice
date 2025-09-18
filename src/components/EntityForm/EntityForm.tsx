@@ -412,6 +412,7 @@ export default function EntityForm({
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   disabled={isFieldDisabled(field)}
                 >
+                  <option value="">Seleccionar una opción</option>
                   {(field.options || []).map((opt) => (
                     <option
                       key={opt.value}
