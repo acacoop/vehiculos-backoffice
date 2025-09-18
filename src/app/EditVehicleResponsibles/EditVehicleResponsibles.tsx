@@ -427,35 +427,37 @@ export default function EditVehicleResponsibles() {
 
   return (
     <>
-      <FormLayout
-        title={isCreateMode ? "Nuevo Responsable" : "Editar Responsable"}
-        sections={sections}
-        className="edit-vehicle-responsibles"
-      >
-        <ButtonGroup>
-          <CancelButton text="Cancelar" onClick={handleCancel} />
-          {!isCreateMode && (
-            <DeleteButton text="Eliminar" onClick={handleDelete} />
-          )}
-          <ConfirmButton
-            text={isCreateMode ? "Crear" : "Guardar"}
-            onClick={handleSave}
-          />
-        </ButtonGroup>
-      </FormLayout>
+      <div className="edit-vehicle-responsibles-container">
+        <FormLayout
+          title={isCreateMode ? "Nuevo Responsable" : "Editar Responsable"}
+          sections={sections}
+          className="edit-vehicle-responsibles"
+        >
+          <ButtonGroup>
+            <CancelButton text="Cancelar" onClick={handleCancel} />
+            {!isCreateMode && (
+              <DeleteButton text="Eliminar" onClick={handleDelete} />
+            )}
+            <ConfirmButton
+              text={isCreateMode ? "Crear" : "Guardar"}
+              onClick={handleSave}
+            />
+          </ButtonGroup>
+        </FormLayout>
 
-      <ConfirmDialog
-        open={isConfirmOpen}
-        message={confirmMessage}
-        onConfirm={confirmDialogConfirm}
-        onCancel={confirmDialogCancel}
-      />
-      <NotificationToast
-        message={notification.message}
-        type={notification.type}
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-      />
+        <ConfirmDialog
+          open={isConfirmOpen}
+          message={confirmMessage}
+          onConfirm={confirmDialogConfirm}
+          onCancel={confirmDialogCancel}
+        />
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      </div>
     </>
   );
 }
