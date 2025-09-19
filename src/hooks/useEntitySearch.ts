@@ -76,14 +76,25 @@ export function useVehicleSearch() {
       try {
         const response = await getVehicles({}, { page: 1, limit: 100 });
         if (response.success) {
-          const filtered = response.data.filter(
-            (vehicle: Vehicle) =>
-              `${vehicle.brand} ${vehicle.model}`
-                .toLowerCase()
-                .includes(term.toLowerCase()) ||
-              vehicle.licensePlate.toLowerCase().includes(term.toLowerCase()) ||
-              vehicle.year?.toString().includes(term)
-          );
+          const filtered = response.data.filter((vehicle: Vehicle) => {
+            const brand =
+              (vehicle as any).brandName ||
+              vehicle.brand ||
+              vehicle.modelObj?.brand?.name ||
+              "";
+            const model =
+              (vehicle as any).modelName ||
+              vehicle.model ||
+              vehicle.modelObj?.name ||
+              "";
+            const composite = `${brand} ${model}`.toLowerCase();
+            const termLower = term.toLowerCase();
+            return (
+              composite.includes(termLower) ||
+              vehicle.licensePlate.toLowerCase().includes(termLower) ||
+              (vehicle.year ? String(vehicle.year).includes(term) : false)
+            );
+          });
           setAvailableVehicles(filtered);
           setShowDropdown(true);
         }
@@ -98,9 +109,17 @@ export function useVehicleSearch() {
 
   const selectVehicle = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
-    setSearchTerm(
-      `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`
-    );
+    const brand =
+      (vehicle as any).brandName ||
+      vehicle.brand ||
+      vehicle.modelObj?.brand?.name ||
+      "";
+    const model =
+      (vehicle as any).modelName ||
+      vehicle.model ||
+      vehicle.modelObj?.name ||
+      "";
+    setSearchTerm(`${brand} ${model} (${vehicle.licensePlate})`);
     setShowDropdown(false);
   };
 

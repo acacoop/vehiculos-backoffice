@@ -110,13 +110,33 @@ export default function UserEdit() {
       align: "center",
       valueGetter: (_, row) => {
         if (row.vehicle) {
-          return `${row.vehicle.brand} ${row.vehicle.model} (${row.vehicle.licensePlate})`;
+          const brand =
+            row.vehicle.brandName ||
+            row.vehicle.brand ||
+            row.vehicle.modelObj?.brand?.name ||
+            "";
+          const model =
+            row.vehicle.modelName ||
+            row.vehicle.model ||
+            row.vehicle.modelObj?.name ||
+            "";
+          return `${brand} ${model} (${row.vehicle.licensePlate})`;
         }
         return row.vehicleId || "N/A";
       },
       renderCell: (params) => {
         if (params.row.vehicle) {
-          return `${params.row.vehicle.brand} ${params.row.vehicle.model} (${params.row.vehicle.licensePlate})`;
+          const brand =
+            params.row.vehicle.brandName ||
+            params.row.vehicle.brand ||
+            params.row.vehicle.modelObj?.brand?.name ||
+            "";
+          const model =
+            params.row.vehicle.modelName ||
+            params.row.vehicle.model ||
+            params.row.vehicle.modelObj?.name ||
+            "";
+          return `${brand} ${model} (${params.row.vehicle.licensePlate})`;
         }
         return params.row.vehicleId || "N/A";
       },

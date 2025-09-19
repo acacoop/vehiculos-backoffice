@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
 import { Alert } from "@mui/material";
-import { getVehicleById, updateVehicle } from "../../services/vehicles";
+import {
+  getVehicleById,
+  updateVehicle,
+  createVehicle,
+} from "../../services/vehicles";
+import { getVehicleBrands } from "../../services/vehicleBrands";
+import { getVehicleModels } from "../../services/vehicleModels";
 import type { Vehicle } from "../../types/vehicle";
 import { getUserById } from "../../services/users";
 import {
@@ -77,10 +83,11 @@ const ENTITY_CONFIGS: Record<
   vehicle: {
     title: (isEdit) =>
       isEdit ? "Detalles del Vehículo" : "Información del Nuevo Vehículo",
+    // brand/model converted to select placeholders dynamically (we'll inject options at render time)
     fields: [
       { key: "licensePlate", label: "Dominio", type: "text" },
-      { key: "brand", label: "Marca", type: "text" },
-      { key: "model", label: "Modelo", type: "text" },
+      { key: "brandId", label: "Marca", type: "select" },
+      { key: "modelId", label: "Modelo", type: "select" },
       { key: "year", label: "Año", type: "number", className: "no-spinner" },
     ],
     confirmButtonText: (isEdit) => (isEdit ? "Confirmar" : "Guardar"),
@@ -182,6 +189,14 @@ export default function EntityForm({
 
   const config = ENTITY_CONFIGS[entityType];
 
+  // Dynamic options for brand/model selects (declare early to keep hook order stable)
+  const [brandOptions, setBrandOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [modelOptions, setModelOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
   const getDefaultData = () => {
     switch (entityType) {
       case "user":
@@ -195,8 +210,8 @@ export default function EntityForm({
         return {
           id: "",
           licensePlate: "",
-          brand: "",
-          model: "",
+          brandId: "",
+          modelId: "",
           year: new Date().getFullYear(),
           imgUrl: "",
         };
@@ -256,6 +271,15 @@ export default function EntityForm({
               transmission: v.transmission || "",
               fuelType: v.fuelType || "",
             });
+          } else if (entityType === "vehicle") {
+            const v = (response.data as Vehicle) || ({} as Vehicle);
+            setFormData({
+              id: v.id,
+              licensePlate: v.licensePlate,
+              brandId: v.modelObj?.brand.id || "",
+              modelId: v.modelObj?.id || "",
+              year: v.year,
+            });
           } else {
             setFormData(response.data);
           }
@@ -280,6 +304,41 @@ export default function EntityForm({
     }
   }, [formData, onDataChange]);
 
+  // Always declare effects in same order; internal guards prevent unnecessary work
+  useEffect(() => {
+    if (entityType !== "vehicle") return;
+    (async () => {
+      const brandsResp = await getVehicleBrands({ limit: 1000, page: 1 });
+      if (brandsResp.success) {
+        setBrandOptions([
+          { label: "Seleccionar marca", value: "" },
+          ...brandsResp.data.items.map((b) => ({ label: b.name, value: b.id })),
+        ]);
+      }
+    })();
+  }, [entityType]);
+
+  useEffect(() => {
+    if (entityType !== "vehicle") return;
+    if (!formData.brandId) {
+      setModelOptions([{ label: "Seleccionar modelo", value: "" }]);
+      return;
+    }
+    (async () => {
+      const modelsResp = await getVehicleModels({
+        brandId: formData.brandId,
+        limit: 1000,
+        page: 1,
+      });
+      if (modelsResp.success) {
+        setModelOptions([
+          { label: "Seleccionar modelo", value: "" },
+          ...modelsResp.data.items.map((m) => ({ label: m.name, value: m.id })),
+        ]);
+      }
+    })();
+  }, [entityType, formData.brandId]);
+
   const handleFieldChange = (fieldKey: string, value: any) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -300,9 +359,8 @@ export default function EntityForm({
           if (entityId) {
             const response = await updateVehicle(entityId, {
               licensePlate: formData.licensePlate,
-              brand: formData.brand,
-              model: formData.model,
               year: formData.year,
+              modelId: formData.modelId,
             });
 
             if (response.success) {
@@ -315,10 +373,25 @@ export default function EntityForm({
               showError(errorMessage);
             }
           } else {
-            setShowDialog(false);
-            showSuccess(
-              "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
-            );
+            // create flow
+            const createResp = await createVehicle({
+              licensePlate: formData.licensePlate,
+              year: formData.year,
+              modelId: formData.modelId,
+              chassisNumber: formData.chassisNumber,
+              engineNumber: formData.engineNumber,
+              vehicleType: formData.vehicleType,
+              transmission: formData.transmission,
+              fuelType: formData.fuelType,
+            });
+            if (createResp.success) {
+              setShowDialog(false);
+              showSuccess("Vehículo creado exitosamente");
+            } else {
+              const msg = createResp.message || "Error al crear vehículo";
+              setError(msg);
+              showError(msg);
+            }
           }
           break;
 
@@ -404,25 +477,47 @@ export default function EntityForm({
             <div key={field.key} className="entity-field">
               <p className="entity-label">{field.label}</p>
               {field.type === "select" ? (
-                <select
-                  className={`entity-select${
-                    field.className ? ` ${field.className}` : ""
-                  }`}
-                  value={formData[field.key] ?? ""}
-                  onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                  disabled={isFieldDisabled(field)}
-                >
-                  <option value="">Seleccionar una opción</option>
-                  {(field.options || []).map((opt) => (
-                    <option
-                      key={opt.value}
-                      value={opt.value}
-                      className="entity-option"
+                (() => {
+                  let dynamicOptions = field.options || [];
+                  if (entityType === "vehicle") {
+                    if (field.key === "brandId") dynamicOptions = brandOptions;
+                    if (field.key === "modelId") dynamicOptions = modelOptions;
+                  }
+                  const hasEmpty = dynamicOptions.some((o) => o.value === "");
+                  return (
+                    <select
+                      className={`entity-select${
+                        field.className ? ` ${field.className}` : ""
+                      }`}
+                      value={formData[field.key] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleFieldChange(field.key, val);
+                        if (
+                          entityType === "vehicle" &&
+                          field.key === "brandId"
+                        ) {
+                          // reset model when brand changes
+                          handleFieldChange("modelId", "");
+                        }
+                      }}
+                      disabled={isFieldDisabled(field)}
                     >
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                      {!hasEmpty && (
+                        <option value="">Seleccionar una opción</option>
+                      )}
+                      {dynamicOptions.map((opt) => (
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          className="entity-option"
+                        >
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                })()
               ) : (
                 <input
                   type={field.type}

@@ -348,7 +348,11 @@ export default function EditVehicleResponsibles() {
           key: "vehicleBrand",
           label: "Marca:",
           type: "text",
-          value: currentVehicle.brand || "",
+          value:
+            (currentVehicle as any).brandName ||
+            currentVehicle.brand ||
+            currentVehicle.modelObj?.brand?.name ||
+            "",
           onChange: () => {},
           disabled: true,
         },
@@ -356,7 +360,11 @@ export default function EditVehicleResponsibles() {
           key: "vehicleModel",
           label: "Modelo:",
           type: "text",
-          value: currentVehicle.model || "",
+          value:
+            (currentVehicle as any).modelName ||
+            currentVehicle.model ||
+            currentVehicle.modelObj?.name ||
+            "",
           onChange: () => {},
           disabled: true,
         },

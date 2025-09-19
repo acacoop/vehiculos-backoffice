@@ -197,8 +197,18 @@ export default function EditAssignment() {
               finalVehicle.id
             );
             if (hasExistingAssignment) {
+              const brand =
+                (finalVehicle as any).brandName ||
+                finalVehicle.brand ||
+                finalVehicle.modelObj?.brand?.name ||
+                "";
+              const model =
+                (finalVehicle as any).modelName ||
+                finalVehicle.model ||
+                finalVehicle.modelObj?.name ||
+                "";
               showError(
-                `El vehículo ${finalVehicle.brand} ${finalVehicle.model} (${finalVehicle.licensePlate}) ya se encuentra asignado a ${finalUser.firstName} ${finalUser.lastName}`
+                `El vehículo ${brand} ${model} (${finalVehicle.licensePlate}) ya se encuentra asignado a ${finalUser.firstName} ${finalUser.lastName}`
               );
               return;
             }

@@ -25,13 +25,19 @@ const getVehiclesData = async (
       };
     }
 
-    const mappedData = response.data.map((vehicle: any, index: number) => ({
-      id: vehicle.id || `vehicle-${Date.now()}-${index}`,
-      licensePlate: vehicle.licensePlate || "N/A",
-      brand: vehicle.brand || "N/A",
-      model: vehicle.model || "N/A",
-      year: vehicle.year?.toString() || "N/A",
-    }));
+    const mappedData = response.data.map((vehicle: any, index: number) => {
+      const brandName =
+        vehicle.brandName || vehicle.brand || vehicle.modelObj?.brand?.name;
+      const modelName =
+        vehicle.modelName || vehicle.model || vehicle.modelObj?.name;
+      return {
+        id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+        licensePlate: vehicle.licensePlate || "N/A",
+        brand: brandName || "N/A",
+        model: modelName || "N/A",
+        year: vehicle.year?.toString() || "N/A",
+      };
+    });
 
     return {
       success: true,

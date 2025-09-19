@@ -86,15 +86,27 @@ export function VehicleSearch({
       />
       {showDropdown && availableVehicles.length > 0 && (
         <div className="vehicle-dropdown">
-          {availableVehicles.map((vehicle) => (
-            <div
-              key={vehicle.id}
-              className="vehicle-dropdown-item"
-              onClick={() => onVehicleSelect(vehicle)}
-            >
-              {vehicle.brand} {vehicle.model} - {vehicle.licensePlate}
-            </div>
-          ))}
+          {availableVehicles.map((vehicle) => {
+            const brand =
+              (vehicle as any).brandName ||
+              vehicle.brand ||
+              vehicle.modelObj?.brand?.name ||
+              "";
+            const model =
+              (vehicle as any).modelName ||
+              vehicle.model ||
+              vehicle.modelObj?.name ||
+              "";
+            return (
+              <div
+                key={vehicle.id}
+                className="vehicle-dropdown-item"
+                onClick={() => onVehicleSelect(vehicle)}
+              >
+                {brand} {model} - {vehicle.licensePlate}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

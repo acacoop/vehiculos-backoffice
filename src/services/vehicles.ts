@@ -29,9 +29,10 @@ export async function getAllVehicles(
       };
     }
 
+    const mapped = (response.data || []).map(mapVehicleResponse);
     return {
       success: true,
-      data: response.data,
+      data: mapped,
     };
   } catch (error) {
     return {
@@ -61,9 +62,10 @@ export async function getVehicles(
       };
     }
 
+    const mapped = (response.data || []).map(mapVehicleResponse);
     return {
       success: true,
-      data: response.data,
+      data: mapped,
       pagination: response.pagination
         ? {
             page: response.pagination.page,
@@ -101,7 +103,7 @@ export async function getVehicleById(
 
     return {
       success: true,
-      data: response.data,
+      data: mapVehicleResponse(response.data as any),
     };
   } catch (error) {
     return {
@@ -115,12 +117,40 @@ export async function getVehicleById(
 
 export async function updateVehicle(
   id: string,
-  vehicleData: Partial<Omit<Vehicle, "id" | "imgUrl">>
+  vehicleData: Partial<
+    Omit<
+      Vehicle,
+      | "id"
+      | "imgUrl"
+      | "modelObj"
+      | "brand"
+      | "model"
+      | "brandName"
+      | "modelName"
+    >
+  > & { modelId?: string }
 ): Promise<ServiceResponse<Vehicle>> {
   try {
-    const response: BackendResponse<Vehicle> = await httpService.patch({
+    // Build payload for backend (only allowed fields)
+    const payload: Record<string, any> = {};
+    if (vehicleData.licensePlate !== undefined)
+      payload.licensePlate = vehicleData.licensePlate;
+    if (vehicleData.year !== undefined) payload.year = vehicleData.year;
+    if (vehicleData.chassisNumber !== undefined)
+      payload.chassisNumber = vehicleData.chassisNumber;
+    if (vehicleData.engineNumber !== undefined)
+      payload.engineNumber = vehicleData.engineNumber;
+    if (vehicleData.vehicleType !== undefined)
+      payload.vehicleType = vehicleData.vehicleType;
+    if (vehicleData.transmission !== undefined)
+      payload.transmission = vehicleData.transmission;
+    if (vehicleData.fuelType !== undefined)
+      payload.fuelType = vehicleData.fuelType;
+    if (vehicleData.modelId) payload.modelId = vehicleData.modelId;
+
+    const response: BackendResponse<any> = await httpService.patch({
       uri: `/vehicles/${id}`,
-      body: vehicleData,
+      body: payload,
     });
 
     if (response.status === ResponseStatus.ERROR) {
@@ -133,7 +163,7 @@ export async function updateVehicle(
 
     return {
       success: true,
-      data: response.data,
+      data: mapVehicleResponse(response.data as any),
       message: "Vehículo actualizado exitosamente",
     };
   } catch (error) {
@@ -150,12 +180,36 @@ export async function updateVehicle(
  * Crea un nuevo vehículo
  */
 export async function createVehicle(
-  vehicleData: Omit<Vehicle, "id">
+  vehicleData: Pick<
+    Vehicle,
+    | "licensePlate"
+    | "year"
+    | "chassisNumber"
+    | "engineNumber"
+    | "vehicleType"
+    | "transmission"
+    | "fuelType"
+    | "modelId"
+  >
 ): Promise<ServiceResponse<Vehicle>> {
   try {
-    const response: BackendResponse<Vehicle> = await httpService.post({
+    const payload: Record<string, any> = {
+      licensePlate: vehicleData.licensePlate,
+      year: vehicleData.year,
+      modelId: vehicleData.modelId,
+    };
+    if (vehicleData.chassisNumber)
+      payload.chassisNumber = vehicleData.chassisNumber;
+    if (vehicleData.engineNumber)
+      payload.engineNumber = vehicleData.engineNumber;
+    if (vehicleData.vehicleType) payload.vehicleType = vehicleData.vehicleType;
+    if (vehicleData.transmission)
+      payload.transmission = vehicleData.transmission;
+    if (vehicleData.fuelType) payload.fuelType = vehicleData.fuelType;
+
+    const response: BackendResponse<any> = await httpService.post({
       uri: "/vehicles",
-      body: vehicleData,
+      body: payload,
     });
 
     if (response.status === ResponseStatus.ERROR) {
@@ -168,7 +222,7 @@ export async function createVehicle(
 
     return {
       success: true,
-      data: response.data,
+      data: mapVehicleResponse(response.data as any),
       message: "Vehículo creado exitosamente",
     };
   } catch (error) {
@@ -203,20 +257,36 @@ export async function getVehiclesByMaintenanceId(
       };
     }
 
-    const vehicles: Vehicle[] = response.data.map((item: any) => ({
-      id: item.vehicleId,
-      assignmentId: item.assignmentId || item.id, // Include assignment ID
-      licensePlate: item.licensePlate,
-      brand: item.brand,
-      model: item.model,
-      year: item.year,
-      imgUrl: item.imgUrl,
-      chassisNumber: item.chassisNumber,
-      engineNumber: item.engineNumber,
-      vehicleType: item.vehicleType,
-      transmission: item.transmission,
-      fuelType: item.fuelType,
-    }));
+    const vehicles: Vehicle[] = response.data.map((item: any) => {
+      // Support both legacy flat and new nested shapes in this endpoint
+      if (item.model && item.model.brand) {
+        return mapVehicleResponse({
+          id: item.vehicleId || item.id,
+          licensePlate: item.licensePlate,
+          year: item.year,
+          chassisNumber: item.chassisNumber,
+          engineNumber: item.engineNumber,
+          vehicleType: item.vehicleType,
+          transmission: item.transmission,
+          fuelType: item.fuelType,
+          model: item.model,
+        });
+      }
+      return {
+        id: item.vehicleId,
+        assignmentId: item.assignmentId || item.id,
+        licensePlate: item.licensePlate,
+        brand: item.brand,
+        model: item.model,
+        year: item.year,
+        imgUrl: item.imgUrl,
+        chassisNumber: item.chassisNumber,
+        engineNumber: item.engineNumber,
+        vehicleType: item.vehicleType,
+        transmission: item.transmission,
+        fuelType: item.fuelType,
+      } as Vehicle;
+    });
 
     return {
       success: true,
@@ -251,4 +321,28 @@ export async function getVehiclesByMaintenanceId(
       error: error as any,
     };
   }
+}
+
+// Helper to normalize backend vehicle (new or legacy) into incremental Vehicle shape
+function mapVehicleResponse(raw: any): Vehicle {
+  if (!raw) return {} as Vehicle;
+  const modelObj = raw.model && raw.model.brand ? raw.model : raw.modelObj;
+  const brandName = modelObj?.brand?.name;
+  const modelName = modelObj?.name;
+  return {
+    id: raw.id,
+    licensePlate: raw.licensePlate,
+    year: raw.year,
+    chassisNumber: raw.chassisNumber ?? undefined,
+    engineNumber: raw.engineNumber ?? undefined,
+    vehicleType: raw.vehicleType ?? undefined,
+    transmission: raw.transmission ?? undefined,
+    fuelType: raw.fuelType ?? undefined,
+    // legacy fallback
+    brand: raw.brand || brandName,
+    model: raw.model || modelName,
+    modelObj: modelObj || null,
+    brandName,
+    modelName,
+  } as Vehicle;
 }
