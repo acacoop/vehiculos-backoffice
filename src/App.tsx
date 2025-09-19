@@ -26,6 +26,8 @@ import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
 import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
 import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 import LogIn from "./app/LogIn/LogIn";
+import Models from "./app/Models/Models";
+import ModelsEdit from "./app/ModelsEdit/ModelsEdit";
 
 import { useMsal } from "@azure/msal-react";
 import { getActiveAccount } from "./common/auth";
@@ -126,6 +128,11 @@ function App() {
             path="/edit-vehicle-responsibles/:id"
             element={<EditVehicleResponsibles />}
           />
+          <Route path="/models" element={<Models />} />
+          <Route path="/vehicle-brand/create" element={<ModelsEdit />} />
+          <Route path="/vehicle-brand/edit/:id" element={<ModelsEdit />} />
+          <Route path="/vehicle-model/create" element={<ModelsEdit />} />
+          <Route path="/vehicle-model/edit/:id" element={<ModelsEdit />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

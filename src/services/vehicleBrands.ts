@@ -26,8 +26,9 @@ export async function getVehicleBrands(
 ): Promise<ServiceResponse<VehicleBrandListResponse>> {
   try {
     const qs = buildQuery(params);
-    const response: BackendResponse<{ items: VehicleBrand[]; total: number }> =
-      await httpService.get({ uri: `/vehicle-brands${qs ? `?${qs}` : ""}` });
+    const response: BackendResponse<any> = await httpService.get({
+      uri: `/vehicle-brands${qs ? `?${qs}` : ""}`,
+    });
 
     if (response.status === ResponseStatus.ERROR) {
       return {
@@ -37,12 +38,16 @@ export async function getVehicleBrands(
       };
     }
 
+    // Nueva forma: data es un array y total viene en pagination.total
+    const items: VehicleBrand[] = Array.isArray(response.data)
+      ? (response.data as VehicleBrand[])
+      : response.data?.items || [];
+    const total: number =
+      response.pagination?.total || response.data?.total || items.length;
+
     return {
       success: true,
-      data: {
-        items: response.data?.items || [],
-        total: response.data?.total || 0,
-      },
+      data: { items, total },
     };
   } catch (error) {
     return {

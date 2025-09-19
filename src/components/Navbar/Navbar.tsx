@@ -137,6 +137,16 @@ function Navbar() {
               Responsable de vehículo
             </Link>
           </li>
+          <li>
+            <Link to="/models" onClick={() => setOpen(false)}>
+              <img
+                className="icon-navbar"
+                src={IconResponsible}
+                alt="Icono Responsable"
+              />{" "}
+              Gestión de modelos y marcas
+            </Link>
+          </li>
         </ul>
         {/* Logout moved to top bar next to user name */}
       </aside>

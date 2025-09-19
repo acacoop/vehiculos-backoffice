@@ -31,10 +31,9 @@ export async function getVehicleModels(
 ): Promise<ServiceResponse<VehicleModelListResponse>> {
   try {
     const qs = buildQuery(params);
-    const response: BackendResponse<{
-      items: VehicleModelType[];
-      total: number;
-    }> = await httpService.get({ uri: `/vehicle-models${qs ? `?${qs}` : ""}` });
+    const response: BackendResponse<any> = await httpService.get({
+      uri: `/vehicle-models${qs ? `?${qs}` : ""}`,
+    });
 
     if (response.status === ResponseStatus.ERROR) {
       return {
@@ -44,12 +43,15 @@ export async function getVehicleModels(
       };
     }
 
+    const items: VehicleModelType[] = Array.isArray(response.data)
+      ? (response.data as VehicleModelType[])
+      : response.data?.items || [];
+    const total: number =
+      response.pagination?.total || response.data?.total || items.length;
+
     return {
       success: true,
-      data: {
-        items: response.data?.items || [],
-        total: response.data?.total || 0,
-      },
+      data: { items, total },
     };
   } catch (error) {
     return {
