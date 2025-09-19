@@ -4,6 +4,7 @@
   align-items: center;
   flex-direction: column;
   padding: 120px 20px 20px 20px;
+  min-height: 90vh;
 }
 
 .edit-maintenance-loading {

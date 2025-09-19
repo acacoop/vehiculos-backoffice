@@ -261,30 +261,32 @@ export default function KilometersEdit() {
 
   return (
     <>
-      <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
-            onClick={handleCancel}
-            disabled={saving}
-          />
-          <ConfirmButton
-            text="Crear Registro"
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
-      </FormLayout>
+      <div className="kilometers-edit-container">
+        <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
+          <ButtonGroup>
+            <CancelButton
+              text="Cancelar"
+              onClick={handleCancel}
+              disabled={saving}
+            />
+            <ConfirmButton
+              text="Crear Registro"
+              onClick={handleSave}
+              disabled={saving}
+              loading={saving}
+            />
+          </ButtonGroup>
+        </FormLayout>
 
-      {notification.isOpen && (
-        <NotificationToast
-          message={notification.message}
-          type={notification.type}
-          isOpen={notification.isOpen}
-          onClose={closeNotification}
-        />
-      )}
+        {notification.isOpen && (
+          <NotificationToast
+            message={notification.message}
+            type={notification.type}
+            isOpen={notification.isOpen}
+            onClose={closeNotification}
+          />
+        )}
+      </div>
     </>
   );
 }

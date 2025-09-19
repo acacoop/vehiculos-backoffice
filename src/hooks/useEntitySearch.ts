@@ -9,6 +9,8 @@ import type { User } from "../types/user";
 import type { Vehicle } from "../types/vehicle";
 import type { Maintenance } from "../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../services/maintenances";
+import { getVehicleBrands } from "../services/vehicleBrands";
+import type { VehicleBrand } from "../types/vehicle";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,14 +78,25 @@ export function useVehicleSearch() {
       try {
         const response = await getVehicles({}, { page: 1, limit: 100 });
         if (response.success) {
-          const filtered = response.data.filter(
-            (vehicle: Vehicle) =>
-              `${vehicle.brand} ${vehicle.model}`
-                .toLowerCase()
-                .includes(term.toLowerCase()) ||
-              vehicle.licensePlate.toLowerCase().includes(term.toLowerCase()) ||
-              vehicle.year?.toString().includes(term)
-          );
+          const filtered = response.data.filter((vehicle: Vehicle) => {
+            const brand =
+              (vehicle as any).brandName ||
+              vehicle.brand ||
+              vehicle.modelObj?.brand?.name ||
+              "";
+            const model =
+              (vehicle as any).modelName ||
+              vehicle.model ||
+              vehicle.modelObj?.name ||
+              "";
+            const composite = `${brand} ${model}`.toLowerCase();
+            const termLower = term.toLowerCase();
+            return (
+              composite.includes(termLower) ||
+              vehicle.licensePlate.toLowerCase().includes(termLower) ||
+              (vehicle.year ? String(vehicle.year).includes(term) : false)
+            );
+          });
           setAvailableVehicles(filtered);
           setShowDropdown(true);
         }
@@ -98,9 +111,17 @@ export function useVehicleSearch() {
 
   const selectVehicle = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
-    setSearchTerm(
-      `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`
-    );
+    const brand =
+      (vehicle as any).brandName ||
+      vehicle.brand ||
+      vehicle.modelObj?.brand?.name ||
+      "";
+    const model =
+      (vehicle as any).modelName ||
+      vehicle.model ||
+      vehicle.modelObj?.name ||
+      "";
+    setSearchTerm(`${brand} ${model} (${vehicle.licensePlate})`);
     setShowDropdown(false);
   };
 
@@ -238,5 +259,65 @@ export function useMaintenanceSearch() {
     selectMaintenance,
     clearSelection,
     setShowDropdown,
+  };
+}
+
+export function useVehicleBrandSearch() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [availableBrands, setAvailableBrands] = useState<VehicleBrand[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState<VehicleBrand | null>(null);
+
+  const searchBrands = async (term: string) => {
+    setSearchTerm(term);
+    if (term.length >= 1) {
+      try {
+        // Limit alto para permitir filtrado local adicional si backend no filtra
+        const response = await getVehicleBrands({
+          page: 1,
+          limit: 100,
+          name: term,
+        });
+        if (response.success) {
+          // Si backend ya filtra por name solo usamos items. Si no, filtramos localmente.
+          const items = response.data.items || [];
+          const termLower = term.toLowerCase();
+          const filtered = items.filter((b) =>
+            b.name.toLowerCase().includes(termLower)
+          );
+          setAvailableBrands(filtered);
+          setShowDropdown(true);
+        }
+      } catch (error) {
+        setAvailableBrands([]);
+        setShowDropdown(false);
+      }
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const selectBrand = (brand: VehicleBrand) => {
+    setSelectedBrand(brand);
+    setSearchTerm(brand.name);
+    setShowDropdown(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedBrand(null);
+    setSearchTerm("");
+  };
+
+  return {
+    searchTerm,
+    availableBrands,
+    showDropdown,
+    selectedBrand,
+    searchBrands,
+    selectBrand,
+    clearSelection,
+    setShowDropdown,
+    setSelectedBrand,
+    setSearchTerm,
   };
 }

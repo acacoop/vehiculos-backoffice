@@ -544,7 +544,11 @@ export default function VehicleEditRegistration() {
           showActions={!isCreateMode}
         />
 
-        <EntityForm entityType="technical" showActions={!isCreateMode} />
+        <EntityForm
+          entityType="technical"
+          entityId={isCreateMode ? undefined : vehicleId}
+          showActions={!isCreateMode}
+        />
 
         {/* Orden de tablas en modo edición */}
         {!isCreateMode && vehicleId && (
@@ -736,7 +740,7 @@ export default function VehicleEditRegistration() {
         {isCreateMode && (
           <div className="registration-actions">
             <button
-              className="register-button"
+              className="table-add-btn"
               onClick={handleVehicleRegistration}
               disabled={isRegistering}
               style={{

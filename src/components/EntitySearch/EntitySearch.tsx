@@ -2,6 +2,7 @@ import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { Maintenance } from "../../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../../services/maintenances";
+import type { VehicleBrand } from "../../types/vehicle";
 
 interface UserSearchProps {
   searchTerm: string;
@@ -86,15 +87,27 @@ export function VehicleSearch({
       />
       {showDropdown && availableVehicles.length > 0 && (
         <div className="vehicle-dropdown">
-          {availableVehicles.map((vehicle) => (
-            <div
-              key={vehicle.id}
-              className="vehicle-dropdown-item"
-              onClick={() => onVehicleSelect(vehicle)}
-            >
-              {vehicle.brand} {vehicle.model} - {vehicle.licensePlate}
-            </div>
-          ))}
+          {availableVehicles.map((vehicle) => {
+            const brand =
+              (vehicle as any).brandName ||
+              vehicle.brand ||
+              vehicle.modelObj?.brand?.name ||
+              "";
+            const model =
+              (vehicle as any).modelName ||
+              vehicle.model ||
+              vehicle.modelObj?.name ||
+              "";
+            return (
+              <div
+                key={vehicle.id}
+                className="vehicle-dropdown-item"
+                onClick={() => onVehicleSelect(vehicle)}
+              >
+                {brand} {model} - {vehicle.licensePlate}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -191,6 +204,55 @@ export function MaintenanceSearch({
               onClick={() => onMaintenanceSelect(maintenance)}
             >
               {maintenance.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface BrandSearchProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  availableBrands: VehicleBrand[];
+  showDropdown: boolean;
+  onBrandSelect: (brand: VehicleBrand) => void;
+  onDropdownToggle: (show: boolean) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function BrandSearch({
+  searchTerm,
+  onSearchChange,
+  availableBrands,
+  showDropdown,
+  onBrandSelect,
+  onDropdownToggle,
+  placeholder = "Buscar marca...",
+  className = "reservation-form-input",
+}: BrandSearchProps) {
+  return (
+    <div className="brand-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => searchTerm.length >= 1 && onDropdownToggle(true)}
+        onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && availableBrands.length > 0 && (
+        <div className="brand-dropdown">
+          {availableBrands.map((brand) => (
+            <div
+              key={brand.id}
+              className="brand-dropdown-item"
+              onClick={() => onBrandSelect(brand)}
+            >
+              {brand.name}
             </div>
           ))}
         </div>

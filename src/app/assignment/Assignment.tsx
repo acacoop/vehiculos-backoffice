@@ -57,21 +57,35 @@ const assignmentColumns: GridColDef<Assignment>[] = [
     renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
   },
   {
-    field: "vehicle.info",
-    headerName: "Vehículo",
-    width: 200,
-    valueGetter: (_, row) => {
-      const vehicle = row.vehicle;
-      return vehicle
-        ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
-        : "N/A";
-    },
-    renderCell: (params) => {
-      const vehicle = params.row.vehicle;
-      return vehicle
-        ? `${vehicle.brand} ${vehicle.model} (${vehicle.year})`
-        : "N/A";
-    },
+    field: "vehicleBrand",
+    headerName: "Marca",
+    width: 140,
+    valueGetter: (_, row) =>
+      row.vehicle
+        ? (row.vehicle as any).brandName ||
+          row.vehicle.brand ||
+          row.vehicle.modelObj?.brand?.name ||
+          "N/A"
+        : "N/A",
+  },
+  {
+    field: "vehicleModel",
+    headerName: "Modelo",
+    width: 160,
+    valueGetter: (_, row) =>
+      row.vehicle
+        ? (row.vehicle as any).modelName ||
+          row.vehicle.model ||
+          row.vehicle.modelObj?.name ||
+          "N/A"
+        : "N/A",
+  },
+  {
+    field: "vehicleYear",
+    headerName: "Año",
+    width: 110,
+    valueGetter: (_, row) =>
+      row.vehicle?.year ? row.vehicle.year.toString() : "N/A",
   },
   {
     field: "startDate",

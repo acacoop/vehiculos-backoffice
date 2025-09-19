@@ -92,7 +92,11 @@ export default function MaintenanceAssignment() {
       key: "marca",
       label: "Marca:",
       type: "text" as const,
-      value: vehicle.brand || "",
+      value:
+        (vehicle as any).brandName ||
+        vehicle.brand ||
+        vehicle.modelObj?.brand?.name ||
+        "",
       onChange: () => {},
       disabled,
     },
@@ -100,7 +104,11 @@ export default function MaintenanceAssignment() {
       key: "modelo",
       label: "Modelo:",
       type: "text" as const,
-      value: vehicle.model || "",
+      value:
+        (vehicle as any).modelName ||
+        vehicle.model ||
+        vehicle.modelObj?.name ||
+        "",
       onChange: () => {},
       disabled,
     },

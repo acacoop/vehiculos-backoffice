@@ -53,6 +53,7 @@ export default function Users() {
         title=""
         showEditColumn={true}
         editRoute="/user/edit"
+        maxHeight="900px"
       />
     </main>
   );

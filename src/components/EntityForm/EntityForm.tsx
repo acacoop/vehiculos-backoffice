@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
 import { Alert } from "@mui/material";
-import { getVehicleById, updateVehicle } from "../../services/vehicles";
+import {
+  getVehicleById,
+  updateVehicle,
+  createVehicle,
+} from "../../services/vehicles";
+import { getVehicleBrands } from "../../services/vehicleBrands";
+import { getVehicleModels } from "../../services/vehicleModels";
+import type { Vehicle } from "../../types/vehicle";
 import { getUserById } from "../../services/users";
 import {
   ConfirmDialog,
@@ -12,7 +19,7 @@ import {
 import { useNotification } from "../../hooks";
 import "./EntityForm.css";
 
-type FieldType = "text" | "email" | "number";
+type FieldType = "text" | "email" | "number" | "select";
 
 type FormField = {
   key: string;
@@ -21,6 +28,7 @@ type FormField = {
   readOnly?: boolean;
   disabled?: boolean;
   className?: string;
+  options?: { label: string; value: string }[]; // for select
 };
 
 type EntityType = "user" | "vehicle" | "technical";
@@ -75,10 +83,11 @@ const ENTITY_CONFIGS: Record<
   vehicle: {
     title: (isEdit) =>
       isEdit ? "Detalles del Vehículo" : "Información del Nuevo Vehículo",
+    // brand/model converted to select placeholders dynamically (we'll inject options at render time)
     fields: [
       { key: "licensePlate", label: "Dominio", type: "text" },
-      { key: "brand", label: "Marca", type: "text" },
-      { key: "model", label: "Modelo", type: "text" },
+      { key: "brandId", label: "Marca", type: "select" },
+      { key: "modelId", label: "Modelo", type: "select" },
       { key: "year", label: "Año", type: "number", className: "no-spinner" },
     ],
     confirmButtonText: (isEdit) => (isEdit ? "Confirmar" : "Guardar"),
@@ -92,11 +101,50 @@ const ENTITY_CONFIGS: Record<
   technical: {
     title: () => "Ficha Técnica",
     fields: [
-      { key: "nroChasis", label: "Nro de Chasis", type: "text" },
-      { key: "nroMotor", label: "Nro de Motor", type: "text" },
-      { key: "tipo", label: "Tipo", type: "text" },
-      { key: "transmicion", label: "Transmisión", type: "text" },
-      { key: "combustible", label: "Combustible", type: "text" },
+      { key: "chassisNumber", label: "Nro de Chasis", type: "text" },
+      { key: "engineNumber", label: "Nro de Motor", type: "text" },
+      {
+        key: "vehicleType",
+        label: "Tipo de Vehículo",
+        type: "select",
+        options: [
+          { label: "", value: "" },
+          { label: "Sedán", value: "Sedan" },
+          { label: "Hatchback", value: "Hatchback" },
+          { label: "SUV", value: "SUV" },
+          { label: "Camioneta / Pick-up", value: "Pickup" },
+          { label: "Van / Utilitario", value: "Van" },
+          { label: "Moto", value: "Moto" },
+          { label: "Camión", value: "Camion" },
+          { label: "Bus / Colectivo", value: "Bus" },
+          { label: "Otro", value: "Otro" },
+        ],
+      },
+      {
+        key: "transmission",
+        label: "Transmisión",
+        type: "select",
+        options: [
+          { label: "", value: "" },
+          { label: "Manual", value: "Manual" },
+          { label: "Automática", value: "Automatica" },
+          { label: "CVT", value: "CVT" },
+        ],
+      },
+      {
+        key: "fuelType",
+        label: "Combustible",
+        type: "select",
+        options: [
+          { label: "", value: "" },
+          { label: "Nafta", value: "Nafta" },
+          { label: "Diésel", value: "Diesel" },
+          { label: "GNC", value: "GNC" },
+          { label: "Híbrido", value: "Hibrido" },
+          { label: "Eléctrico", value: "Electrico" },
+          { label: "Flex", value: "Flex" },
+        ],
+      },
     ],
     confirmButtonText: () => "Confirmar",
     confirmDialogTitle: () => "Confirmar cambios",
@@ -141,6 +189,14 @@ export default function EntityForm({
 
   const config = ENTITY_CONFIGS[entityType];
 
+  // Dynamic options for brand/model selects (declare early to keep hook order stable)
+  const [brandOptions, setBrandOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [modelOptions, setModelOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
   const getDefaultData = () => {
     switch (entityType) {
       case "user":
@@ -154,18 +210,18 @@ export default function EntityForm({
         return {
           id: "",
           licensePlate: "",
-          brand: "",
-          model: "",
+          brandId: "",
+          modelId: "",
           year: new Date().getFullYear(),
           imgUrl: "",
         };
       case "technical":
         return {
-          nroChasis: "1HGCM82633A123456",
-          nroMotor: "K20A123456",
-          tipo: "Sedán",
-          transmicion: "",
-          combustible: "",
+          chassisNumber: "",
+          engineNumber: "",
+          vehicleType: "",
+          transmission: "",
+          fuelType: "",
         };
       default:
         return {};
@@ -199,16 +255,34 @@ export default function EntityForm({
             response = await getVehicleById(entityId);
             break;
           case "technical":
-            const technicalData = getDefaultData();
-            setFormData(technicalData);
-            setLoading(false);
-            return;
+            response = await getVehicleById(entityId);
+            break;
           default:
             throw new Error(`Tipo de entidad no soportado: ${entityType}`);
         }
 
         if (response?.success) {
-          setFormData(response.data);
+          if (entityType === "technical") {
+            const v = (response.data as Vehicle) || ({} as Vehicle);
+            setFormData({
+              chassisNumber: v.chassisNumber || "",
+              engineNumber: v.engineNumber || "",
+              vehicleType: v.vehicleType || "",
+              transmission: v.transmission || "",
+              fuelType: v.fuelType || "",
+            });
+          } else if (entityType === "vehicle") {
+            const v = (response.data as Vehicle) || ({} as Vehicle);
+            setFormData({
+              id: v.id,
+              licensePlate: v.licensePlate,
+              brandId: v.modelObj?.brand.id || "",
+              modelId: v.modelObj?.id || "",
+              year: v.year,
+            });
+          } else {
+            setFormData(response.data);
+          }
         } else {
           setError(response?.message || `Error al cargar ${entityType}`);
         }
@@ -230,6 +304,41 @@ export default function EntityForm({
     }
   }, [formData, onDataChange]);
 
+  // Always declare effects in same order; internal guards prevent unnecessary work
+  useEffect(() => {
+    if (entityType !== "vehicle") return;
+    (async () => {
+      const brandsResp = await getVehicleBrands({ limit: 1000, page: 1 });
+      if (brandsResp.success) {
+        setBrandOptions([
+          { label: "Seleccionar marca", value: "" },
+          ...brandsResp.data.items.map((b) => ({ label: b.name, value: b.id })),
+        ]);
+      }
+    })();
+  }, [entityType]);
+
+  useEffect(() => {
+    if (entityType !== "vehicle") return;
+    if (!formData.brandId) {
+      setModelOptions([{ label: "Seleccionar modelo", value: "" }]);
+      return;
+    }
+    (async () => {
+      const modelsResp = await getVehicleModels({
+        brandId: formData.brandId,
+        limit: 1000,
+        page: 1,
+      });
+      if (modelsResp.success) {
+        setModelOptions([
+          { label: "Seleccionar modelo", value: "" },
+          ...modelsResp.data.items.map((m) => ({ label: m.name, value: m.id })),
+        ]);
+      }
+    })();
+  }, [entityType, formData.brandId]);
+
   const handleFieldChange = (fieldKey: string, value: any) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -250,9 +359,8 @@ export default function EntityForm({
           if (entityId) {
             const response = await updateVehicle(entityId, {
               licensePlate: formData.licensePlate,
-              brand: formData.brand,
-              model: formData.model,
               year: formData.year,
+              modelId: formData.modelId,
             });
 
             if (response.success) {
@@ -265,16 +373,51 @@ export default function EntityForm({
               showError(errorMessage);
             }
           } else {
-            setShowDialog(false);
-            showSuccess(
-              "Datos guardados. Completa todos los campos y presiona 'Registrar Vehículo'"
-            );
+            // create flow
+            const createResp = await createVehicle({
+              licensePlate: formData.licensePlate,
+              year: formData.year,
+              modelId: formData.modelId,
+              chassisNumber: formData.chassisNumber,
+              engineNumber: formData.engineNumber,
+              vehicleType: formData.vehicleType,
+              transmission: formData.transmission,
+              fuelType: formData.fuelType,
+            });
+            if (createResp.success) {
+              setShowDialog(false);
+              showSuccess("Vehículo creado exitosamente");
+            } else {
+              const msg = createResp.message || "Error al crear vehículo";
+              setError(msg);
+              showError(msg);
+            }
           }
           break;
 
         case "technical":
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          setShowDialog(false);
+          if (entityId) {
+            const response = await updateVehicle(entityId, {
+              chassisNumber: formData.chassisNumber,
+              engineNumber: formData.engineNumber,
+              vehicleType: formData.vehicleType,
+              transmission: formData.transmission,
+              fuelType: formData.fuelType,
+            });
+
+            if (response.success) {
+              setShowDialog(false);
+              showSuccess("Ficha técnica actualizada exitosamente");
+            } else {
+              const errorMessage =
+                response.message || "Error al actualizar ficha técnica";
+              setError(errorMessage);
+              showError(errorMessage);
+            }
+          } else {
+            // En modo creación no se persiste aquí
+            setShowDialog(false);
+          }
           break;
 
         case "user":
@@ -333,20 +476,64 @@ export default function EntityForm({
           {config.fields.map((field) => (
             <div key={field.key} className="entity-field">
               <p className="entity-label">{field.label}</p>
-              <input
-                type={field.type}
-                className={field.className || ""}
-                value={formData[field.key] || ""}
-                onChange={(e) => {
-                  const value =
-                    field.type === "number"
-                      ? Number(e.target.value)
-                      : e.target.value;
-                  handleFieldChange(field.key, value);
-                }}
-                readOnly={field.readOnly}
-                disabled={isFieldDisabled(field)}
-              />
+              {field.type === "select" ? (
+                (() => {
+                  let dynamicOptions = field.options || [];
+                  if (entityType === "vehicle") {
+                    if (field.key === "brandId") dynamicOptions = brandOptions;
+                    if (field.key === "modelId") dynamicOptions = modelOptions;
+                  }
+                  const hasEmpty = dynamicOptions.some((o) => o.value === "");
+                  return (
+                    <select
+                      className={`entity-select${
+                        field.className ? ` ${field.className}` : ""
+                      }`}
+                      value={formData[field.key] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleFieldChange(field.key, val);
+                        if (
+                          entityType === "vehicle" &&
+                          field.key === "brandId"
+                        ) {
+                          // reset model when brand changes
+                          handleFieldChange("modelId", "");
+                        }
+                      }}
+                      disabled={isFieldDisabled(field)}
+                    >
+                      {!hasEmpty && (
+                        <option value="">Seleccionar una opción</option>
+                      )}
+                      {dynamicOptions.map((opt) => (
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          className="entity-option"
+                        >
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                })()
+              ) : (
+                <input
+                  type={field.type}
+                  className={field.className || ""}
+                  value={formData[field.key] || ""}
+                  onChange={(e) => {
+                    const value =
+                      field.type === "number"
+                        ? Number(e.target.value)
+                        : e.target.value;
+                    handleFieldChange(field.key, value);
+                  }}
+                  readOnly={field.readOnly}
+                  disabled={isFieldDisabled(field)}
+                />
+              )}
             </div>
           ))}
         </div>
