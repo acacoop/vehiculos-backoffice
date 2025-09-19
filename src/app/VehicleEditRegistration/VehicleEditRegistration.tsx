@@ -496,10 +496,14 @@ export default function VehicleEditRegistration() {
     try {
       const response = await createVehicle({
         licensePlate: vehicleData.licensePlate,
-        brand: vehicleData.brand,
-        model: vehicleData.model,
         year: vehicleData.year,
-        imgUrl: vehicleData.imgUrl || "https://via.placeholder.com/150",
+        modelId: vehicleData.modelId,
+        chassisNumber: vehicleData.chassisNumber,
+        engineNumber: vehicleData.engineNumber,
+        vehicleType: vehicleData.vehicleType,
+        transmission: vehicleData.transmission,
+        fuelType: vehicleData.fuelType,
+        // Add other properties as required by the Pick<Vehicle, ...> type
       });
 
       if (response.success) {

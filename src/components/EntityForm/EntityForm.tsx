@@ -29,6 +29,7 @@ type FormField = {
   disabled?: boolean;
   className?: string;
   options?: { label: string; value: string }[]; // for select
+  placeholder?: string; // for input placeholders
 };
 
 type EntityType = "user" | "vehicle" | "technical";
@@ -101,14 +102,24 @@ const ENTITY_CONFIGS: Record<
   technical: {
     title: () => "Ficha Técnica",
     fields: [
-      { key: "chassisNumber", label: "Nro de Chasis", type: "text" },
-      { key: "engineNumber", label: "Nro de Motor", type: "text" },
+      {
+        key: "chassisNumber",
+        label: "Nro de Chasis",
+        type: "text",
+        placeholder: "Ej: 8A1BC23D4E5678901",
+      },
+      {
+        key: "engineNumber",
+        label: "Nro de Motor",
+        type: "text",
+        placeholder: "Ej: ENG1234567890",
+      },
       {
         key: "vehicleType",
         label: "Tipo de Vehículo",
         type: "select",
         options: [
-          { label: "", value: "" },
+          { label: "Seleccionar una opción", value: "" },
           { label: "Sedán", value: "Sedan" },
           { label: "Hatchback", value: "Hatchback" },
           { label: "SUV", value: "SUV" },
@@ -125,7 +136,7 @@ const ENTITY_CONFIGS: Record<
         label: "Transmisión",
         type: "select",
         options: [
-          { label: "", value: "" },
+          { label: "Seleccionar una opción", value: "" },
           { label: "Manual", value: "Manual" },
           { label: "Automática", value: "Automatica" },
           { label: "CVT", value: "CVT" },
@@ -136,7 +147,7 @@ const ENTITY_CONFIGS: Record<
         label: "Combustible",
         type: "select",
         options: [
-          { label: "", value: "" },
+          { label: "Seleccionar una opción", value: "" },
           { label: "Nafta", value: "Nafta" },
           { label: "Diésel", value: "Diesel" },
           { label: "GNC", value: "GNC" },
@@ -523,6 +534,7 @@ export default function EntityForm({
                   type={field.type}
                   className={field.className || ""}
                   value={formData[field.key] || ""}
+                  placeholder={field.placeholder || ""}
                   onChange={(e) => {
                     const value =
                       field.type === "number"
