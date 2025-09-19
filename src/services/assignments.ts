@@ -11,6 +11,35 @@ import {
   type BackendResponse,
 } from "../common";
 import { ResponseStatus } from "../types/common";
+import type { Vehicle } from "../types/vehicle";
+
+// Normaliza un vehículo embebido en una asignación (similar a mapVehicleResponse en vehicles.ts)
+function normalizeEmbeddedVehicle(raw: any): Vehicle | undefined {
+  if (!raw) return undefined;
+  const modelObjCandidate =
+    raw.model && raw.model.brand ? raw.model : raw.modelObj;
+  const modelObj =
+    modelObjCandidate && modelObjCandidate.brand
+      ? modelObjCandidate
+      : undefined;
+  const brandName = modelObj?.brand?.name;
+  const modelName = modelObj?.name;
+  return {
+    id: raw.id,
+    licensePlate: raw.licensePlate,
+    year: raw.year,
+    chassisNumber: raw.chassisNumber ?? undefined,
+    engineNumber: raw.engineNumber ?? undefined,
+    vehicleType: raw.vehicleType ?? undefined,
+    transmission: raw.transmission ?? undefined,
+    fuelType: raw.fuelType ?? undefined,
+    brand: typeof raw.brand === "string" ? raw.brand : brandName,
+    model: typeof raw.model === "string" ? raw.model : modelName,
+    modelObj: modelObj || null,
+    brandName,
+    modelName,
+  } as Vehicle;
+}
 
 export async function getAllAssignments(
   params?: AssignmentFilterParams
@@ -33,9 +62,14 @@ export async function getAllAssignments(
       };
     }
 
+    const mapped = (response.data || []).map((a: any) => ({
+      ...a,
+      vehicle: normalizeEmbeddedVehicle(a.vehicle) || a.vehicle,
+    }));
+
     return {
       success: true,
-      data: response.data,
+      data: mapped,
     };
   } catch (error) {
     return {
@@ -65,9 +99,14 @@ export async function getAssignments(
       };
     }
 
+    const mapped = (response.data || []).map((a: any) => ({
+      ...a,
+      vehicle: normalizeEmbeddedVehicle(a.vehicle) || a.vehicle,
+    }));
+
     return {
       success: true,
-      data: response.data,
+      data: mapped,
       pagination: response.pagination
         ? {
             page: response.pagination.page,
@@ -265,7 +304,15 @@ export async function getAssignmentById(
       };
     }
 
-    const assignment = response.data.find((a) => a.id === assignmentId);
+    const assignmentRaw = response.data.find((a) => a.id === assignmentId);
+    const assignment = assignmentRaw
+      ? ({
+          ...assignmentRaw,
+          vehicle:
+            normalizeEmbeddedVehicle((assignmentRaw as any).vehicle) ||
+            (assignmentRaw as any).vehicle,
+        } as Assignment)
+      : undefined;
 
     if (!assignment) {
       return {

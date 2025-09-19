@@ -1,4 +1,5 @@
 import type { PaginationParams } from "../types/common";
+import type { Vehicle } from "../types/vehicle";
 
 // Utilidades para transformar parámetros
 export function camelToKebabCase(str: string): string {
@@ -67,4 +68,43 @@ export function buildQueryParams(
   }
 
   return queryParams;
+}
+
+// ================= Vehículos (helpers de formato) =================
+/** Obtiene la marca usando múltiples posibles campos (migración incremental). */
+export function getVehicleBrand(vehicle?: Vehicle | null): string {
+  if (!vehicle) return "";
+  const brandCandidate =
+    (vehicle as any).brandName ||
+    vehicle.modelObj?.brand?.name ||
+    vehicle.brand;
+  return typeof brandCandidate === "string" ? brandCandidate : "";
+}
+
+/** Obtiene el modelo usando múltiples posibles campos (migración incremental). */
+export function getVehicleModel(vehicle?: Vehicle | null): string {
+  if (!vehicle) return "";
+  const modelCandidate =
+    (vehicle as any).modelName || vehicle.modelObj?.name || vehicle.model;
+  return typeof modelCandidate === "string" ? modelCandidate : "";
+}
+
+/** Devuelve "Marca Modelo" (sin espacios extra) */
+export function formatVehicleBrandModel(vehicle?: Vehicle | null): string {
+  const brand = getVehicleBrand(vehicle);
+  const model = getVehicleModel(vehicle);
+  return [brand, model].filter(Boolean).join(" ");
+}
+
+/** Devuelve "Marca Modelo (Año)" si hay año. */
+export function formatFullVehicle(vehicle?: Vehicle | null): string {
+  if (!vehicle) return "";
+  const base = formatVehicleBrandModel(vehicle);
+  if (!base) {
+    // fallback a patente si no hay marca/modelo
+    return vehicle.year
+      ? `${vehicle.licensePlate || ""} (${vehicle.year})`
+      : vehicle.licensePlate || "";
+  }
+  return vehicle.year ? `${base} (${vehicle.year})` : base;
 }

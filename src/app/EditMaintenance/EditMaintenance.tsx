@@ -8,6 +8,7 @@ import {
   getMaintenancePossibleById,
 } from "../../services/maintenances";
 import { getVehiclesByMaintenanceId } from "../../services/vehicles";
+import { getVehicleBrand, getVehicleModel } from "../../common/utils";
 import {
   FormLayout,
   ConfirmDialog,
@@ -99,14 +100,18 @@ export default function EditMaintenance() {
         };
       }
 
-      const mappedData = response.data.map((vehicle: any, index: number) => ({
-        id: vehicle.id || `vehicle-${Date.now()}-${index}`,
-        assignmentId: vehicle.assignmentId,
-        licensePlate: vehicle.licensePlate || "N/A",
-        brand: vehicle.brand || "N/A",
-        model: vehicle.model || "N/A",
-        year: vehicle.year?.toString() || "N/A",
-      }));
+      const mappedData = response.data.map((vehicle: any, index: number) => {
+        const brand = getVehicleBrand(vehicle) || "N/A";
+        const model = getVehicleModel(vehicle) || "N/A";
+        return {
+          id: vehicle.id || `vehicle-${Date.now()}-${index}`,
+          assignmentId: vehicle.assignmentId,
+          licensePlate: vehicle.licensePlate || "N/A",
+          brand,
+          model,
+          year: vehicle.year?.toString() || "N/A",
+        };
+      });
 
       return {
         success: true,

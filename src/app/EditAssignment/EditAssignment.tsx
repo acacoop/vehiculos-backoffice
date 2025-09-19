@@ -28,6 +28,7 @@ import {
 import type { FormSection } from "../../components";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
+import { getVehicleBrand, getVehicleModel } from "../../common/utils";
 import type { User } from "../../types/user";
 import "./EditAssignment.css";
 
@@ -459,7 +460,7 @@ export default function EditAssignment() {
           key: "vehicleBrand",
           label: "Marca:",
           type: "text",
-          value: currentVehicle.brand || "",
+          value: getVehicleBrand(currentVehicle),
           onChange: () => {},
           disabled: true,
         },
@@ -467,7 +468,7 @@ export default function EditAssignment() {
           key: "vehicleModel",
           label: "Modelo:",
           type: "text",
-          value: currentVehicle.model || "",
+          value: getVehicleModel(currentVehicle),
           onChange: () => {},
           disabled: true,
         },
@@ -540,39 +541,41 @@ export default function EditAssignment() {
 
   return (
     <>
-      <FormLayout
-        title={isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
-        sections={sections}
-        className="edit-assignment"
-      >
-        <ButtonGroup>
-          <CancelButton text="Cancelar" onClick={handleCancel} />
-          {!isCreateMode && (
-            <DeleteButton
-              text="Eliminar asignación del vehículo"
-              onClick={handleUnassign}
+      <div className="edit-assignment-container">
+        <FormLayout
+          title={isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
+          sections={sections}
+          className="edit-assignment"
+        >
+          <ButtonGroup>
+            <CancelButton text="Cancelar" onClick={handleCancel} />
+            {!isCreateMode && (
+              <DeleteButton
+                text="Eliminar asignación del vehículo"
+                onClick={handleUnassign}
+              />
+            )}
+            <ConfirmButton
+              text={isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
+              onClick={handleSave}
             />
-          )}
-          <ConfirmButton
-            text={isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
-            onClick={handleSave}
-          />
-        </ButtonGroup>
-      </FormLayout>
+          </ButtonGroup>
+        </FormLayout>
 
-      <ConfirmDialog
-        open={isConfirmOpen}
-        message={confirmMessage}
-        onConfirm={confirmDialogConfirm}
-        onCancel={confirmDialogCancel}
-      />
+        <ConfirmDialog
+          open={isConfirmOpen}
+          message={confirmMessage}
+          onConfirm={confirmDialogConfirm}
+          onCancel={confirmDialogCancel}
+        />
 
-      <NotificationToast
-        message={notification.message}
-        type={notification.type}
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-      />
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      </div>
     </>
   );
 }
