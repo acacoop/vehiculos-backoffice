@@ -35,8 +35,30 @@ export default function VehicleResponsibles() {
   const columns = [
     { field: "userFullName", headerName: "Responsable", minWidth: 180 },
     { field: "userDni", headerName: "CUIT", minWidth: 120 },
-
-    { field: "vehicleFullName", headerName: "Vehículo", minWidth: 120 },
+    {
+      field: "vehicleBrand",
+      headerName: "Marca",
+      minWidth: 140,
+      valueGetter: (_: any, row: any) =>
+        row.modelObj?.brand?.name || row.vehicleBrand || "",
+      renderCell: (params: any) => (
+        <span>
+          {params.row?.modelObj?.brand?.name || params.row?.vehicleBrand || ""}
+        </span>
+      ),
+    },
+    {
+      field: "vehicleModel",
+      headerName: "Modelo",
+      minWidth: 140,
+      valueGetter: (_: any, row: any) =>
+        row.modelObj?.name || row.vehicleModel || "",
+      renderCell: (params: any) => (
+        <span>
+          {params.row?.modelObj?.name || params.row?.vehicleModel || ""}
+        </span>
+      ),
+    },
     { field: "vehicleLicensePlate", headerName: "Patente", minWidth: 120 },
     {
       field: "startDateFormatted",

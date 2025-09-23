@@ -19,8 +19,17 @@ const normalizeVehicleResponsible = (item: any) => {
     rawVehicle.license_plate ??
     rawVehicle.plate ??
     "";
-  const brand = rawVehicle.brand ?? rawVehicle.make ?? "";
-  const model = rawVehicle.model ?? rawVehicle.modelo ?? "";
+  const modelObj = rawVehicle.model || rawVehicle.modelObj || null;
+  const brand =
+    (modelObj && (modelObj.brand?.name || modelObj.brand?.BrandName)) ||
+    rawVehicle.brand ||
+    rawVehicle.make ||
+    "";
+  const model =
+    (modelObj && (modelObj.name || modelObj.modelName)) ||
+    rawVehicle.model ||
+    rawVehicle.modelo ||
+    "";
   const year = rawVehicle.year ?? rawVehicle.anio ?? null;
 
   return {
@@ -47,6 +56,15 @@ const normalizeVehicleResponsible = (item: any) => {
     userDni: cuit,
     userEmail: email,
     vehicleFullName: `${brand} ${model}`.trim(),
+    modelObj: modelObj
+      ? {
+          id: modelObj.id,
+          name: modelObj.name || modelObj.modelName,
+          brand: modelObj.brand
+            ? { id: modelObj.brand.id, name: modelObj.brand.name }
+            : undefined,
+        }
+      : undefined,
     vehicleLicensePlate: licensePlate,
     vehicleBrand: brand,
     vehicleModel: model,
