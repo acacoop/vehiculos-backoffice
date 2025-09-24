@@ -141,7 +141,7 @@ function Navbar() {
           <li>
             <Link to="/models" onClick={() => setOpen(false)}>
               <img className="icon-navbar" src={IconBrand} alt="Icono Marca" />{" "}
-              Gestión de modelos y marcas
+              Modelos y Marcas
             </Link>
           </li>
         </ul>
