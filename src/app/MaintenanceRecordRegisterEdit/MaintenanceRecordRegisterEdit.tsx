@@ -141,10 +141,10 @@ export default function MaintenanceRecordRegisterEdit() {
 
       const payload = {
         vehicleId,
-        maintenanceId: selectedMaintenanceId.toString(),
+        assignedMaintenanceId: selectedMaintenanceId.toString(),
         userId: currentUser.id,
         kilometers,
-        date,
+        date: new Date(date),
         notes: notes.trim() || undefined,
       };
 

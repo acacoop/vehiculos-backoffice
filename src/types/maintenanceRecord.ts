@@ -12,11 +12,11 @@ export interface MaintenanceRecord {
 export interface MaintenanceRecordCreateDto {
   assignedMaintenanceId?: string;
   vehicleId?: string;
-  maintenanceId?: string;
+  //maintenanceId?: string;
   userId: string;
-  date: string | Date;
+  date: Date;
   kilometers: number;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface MaintenanceRecordsListResponse {
