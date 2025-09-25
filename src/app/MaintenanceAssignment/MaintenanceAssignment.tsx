@@ -10,7 +10,7 @@ import {
   type MaintenancePossibleNormalized,
 } from "../../services/maintenances";
 
-import { getMaintenanceRecordsByVehicleAndMaintenance } from "../../services/maintenanceRecords";
+import { getAllMaintenanceRecords } from "../../services/maintenanceRecords";
 import { getVehicleById } from "../../services/vehicles";
 import {
   FormLayout,
@@ -914,32 +914,26 @@ export default function MaintenanceAssignment() {
                 getRows={async (_pagination) => {
                   try {
                     if (vehicleId && maintenanceId) {
-                      const resp =
-                        await getMaintenanceRecordsByVehicleAndMaintenance(
-                          vehicleId,
-                          maintenanceId
-                        );
+                      const resp = await getAllMaintenanceRecords({
+                        page: 1,
+                        limit: 100,
+                        vehicleId,
+                        maintenanceId,
+                      });
+
                       if (resp.success) {
-                        const mapped = (resp.data || []).map((r, i) => ({
+                        const items = resp.data?.items ?? [];
+                        const mapped = items.map((r, i) => ({
                           id: r.id || `mr-${i}`,
                           ...r,
                         }));
-                        return {
-                          success: true,
-                          data: mapped,
-                        };
+                        return { success: true, data: mapped };
                       }
                     }
 
-                    return {
-                      success: false,
-                      data: [],
-                    };
-                  } catch (error) {
-                    return {
-                      success: false,
-                      data: [],
-                    };
+                    return { success: false, data: [] };
+                  } catch {
+                    return { success: false, data: [] };
                   }
                 }}
                 title=""
