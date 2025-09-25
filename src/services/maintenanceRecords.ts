@@ -168,12 +168,12 @@ export const getMaintenanceRecordsByAssignedMaintenanceId = async (
 
 export const getMaintenanceRecordsByVehicleAndMaintenance = async (
   vehicleId: string,
-  maintenanceId: string
+  assignedMaintenanceId: string
 ): Promise<ServiceResponse<MaintenanceRecord[]>> => {
   try {
     const params = new URLSearchParams();
     params.append("vehicleId", vehicleId);
-    params.append("maintenanceId", maintenanceId);
+    params.append("assignedMaintenanceId", assignedMaintenanceId);
 
     const resp = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,

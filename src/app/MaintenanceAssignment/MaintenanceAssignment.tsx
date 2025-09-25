@@ -40,6 +40,15 @@ export default function MaintenanceAssignment() {
     assignmentId?: string;
   }>();
 
+  // Support special case where assignmentId comes as "auto" and must be resolved
+  const assignmentIdIsAuto = assignmentId === "auto";
+  const [resolvedAssignmentId, setResolvedAssignmentId] = useState<
+    string | null
+  >(null);
+  const effectiveAssignmentId = assignmentIdIsAuto
+    ? resolvedAssignmentId
+    : assignmentId || null;
+
   // Get the 'from' parameter to know where the user came from
   const searchParams = new URLSearchParams(location.search);
   const fromPage = searchParams.get("from"); // 'vehicle' or 'maintenance'
@@ -92,7 +101,11 @@ export default function MaintenanceAssignment() {
       key: "marca",
       label: "Marca:",
       type: "text" as const,
-      value: vehicle.brand || "",
+      value:
+        (vehicle as any).brandName ||
+        vehicle.brand ||
+        vehicle.modelObj?.brand?.name ||
+        "",
       onChange: () => {},
       disabled,
     },
@@ -100,7 +113,11 @@ export default function MaintenanceAssignment() {
       key: "modelo",
       label: "Modelo:",
       type: "text" as const,
-      value: vehicle.model || "",
+      value:
+        (vehicle as any).modelName ||
+        vehicle.model ||
+        vehicle.modelObj?.name ||
+        "",
       onChange: () => {},
       disabled,
     },
@@ -230,12 +247,15 @@ export default function MaintenanceAssignment() {
 
     const loadEditModeData = async () => {
       try {
-        // Load both vehicle and maintenance data, and current assignment data
-        await Promise.all([
-          loadVehicleData(),
-          loadMaintenanceDataById(),
-          loadCurrentAssignmentData(),
-        ]);
+        // Load vehicle and maintenance details first
+        await Promise.all([loadVehicleData(), loadMaintenanceDataById()]);
+
+        // Resolve assignment id if it comes as 'auto', then load assignment data
+        if (assignmentIdIsAuto) {
+          await resolveAssignmentId();
+        }
+
+        await loadCurrentAssignmentData();
       } catch (error) {
         console.error("Error loading edit mode data:", error);
         showError("Error al cargar los datos");
@@ -249,11 +269,39 @@ export default function MaintenanceAssignment() {
         const assignmentsResp = await getVehicleMaintenances(vehicleId!);
         if (assignmentsResp.success && assignmentsResp.data) {
           const assignments = assignmentsResp.data;
-          const currentAssignment = Array.isArray(assignments)
-            ? assignments.find((a) => a.id === assignmentId)
-            : assignments;
+          let currentAssignment: any = null;
+
+          if (Array.isArray(assignments)) {
+            if (effectiveAssignmentId) {
+              currentAssignment = assignments.find(
+                (a: any) => a.id?.toString() === effectiveAssignmentId
+              );
+            }
+
+            // If not found by id (or id is not resolved yet), try by maintenance pairing
+            if (!currentAssignment && maintenanceId) {
+              currentAssignment = assignments.find((a: any) => {
+                const mid =
+                  a.maintenanceId?.toString?.() ||
+                  a.maintenance_id?.toString?.() ||
+                  a.maintenance?.id?.toString?.();
+                return mid === maintenanceId;
+              });
+            }
+          } else {
+            currentAssignment = assignments;
+          }
 
           if (currentAssignment) {
+            // Ensure we have an effective id for edit actions
+            const foundId =
+              currentAssignment.id?.toString?.() ||
+              currentAssignment.assignmentId?.toString?.() ||
+              null;
+            if (!effectiveAssignmentId && foundId) {
+              setResolvedAssignmentId(foundId);
+            }
+
             const kmFreq =
               (currentAssignment as any).kilometersFrequency ||
               (currentAssignment as any).kilometers_frequency ||
@@ -288,6 +336,33 @@ export default function MaintenanceAssignment() {
         }
       } catch (error) {
         console.error("Error loading current assignment data:", error);
+      }
+    };
+
+    const resolveAssignmentId = async () => {
+      try {
+        if (!vehicleId || !maintenanceId) return;
+        const assignmentsResp = await getVehicleMaintenances(vehicleId);
+        if (assignmentsResp.success && Array.isArray(assignmentsResp.data)) {
+          const found = assignmentsResp.data.find((a: any) => {
+            const mid =
+              a.maintenanceId?.toString?.() ||
+              a.maintenance_id?.toString?.() ||
+              a.maintenance?.id?.toString?.();
+            return mid === maintenanceId;
+          });
+          if (found) {
+            const id =
+              found.id?.toString?.() || found.assignmentId?.toString?.();
+            if (id) setResolvedAssignmentId(id);
+          } else {
+            showError(
+              "No se pudo resolver la asignación para este mantenimiento y vehículo"
+            );
+          }
+        }
+      } catch (e) {
+        console.error("Error resolving assignment id:", e);
       }
     };
 
@@ -457,7 +532,10 @@ export default function MaintenanceAssignment() {
   };
 
   const handleUpdate = async () => {
-    if (!assignmentId) {
+    const targetAssignmentId = assignmentIdIsAuto
+      ? resolvedAssignmentId || undefined
+      : assignmentId;
+    if (!targetAssignmentId) {
       showError("ID de asignación no válido");
       return;
     }
@@ -480,7 +558,7 @@ export default function MaintenanceAssignment() {
       };
 
       const response = await updateMaintenanceAssignment(
-        assignmentId,
+        targetAssignmentId,
         updateData
       );
 
@@ -501,7 +579,10 @@ export default function MaintenanceAssignment() {
   };
 
   const handleDelete = async () => {
-    if (!assignmentId) {
+    const targetAssignmentId = assignmentIdIsAuto
+      ? resolvedAssignmentId || undefined
+      : assignmentId;
+    if (!targetAssignmentId) {
       showError("ID de asignación no válido");
       return;
     }
@@ -511,7 +592,9 @@ export default function MaintenanceAssignment() {
       async () => {
         setLoading(true);
         try {
-          const response = await deleteMaintenanceAssignment(assignmentId);
+          const response = await deleteMaintenanceAssignment(
+            targetAssignmentId
+          );
 
           if (response.success) {
             showSuccess("Asignación eliminada exitosamente");

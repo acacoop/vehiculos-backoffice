@@ -10,9 +10,15 @@ import Document from "../../components/Document/Document";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
+import { getVehicleById } from "../../services/vehicles";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams } from "../../common";
+import {
+  getVehicleBrand,
+  getVehicleModel,
+  formatVehicleBrandModel,
+} from "../../common/utils";
 import "./UserEdit.css";
 
 const mockDocuments = [
@@ -61,15 +67,15 @@ export default function UserEdit() {
       field: "vehicle.brand",
       headerName: "Marca",
       width: 90,
-      valueGetter: (_, row) => row.vehicle?.brand || "N/A",
-      renderCell: (params) => params.row.vehicle?.brand || "N/A",
+      valueGetter: (_, row) => getVehicleBrand(row.vehicle) || "N/A",
+      renderCell: (params) => getVehicleBrand(params.row.vehicle) || "N/A",
     },
     {
       field: "vehicle.model",
       headerName: "Modelo",
       width: 90,
-      valueGetter: (_, row) => row.vehicle?.model || "N/A",
-      renderCell: (params) => params.row.vehicle?.model || "N/A",
+      valueGetter: (_, row) => getVehicleModel(row.vehicle) || "N/A",
+      renderCell: (params) => getVehicleModel(params.row.vehicle) || "N/A",
     },
     {
       field: "startDate",
@@ -110,13 +116,21 @@ export default function UserEdit() {
       align: "center",
       valueGetter: (_, row) => {
         if (row.vehicle) {
-          return `${row.vehicle.brand} ${row.vehicle.model} (${row.vehicle.licensePlate})`;
+          const label = formatVehicleBrandModel(row.vehicle);
+          const plate = row.vehicle.licensePlate || "";
+          return label
+            ? `${label}${plate ? ` (${plate})` : ""}`
+            : plate || row.vehicleId || "N/A";
         }
         return row.vehicleId || "N/A";
       },
       renderCell: (params) => {
         if (params.row.vehicle) {
-          return `${params.row.vehicle.brand} ${params.row.vehicle.model} (${params.row.vehicle.licensePlate})`;
+          const label = formatVehicleBrandModel(params.row.vehicle);
+          const plate = params.row.vehicle.licensePlate || "";
+          return label
+            ? `${label}${plate ? ` (${plate})` : ""}`
+            : plate || params.row.vehicleId || "N/A";
         }
         return params.row.vehicleId || "N/A";
       },
@@ -265,9 +279,43 @@ export default function UserEdit() {
     try {
       const response = await getReservationsByUser(userId, paginationParams);
       if (response.success) {
+        const reservations = response.data || [];
+
+        // Enrich each reservation with full vehicle data (brand/model) when missing
+        const uniqueVehicleIds = Array.from(
+          new Set(
+            reservations
+              .map((r: any) => r.vehicle?.id || r.vehicleId)
+              .filter(Boolean)
+          )
+        ) as string[];
+
+        const vehicleMap = new Map<string, any>();
+
+        // Fetch vehicles in parallel (small pages, safe)
+        await Promise.all(
+          uniqueVehicleIds.map(async (vid) => {
+            try {
+              if (!vid || vehicleMap.has(vid)) return;
+              const vresp = await getVehicleById(vid);
+              if (vresp.success && vresp.data) {
+                vehicleMap.set(vid, vresp.data);
+              }
+            } catch {
+              /* ignore individual failures */
+            }
+          })
+        );
+
+        const enriched = reservations.map((r: any) => {
+          const vid = r.vehicle?.id || r.vehicleId;
+          const fullVehicle = (vid && vehicleMap.get(vid)) || r.vehicle;
+          return { ...r, vehicle: fullVehicle };
+        });
+
         return {
           success: true,
-          data: response.data,
+          data: enriched,
           pagination: response.pagination,
           message: response.message,
         };

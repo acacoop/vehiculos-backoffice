@@ -15,6 +15,7 @@ import {
 } from "../../components/Buttons/Buttons";
 import type { Vehicle } from "../../types/vehicle";
 import "./KilometersEdit.css";
+import { getVehicleModel } from "../../common/utils";
 
 export default function KilometersEdit() {
   const { vehicleId } = useParams<{ vehicleId: string }>();
@@ -31,7 +32,6 @@ export default function KilometersEdit() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
-  // we only need the display name in this form; no need to keep the entire user object
   const [currentUserName, setCurrentUserName] =
     useState<string>("Administrador");
 
@@ -208,7 +208,7 @@ export default function KilometersEdit() {
           key: "model",
           label: "Modelo:",
           type: "text",
-          value: vehicleData.model || "",
+          value: getVehicleModel(vehicleData) || "",
           onChange: handleVehicleChange,
           disabled: true,
         },
@@ -261,30 +261,32 @@ export default function KilometersEdit() {
 
   return (
     <>
-      <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
-            onClick={handleCancel}
-            disabled={saving}
-          />
-          <ConfirmButton
-            text="Crear Registro"
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
-      </FormLayout>
+      <div className="kilometers-edit-container">
+        <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
+          <ButtonGroup>
+            <CancelButton
+              text="Cancelar"
+              onClick={handleCancel}
+              disabled={saving}
+            />
+            <ConfirmButton
+              text="Crear Registro"
+              onClick={handleSave}
+              disabled={saving}
+              loading={saving}
+            />
+          </ButtonGroup>
+        </FormLayout>
 
-      {notification.isOpen && (
-        <NotificationToast
-          message={notification.message}
-          type={notification.type}
-          isOpen={notification.isOpen}
-          onClose={closeNotification}
-        />
-      )}
+        {notification.isOpen && (
+          <NotificationToast
+            message={notification.message}
+            type={notification.type}
+            isOpen={notification.isOpen}
+            onClose={closeNotification}
+          />
+        )}
+      </div>
     </>
   );
 }

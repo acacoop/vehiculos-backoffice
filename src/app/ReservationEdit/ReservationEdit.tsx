@@ -408,7 +408,11 @@ export default function ReservationEdit() {
           key: "brand",
           label: "Marca:",
           type: "text",
-          value: vehicleSearch.selectedVehicle.brand || "",
+          value:
+            (vehicleSearch.selectedVehicle as any).brandName ||
+            vehicleSearch.selectedVehicle.brand ||
+            vehicleSearch.selectedVehicle.modelObj?.brand?.name ||
+            "",
           onChange: () => {},
           disabled: true,
         },
@@ -416,7 +420,11 @@ export default function ReservationEdit() {
           key: "model",
           label: "Modelo:",
           type: "text",
-          value: vehicleSearch.selectedVehicle.model || "",
+          value:
+            (vehicleSearch.selectedVehicle as any).modelName ||
+            vehicleSearch.selectedVehicle.model ||
+            vehicleSearch.selectedVehicle.modelObj?.name ||
+            "",
           onChange: () => {},
           disabled: true,
         },

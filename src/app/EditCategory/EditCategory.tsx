@@ -163,56 +163,58 @@ export default function EditCategory() {
 
   return (
     <>
-      <FormLayout
-        title={
-          isCreateMode
-            ? "Nueva Categoría de Mantenimiento"
-            : "Editar Categoría de Mantenimiento"
-        }
-        sections={sections}
-      >
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
-            onClick={() => navigate("/maintenances")}
-            disabled={saving}
-          />
-          {!isCreateMode && (
-            <DeleteButton
-              text="Eliminar"
-              onClick={handleDelete}
+      <div className="edit-category-container">
+        <FormLayout
+          title={
+            isCreateMode
+              ? "Nueva Categoría de Mantenimiento"
+              : "Editar Categoría de Mantenimiento"
+          }
+          sections={sections}
+        >
+          <ButtonGroup>
+            <CancelButton
+              text="Cancelar"
+              onClick={() => navigate("/maintenances")}
+              disabled={saving}
+            />
+            {!isCreateMode && (
+              <DeleteButton
+                text="Eliminar"
+                onClick={handleDelete}
+                disabled={saving}
+                loading={saving}
+              />
+            )}
+            <ConfirmButton
+              text={
+                saving
+                  ? "Guardando..."
+                  : isCreateMode
+                  ? "Crear Categoría"
+                  : "Actualizar Categoría"
+              }
+              onClick={handleSave}
               disabled={saving}
               loading={saving}
             />
-          )}
-          <ConfirmButton
-            text={
-              saving
-                ? "Guardando..."
-                : isCreateMode
-                ? "Crear Categoría"
-                : "Actualizar Categoría"
-            }
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
-      </FormLayout>
+          </ButtonGroup>
+        </FormLayout>
 
-      <ConfirmDialog
-        open={isOpen}
-        message={message}
-        onConfirm={handleConfirm}
-        onCancel={handleDialogCancel}
-      />
+        <ConfirmDialog
+          open={isOpen}
+          message={message}
+          onConfirm={handleConfirm}
+          onCancel={handleDialogCancel}
+        />
 
-      <NotificationToast
-        message={notification.message}
-        type={notification.type}
-        isOpen={notification.isOpen}
-        onClose={closeNotification}
-      />
+        <NotificationToast
+          message={notification.message}
+          type={notification.type}
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+        />
+      </div>
     </>
   );
 }

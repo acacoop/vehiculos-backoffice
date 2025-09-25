@@ -29,6 +29,13 @@ export default function VehicleEditRegistration() {
   const [isVehicleActive, _setIsVehicleActive] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+  const [technicalData, setTechnicalData] = useState({
+    chassisNumber: "",
+    engineNumber: "",
+    vehicleType: "",
+    transmission: "",
+    fuelType: "",
+  });
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
@@ -484,23 +491,16 @@ export default function VehicleEditRegistration() {
       return;
     }
 
-    if (!vehicleData.licensePlate || !vehicleData.brand || !vehicleData.model) {
-      showError(
-        "Por favor completa todos los campos obligatorios (Patente, Marca, Modelo)"
-      );
+    if (!vehicleData.licensePlate || !vehicleData.modelId) {
+      showError("Por favor completa todos los campos obligatorios");
       return;
     }
 
     setIsRegistering(true);
 
     try {
-      const response = await createVehicle({
-        licensePlate: vehicleData.licensePlate,
-        brand: vehicleData.brand,
-        model: vehicleData.model,
-        year: vehicleData.year,
-        imgUrl: vehicleData.imgUrl || "https://via.placeholder.com/150",
-      });
+      const merged = { ...vehicleData, ...technicalData };
+      const response = await createVehicle(merged);
 
       if (response.success) {
         showSuccess("¡Vehículo registrado exitosamente!");
@@ -544,7 +544,12 @@ export default function VehicleEditRegistration() {
           showActions={!isCreateMode}
         />
 
-        <EntityForm entityType="technical" showActions={!isCreateMode} />
+        <EntityForm
+          entityType="technical"
+          entityId={isCreateMode ? undefined : vehicleId}
+          onDataChange={isCreateMode ? setTechnicalData : undefined}
+          showActions={!isCreateMode}
+        />
 
         {/* Orden de tablas en modo edición */}
         {!isCreateMode && vehicleId && (
@@ -736,7 +741,7 @@ export default function VehicleEditRegistration() {
         {isCreateMode && (
           <div className="registration-actions">
             <button
-              className="register-button"
+              className="table-add-btn"
               onClick={handleVehicleRegistration}
               disabled={isRegistering}
               style={{

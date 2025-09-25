@@ -148,13 +148,33 @@ export async function getReservationMetrics(): Promise<
     reservations.forEach((r: any) => {
       // El backend está devolviendo objetos vehicle incluidos
       if (r.vehicle) {
-        const vehicleInfo = `${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.licensePlate})`;
+        const brand =
+          r.vehicle.brandName ||
+          r.vehicle.brand ||
+          r.vehicle.modelObj?.brand?.name ||
+          "Sin marca";
+        const model =
+          r.vehicle.modelName ||
+          r.vehicle.model ||
+          r.vehicle.modelObj?.name ||
+          "Sin modelo";
+        const vehicleInfo = `${brand} ${model} (${r.vehicle.licensePlate})`;
         vehicleCountMap[vehicleInfo] = (vehicleCountMap[vehicleInfo] || 0) + 1;
       } else if (r.vehicleId) {
         // Fallback a la estructura original con solo IDs
         const vehicle = vehicleMap.get(r.vehicleId);
         if (vehicle) {
-          const vehicleInfo = `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
+          const brand =
+            vehicle.brandName ||
+            vehicle.brand ||
+            vehicle.modelObj?.brand?.name ||
+            "Sin marca";
+          const model =
+            vehicle.modelName ||
+            vehicle.model ||
+            vehicle.modelObj?.name ||
+            "Sin modelo";
+          const vehicleInfo = `${brand} ${model} (${vehicle.licensePlate})`;
           vehicleCountMap[vehicleInfo] =
             (vehicleCountMap[vehicleInfo] || 0) + 1;
         }
@@ -214,7 +234,8 @@ export async function getVehicleMetrics(): Promise<
     // Agrupar por marca
     const brandMap: Record<string, number> = {};
     vehicles.forEach((v) => {
-      const brand = v.brand || "Sin marca";
+      const brand =
+        v.brandName || v.brand || v.modelObj?.brand?.name || "Sin marca";
       brandMap[brand] = (brandMap[brand] || 0) + 1;
     });
 
@@ -232,7 +253,17 @@ export async function getVehicleMetrics(): Promise<
       reservationsResponse.data.forEach((r) => {
         const vehicle = vehicleMap.get(r.vehicleId);
         if (vehicle) {
-          const vehicleInfo = `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
+          const brand =
+            vehicle.brandName ||
+            vehicle.brand ||
+            vehicle.modelObj?.brand?.name ||
+            "Sin marca";
+          const model =
+            vehicle.modelName ||
+            vehicle.model ||
+            vehicle.modelObj?.name ||
+            "Sin modelo";
+          const vehicleInfo = `${brand} ${model} (${vehicle.licensePlate})`;
           vehicleReservationMap[vehicleInfo] =
             (vehicleReservationMap[vehicleInfo] || 0) + 1;
         }

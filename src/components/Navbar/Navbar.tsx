@@ -10,6 +10,7 @@ import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
 import IconResponsible from "../../assets/icons/assignment.svg";
 import IconNavbar from "../../assets/icons/navbar.svg";
+import IconBrand from "../../assets/icons/vehicle brand.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
@@ -137,8 +138,13 @@ function Navbar() {
               Responsable de vehículo
             </Link>
           </li>
+          <li>
+            <Link to="/models" onClick={() => setOpen(false)}>
+              <img className="icon-navbar" src={IconBrand} alt="Icono Marca" />{" "}
+              Modelos y Marcas
+            </Link>
+          </li>
         </ul>
-        {/* Logout moved to top bar next to user name */}
       </aside>
     </nav>
   );
