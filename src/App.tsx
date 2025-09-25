@@ -101,7 +101,7 @@ function App() {
             element={<MaintenanceAssignment />}
           />
           <Route
-            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId"
+            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId/:assignedMaintenanceId"
             element={<MaintenanceRecordRegisterEdit />}
           />
           <Route

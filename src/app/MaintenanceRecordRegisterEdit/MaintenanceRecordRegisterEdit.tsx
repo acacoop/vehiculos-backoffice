@@ -21,9 +21,10 @@ import "./MaintenanceRecordRegisterEdit.css";
 
 export default function MaintenanceRecordRegisterEdit() {
   const navigate = useNavigate();
-  const { vehicleId, maintenanceId } = useParams<{
+  const { vehicleId, maintenanceId, assignedMaintenanceId } = useParams<{
     vehicleId?: string;
     maintenanceId?: string;
+    assignedMaintenanceId?: string;
   }>();
 
   // Estado para datos pre-cargados
@@ -141,7 +142,7 @@ export default function MaintenanceRecordRegisterEdit() {
 
       const payload = {
         vehicleId,
-        assignedMaintenanceId: selectedMaintenanceId.toString(),
+        assignedMaintenanceId: assignedMaintenanceId!, // <-- am.id real
         userId: currentUser.id,
         kilometers,
         date: new Date(date),
