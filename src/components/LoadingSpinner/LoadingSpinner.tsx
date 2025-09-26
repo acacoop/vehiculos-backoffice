@@ -27,7 +27,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           size={60}
           thickness={4}
           sx={{
-            color: "#282D86", // Azul empresarial
+            color: "#282D86",
           }}
         />
         <p className="loading-message">{message}</p>
