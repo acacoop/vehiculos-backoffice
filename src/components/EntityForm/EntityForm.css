@@ -61,6 +61,7 @@
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   transition: border-color 0.3s ease, background-color 0.3s ease;
+  text-transform: uppercase;
 }
 
 .entity-form input:focus {
