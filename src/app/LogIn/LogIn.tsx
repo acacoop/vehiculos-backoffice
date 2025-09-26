@@ -1,5 +1,5 @@
 import "./LogIn.css";
-import Logo from "../../assets/brand/Logo azul.svg";
+import Logo from "../../assets/brand/logo azul.webp";
 import Microsoft from "../../assets/icons/microsoft.svg";
 import { login, isAuthenticated } from "../../common/auth";
 import { useEffect, useState } from "react";
