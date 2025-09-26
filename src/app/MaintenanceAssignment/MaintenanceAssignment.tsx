@@ -932,7 +932,8 @@ export default function MaintenanceAssignment() {
                     }
 
                     return { success: false, data: [] };
-                  } catch {
+                  } catch (error) {
+                    console.error(error);
                     return { success: false, data: [] };
                   }
                 }}
