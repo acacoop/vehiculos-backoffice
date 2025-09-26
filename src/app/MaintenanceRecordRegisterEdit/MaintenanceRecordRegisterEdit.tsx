@@ -34,13 +34,11 @@ export default function MaintenanceRecordRegisterEdit() {
   const [maintenance, setMaintenance] =
     useState<MaintenancePossibleNormalized | null>(null);
 
-  // Hook para buscar mantenimientos cuando no se proporciona maintenanceId
+  // Hook para buscar mantenimientos
   const maintenanceSearch = useMaintenanceSearch();
 
-  // Determinar si necesitamos seleccionar mantenimiento
   const needsMaintenanceSelection = !maintenanceId;
 
-  // cambia Promise<string | null> por Promise<string | undefined>
   async function getAssignedForVehicleAndMaintenance(
     vehicleId: string,
     maintenanceId: string
@@ -98,7 +96,6 @@ export default function MaintenanceRecordRegisterEdit() {
           setCurrentUser(userResponse.data);
         }
 
-        // Cargar vehículo si se proporciona
         if (vehicleId) {
           const vehicleResponse = await getVehicleById(vehicleId);
           if (vehicleResponse.success) {
@@ -106,13 +103,11 @@ export default function MaintenanceRecordRegisterEdit() {
           }
         }
 
-        // Cargar mantenimiento si se proporciona
         if (maintenanceId) {
           const maintenanceResponse = await getMaintenancePossibleById(
             maintenanceId
           );
           if (maintenanceResponse.success) {
-            // Normalizar los datos del mantenimiento
             const normalizedMaintenance = {
               id: maintenanceResponse.data.id,
               name: maintenanceResponse.data.title || maintenanceId,
