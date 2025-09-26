@@ -311,7 +311,6 @@ const FormLayout: React.FC<FormLayoutProps> = ({
       );
     }
 
-    // Display component for showing read-only information
     if (type === "display") {
       return (
         <div

@@ -8,16 +8,16 @@ import {
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import "./App.css";
-import Home from "./app/home/Home";
+import Home from "./app/Home/Home";
 import Users from "./app/Users/Users";
 import UserEdit from "./app/UserEdit/UserEdit";
 import EditAssignment from "./app/EditAssignment/EditAssignment";
 import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
-import Vehicles from "./app/vehicles/Vehicles";
-import Metrics from "./app/metrics/Metrics";
-import Assignaments from "./app/assignment/Assignment";
+import Vehicles from "./app/Vehicles/Vehicles";
+import Metrics from "./app/Metrics/Metrics";
+import Assignaments from "./app/Assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
-import MaintenancePage from "./app/maintenances/maintenances";
+import MaintenancePage from "./app/Maintenances/Maintenances";
 import EditCategory from "./app/EditCategory/EditCategory";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
@@ -101,7 +101,7 @@ function App() {
             element={<MaintenanceAssignment />}
           />
           <Route
-            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId"
+            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId/:assignedMaintenanceId"
             element={<MaintenanceRecordRegisterEdit />}
           />
           <Route
