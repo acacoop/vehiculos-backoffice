@@ -793,7 +793,6 @@ export default function MaintenanceAssignment() {
     ],
   });
 
-  // Details: observations and instructions (editable when assigning)
   formSections.push({
     title: "Detalles del Mantenimiento",
     fields: [
@@ -915,8 +914,6 @@ export default function MaintenanceAssignment() {
                   try {
                     if (vehicleId && maintenanceId) {
                       const resp = await getAllMaintenanceRecords({
-                        page: 1,
-                        limit: 100,
                         vehicleId,
                         maintenanceId,
                       });

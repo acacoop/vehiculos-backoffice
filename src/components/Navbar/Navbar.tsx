@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
-import logo from "../../assets/brand/logo blanco.webp";
+import logo from "../../assets/brand/logo_blanco.webp";
 import IconDashboard from "../../assets/icons/dashboard.svg";
 import IconCar from "../../assets/icons/car.svg";
 import IconUser from "../../assets/icons/user.svg";
