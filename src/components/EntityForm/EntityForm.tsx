@@ -84,7 +84,6 @@ const ENTITY_CONFIGS: Record<
   vehicle: {
     title: (isEdit) =>
       isEdit ? "Detalles del Vehículo" : "Información del Nuevo Vehículo",
-    // brand/model converted to select placeholders dynamically (we'll inject options at render time)
     fields: [
       { key: "licensePlate", label: "Dominio", type: "text" },
       { key: "brandId", label: "Marca", type: "select" },

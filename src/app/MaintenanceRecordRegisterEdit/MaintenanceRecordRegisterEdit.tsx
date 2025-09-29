@@ -14,6 +14,7 @@ import { getVehicleById } from "../../services/vehicles";
 import { getMaintenancePossibleById } from "../../services/maintenances";
 import { addMaintenanceRecord } from "../../services/maintenanceRecords";
 import { useMaintenanceSearch } from "../../hooks";
+import { getVehicleMaintenances } from "../../services/maintenances";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { MaintenancePossibleNormalized } from "../../services/maintenances";
@@ -21,9 +22,10 @@ import "./MaintenanceRecordRegisterEdit.css";
 
 export default function MaintenanceRecordRegisterEdit() {
   const navigate = useNavigate();
-  const { vehicleId, maintenanceId } = useParams<{
+  const { vehicleId, maintenanceId, assignedMaintenanceId } = useParams<{
     vehicleId?: string;
     maintenanceId?: string;
+    assignedMaintenanceId?: string;
   }>();
 
   // Estado para datos pre-cargados
@@ -32,11 +34,40 @@ export default function MaintenanceRecordRegisterEdit() {
   const [maintenance, setMaintenance] =
     useState<MaintenancePossibleNormalized | null>(null);
 
-  // Hook para buscar mantenimientos cuando no se proporciona maintenanceId
+  // Hook para buscar mantenimientos
   const maintenanceSearch = useMaintenanceSearch();
 
-  // Determinar si necesitamos seleccionar mantenimiento
   const needsMaintenanceSelection = !maintenanceId;
+
+  async function getAssignedForVehicleAndMaintenance(
+    vehicleId: string,
+    maintenanceId: string
+  ): Promise<string | undefined> {
+    const resp = await getVehicleMaintenances(vehicleId);
+    if (!resp.success) return undefined;
+
+    const rows = Array.isArray(resp.data) ? resp.data : [resp.data];
+
+    const found = rows.find((r: any) => {
+      const mid =
+        r.maintenanceId ??
+        r.maintenance_id ??
+        r?.maintenance?.id ??
+        r?.maintenance?.maintenanceId ??
+        r?.maintenance?.maintenance_id;
+      return String(mid) === String(maintenanceId);
+    });
+
+    if (!found) return undefined;
+
+    const assignedId =
+      found.assignmentId ??
+      found.assignment_id ??
+      found.assignedMaintenanceId ??
+      found.id;
+
+    return assignedId ? String(assignedId) : undefined;
+  }
 
   // Estado para campos editables
   const [notes, setNotes] = useState<string>("");
@@ -65,7 +96,6 @@ export default function MaintenanceRecordRegisterEdit() {
           setCurrentUser(userResponse.data);
         }
 
-        // Cargar vehículo si se proporciona
         if (vehicleId) {
           const vehicleResponse = await getVehicleById(vehicleId);
           if (vehicleResponse.success) {
@@ -73,13 +103,11 @@ export default function MaintenanceRecordRegisterEdit() {
           }
         }
 
-        // Cargar mantenimiento si se proporciona
         if (maintenanceId) {
           const maintenanceResponse = await getMaintenancePossibleById(
             maintenanceId
           );
           if (maintenanceResponse.success) {
-            // Normalizar los datos del mantenimiento
             const normalizedMaintenance = {
               id: maintenanceResponse.data.id,
               name: maintenanceResponse.data.title || maintenanceId,
@@ -117,7 +145,6 @@ export default function MaintenanceRecordRegisterEdit() {
       return;
     }
 
-    // Obtener el ID del mantenimiento (desde parámetros o desde la búsqueda)
     const selectedMaintenanceId =
       maintenanceId || maintenanceSearch.selectedMaintenance?.id;
 
@@ -125,12 +152,10 @@ export default function MaintenanceRecordRegisterEdit() {
       showError("Debe seleccionar un mantenimiento");
       return;
     }
-
     if (!kilometers || kilometers <= 0) {
       showError("Debe ingresar los kilómetros");
       return;
     }
-
     if (!date) {
       showError("Debe seleccionar una fecha");
       return;
@@ -138,10 +163,23 @@ export default function MaintenanceRecordRegisterEdit() {
 
     try {
       setSubmitting(true);
+      let effectiveAssignedId: string | undefined = assignedMaintenanceId;
+      if (!effectiveAssignedId) {
+        const resolved = await getAssignedForVehicleAndMaintenance(
+          vehicleId,
+          String(selectedMaintenanceId)
+        );
+        if (!resolved) {
+          showError("Ese mantenimiento no está asignado a este vehículo.");
+          setSubmitting(false);
+          return;
+        }
+        effectiveAssignedId = resolved;
+      }
 
       const payload = {
         vehicleId,
-        assignedMaintenanceId: selectedMaintenanceId.toString(),
+        assignedMaintenanceId: effectiveAssignedId,
         userId: currentUser.id,
         kilometers,
         date: new Date(date),
@@ -153,24 +191,22 @@ export default function MaintenanceRecordRegisterEdit() {
       if (response.success) {
         showSuccess("Registro de mantenimiento creado exitosamente");
         setTimeout(() => {
-          navigate(-1); // Volver a la página anterior
-        }, 1500);
+          navigate(-1);
+        }, 600);
       } else {
         showError(response.message || "Error al crear el registro");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
       showError("Error al crear el registro de mantenimiento");
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleCancel = () => {
     navigate(-1);
   };
 
-  // Helper function para crear campos del vehículo (similar a MaintenanceAssignment)
   const createVehicleFields = (vehicle: Vehicle) => [
     {
       key: "patente",
