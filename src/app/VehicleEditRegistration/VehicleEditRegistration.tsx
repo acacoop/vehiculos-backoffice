@@ -6,6 +6,7 @@ import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { LoadingSpinner } from "../../components";
 import { createVehicle } from "../../services/vehicles";
+import { getVehicleModelById } from "../../services/vehicleModels";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
@@ -35,6 +36,7 @@ export default function VehicleEditRegistration() {
     vehicleType: "",
     transmission: "",
     fuelType: "",
+    allowedVehicleTypes: [] as string[] | undefined,
   });
 
   const { notification, showSuccess, showError, closeNotification } =
@@ -485,6 +487,39 @@ export default function VehicleEditRegistration() {
     setVehicleData(vehicle);
   };
 
+  // When creating a vehicle, bind the selected model to the technical sheet vehicle type
+  useEffect(() => {
+    if (!isCreateMode) return;
+    const modelId = vehicleData?.modelId;
+    let abort = false;
+    (async () => {
+      if (modelId) {
+        try {
+          const resp = await getVehicleModelById(modelId);
+          if (!abort && resp.success && resp.data) {
+            const vt = (resp.data as any).vehicleType || "";
+            setTechnicalData((prev) => ({
+              ...prev,
+              vehicleType: vt || prev.vehicleType,
+              allowedVehicleTypes: vt ? [vt] : undefined,
+            }));
+          }
+        } catch {
+          // ignore
+        }
+      } else {
+        // If model cleared, remove restriction
+        setTechnicalData((prev) => ({
+          ...prev,
+          allowedVehicleTypes: undefined,
+        }));
+      }
+    })();
+    return () => {
+      abort = true;
+    };
+  }, [isCreateMode, vehicleData?.modelId]);
+
   const handleVehicleRegistration = async () => {
     if (!vehicleData) {
       showError("Por favor completa la información del vehículo");
@@ -547,6 +582,7 @@ export default function VehicleEditRegistration() {
         <EntityForm
           entityType="technical"
           entityId={isCreateMode ? undefined : vehicleId}
+          data={isCreateMode ? technicalData : undefined}
           onDataChange={isCreateMode ? setTechnicalData : undefined}
           showActions={!isCreateMode}
         />
