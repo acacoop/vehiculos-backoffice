@@ -39,13 +39,6 @@ export default function VehicleEditRegistration() {
     allowedVehicleTypes: [] as string[] | undefined,
   });
 
-  const mountedRef = useRef(true);
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
 
