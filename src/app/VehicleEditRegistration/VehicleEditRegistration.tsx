@@ -39,7 +39,6 @@ export default function VehicleEditRegistration() {
     allowedVehicleTypes: [] as string[] | undefined,
   });
 
-  const modelLookupSeq = useRef(0);
   const mountedRef = useRef(true);
   useEffect(() => {
     return () => {
@@ -498,7 +497,6 @@ export default function VehicleEditRegistration() {
   useEffect(() => {
     if (!isCreateMode) return;
     const modelId = vehicleData?.modelId;
-    const seq = ++modelLookupSeq.current;
 
     if (!modelId) {
       setTechnicalData((prev) => ({
@@ -512,17 +510,11 @@ export default function VehicleEditRegistration() {
     (async () => {
       try {
         const resp = await getVehicleModelById(modelId);
-        if (
-          modelLookupSeq.current === seq &&
-          mountedRef.current &&
-          resp.success &&
-          resp.data
-        ) {
-          const vt = (resp.data as any).vehicleType || "";
+        if (resp.success && resp.data) {
+          const vt = resp.data.vehicleType || "";
           setTechnicalData((prev) => ({
             ...prev,
             vehicleType: vt || prev.vehicleType,
-            allowedVehicleTypes: vt ? [vt] : undefined,
           }));
         }
       } catch {
