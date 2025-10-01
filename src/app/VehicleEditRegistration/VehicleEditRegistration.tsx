@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
@@ -38,6 +38,14 @@ export default function VehicleEditRegistration() {
     fuelType: "",
     allowedVehicleTypes: [] as string[] | undefined,
   });
+
+  const modelLookupSeq = useRef(0);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
@@ -487,37 +495,40 @@ export default function VehicleEditRegistration() {
     setVehicleData(vehicle);
   };
 
-  // When creating a vehicle, bind the selected model to the technical sheet vehicle type
   useEffect(() => {
     if (!isCreateMode) return;
     const modelId = vehicleData?.modelId;
-    let abort = false;
+    const seq = ++modelLookupSeq.current;
+
+    if (!modelId) {
+      setTechnicalData((prev) => ({
+        ...prev,
+        vehicleType: "",
+        allowedVehicleTypes: undefined,
+      }));
+      return;
+    }
+
     (async () => {
-      if (modelId) {
-        try {
-          const resp = await getVehicleModelById(modelId);
-          if (!abort && resp.success && resp.data) {
-            const vt = (resp.data as any).vehicleType || "";
-            setTechnicalData((prev) => ({
-              ...prev,
-              vehicleType: vt || prev.vehicleType,
-              allowedVehicleTypes: vt ? [vt] : undefined,
-            }));
-          }
-        } catch {
-          // ignore
+      try {
+        const resp = await getVehicleModelById(modelId);
+        if (
+          modelLookupSeq.current === seq &&
+          mountedRef.current &&
+          resp.success &&
+          resp.data
+        ) {
+          const vt = (resp.data as any).vehicleType || "";
+          setTechnicalData((prev) => ({
+            ...prev,
+            vehicleType: vt || prev.vehicleType,
+            allowedVehicleTypes: vt ? [vt] : undefined,
+          }));
         }
-      } else {
-        // If model cleared, remove restriction
-        setTechnicalData((prev) => ({
-          ...prev,
-          allowedVehicleTypes: undefined,
-        }));
+      } catch {
+        // ignore
       }
     })();
-    return () => {
-      abort = true;
-    };
   }, [isCreateMode, vehicleData?.modelId]);
 
   const handleVehicleRegistration = async () => {
@@ -574,7 +585,7 @@ export default function VehicleEditRegistration() {
         <EntityForm
           entityType="vehicle"
           entityId={isCreateMode ? undefined : vehicleId}
-          onDataChange={isCreateMode ? handleVehicleChange : undefined}
+          onDataChange={handleVehicleChange}
           isActive={isVehicleActive}
           showActions={!isCreateMode}
         />
@@ -584,13 +595,16 @@ export default function VehicleEditRegistration() {
           entityId={isCreateMode ? undefined : vehicleId}
           data={isCreateMode ? technicalData : undefined}
           onDataChange={isCreateMode ? setTechnicalData : undefined}
+          externalVehicleModelId={
+            (vehicleData as any)?.modelId ||
+            (vehicleData as any)?.modelObj?.id ||
+            undefined
+          }
           showActions={!isCreateMode}
         />
 
-        {/* Orden de tablas en modo edición */}
         {!isCreateMode && vehicleId && (
           <>
-            {/* 1. Responsable de vehículo */}
             <Table<any>
               getRows={async (paginationParams) => {
                 try {
@@ -636,7 +650,6 @@ export default function VehicleEditRegistration() {
               tableWidth="900px"
             />
 
-            {/* 2. Asignar usuarios al vehículo */}
             <Table<Assignment>
               getRows={getAssignmentsForTable}
               columns={assignmentColumns}
@@ -657,7 +670,6 @@ export default function VehicleEditRegistration() {
               maxWidth="900px"
             />
 
-            {/* 3. Historial de kilometraje */}
             <Table<any>
               getRows={getMileageForTable}
               columns={mileageColumns}
@@ -674,7 +686,6 @@ export default function VehicleEditRegistration() {
               tableWidth="900px"
             />
 
-            {/* 4. Mantenimiento de vehículo */}
             <Table<any>
               getRows={getMaintenancesForTable}
               columns={maintenanceColumns}
@@ -709,7 +720,6 @@ export default function VehicleEditRegistration() {
               }
             />
 
-            {/* 5. Registro de mantenimiento */}
             <Table<any>
               getRows={async (_pagination) => {
                 try {
