@@ -8,14 +8,14 @@ import {
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import "./App.css";
-import Home from "./app/Home_/Home";
+import Home from "./app/Home/Home";
 import Users from "./app/Users/Users";
 import UserEdit from "./app/UserEdit/UserEdit";
 import EditAssignment from "./app/EditAssignment/EditAssignment";
 import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
-import Vehicles from "./app/Vehicles_/Vehicles";
-import Metrics from "./app/Metrics_/Metrics";
-import Assignaments from "./app/Assignment_/Assignment";
+import Vehicles from "./app/Vehicles/Vehicles";
+import Metrics from "./app/Metrics/Metrics";
+import Assignaments from "./app/Assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 import MaintenancePage from "./app/Maintenances/Maintenances";
 import EditCategory from "./app/EditCategory/EditCategory";
