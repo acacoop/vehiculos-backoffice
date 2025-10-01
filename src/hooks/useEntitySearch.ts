@@ -321,3 +321,63 @@ export function useVehicleBrandSearch() {
     setSearchTerm,
   };
 }
+
+// Simple vehicle type search (string list). Could be wired to a backend later.
+export function useVehicleTypeSearch(initialList: string[] = []) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [availableVehicleTypes, setAvailableVehicleTypes] =
+    useState<string[]>(initialList);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedVehicleType, setSelectedVehicleType] = useState<string | null>(
+    null
+  );
+
+  const searchVehicleTypes = async (term: string) => {
+    setSearchTerm(term);
+    const pool = initialList.length
+      ? initialList
+      : [
+          "Sedan",
+          "SUV",
+          "Hatchback",
+          "Pickup",
+          "Van",
+          "Coupé",
+          "Convertible",
+          "Wagon",
+        ];
+    if (term.length >= 1) {
+      const filtered = pool.filter((t) =>
+        t.toLowerCase().includes(term.toLowerCase())
+      );
+      setAvailableVehicleTypes(filtered);
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const selectVehicleType = (vehicleType: string) => {
+    setSelectedVehicleType(vehicleType);
+    setSearchTerm(vehicleType);
+    setShowDropdown(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedVehicleType(null);
+    setSearchTerm("");
+  };
+
+  return {
+    searchTerm,
+    availableVehicleTypes,
+    showDropdown,
+    selectedVehicleType,
+    searchVehicleTypes,
+    selectVehicleType,
+    clearSelection,
+    setShowDropdown,
+    setSelectedVehicleType,
+    setSearchTerm,
+  };
+}

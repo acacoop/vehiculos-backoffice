@@ -7,6 +7,7 @@ export interface VehicleBrand {
 export interface VehicleModelType {
   id: string;
   name: string;
+  vehicleType?: string;
   brand: VehicleBrand;
 }
 
@@ -21,17 +22,14 @@ export interface VehicleModelListResponse {
 }
 
 export interface Vehicle {
-  id: string; // UUID format
-  assignmentId?: string; // For maintenance assignment contexts
+  id: string;
+  assignmentId?: string;
   licensePlate: string;
-  // Legacy plain fields (to be removed after full migration)
-  brand?: string; // derived from modelObj.brand.name
-  model?: string; // derived from modelObj.name (will be replaced by modelObj usage)
-  // Nested object returned by new backend structure
+  brand?: string;
+  model?: string;
   modelObj?: VehicleModelType | null;
-  // Convenience derived names for UI without breaking old code
-  brandName?: string; // = modelObj?.brand.name
-  modelName?: string; // = modelObj?.name
+  brandName?: string;
+  modelName?: string;
   year: number;
   imgUrl?: string;
   chassisNumber?: string;
@@ -39,21 +37,18 @@ export interface Vehicle {
   vehicleType?: string;
   transmission?: string;
   fuelType?: string;
-  // For create/update convenience (frontend only)
-  modelId?: string; // selected model id when creating/updating
+  modelId?: string;
 }
 
-// Parámetros para filtrar vehículos (camelCase para uso interno)
 export interface VehicleFilterParams {
-  licensePlate?: string; // Se convertirá a license-plate
-  brand?: string; // search by brand name (legacy)
-  model?: string; // search by model name (legacy)
-  brandId?: string; // new filter id-based
-  modelId?: string; // new filter id-based
+  licensePlate?: string;
+  brand?: string;
+  model?: string;
+  brandId?: string;
+  modelId?: string;
   year?: number;
 }
 
-// Respuesta específica para vehículos
 export interface VehiclesApiResponse {
   status: "success" | "error";
   message: string;

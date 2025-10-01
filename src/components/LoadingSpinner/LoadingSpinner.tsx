@@ -6,7 +6,6 @@ import "./LoadingSpinner.css";
 interface LoadingSpinnerProps {
   message?: string;
   fullScreen?: boolean;
-
   visible?: boolean;
 }
 

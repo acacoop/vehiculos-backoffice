@@ -12,7 +12,10 @@ import {
   getVehicleModelById,
   deleteVehicleModel,
 } from "../../services/vehicleModels";
-import { useVehicleBrandSearch } from "../../hooks/useEntitySearch";
+import {
+  useVehicleBrandSearch,
+  useVehicleTypeSearch,
+} from "../../hooks/useEntitySearch";
 import {
   FormLayout,
   LoadingSpinner,
@@ -41,6 +44,7 @@ export default function ModelsEdit() {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [brandId, setBrandId] = useState<string>("");
+  const [vehicleType, setVehicleType] = useState<string>("");
   // const [brands, setBrands] = useState<VehicleBrand[]>([]); // no longer needed with search
 
   // Brand search hook (solo para modelos)
@@ -54,6 +58,18 @@ export default function ModelsEdit() {
     setSearchTerm: setBrandSearchTerm,
     setShowDropdown: setShowBrandDropdown,
   } = useVehicleBrandSearch();
+
+  // Vehicle type search (string suggestions)
+  const {
+    searchTerm: vehicleTypeTerm,
+    availableVehicleTypes,
+    showDropdown: showVehicleTypeDropdown,
+    searchVehicleTypes,
+    selectVehicleType,
+    setSearchTerm: setVehicleTypeTerm,
+    setShowDropdown: setShowVehicleTypeDropdown,
+    setSelectedVehicleType,
+  } = useVehicleTypeSearch();
 
   const {
     isOpen: isConfirmOpen,
@@ -86,6 +102,12 @@ export default function ModelsEdit() {
           if (modelResp.success) {
             setName(modelResp.data.name);
             setBrandId(modelResp.data.brand?.id || "");
+            const vt = modelResp.data.vehicleType || "";
+            setVehicleType(vt);
+            if (vt) {
+              setVehicleTypeTerm(vt);
+              setSelectedVehicleType(vt);
+            }
             if (modelResp.data.brand) {
               setSelectedBrand(modelResp.data.brand);
               setBrandSearchTerm(modelResp.data.brand.name);
@@ -107,6 +129,10 @@ export default function ModelsEdit() {
       showError("Debe seleccionar una marca");
       return;
     }
+    if (!isBrandContext && !vehicleType.trim()) {
+      showError("Debe especificar el tipo de vehículo");
+      return;
+    }
     const actionText = isCreateMode ? "crear" : "actualizar";
     showConfirm(
       `¿Está seguro que desea ${actionText} este ${
@@ -124,9 +150,18 @@ export default function ModelsEdit() {
               : null;
           } else {
             resp = isCreateMode
-              ? await createVehicleModel(name.trim(), brandId)
+              ? await createVehicleModel(
+                  name.trim(),
+                  brandId,
+                  vehicleType.trim()
+                )
               : id
-              ? await updateVehicleModel(id, name.trim(), brandId)
+              ? await updateVehicleModel(
+                  id,
+                  name.trim(),
+                  brandId,
+                  vehicleType.trim()
+                )
               : null;
           }
           if (resp?.success) {
@@ -222,6 +257,32 @@ export default function ModelsEdit() {
                 setBrandId(v as string),
               required: true,
               placeholder: "Buscar y seleccionar una marca...",
+            }
+          : undefined,
+        !isBrandContext
+          ? {
+              key: "vehicleType",
+              label: "Tipo de Vehículo",
+              type: "vehicleTypeSearch",
+              entitySearch: true,
+              searchTerm: vehicleTypeTerm,
+              onSearchChange: (term: string) => {
+                setVehicleTypeTerm(term);
+                searchVehicleTypes(term);
+              },
+              availableVehicleTypes: availableVehicleTypes,
+              showDropdown: showVehicleTypeDropdown,
+              onVehicleTypeSelect: (t: string) => {
+                selectVehicleType(t);
+                setVehicleType(t);
+              },
+              onDropdownToggle: (show: boolean) =>
+                setShowVehicleTypeDropdown(show),
+              value: vehicleType,
+              onChange: (_k: string, v: string | number) =>
+                setVehicleType(v as string),
+              required: true,
+              placeholder: "Escriba el tipo de vehículo...",
             }
           : undefined,
       ].filter(Boolean) as any,
