@@ -6,6 +6,7 @@ import {
   CategorySearch,
   MaintenanceSearch,
   BrandSearch,
+  VehicleTypeSearch,
 } from "../EntitySearch/EntitySearch";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
@@ -29,6 +30,7 @@ export interface FormField {
     | "categorySearch"
     | "maintenanceSearch"
     | "brandSearch"
+    | "vehicleTypeSearch"
     | "checkbox"
     | "display";
   placeholder?: string;
@@ -60,6 +62,7 @@ export interface FormField {
   availableUsers?: User[];
   availableVehicles?: Vehicle[];
   availableBrands?: VehicleBrand[];
+  availableVehicleTypes?: string[];
   availableCategories?: Maintenance[];
   // maintenance possibles are normalized objects coming from the service
   availableMaintenances?: MaintenancePossibleNormalized[];
@@ -67,6 +70,7 @@ export interface FormField {
   onUserSelect?: (user: User) => void;
   onVehicleSelect?: (vehicle: Vehicle) => void;
   onBrandSelect?: (brand: VehicleBrand) => void;
+  onVehicleTypeSelect?: (vehicleType: string) => void;
   onCategorySelect?: (category: Maintenance) => void;
   onMaintenanceSelect?: (maintenance: MaintenancePossibleNormalized) => void;
   onDropdownToggle?: (show: boolean) => void;
@@ -147,6 +151,7 @@ const FormLayout: React.FC<FormLayoutProps> = ({
       availableVehicles,
       availableCategories,
       availableMaintenances,
+      availableVehicleTypes,
       showDropdown,
       onUserSelect,
       onVehicleSelect,
@@ -155,6 +160,7 @@ const FormLayout: React.FC<FormLayoutProps> = ({
       onDropdownToggle,
       availableBrands,
       onBrandSelect,
+      onVehicleTypeSelect,
     } = field;
 
     // DateTimePicker component
@@ -277,6 +283,27 @@ const FormLayout: React.FC<FormLayoutProps> = ({
             availableBrands={availableBrands || []}
             showDropdown={showDropdown || false}
             onBrandSelect={onBrandSelect || (() => {})}
+            onDropdownToggle={onDropdownToggle || (() => {})}
+            placeholder={placeholder}
+            className="form-input"
+          />
+        </div>
+      );
+    }
+
+    // VehicleTypeSearch component
+    if (type === "vehicleTypeSearch" && entitySearch) {
+      return (
+        <div key={key} className={`form-field ${fieldClassName || ""}`}>
+          <label className="form-label">
+            {label} {required && <span className="required">*</span>}
+          </label>
+          <VehicleTypeSearch
+            searchTerm={searchTerm || ""}
+            onSearchChange={onSearchChange || (() => {})}
+            availableVehicleTypes={availableVehicleTypes || []}
+            showDropdown={showDropdown || false}
+            onVehicleTypeSelect={onVehicleTypeSelect || (() => {})}
             onDropdownToggle={onDropdownToggle || (() => {})}
             placeholder={placeholder}
             className="form-input"

@@ -7,7 +7,10 @@ import {
   createVehicle,
 } from "../../services/vehicles";
 import { getVehicleBrands } from "../../services/vehicleBrands";
-import { getVehicleModels } from "../../services/vehicleModels";
+import {
+  getVehicleModels,
+  getVehicleModelById,
+} from "../../services/vehicleModels";
 import type { Vehicle } from "../../types/vehicle";
 import { getUserById } from "../../services/users";
 import {
@@ -116,19 +119,9 @@ const ENTITY_CONFIGS: Record<
       {
         key: "vehicleType",
         label: "Tipo de Vehículo",
-        type: "select",
-        options: [
-          { label: "Seleccionar una opción", value: "" },
-          { label: "Sedán", value: "Sedan" },
-          { label: "Hatchback", value: "Hatchback" },
-          { label: "SUV", value: "SUV" },
-          { label: "Camioneta / Pick-up", value: "Pickup" },
-          { label: "Van / Utilitario", value: "Van" },
-          { label: "Moto", value: "Moto" },
-          { label: "Camión", value: "Camion" },
-          { label: "Bus / Colectivo", value: "Bus" },
-          { label: "Otro", value: "Otro" },
-        ],
+        type: "text",
+        readOnly: true,
+        disabled: true,
       },
       {
         key: "transmission",
@@ -171,6 +164,7 @@ type Props = {
   isActive?: boolean;
   showActions?: boolean;
   className?: string;
+  externalVehicleModelId?: string;
 };
 
 export default function EntityForm({
@@ -181,6 +175,7 @@ export default function EntityForm({
   isActive = true,
   showActions = true,
   className = "",
+  externalVehicleModelId,
 }: Props) {
   const [searchParams] = useSearchParams();
   const { id: paramId } = useParams<{ id: string }>();
@@ -232,6 +227,7 @@ export default function EntityForm({
           vehicleType: "",
           transmission: "",
           fuelType: "",
+          allowedVehicleTypes: [] as string[] | undefined,
         };
       default:
         return {};
@@ -274,13 +270,31 @@ export default function EntityForm({
         if (response?.success) {
           if (entityType === "technical") {
             const v = (response.data as Vehicle) || ({} as Vehicle);
-            setFormData({
+            const nextData: any = {
               chassisNumber: v.chassisNumber || "",
               engineNumber: v.engineNumber || "",
               vehicleType: v.vehicleType || "",
               transmission: v.transmission || "",
               fuelType: v.fuelType || "",
-            });
+            };
+
+            // Si conocemos el modelo, buscar su vehicleType para limitar el select
+            const modelId = (v as any).modelObj?.id || (v as any).modelId;
+            if (modelId) {
+              try {
+                const mresp = await getVehicleModelById(modelId);
+                if (mresp.success && mresp.data) {
+                  const vt = (mresp.data as any).vehicleType || "";
+                  if (vt) {
+                    nextData.vehicleType = nextData.vehicleType || vt;
+                    nextData.allowedVehicleTypes = [vt];
+                  }
+                }
+              } catch (e) {
+                // ignore
+              }
+            }
+            setFormData(nextData);
           } else if (entityType === "vehicle") {
             const v = (response.data as Vehicle) || ({} as Vehicle);
             setFormData({
@@ -313,6 +327,39 @@ export default function EntityForm({
       onDataChange(formData);
     }
   }, [formData, onDataChange]);
+
+  // When used for technical data next to a vehicle form, react to external model changes (edit mode)
+  useEffect(() => {
+    if (entityType !== "technical") return;
+    let aborted = false;
+    if (!externalVehicleModelId) {
+      // Clear restriction and value when no model is selected
+      setFormData((prev: any) => ({
+        ...prev,
+        allowedVehicleTypes: undefined,
+        vehicleType: "",
+      }));
+      return;
+    }
+    (async () => {
+      try {
+        const m = await getVehicleModelById(externalVehicleModelId);
+        if (!aborted && m.success && m.data) {
+          const vt = (m.data as any).vehicleType || "";
+          setFormData((prev: any) => ({
+            ...prev,
+            vehicleType: vt || prev.vehicleType || "",
+            allowedVehicleTypes: vt ? [vt] : undefined,
+          }));
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [entityType, externalVehicleModelId]);
 
   // Always declare effects in same order; internal guards prevent unnecessary work
   useEffect(() => {
@@ -492,6 +539,17 @@ export default function EntityForm({
                   if (entityType === "vehicle") {
                     if (field.key === "brandId") dynamicOptions = brandOptions;
                     if (field.key === "modelId") dynamicOptions = modelOptions;
+                  } else if (entityType === "technical") {
+                    if (
+                      field.key === "vehicleType" &&
+                      Array.isArray(formData.allowedVehicleTypes) &&
+                      formData.allowedVehicleTypes.length > 0
+                    ) {
+                      // Limitar a los tipos permitidos (normalmente el único tipo del modelo)
+                      dynamicOptions = formData.allowedVehicleTypes.map(
+                        (t: string) => ({ label: t, value: t })
+                      );
+                    }
                   }
                   const hasEmpty = dynamicOptions.some((o) => o.value === "");
                   return (
@@ -507,15 +565,18 @@ export default function EntityForm({
                           entityType === "vehicle" &&
                           field.key === "brandId"
                         ) {
-                          // reset model when brand changes
                           handleFieldChange("modelId", "");
                         }
                       }}
                       disabled={isFieldDisabled(field)}
                     >
-                      {!hasEmpty && (
-                        <option value="">Seleccionar una opción</option>
-                      )}
+                      {!hasEmpty &&
+                        !(
+                          entityType === "technical" &&
+                          field.key === "vehicleType" &&
+                          Array.isArray(formData.allowedVehicleTypes) &&
+                          formData.allowedVehicleTypes.length > 0
+                        ) && <option value="">Seleccionar una opción</option>}
                       {dynamicOptions.map((opt) => (
                         <option
                           key={opt.value}

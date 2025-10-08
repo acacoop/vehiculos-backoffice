@@ -8,7 +8,7 @@ import {
 } from "../../services/maintenances";
 import type { Maintenance } from "../../types/maintenance";
 import type { PaginationParams } from "../../common";
-import "./maintenances.css";
+import "./Maintenances.css";
 
 const maintenanceColumns: GridColDef<Maintenance>[] = [
   {
@@ -61,7 +61,7 @@ const createTableDataHandler =
           pageSize: paginationParams.limit || 20,
           total: response.data.length,
           pages: Math.ceil(
-            response.data.length / (paginationParams.limit || 20)
+            response.data.length / (paginationParams.limit || 20),
           ),
         },
       };
@@ -76,12 +76,12 @@ const createTableDataHandler =
 
 const getMaintenancesForTable = createTableDataHandler(
   getMaintenanceCategories,
-  "Error al obtener categorías"
+  "Error al obtener categorías",
 );
 
 const getPossibleMaintenancesForTable = createTableDataHandler(
   getMaintenancePossibles,
-  "Error al obtener mantenimientos"
+  "Error al obtener mantenimientos",
 );
 
 export default function MaintenancePage() {

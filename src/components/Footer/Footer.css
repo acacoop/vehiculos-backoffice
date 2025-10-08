@@ -9,3 +9,10 @@
   margin-top: 50px;
   font-weight: bold;
 }
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
