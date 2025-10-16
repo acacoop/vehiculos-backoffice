@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
@@ -483,9 +483,9 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  const handleVehicleChange = (vehicle: Vehicle | null) => {
+  const handleVehicleChange = useCallback((vehicle: Vehicle | null) => {
     setVehicleData(vehicle);
-  };
+  }, []);
 
   useEffect(() => {
     if (!isCreateMode) return;
