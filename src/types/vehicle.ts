@@ -47,6 +47,7 @@ export interface VehicleFilterParams {
   brandId?: string;
   modelId?: string;
   year?: number;
+  search?: string;
 }
 
 export interface VehiclesApiResponse {

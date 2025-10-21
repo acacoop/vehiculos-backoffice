@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Table from "../../components/Table/table";
 import { getVehicles } from "../../services/vehicles";
 import type { ServiceResponse, PaginationParams } from "../../common";
+import type { VehicleFilterParams } from "../../types/vehicle";
 
 const columns = [
   { field: "licensePlate", headerName: "Patente", flex: 1 },
@@ -12,10 +13,20 @@ const columns = [
 ];
 
 const getVehiclesData = async (
-  pagination: PaginationParams
+  pagination: PaginationParams,
+  options?: { search?: string }
 ): Promise<ServiceResponse<any[]>> => {
   try {
-    const response = await getVehicles(undefined, pagination);
+    let filters: VehicleFilterParams | undefined;
+
+    if (options?.search) {
+      const trimmedSearch = options.search.trim();
+      if (trimmedSearch.length > 0) {
+        filters = { search: trimmedSearch };
+      }
+    }
+
+    const response = await getVehicles(filters, pagination);
 
     if (!response.success) {
       return {
@@ -68,6 +79,8 @@ export default function Vehicles() {
         headerTitle="Gestión de Vehículos"
         showAddButton={true}
         addButtonText="Comenzar Registro"
+        searchPlaceholder="Patente, Marca, Modelo"
+        enableSearch
         onAddButtonClick={() => navigate("/vehicle/create")}
       />
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
 import { Alert } from "@mui/material";
 import {
@@ -238,6 +238,11 @@ export default function EntityForm({
     const fetchData = async () => {
       if (propData) {
         setFormData(propData);
+        try {
+          lastSentFormRef.current = JSON.stringify(propData ?? {});
+        } catch (e) {
+          lastSentFormRef.current = null;
+        }
         setLoading(false);
         return;
       }
@@ -295,17 +300,33 @@ export default function EntityForm({
               }
             }
             setFormData(nextData);
+            try {
+              lastSentFormRef.current = JSON.stringify(nextData ?? {});
+            } catch (e) {
+              lastSentFormRef.current = null;
+            }
           } else if (entityType === "vehicle") {
             const v = (response.data as Vehicle) || ({} as Vehicle);
-            setFormData({
+            const vForm = {
               id: v.id,
               licensePlate: v.licensePlate,
               brandId: v.modelObj?.brand.id || "",
               modelId: v.modelObj?.id || "",
               year: v.year,
-            });
+            };
+            setFormData(vForm);
+            try {
+              lastSentFormRef.current = JSON.stringify(vForm ?? {});
+            } catch (e) {
+              lastSentFormRef.current = null;
+            }
           } else {
             setFormData(response.data);
+            try {
+              lastSentFormRef.current = JSON.stringify(response.data ?? {});
+            } catch (e) {
+              lastSentFormRef.current = null;
+            }
           }
         } else {
           setError(response?.message || `Error al cargar ${entityType}`);
@@ -322,8 +343,19 @@ export default function EntityForm({
     fetchData();
   }, [entityId, entityType, propData]);
 
+  // Track last-sent formData to avoid infinite update loops when parent echoes the data back.
+  const lastSentFormRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (onDataChange) {
+    if (!onDataChange) return;
+    try {
+      const serialized = JSON.stringify(formData ?? {});
+      if (lastSentFormRef.current !== serialized) {
+        lastSentFormRef.current = serialized;
+        onDataChange(formData);
+      }
+    } catch (e) {
+      // Fallback: if serialization fails, still call but this may risk loops
       onDataChange(formData);
     }
   }, [formData, onDataChange]);
