@@ -2,8 +2,8 @@ import { Chip } from "@mui/material";
 import Table from "../../components/Table/table";
 import "./Users.css";
 import { getUsers } from "../../services/users";
-import type { ServiceResponse } from "../../common";
-import type { User as UserType } from "../../types/user";
+import type { ServiceResponse, PaginationParams } from "../../common";
+import type { User as UserType, UserFilterParams } from "../../types/user";
 
 const userColumns = [
   { field: "cuit", headerName: "CUIT", width: 120 },
@@ -34,12 +34,21 @@ const userColumns = [
 ];
 
 const getUsersData = async (
-  pagination: any
+  pagination: PaginationParams,
+  options?: { search?: string }
 ): Promise<ServiceResponse<UserType[]>> => {
-  return await getUsers(
-    { includeInactive: true },
-    { page: pagination.page, limit: pagination.limit }
-  );
+  const filters: UserFilterParams & { includeInactive?: boolean } = {
+    includeInactive: true,
+  };
+
+  if (options?.search) {
+    filters.search = options.search.trim();
+  }
+
+  return await getUsers(filters, {
+    page: pagination.page,
+    limit: pagination.limit,
+  });
 };
 
 export default function Users() {
@@ -54,6 +63,8 @@ export default function Users() {
         showEditColumn={true}
         editRoute="/user/edit"
         maxHeight="900px"
+        enableSearch
+        searchPlaceholder="Buscar por nombre, apellido, email o CUIT"
       />
     </main>
   );

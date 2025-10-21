@@ -261,7 +261,6 @@ export function BrandSearch({
   );
 }
 
-// ================= Vehicle Type Search =================
 interface VehicleTypeSearchProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
