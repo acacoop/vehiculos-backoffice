@@ -13,15 +13,15 @@ import {
   FormLayout,
   ConfirmDialog,
   NotificationToast,
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
   Table,
   LoadingSpinner,
 } from "../../components";
 import { PencilIcon } from "../../components/Table/table";
-import type { FormSection } from "../../components";
+import {
+  FieldType,
+  EntityType,
+  InputType,
+} from "../../components/FormLayout/FormLayout";
 import {
   useConfirmDialog,
   useCategorySearch,
@@ -58,6 +58,28 @@ export default function EditMaintenance() {
   } = useConfirmDialog();
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  const handleFieldChange = (key: string, value: any) => {
+    switch (key) {
+      case "title":
+        setTitle(value);
+        break;
+      case "frequencyKm":
+        setFrequencyKm(Number(value) || 0);
+        break;
+      case "frequencyDays":
+        setFrequencyDays(Number(value) || 0);
+        break;
+      case "observations":
+        setObservations(value);
+        break;
+      case "instructions":
+        setInstructions(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   // Column definition for vehicles table
   const vehicleColumns = [
@@ -292,163 +314,136 @@ export default function EditMaintenance() {
     return <LoadingSpinner message="Cargando datos del mantenimiento..." />;
   }
 
-  // Helper functions for form sections
-  const createMainInfoSection = (): FormSection => ({
-    title: "Información del Mantenimiento",
-    fields: [
-      {
-        key: "title",
-        label: "Título del Mantenimiento",
-        type: "text",
-        value: title,
-        onChange: (_key: string, value: string | number) =>
-          setTitle(value as string),
-        placeholder: "Ej: Cambio de aceite y filtros",
-        required: true,
-      },
-    ],
-  });
+  const buildFormFields = (): any[] => {
+    const fields: any[] = [];
 
-  const createCategorySection = (): FormSection => {
+    // Información del mantenimiento
+    fields.push({
+      type: FieldType.INPUT,
+      title: "Título del Mantenimiento",
+      value: title,
+      key: "title",
+      inputType: InputType.TEXT,
+      placeholder: "Ej: Cambio de aceite y filtros",
+      required: true,
+      validation: (value: string) => ({
+        isValid: !!value.trim(),
+        message: "El título es obligatorio",
+      }),
+    });
+
+    // Categoría
     if (categorySearch.selectedCategory) {
-      return {
-        title: "Datos de la Categoría",
-        horizontal: true,
-        actionButton: {
-          text: "Cambiar categoría",
-          onClick: () => categorySearch.clearSelection(),
-        },
-        fields: [
-          {
-            key: "categoryName",
-            label: "Nombre:",
-            type: "text",
-            value: categorySearch.selectedCategory.name || "",
-            onChange: () => {},
-            disabled: true,
-          },
-        ],
-      };
+      fields.push({
+        type: FieldType.TEXT_FIXED,
+        title: "Categoría:",
+        value: categorySearch.selectedCategory.name || "",
+        key: "categoryName",
+      });
+    } else {
+      fields.push({
+        type: FieldType.SEARCH,
+        title: "Categoría",
+        value: categorySearch.selectedCategory,
+        key: "category",
+        entityType: EntityType.CATEGORY,
+        searchTerm: categorySearch.searchTerm,
+        onSearchChange: categorySearch.searchCategories,
+        availableEntities: categorySearch.availableCategories,
+        showDropdown: categorySearch.showDropdown,
+        onSelect: categorySearch.selectCategory,
+        onDropdownToggle: categorySearch.setShowDropdown,
+        placeholder: "Buscar categoría...",
+        required: true,
+      });
     }
 
-    return {
-      title: "Seleccionar Categoría",
-      fields: [
-        {
-          key: "category",
-          label: "Categoría",
-          type: "categorySearch",
-          value: "",
-          onChange: () => {},
-          entitySearch: true,
-          searchTerm: categorySearch.searchTerm,
-          onSearchChange: categorySearch.searchCategories,
-          availableCategories: categorySearch.availableCategories,
-          showDropdown: categorySearch.showDropdown,
-          onCategorySelect: categorySearch.selectCategory,
-          onDropdownToggle: categorySearch.setShowDropdown,
-          placeholder: "Buscar categoría...",
-          required: true,
-        },
-      ],
-    };
-  };
-
-  const createFrequencySection = (): FormSection => ({
-    title: "Frecuencia",
-    horizontal: true,
-    fields: [
+    // Frecuencia
+    fields.push(
       {
-        key: "frequencyKm",
-        label: "Frecuencia en Kilómetros",
-        type: "number",
+        type: FieldType.INPUT,
+        title: "Frecuencia en Kilómetros",
         value: frequencyKm,
-        onChange: (_key: string, value: string | number) =>
-          setFrequencyKm(value as number),
+        key: "frequencyKm",
+        inputType: InputType.NUMBER,
         placeholder: "10000",
         min: 1,
         required: true,
+        validation: (value: number) => ({
+          isValid: value > 0,
+          message: "La frecuencia en kilómetros debe ser mayor a 0",
+        }),
       },
       {
-        key: "frequencyDays",
-        label: "Frecuencia en Días",
-        type: "number",
+        type: FieldType.INPUT,
+        title: "Frecuencia en Días",
         value: frequencyDays,
-        onChange: (_key: string, value: string | number) =>
-          setFrequencyDays(value as number),
+        key: "frequencyDays",
+        inputType: InputType.NUMBER,
         placeholder: "365",
         min: 1,
         required: true,
-      },
-    ],
-  });
+        validation: (value: number) => ({
+          isValid: value > 0,
+          message: "La frecuencia en días debe ser mayor a 0",
+        }),
+      }
+    );
 
-  const createDetailsSection = (): FormSection => ({
-    title: "Detalles Adicionales",
-    fields: [
+    // Detalles adicionales
+    fields.push(
       {
-        key: "observations",
-        label: "Observaciones",
-        type: "textarea",
+        type: FieldType.TEXTAREA,
+        title: "Observaciones",
         value: observations,
-        onChange: (_key: string, value: string | number) =>
-          setObservations(value as string),
+        key: "observations",
         placeholder: "Observaciones adicionales...",
+        rows: 3,
       },
       {
-        key: "instructions",
-        label: "Instrucciones",
-        type: "textarea",
+        type: FieldType.TEXTAREA,
+        title: "Instrucciones",
         value: instructions,
-        onChange: (_key: string, value: string | number) =>
-          setInstructions(value as string),
+        key: "instructions",
         placeholder: "Instrucciones detalladas para el mantenimiento...",
-      },
-    ],
-  });
+        rows: 4,
+      }
+    );
 
-  // Form sections configuration
-  const sections: FormSection[] = [
-    createMainInfoSection(),
-    createCategorySection(),
-    createFrequencySection(),
-    createDetailsSection(),
-  ];
+    return fields;
+  };
+
+  const formFields = buildFormFields();
+
+  const buttonConfig = {
+    primary: {
+      text: saving
+        ? "Guardando..."
+        : isCreateMode
+        ? "Crear Mantenimiento"
+        : "Actualizar Mantenimiento",
+      onClick: handleSave,
+    },
+    secondary: !isCreateMode
+      ? {
+          text: "Eliminar",
+          onClick: handleDelete,
+        }
+      : undefined,
+    cancel: {
+      text: "Cancelar",
+      onClick: handleCancel,
+    },
+  };
 
   return (
     <>
       <FormLayout
         title={isCreateMode ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
-        sections={sections}
-      >
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
-            onClick={handleCancel}
-            disabled={saving}
-          />
-          {!isCreateMode && (
-            <DeleteButton
-              text="Eliminar"
-              onClick={handleDelete}
-              disabled={saving}
-              loading={saving}
-            />
-          )}
-          <ConfirmButton
-            text={
-              saving
-                ? "Guardando..."
-                : isCreateMode
-                ? "Crear Mantenimiento"
-                : "Actualizar Mantenimiento"
-            }
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
-      </FormLayout>
+        formFields={formFields}
+        buttonConfig={buttonConfig}
+        onFieldChange={handleFieldChange}
+      />
 
       {/* Tabla de vehículos asignados - solo en modo edición */}
       {!isCreateMode && maintenanceId && (

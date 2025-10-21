@@ -11,13 +11,7 @@ import { useConfirmDialog, useNotification } from "../../hooks";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";
-import type { FormSection } from "../../components/FormLayout/FormLayout";
-import {
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
-} from "../../components/Buttons/Buttons";
+import { FieldType, InputType } from "../../components/FormLayout/FormLayout";
 import "./EditCategory.css";
 
 export default function EditCategory() {
@@ -143,23 +137,49 @@ export default function EditCategory() {
     return <LoadingSpinner message="Cargando datos de la categoría..." />;
   }
 
-  const sections: FormSection[] = [
+  const formFields: any[] = [
     {
-      title: "Información de la Categoría",
-      fields: [
-        {
-          key: "categoryName",
-          label: "Categoría de Mantenimiento",
-          type: "text",
-          value: categoryName,
-          onChange: (_key: string, value: string | number) =>
-            setCategoryName(value as string),
-          placeholder: "Ingrese la categoría del mantenimiento",
-          required: true,
-        },
-      ],
+      type: FieldType.INPUT,
+      title: "Categoría de Mantenimiento",
+      key: "categoryName",
+      value: categoryName,
+      inputType: InputType.TEXT,
+      placeholder: "Ingrese la categoría del mantenimiento",
+      required: true,
     },
   ];
+
+  const handleFieldChange = (key: string, value: any) => {
+    if (key === "categoryName") {
+      setCategoryName(value);
+    }
+  };
+
+  const buttonConfig = {
+    cancel: {
+      text: "Cancelar",
+      onClick: () => navigate("/maintenances"),
+      type: "button" as const,
+    },
+    ...(isCreateMode
+      ? {}
+      : {
+          secondary: {
+            text: "Eliminar",
+            onClick: handleDelete,
+            type: "button" as const,
+          },
+        }),
+    primary: {
+      text: saving
+        ? "Guardando..."
+        : isCreateMode
+        ? "Crear Categoría"
+        : "Actualizar Categoría",
+      onClick: handleSave,
+      type: "submit" as const,
+    },
+  };
 
   return (
     <>
@@ -170,36 +190,10 @@ export default function EditCategory() {
               ? "Nueva Categoría de Mantenimiento"
               : "Editar Categoría de Mantenimiento"
           }
-          sections={sections}
-        >
-          <ButtonGroup>
-            <CancelButton
-              text="Cancelar"
-              onClick={() => navigate("/maintenances")}
-              disabled={saving}
-            />
-            {!isCreateMode && (
-              <DeleteButton
-                text="Eliminar"
-                onClick={handleDelete}
-                disabled={saving}
-                loading={saving}
-              />
-            )}
-            <ConfirmButton
-              text={
-                saving
-                  ? "Guardando..."
-                  : isCreateMode
-                  ? "Crear Categoría"
-                  : "Actualizar Categoría"
-              }
-              onClick={handleSave}
-              disabled={saving}
-              loading={saving}
-            />
-          </ButtonGroup>
-        </FormLayout>
+          formFields={formFields}
+          buttonConfig={buttonConfig}
+          onFieldChange={handleFieldChange}
+        />
 
         <ConfirmDialog
           open={isOpen}

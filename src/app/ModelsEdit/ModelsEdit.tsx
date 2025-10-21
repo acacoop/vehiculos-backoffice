@@ -21,12 +21,12 @@ import {
   LoadingSpinner,
   ConfirmDialog,
   NotificationToast,
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
 } from "../../components";
-import type { FormSection } from "../../components";
+import {
+  FieldType,
+  EntityType,
+  InputType,
+} from "../../components/FormLayout/FormLayout";
 import { useConfirmDialog, useNotification } from "../../hooks";
 import type { VehicleBrand } from "../../types/vehicle";
 import "./ModelsEdit.css";
@@ -220,74 +220,113 @@ export default function ModelsEdit() {
     return <LoadingSpinner message="Cargando datos..." />;
   }
 
-  // Sections
-  const sections: FormSection[] = [
+  // Form fields configuration
+  const formFields: any[] = [
     {
-      title: isBrandContext ? "Datos de la Marca" : "Datos del Modelo",
-      fields: [
-        {
-          key: "name",
-          label: isBrandContext ? "Nombre de la Marca" : "Nombre del Modelo",
-          type: "text",
-          value: name,
-          onChange: (_k: string, v: string | number) => setName(v as string),
-          required: true,
-          placeholder: isBrandContext ? "Ej: Toyota" : "Ej: Corolla",
-        },
-        !isBrandContext
-          ? {
-              key: "brandId",
-              label: "Marca",
-              type: "brandSearch",
-              entitySearch: true,
-              searchTerm: brandSearchTerm,
-              onSearchChange: (term: string) => {
-                setBrandSearchTerm(term);
-                searchBrands(term);
-              },
-              availableBrands: availableBrands,
-              showDropdown: showBrandDropdown,
-              onBrandSelect: (brand: VehicleBrand) => {
-                selectBrand(brand);
-                setBrandId(brand.id);
-              },
-              onDropdownToggle: (show: boolean) => setShowBrandDropdown(show),
-              value: brandId,
-              onChange: (_k: string, v: string | number) =>
-                setBrandId(v as string),
-              required: true,
-              placeholder: "Buscar y seleccionar una marca...",
-            }
-          : undefined,
-        !isBrandContext
-          ? {
-              key: "vehicleType",
-              label: "Tipo de Vehículo",
-              type: "vehicleTypeSearch",
-              entitySearch: true,
-              searchTerm: vehicleTypeTerm,
-              onSearchChange: (term: string) => {
-                setVehicleTypeTerm(term);
-                searchVehicleTypes(term);
-              },
-              availableVehicleTypes: availableVehicleTypes,
-              showDropdown: showVehicleTypeDropdown,
-              onVehicleTypeSelect: (t: string) => {
-                selectVehicleType(t);
-                setVehicleType(t);
-              },
-              onDropdownToggle: (show: boolean) =>
-                setShowVehicleTypeDropdown(show),
-              value: vehicleType,
-              onChange: (_k: string, v: string | number) =>
-                setVehicleType(v as string),
-              required: true,
-              placeholder: "Escriba el tipo de vehículo...",
-            }
-          : undefined,
-      ].filter(Boolean) as any,
+      type: FieldType.INPUT,
+      title: isBrandContext ? "Nombre de la Marca" : "Nombre del Modelo",
+      key: "name",
+      value: name,
+      inputType: InputType.TEXT,
+      required: true,
+      placeholder: isBrandContext ? "Ej: Toyota" : "Ej: Corolla",
     },
+    ...(isBrandContext
+      ? []
+      : [
+          {
+            type: FieldType.SEARCH,
+            title: "Marca",
+            key: "brandId",
+            entityType: EntityType.BRAND,
+            value: null, // This should be the selected brand object
+            searchTerm: brandSearchTerm,
+            onSearchChange: (term: string) => {
+              setBrandSearchTerm(term);
+              searchBrands(term);
+            },
+            availableEntities: availableBrands,
+            showDropdown: showBrandDropdown,
+            onSelect: (brand: VehicleBrand) => {
+              selectBrand(brand);
+              setBrandId(brand.id);
+            },
+            onDropdownToggle: (show: boolean) => setShowBrandDropdown(show),
+            required: true,
+            placeholder: "Buscar y seleccionar una marca...",
+          },
+        ]),
+    ...(isBrandContext
+      ? []
+      : [
+          {
+            type: FieldType.SEARCH,
+            title: "Tipo de Vehículo",
+            key: "vehicleType",
+            entityType: EntityType.VEHICLE_TYPE,
+            value: vehicleType,
+            searchTerm: vehicleTypeTerm,
+            onSearchChange: (term: string) => {
+              setVehicleTypeTerm(term);
+              searchVehicleTypes(term);
+            },
+            availableEntities: availableVehicleTypes,
+            showDropdown: showVehicleTypeDropdown,
+            onSelect: (type: string) => {
+              selectVehicleType(type);
+              setVehicleType(type);
+            },
+            onDropdownToggle: (show: boolean) =>
+              setShowVehicleTypeDropdown(show),
+            required: true,
+            placeholder: "Escriba el tipo de vehículo...",
+          },
+        ]),
   ];
+
+  const handleFieldChange = (key: string, value: any) => {
+    switch (key) {
+      case "name":
+        setName(value);
+        break;
+      case "brandId":
+        // This will be handled by the onSelect callback
+        break;
+      case "vehicleType":
+        // This will be handled by the onSelect callback
+        break;
+    }
+  };
+
+  const buttonConfig = {
+    cancel: {
+      text: "Cancelar",
+      onClick: () => navigate("/models"),
+      type: "button" as const,
+    },
+    ...(isCreateMode
+      ? {}
+      : {
+          secondary: {
+            text: "Eliminar",
+            onClick: handleDelete,
+            type: "button" as const,
+          },
+        }),
+    primary: {
+      text: saving
+        ? "Guardando..."
+        : isCreateMode
+        ? isBrandContext
+          ? "Crear Marca"
+          : "Crear Modelo"
+        : isBrandContext
+        ? "Actualizar Marca"
+        : "Actualizar Modelo",
+      onClick: handleSave,
+      type: "submit" as const,
+    },
+  };
 
   return (
     <>
@@ -302,40 +341,10 @@ export default function ModelsEdit() {
               ? "Nuevo Modelo"
               : "Editar Modelo"
           }
-          sections={sections}
-        >
-          <ButtonGroup>
-            <CancelButton
-              text="Cancelar"
-              onClick={() => navigate("/models")}
-              disabled={saving}
-            />
-            {!isCreateMode && (
-              <DeleteButton
-                text="Eliminar"
-                onClick={handleDelete}
-                disabled={saving}
-                loading={saving}
-              />
-            )}
-            <ConfirmButton
-              text={
-                saving
-                  ? "Guardando..."
-                  : isCreateMode
-                  ? isBrandContext
-                    ? "Crear Marca"
-                    : "Crear Modelo"
-                  : isBrandContext
-                  ? "Actualizar Marca"
-                  : "Actualizar Modelo"
-              }
-              onClick={handleSave}
-              disabled={saving}
-              loading={saving}
-            />
-          </ButtonGroup>
-        </FormLayout>
+          formFields={formFields}
+          buttonConfig={buttonConfig}
+          onFieldChange={handleFieldChange}
+        />
         <ConfirmDialog
           open={isConfirmOpen}
           message={confirmMessage}

@@ -19,13 +19,9 @@ import {
   FormLayout,
   ConfirmDialog,
   NotificationToast,
-  CancelButton,
-  DeleteButton,
-  ConfirmButton,
-  ButtonGroup,
   LoadingSpinner,
 } from "../../components";
-import type { FormSection } from "../../components";
+import { FieldType, EntityType } from "../../components/FormLayout/FormLayout";
 import type { Assignment } from "../../types/assignment";
 import type { Vehicle } from "../../types/vehicle";
 import { getVehicleBrand, getVehicleModel } from "../../common/utils";
@@ -71,6 +67,22 @@ export default function EditAssignment() {
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  const handleFieldChange = (key: string, value: any) => {
+    switch (key) {
+      case "startDate":
+        setStartDate(value);
+        break;
+      case "endDate":
+        setEndDate(value);
+        break;
+      case "isIndefinite":
+        setIsIndefinite(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     const fetchAssignment = async () => {
@@ -123,22 +135,6 @@ export default function EditAssignment() {
 
     fetchAssignment();
   }, [assignmentId, vehicleId, userIdFromQuery, isCreateMode]);
-
-  const canChangeUser = () => {
-    if (!isCreateMode) return false;
-
-    if (preloadedUser) return false;
-
-    return userSearch.selectedUser !== null;
-  };
-
-  const canChangeVehicle = () => {
-    if (!isCreateMode) return false;
-
-    if (preloadedVehicle) return false;
-
-    return vehicleSearch.selectedVehicle !== null;
-  };
 
   const checkExistingAssignment = async (
     userId: string,
@@ -350,217 +346,190 @@ export default function EditAssignment() {
       <div className="edit-assignment-container">
         <div className="error">
           {error || "No se pudo cargar la asignación"}
-          <CancelButton text="Volver" onClick={handleCancel} />
+          <button onClick={handleCancel} className="btn btn-cancel">
+            Volver
+          </button>
         </div>
       </div>
     );
   }
 
-  // Construir secciones para FormLayout
-  const sections: FormSection[] = [];
+  const buildFormFields = (): any[] => {
+    const fields: any[] = [];
 
-  // Sección de datos del usuario (solo si hay usuario seleccionado/asignado)
-  const currentUser =
-    assignment?.user || userSearch.selectedUser || preloadedUser;
-  if (currentUser) {
-    sections.push({
-      title: "Datos del Usuario",
-      horizontal: true,
-      actionButton: canChangeUser()
-        ? {
-            text: "Cambiar usuario",
-            onClick: () => userSearch.clearSelection(),
-            className: "action-button",
-          }
-        : undefined,
-      fields: [
+    // Sección de datos del usuario (solo si hay usuario seleccionado/asignado)
+    const currentUser =
+      assignment?.user || userSearch.selectedUser || preloadedUser;
+    if (currentUser) {
+      // Datos del usuario (readonly)
+      fields.push(
         {
-          key: "userDni",
-          label: "CUIT:",
-          type: "text",
+          type: FieldType.TEXT_FIXED,
+          title: "CUIT:",
           value: currentUser.cuit?.toLocaleString() || "",
-          onChange: () => {},
-          disabled: true,
+          key: "userDni",
         },
         {
-          key: "userFirstName",
-          label: "Nombre:",
-          type: "text",
+          type: FieldType.TEXT_FIXED,
+          title: "Nombre:",
           value: currentUser.firstName || "",
-          onChange: () => {},
-          disabled: true,
+          key: "userFirstName",
         },
         {
-          key: "userLastName",
-          label: "Apellido:",
-          type: "text",
+          type: FieldType.TEXT_FIXED,
+          title: "Apellido:",
           value: currentUser.lastName || "",
-          onChange: () => {},
-          disabled: true,
+          key: "userLastName",
         },
         {
-          key: "userEmail",
-          label: "Email:",
-          type: "email",
+          type: FieldType.TEXT_FIXED,
+          title: "Email:",
           value: currentUser.email || "",
-          onChange: () => {},
-          disabled: true,
-        },
-      ],
-    });
-  } else {
-    // Sección para buscar usuario
-    sections.push({
-      title: "Seleccionar Usuario",
-      fields: [
-        {
-          key: "userSearch",
-          label: "Buscar usuario (por nombre, apellido, CUIT)",
-          type: "userSearch",
-          value: "",
-          onChange: () => {},
-          entitySearch: true,
-          searchTerm: userSearch.searchTerm,
-          onSearchChange: userSearch.searchUsers,
-          availableUsers: userSearch.availableUsers,
-          showDropdown: userSearch.showDropdown,
-          onUserSelect: userSearch.selectUser,
-          onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre, apellido o CUIT...",
-          required: true,
-        },
-      ],
-    });
-  }
-
-  // Sección de datos del vehículo (solo si hay vehículo seleccionado/asignado)
-  const currentVehicle =
-    assignment?.vehicle || preloadedVehicle || vehicleSearch.selectedVehicle;
-  if (currentVehicle) {
-    sections.push({
-      title: "Datos del Vehículo",
-      horizontal: true,
-      actionButton: canChangeVehicle()
-        ? {
-            text: "Cambiar vehículo",
-            onClick: () => vehicleSearch.clearSelection(),
-            className: "action-button",
-          }
-        : undefined,
-      fields: [
-        {
-          key: "vehicleLicensePlate",
-          label: "Patente:",
-          type: "text",
-          value: currentVehicle.licensePlate || "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "vehicleBrand",
-          label: "Marca:",
-          type: "text",
-          value: getVehicleBrand(currentVehicle),
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "vehicleModel",
-          label: "Modelo:",
-          type: "text",
-          value: getVehicleModel(currentVehicle),
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "vehicleYear",
-          label: "Año:",
-          type: "number",
-          value: currentVehicle.year || 0,
-          onChange: () => {},
-          disabled: true,
-        },
-      ],
-    });
-  } else {
-    // Sección para buscar vehículo
-    sections.push({
-      title: "Seleccionar Vehículo",
-      fields: [
-        {
-          key: "vehicleSearch",
-          label: "Buscar vehículo (por patente, marca, modelo o año)",
-          type: "vehicleSearch",
-          value: "",
-          onChange: () => {},
-          entitySearch: true,
-          searchTerm: vehicleSearch.searchTerm,
-          onSearchChange: vehicleSearch.searchVehicles,
-          availableVehicles: vehicleSearch.availableVehicles,
-          showDropdown: vehicleSearch.showDropdown,
-          onVehicleSelect: vehicleSearch.selectVehicle,
-          onDropdownToggle: vehicleSearch.setShowDropdown,
-          placeholder: "Buscar por patente, marca, modelo o año...",
-          required: true,
-        },
-      ],
-    });
-  }
-
-  // Sección de período de asignación
-  sections.push({
-    title: "Período de Asignación",
-    fields: [
-      {
-        key: "startDate",
-        label: "Fecha Desde",
-        type: "date",
-        value: startDate,
-        onChange: (_key, value) => setStartDate(value as string),
+          key: "userEmail",
+        }
+      );
+    } else {
+      // Campo de búsqueda de usuario
+      fields.push({
+        type: FieldType.SEARCH,
+        title: "Buscar usuario (por nombre, apellido, CUIT)",
+        value: userSearch.selectedUser,
+        key: "userSearch",
+        entityType: EntityType.USER,
+        searchTerm: userSearch.searchTerm,
+        onSearchChange: userSearch.searchUsers,
+        availableEntities: userSearch.availableUsers,
+        showDropdown: userSearch.showDropdown,
+        onSelect: userSearch.selectUser,
+        onDropdownToggle: userSearch.setShowDropdown,
+        placeholder: "Buscar por nombre, apellido o CUIT...",
         required: true,
+      });
+    }
+
+    // Sección de datos del vehículo (solo si hay vehículo seleccionado/asignado)
+    const currentVehicle =
+      assignment?.vehicle || preloadedVehicle || vehicleSearch.selectedVehicle;
+    if (currentVehicle) {
+      // Datos del vehículo (readonly)
+      fields.push(
+        {
+          type: FieldType.TEXT_FIXED,
+          title: "Patente:",
+          value: currentVehicle.licensePlate || "",
+          key: "vehicleLicensePlate",
+        },
+        {
+          type: FieldType.TEXT_FIXED,
+          title: "Marca:",
+          value: getVehicleBrand(currentVehicle),
+          key: "vehicleBrand",
+        },
+        {
+          type: FieldType.TEXT_FIXED,
+          title: "Modelo:",
+          value: getVehicleModel(currentVehicle),
+          key: "vehicleModel",
+        },
+        {
+          type: FieldType.TEXT_FIXED,
+          title: "Año:",
+          value: currentVehicle.year?.toString() || "",
+          key: "vehicleYear",
+        }
+      );
+    } else {
+      // Campo de búsqueda de vehículo
+      fields.push({
+        type: FieldType.SEARCH,
+        title: "Buscar vehículo (por patente, marca, modelo o año)",
+        value: vehicleSearch.selectedVehicle,
+        key: "vehicleSearch",
+        entityType: EntityType.VEHICLE,
+        searchTerm: vehicleSearch.searchTerm,
+        onSearchChange: vehicleSearch.searchVehicles,
+        availableEntities: vehicleSearch.availableVehicles,
+        showDropdown: vehicleSearch.showDropdown,
+        onSelect: vehicleSearch.selectVehicle,
+        onDropdownToggle: vehicleSearch.setShowDropdown,
+        placeholder: "Buscar por patente, marca, modelo o año...",
+        required: true,
+      });
+    }
+
+    // Campos de período de asignación
+    fields.push(
+      {
+        type: FieldType.DATE,
+        title: "Fecha Desde",
+        value: startDate,
+        key: "startDate",
+        required: true,
+        validation: (value: string) => ({
+          isValid: !!value,
+          message: "La fecha de inicio es requerida",
+        }),
       },
       {
+        type: FieldType.CHECKBOX,
+        title: "Asignación indefinida (sin fecha de fin)",
+        value: isIndefinite,
         key: "isIndefinite",
-        label: "Asignación indefinida (sin fecha de fin)",
-        type: "checkbox",
-        value: isIndefinite ? 1 : 0,
-        checked: isIndefinite,
-        onChange: (_key, value) => setIsIndefinite(value === 1),
       },
       {
-        key: "endDate",
-        label: "Fecha Hasta",
-        type: "date",
+        type: FieldType.DATE,
+        title: "Fecha Hasta",
         value: endDate,
-        onChange: (_key, value) => setEndDate(value as string),
-        condition: () => !isIndefinite,
+        key: "endDate",
         minDate: startDate,
-      },
-    ],
-  });
+        validation: (value: string) => {
+          if (isIndefinite) return { isValid: true };
+          if (!value)
+            return { isValid: false, message: "La fecha de fin es requerida" };
+          if (startDate && value < startDate) {
+            return {
+              isValid: false,
+              message:
+                "La fecha de fin debe ser posterior a la fecha de inicio",
+            };
+          }
+          return { isValid: true };
+        },
+      }
+    );
+
+    return fields;
+  };
+
+  const formFields = buildFormFields();
+
+  const buttonConfig = {
+    primary: {
+      text: isCreateMode ? "Crear Asignación" : "Guardar Asignación",
+      onClick: handleSave,
+    },
+    secondary: !isCreateMode
+      ? {
+          text: "Eliminar asignación del vehículo",
+          onClick: handleUnassign,
+        }
+      : undefined,
+    cancel: {
+      text: "Cancelar",
+      onClick: handleCancel,
+    },
+  };
 
   return (
     <>
       <div className="edit-assignment-container">
         <FormLayout
           title={isCreateMode ? "Nueva Asignación" : "Editar Asignación"}
-          sections={sections}
+          formFields={formFields}
+          buttonConfig={buttonConfig}
+          onFieldChange={handleFieldChange}
           className="edit-assignment"
-        >
-          <ButtonGroup>
-            <CancelButton text="Cancelar" onClick={handleCancel} />
-            {!isCreateMode && (
-              <DeleteButton
-                text="Eliminar asignación del vehículo"
-                onClick={handleUnassign}
-              />
-            )}
-            <ConfirmButton
-              text={isCreateMode ? "Crear Asignación" : "Guardar Asignación"}
-              onClick={handleSave}
-            />
-          </ButtonGroup>
-        </FormLayout>
+        />
 
         <ConfirmDialog
           open={isConfirmOpen}

@@ -7,12 +7,7 @@ import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";
-import type { FormSection } from "../../components/FormLayout/FormLayout";
-import {
-  CancelButton,
-  ConfirmButton,
-  ButtonGroup,
-} from "../../components/Buttons/Buttons";
+import { FieldType, InputType } from "../../components/FormLayout/FormLayout";
 import type { Vehicle } from "../../types/vehicle";
 import "./KilometersEdit.css";
 import { getVehicleModel } from "../../common/utils";
@@ -166,15 +161,10 @@ export default function KilometersEdit() {
     );
   }
 
-  // Handlers para FormLayout
-  const handleVehicleChange = () => {
-    // Los datos del vehículo son readonly, no necesitan cambiar
-  };
-
-  const handleRegistrationChange = (key: string, value: string | number) => {
+  const handleFieldChange = (key: string, value: any) => {
     switch (key) {
       case "registrationDate":
-        setRegistrationDate(value as string);
+        setRegistrationDate(value);
         break;
       case "mileage":
         setMileage(value.toString());
@@ -182,101 +172,86 @@ export default function KilometersEdit() {
     }
   };
 
-  // Configuración de secciones para FormLayout
-  const sections: FormSection[] = [
+  const formFields: any[] = [
+    // Datos del vehículo (readonly)
     {
-      title: "Datos del Vehículo",
-      horizontal: true, // Layout horizontal para datos del vehículo
-      fields: [
-        {
-          key: "licensePlate",
-          label: "Patente:",
-          type: "text",
-          value: vehicleData.licensePlate || "",
-          onChange: handleVehicleChange,
-          disabled: true,
-        },
-        {
-          key: "brand",
-          label: "Marca:",
-          type: "text",
-          value: vehicleData.brand || "",
-          onChange: handleVehicleChange,
-          disabled: true,
-        },
-        {
-          key: "model",
-          label: "Modelo:",
-          type: "text",
-          value: getVehicleModel(vehicleData) || "",
-          onChange: handleVehicleChange,
-          disabled: true,
-        },
-        {
-          key: "year",
-          label: "Año:",
-          type: "number",
-          value: vehicleData.year || 0,
-          onChange: handleVehicleChange,
-          disabled: true,
-        },
-      ],
+      type: FieldType.TEXT_FIXED,
+      title: "Patente:",
+      value: vehicleData.licensePlate || "",
+      key: "licensePlate",
     },
     {
-      title: "Registro de Kilometraje",
-      fields: [
-        {
-          key: "registrationDate",
-          label: "Fecha de Registro",
-          type: "date",
-          value: registrationDate,
-          onChange: handleRegistrationChange,
-          required: true,
-          disabled: saving,
-        },
-        {
-          key: "mileage",
-          label: "Kilometraje",
-          type: "number",
-          placeholder: "Ingrese el kilometraje actual",
-          value: mileage,
-          onChange: handleRegistrationChange,
-          required: true,
-          disabled: saving,
-          className: "full-width",
-        },
-
-        {
-          key: "registradoPor",
-          label: "Registrado por",
-          type: "text",
-          value: currentUserName,
-          onChange: () => {},
-          disabled: true,
-          className: "full-width",
-        },
-      ],
+      type: FieldType.TEXT_FIXED,
+      title: "Marca:",
+      value: vehicleData.brand || "",
+      key: "brand",
+    },
+    {
+      type: FieldType.TEXT_FIXED,
+      title: "Modelo:",
+      value: getVehicleModel(vehicleData) || "",
+      key: "model",
+    },
+    {
+      type: FieldType.TEXT_FIXED,
+      title: "Año:",
+      value: vehicleData.year?.toString() || "",
+      key: "year",
+    },
+    // Campos editables
+    {
+      type: FieldType.DATE,
+      title: "Fecha de Registro:",
+      value: registrationDate,
+      key: "registrationDate",
+      required: true,
+      validation: (value: string) => ({
+        isValid: !!value,
+        message: "La fecha es requerida",
+      }),
+    },
+    {
+      type: FieldType.INPUT,
+      title: "Kilometraje:",
+      value: mileage,
+      key: "mileage",
+      inputType: InputType.NUMBER,
+      required: true,
+      placeholder: "Ingrese el kilometraje actual",
+      min: 0,
+      validation: (value: number) => ({
+        isValid: value >= 0,
+        message: "El kilometraje debe ser mayor o igual a 0",
+      }),
+    },
+    {
+      type: FieldType.TEXT_FIXED,
+      title: "Registrado por:",
+      value: currentUserName,
+      key: "registradoPor",
     },
   ];
+
+  const buttonConfig = {
+    primary: {
+      text: saving ? "Guardando..." : "Crear Registro",
+      onClick: handleSave,
+    },
+    cancel: {
+      text: "Cancelar",
+      onClick: handleCancel,
+    },
+  };
 
   return (
     <>
       <div className="kilometers-edit-container">
-        <FormLayout title="Nuevo Registro de Kilometraje" sections={sections}>
-          <ButtonGroup>
-            <CancelButton
-              text="Cancelar"
-              onClick={handleCancel}
-              disabled={saving}
-            />
-            <ConfirmButton
-              text="Crear Registro"
-              onClick={handleSave}
-              disabled={saving}
-              loading={saving}
-            />
-          </ButtonGroup>
-        </FormLayout>
+        <FormLayout
+          title="Nuevo Registro de Kilometraje"
+          formFields={formFields}
+          buttonConfig={buttonConfig}
+          onFieldChange={handleFieldChange}
+        />
 
         {notification.isOpen && (
           <NotificationToast

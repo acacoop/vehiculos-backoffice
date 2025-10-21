@@ -13,12 +13,7 @@ import { getVehicleById } from "../../services/vehicles";
 import { useUserSearch, useVehicleSearch, useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import FormLayout from "../../components/FormLayout/FormLayout";
-import type { FormSection } from "../../components/FormLayout/FormLayout";
-import {
-  CancelButton,
-  ConfirmButton,
-  ButtonGroup,
-} from "../../components/Buttons/Buttons";
+import { FieldType, EntityType } from "../../components/FormLayout/FormLayout";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import "./ReservationEdit.css";
@@ -308,207 +303,151 @@ export default function ReservationEdit() {
     return <LoadingSpinner message="Cargando datos de la reserva..." />;
   }
 
-  // Configuración de secciones para FormLayout
-  const sections: FormSection[] = [];
+  // Form fields configuration
+  const formFields: any[] = [];
 
-  // Sección de datos del usuario (solo si hay usuario seleccionado)
+  // User data section (only if user is selected)
   if (userSearch.selectedUser) {
-    sections.push({
-      title: "Datos del Usuario",
-      horizontal: true,
-      // Solo mostrar botón de cambio si el usuario NO vino precargado
-      actionButton: !preloadedUserId
-        ? {
-            text: "Cambiar usuario",
-            onClick: () => userSearch.clearSelection(),
-          }
-        : undefined,
-      fields: [
-        {
-          key: "cuit",
-          label: "CUIT:",
-          type: "text",
-          value: userSearch.selectedUser.cuit?.toLocaleString() || "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "firstName",
-          label: "Nombre:",
-          type: "text",
-          value: userSearch.selectedUser.firstName || "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "lastName",
-          label: "Apellido:",
-          type: "text",
-          value: userSearch.selectedUser.lastName || "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "email",
-          label: "Email:",
-          type: "email",
-          value: userSearch.selectedUser.email || "",
-          onChange: () => {},
-          disabled: true,
-        },
-      ],
-    });
-  } else {
-    // Sección para buscar usuario
-    sections.push({
-      title: "Seleccionar Usuario",
-      fields: [
-        {
-          key: "userSearch",
-          label: "Buscar usuario (por nombre, apellido, CUIT)",
-          type: "userSearch",
-          value: "",
-          onChange: () => {},
-          entitySearch: true,
-          searchTerm: userSearch.searchTerm,
-          onSearchChange: userSearch.searchUsers,
-          availableUsers: userSearch.availableUsers,
-          showDropdown: userSearch.showDropdown,
-          onUserSelect: userSearch.selectUser,
-          onDropdownToggle: userSearch.setShowDropdown,
-          placeholder: "Buscar por nombre, apellido o CUIT...",
-          required: true,
-        },
-      ],
-    });
-  }
-
-  // Sección de datos del vehículo (solo si hay vehículo seleccionado)
-  if (vehicleSearch.selectedVehicle) {
-    sections.push({
-      title: "Datos del Vehículo",
-      horizontal: true,
-      // Solo mostrar botón de cambio si el vehículo NO vino precargado
-      actionButton: !preloadedVehicleId
-        ? {
-            text: "Cambiar vehículo",
-            onClick: () => vehicleSearch.clearSelection(),
-          }
-        : undefined,
-      fields: [
-        {
-          key: "licensePlate",
-          label: "Patente:",
-          type: "text",
-          value: vehicleSearch.selectedVehicle.licensePlate || "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "brand",
-          label: "Marca:",
-          type: "text",
-          value:
-            (vehicleSearch.selectedVehicle as any).brandName ||
-            vehicleSearch.selectedVehicle.brand ||
-            vehicleSearch.selectedVehicle.modelObj?.brand?.name ||
-            "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "model",
-          label: "Modelo:",
-          type: "text",
-          value:
-            (vehicleSearch.selectedVehicle as any).modelName ||
-            vehicleSearch.selectedVehicle.model ||
-            vehicleSearch.selectedVehicle.modelObj?.name ||
-            "",
-          onChange: () => {},
-          disabled: true,
-        },
-        {
-          key: "year",
-          label: "Año:",
-          type: "number",
-          value: vehicleSearch.selectedVehicle.year || 0,
-          onChange: () => {},
-          disabled: true,
-        },
-      ],
-    });
-  } else {
-    // Sección para buscar vehículo
-    sections.push({
-      title: "Seleccionar Vehículo",
-      fields: [
-        {
-          key: "vehicleSearch",
-          label: "Buscar vehículo (por patente, marca, modelo o año)",
-          type: "vehicleSearch",
-          value: "",
-          onChange: () => {},
-          entitySearch: true,
-          searchTerm: vehicleSearch.searchTerm,
-          onSearchChange: vehicleSearch.searchVehicles,
-          availableVehicles: vehicleSearch.availableVehicles,
-          showDropdown: vehicleSearch.showDropdown,
-          onVehicleSelect: vehicleSearch.selectVehicle,
-          onDropdownToggle: vehicleSearch.setShowDropdown,
-          placeholder: "Buscar por patente, marca, modelo...",
-          required: true,
-        },
-      ],
-    });
-  }
-
-  // Sección de fechas y horarios
-  sections.push({
-    title: "Fechas y Horarios",
-    fields: [
+    formFields.push(
       {
-        key: "datetime",
-        label: "Seleccionar fechas y horarios",
-        type: "datetime",
-        value: "",
-        onChange: () => {},
-        dateTimePicker: true,
-        startDate,
-        startTime,
-        endDate,
-        endTime,
-        onStartDateChange: setStartDate,
-        onStartTimeChange: setStartTime,
-        onEndDateChange: setEndDate,
-        onEndTimeChange: setEndTime,
-        minDate: new Date().toISOString().split("T")[0],
-        disabled: saving,
-        required: true,
+        type: FieldType.DISPLAY,
+        title: "CUIT",
+        key: "cuit",
+        value: userSearch.selectedUser.cuit?.toLocaleString() || "",
       },
-    ],
+      {
+        type: FieldType.DISPLAY,
+        title: "Nombre",
+        key: "firstName",
+        value: userSearch.selectedUser.firstName || "",
+      },
+      {
+        type: FieldType.DISPLAY,
+        title: "Apellido",
+        key: "lastName",
+        value: userSearch.selectedUser.lastName || "",
+      },
+      {
+        type: FieldType.DISPLAY,
+        title: "Email",
+        key: "email",
+        value: userSearch.selectedUser.email || "",
+      }
+    );
+  } else {
+    // User search section
+    formFields.push({
+      type: FieldType.SEARCH,
+      title: "Buscar usuario (por nombre, apellido, CUIT)",
+      key: "userSearch",
+      entityType: EntityType.USER,
+      value: null,
+      searchTerm: userSearch.searchTerm,
+      onSearchChange: userSearch.searchUsers,
+      availableEntities: userSearch.availableUsers,
+      showDropdown: userSearch.showDropdown,
+      onSelect: userSearch.selectUser,
+      onDropdownToggle: userSearch.setShowDropdown,
+      placeholder: "Buscar por nombre, apellido o CUIT...",
+      required: true,
+    });
+  }
+
+  // Vehicle data section (only if vehicle is selected)
+  if (vehicleSearch.selectedVehicle) {
+    formFields.push(
+      {
+        type: FieldType.DISPLAY,
+        title: "Patente",
+        key: "licensePlate",
+        value: vehicleSearch.selectedVehicle.licensePlate || "",
+      },
+      {
+        type: FieldType.DISPLAY,
+        title: "Marca",
+        key: "brand",
+        value:
+          (vehicleSearch.selectedVehicle as any).brandName ||
+          vehicleSearch.selectedVehicle.brand ||
+          vehicleSearch.selectedVehicle.modelObj?.brand?.name ||
+          "",
+      },
+      {
+        type: FieldType.DISPLAY,
+        title: "Modelo",
+        key: "model",
+        value:
+          (vehicleSearch.selectedVehicle as any).modelName ||
+          vehicleSearch.selectedVehicle.model ||
+          vehicleSearch.selectedVehicle.modelObj?.name ||
+          "",
+      },
+      {
+        type: FieldType.DISPLAY,
+        title: "Año",
+        key: "year",
+        value: vehicleSearch.selectedVehicle.year?.toString() || "",
+      }
+    );
+  } else {
+    // Vehicle search section
+    formFields.push({
+      type: FieldType.SEARCH,
+      title: "Buscar vehículo (por patente, marca, modelo o año)",
+      key: "vehicleSearch",
+      entityType: EntityType.VEHICLE,
+      value: null,
+      searchTerm: vehicleSearch.searchTerm,
+      onSearchChange: vehicleSearch.searchVehicles,
+      availableEntities: vehicleSearch.availableVehicles,
+      showDropdown: vehicleSearch.showDropdown,
+      onSelect: vehicleSearch.selectVehicle,
+      onDropdownToggle: vehicleSearch.setShowDropdown,
+      placeholder: "Buscar por patente, marca, modelo...",
+      required: true,
+    });
+  }
+
+  // Date and time section
+  formFields.push({
+    type: FieldType.DATETIME,
+    title: "Seleccionar fechas y horarios",
+    key: "datetime",
+    value: "",
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    onStartDateChange: setStartDate,
+    onStartTimeChange: setStartTime,
+    onEndDateChange: setEndDate,
+    onEndTimeChange: setEndTime,
+    minDate: new Date().toISOString().split("T")[0],
+    disabled: saving,
+    required: true,
   });
+
+  const buttonConfig = {
+    cancel: {
+      text: "Cancelar",
+      onClick: handleCancel,
+      type: "button" as const,
+    },
+    primary: {
+      text: isCreateMode ? "Crear Reserva" : "Actualizar Reserva",
+      onClick: handleSave,
+      type: "submit" as const,
+    },
+  };
 
   return (
     <>
       <FormLayout
         title={isCreateMode ? "Nueva Reserva" : "Editar Reserva"}
-        sections={sections}
-      >
-        <ButtonGroup>
-          <CancelButton
-            text="Cancelar"
-            onClick={handleCancel}
-            disabled={saving}
-          />
-          <ConfirmButton
-            text={isCreateMode ? "Crear Reserva" : "Actualizar Reserva"}
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-          />
-        </ButtonGroup>
-      </FormLayout>
+        formFields={formFields}
+        buttonConfig={buttonConfig}
+        onFieldChange={() => {}} // Not used in this component
+      />
 
       {notification.isOpen && (
         <NotificationToast

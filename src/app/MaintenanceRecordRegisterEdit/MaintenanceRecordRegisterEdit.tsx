@@ -3,12 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   FormLayout,
   NotificationToast,
-  CancelButton,
-  ConfirmButton,
-  ButtonGroup,
   LoadingSpinner,
 } from "../../components";
-import type { FormSection } from "../../components";
+import type { FormField } from "../../components";
+import {
+  FieldType,
+  EntityType,
+  InputType,
+} from "../../components/FormLayout/FormLayout";
 import { getMe } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { getMaintenancePossibleById } from "../../services/maintenances";
@@ -78,7 +80,6 @@ export default function MaintenanceRecordRegisterEdit() {
 
   // Estado de UI
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState({
     isOpen: false,
     message: "",
@@ -162,7 +163,6 @@ export default function MaintenanceRecordRegisterEdit() {
     }
 
     try {
-      setSubmitting(true);
       let effectiveAssignedId: string | undefined = assignedMaintenanceId;
       if (!effectiveAssignedId) {
         const resolved = await getAssignedForVehicleAndMaintenance(
@@ -171,7 +171,6 @@ export default function MaintenanceRecordRegisterEdit() {
         );
         if (!resolved) {
           showError("Ese mantenimiento no está asignado a este vehículo.");
-          setSubmitting(false);
           return;
         }
         effectiveAssignedId = resolved;
@@ -199,163 +198,177 @@ export default function MaintenanceRecordRegisterEdit() {
     } catch (error) {
       console.error(error);
       showError("Error al crear el registro de mantenimiento");
-    } finally {
-      setSubmitting(false);
     }
   };
   const handleCancel = () => {
     navigate(-1);
   };
 
-  const createVehicleFields = (vehicle: Vehicle) => [
+  const handleFieldChange = (key: string, value: any) => {
+    switch (key) {
+      case "date":
+        setDate(value);
+        break;
+      case "kilometers":
+        setKilometers(Number(value) || null);
+        break;
+      case "notes":
+        setNotes(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const createVehicleFields = (vehicle: Vehicle): FormField[] => [
     {
-      key: "patente",
-      label: "Patente:",
-      type: "text" as const,
+      type: FieldType.TEXT_FIXED,
+      title: "Patente:",
       value: vehicle.licensePlate || "",
-      onChange: () => {},
-      disabled: true,
+      key: "patente",
     },
     {
-      key: "marca",
-      label: "Marca:",
-      type: "text" as const,
+      type: FieldType.TEXT_FIXED,
+      title: "Marca:",
       value:
         (vehicle as any).brandName ||
         vehicle.brand ||
         vehicle.modelObj?.brand?.name ||
         "",
-      onChange: () => {},
-      disabled: true,
+      key: "marca",
     },
     {
-      key: "modelo",
-      label: "Modelo:",
-      type: "text" as const,
+      type: FieldType.TEXT_FIXED,
+      title: "Modelo:",
       value:
         (vehicle as any).modelName ||
         vehicle.model ||
         vehicle.modelObj?.name ||
         "",
-      onChange: () => {},
-      disabled: true,
+      key: "modelo",
     },
     {
-      key: "anio",
-      label: "Año:",
-      type: "text" as const,
+      type: FieldType.TEXT_FIXED,
+      title: "Año:",
       value: vehicle.year?.toString() || "",
-      onChange: () => {},
-      disabled: true,
+      key: "anio",
     },
   ];
 
-  // Crear secciones del formulario
-  const formSections: FormSection[] = [];
+  const createFormFields = (): FormField[] => {
+    const fields: FormField[] = [];
 
-  // Sección del vehículo (horizontal)
-  if (vehicle) {
-    formSections.push({
-      title: "Datos del Vehículo",
-      horizontal: true,
-      fields: createVehicleFields(vehicle),
-    });
-  }
+    // Campos del vehículo si existe
+    if (vehicle) {
+      fields.push(...createVehicleFields(vehicle));
+    }
 
-  // Sección de datos del registro
-  const registrationSection: FormSection = {
-    title: "Datos del Registro",
-    fields: [
-      // Campo de mantenimiento (dinámico según el contexto)
-      needsMaintenanceSelection
-        ? maintenanceSearch.selectedMaintenance
-          ? {
-              key: "selectedMaintenance",
-              label: "Mantenimiento Seleccionado:",
-              type: "text" as const,
-              value: maintenanceSearch.selectedMaintenance.name,
-              onChange: () => {},
-              disabled: true,
-            }
-          : {
-              key: "maintenanceSelect",
-              label: "Seleccionar Mantenimiento:",
-              type: "maintenanceSearch" as const,
-              value: maintenanceSearch.searchTerm,
-              onChange: () => {}, // No se usa directamente
-              required: true,
-              placeholder: "Busque y seleccione un mantenimiento",
-              entitySearch: true,
-              searchTerm: maintenanceSearch.searchTerm,
-              onSearchChange: maintenanceSearch.searchMaintenances,
-              availableMaintenances: maintenanceSearch.availableMaintenances,
-              showDropdown: maintenanceSearch.showDropdown,
-              onMaintenanceSelect: (
-                maintenance: MaintenancePossibleNormalized
-              ) => {
-                maintenanceSearch.selectMaintenance(maintenance);
-              },
-              onDropdownToggle: maintenanceSearch.setShowDropdown,
-            }
-        : {
-            key: "maintenance",
-            label: "Mantenimiento:",
-            type: "text" as const,
-            value: maintenance?.name || "Cargando...",
-            onChange: () => {},
-            disabled: true,
+    // Campo de mantenimiento (dinámico según el contexto)
+    if (needsMaintenanceSelection) {
+      if (maintenanceSearch.selectedMaintenance) {
+        fields.push({
+          type: FieldType.TEXT_FIXED,
+          title: "Mantenimiento Seleccionado:",
+          value: maintenanceSearch.selectedMaintenance.name,
+          key: "selectedMaintenance",
+        });
+      } else {
+        fields.push({
+          type: FieldType.SEARCH,
+          title: "Seleccionar Mantenimiento:",
+          value: maintenanceSearch.selectedMaintenance,
+          key: "maintenanceSelect",
+          entityType: EntityType.MAINTENANCE,
+          searchTerm: maintenanceSearch.searchTerm,
+          onSearchChange: maintenanceSearch.searchMaintenances,
+          availableEntities: maintenanceSearch.availableMaintenances,
+          showDropdown: maintenanceSearch.showDropdown,
+          onSelect: (maintenance: MaintenancePossibleNormalized) => {
+            maintenanceSearch.selectMaintenance(maintenance);
           },
+          onDropdownToggle: maintenanceSearch.setShowDropdown,
+          placeholder: "Busque y seleccione un mantenimiento",
+          required: true,
+        });
+      }
+    } else {
+      fields.push({
+        type: FieldType.TEXT_FIXED,
+        title: "Mantenimiento:",
+        value: maintenance?.name || "Cargando...",
+        key: "maintenance",
+      });
+    }
+
+    // Usuario que registra
+    fields.push({
+      type: FieldType.TEXT_FIXED,
+      title: "Usuario que registra:",
+      value: currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : "Cargando...",
+      key: "user",
+    });
+
+    // Campos editables
+    fields.push(
       {
-        key: "user",
-        label: "Usuario que registra:",
-        type: "text" as const,
-        value: currentUser
-          ? `${currentUser.firstName} ${currentUser.lastName}`
-          : "Cargando...",
-        onChange: () => {},
-        disabled: true,
-      },
-      // Campos editables
-      {
-        key: "date",
-        label: "Fecha:",
-        type: "date" as const,
+        type: FieldType.DATE,
+        title: "Fecha:",
         value: date,
-        onChange: (_key: string, value: string | number) =>
-          setDate(value as string),
+        key: "date",
         required: true,
+        validation: (value: string) => ({
+          isValid: !!value,
+          message: "La fecha es requerida",
+        }),
       },
       {
-        key: "kilometers",
-        label: "Kilómetros:",
-        type: "number" as const,
+        type: FieldType.INPUT,
+        title: "Kilómetros:",
         value: kilometers || "",
-        onChange: (_key: string, value: string | number) =>
-          setKilometers(Number(value) || null),
+        key: "kilometers",
+        inputType: InputType.NUMBER,
         required: true,
         placeholder: "Ingrese los kilómetros del vehículo",
+        min: 0,
+        validation: (value: number) => ({
+          isValid: value > 0,
+          message: "Los kilómetros deben ser mayor a 0",
+        }),
       },
       {
-        key: "notes",
-        label: "Notas:",
-        type: "textarea" as const,
+        type: FieldType.TEXTAREA,
+        title: "Notas:",
         value: notes,
-        onChange: (_key: string, value: string | number) =>
-          setNotes(value as string),
+        key: "notes",
         placeholder: "Observaciones del mantenimiento realizado...",
-      },
-    ],
+        rows: 3,
+      }
+    );
+
+    return fields;
   };
 
-  // Agregar botón de acción si hay mantenimiento seleccionado
-  if (needsMaintenanceSelection && maintenanceSearch.selectedMaintenance) {
-    registrationSection.actionButton = {
-      text: "Cambiar mantenimiento",
-      onClick: () => maintenanceSearch.clearSelection(),
-    };
-  }
+  const buttonConfig = {
+    primary: {
+      text: "Guardar Registro",
+      onClick: handleSubmit,
+    },
+    cancel: {
+      text: "Cancelar",
+      onClick: handleCancel,
+    },
+    secondary:
+      needsMaintenanceSelection && maintenanceSearch.selectedMaintenance
+        ? {
+            text: "Cambiar mantenimiento",
+            onClick: () => maintenanceSearch.clearSelection(),
+          }
+        : undefined,
+  };
 
-  formSections.push(registrationSection);
+  const formFields = createFormFields();
 
   if (loading) {
     return <LoadingSpinner message="Cargando datos..." />;
@@ -364,16 +377,12 @@ export default function MaintenanceRecordRegisterEdit() {
   return (
     <>
       <div className="maintenance-record-register-edit-container">
-        <FormLayout title="Registrar Mantenimiento" sections={formSections}>
-          <ButtonGroup>
-            <CancelButton text="Cancelar" onClick={handleCancel} />
-            <ConfirmButton
-              text="Guardar Registro"
-              onClick={handleSubmit}
-              loading={submitting}
-            />
-          </ButtonGroup>
-        </FormLayout>
+        <FormLayout
+          title="Registrar Mantenimiento"
+          formFields={formFields}
+          buttonConfig={buttonConfig}
+          onFieldChange={handleFieldChange}
+        />
       </div>
 
       <NotificationToast
