@@ -1,5 +1,5 @@
-import type { User } from './user';
-import type { Vehicle } from './vehicle';
+import type { User } from "./user";
+import type { Vehicle } from "./vehicle";
 
 export interface Assignment {
   id: string; // UUID format
@@ -26,7 +26,7 @@ export interface AssignmentFilterParams {
 
 // Respuesta del backend según OpenAPI
 export interface AssignmentApiResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: Assignment;
   pagination?: {
@@ -39,7 +39,7 @@ export interface AssignmentApiResponse {
 
 // Respuesta específica para lista de asignaciones
 export interface AssignmentListApiResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: Assignment[];
   pagination?: {

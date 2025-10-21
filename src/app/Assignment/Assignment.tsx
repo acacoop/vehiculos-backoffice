@@ -7,7 +7,6 @@ import { type GridColDef } from "@mui/x-data-grid";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-// Utility function to check if assignment is active
 const isAssignmentActive = (endDate: string | null | undefined): boolean => {
   if (!endDate) return true;
 
@@ -19,7 +18,6 @@ const isAssignmentActive = (endDate: string | null | undefined): boolean => {
   }
 };
 
-// Utility function to format date
 const formatDate = (date: string | null | undefined): string => {
   if (!date) return "Sin fecha";
 

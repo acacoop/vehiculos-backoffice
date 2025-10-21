@@ -43,9 +43,16 @@ export async function getVehicleModels(
       };
     }
 
-    const items: VehicleModelType[] = Array.isArray(response.data)
-      ? (response.data as VehicleModelType[])
+    const rawItems: any[] = Array.isArray(response.data)
+      ? (response.data as any[])
       : response.data?.items || [];
+
+    const items: VehicleModelType[] = rawItems.map((it: any) => ({
+      id: it.id,
+      name: it.name,
+      vehicleType: it.vehicleType || it.vehicle_type,
+      brand: it.brand,
+    }));
     const total: number =
       response.pagination?.total || response.data?.total || items.length;
 
@@ -92,12 +99,13 @@ export async function getVehicleModelById(
 
 export async function createVehicleModel(
   name: string,
-  brandId: string
+  brandId: string,
+  vehicleType?: string
 ): Promise<ServiceResponse<VehicleModelType>> {
   try {
     const response: BackendResponse<VehicleModelType> = await httpService.post({
       uri: "/vehicle-models",
-      body: { name, brandId },
+      body: { name, brandId, vehicleType },
     });
 
     if (response.status === ResponseStatus.ERROR) {
@@ -122,11 +130,13 @@ export async function createVehicleModel(
 export async function updateVehicleModel(
   id: string,
   name: string,
-  brandId?: string
+  brandId?: string,
+  vehicleType?: string
 ): Promise<ServiceResponse<VehicleModelType>> {
   try {
     const body: Record<string, any> = { name };
     if (brandId) body.brandId = brandId;
+    if (vehicleType !== undefined) body.vehicleType = vehicleType;
     const response: BackendResponse<VehicleModelType> = await httpService.patch(
       {
         uri: `/vehicle-models/${id}`,

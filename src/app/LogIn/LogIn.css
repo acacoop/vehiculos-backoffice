@@ -29,14 +29,14 @@
   align-items: center;
   justify-content: center;
   width: 250px;
-  border-radius: 5px;
+  border-radius: 10px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: 0.5s;
   background-color: #282d86;
   color: white;
-  font-weight: bold;
-  font-size: 15px;
+  padding: 10px;
+  font-size: 16px;
   gap: 10px;
 }
 
@@ -45,6 +45,7 @@
   color: #282d86;
   border: 1px solid #282d86;
   border-radius: 0;
+  font-weight: bold;
 }
 
 .microsoft-icon {

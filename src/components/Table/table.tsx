@@ -1,11 +1,15 @@
 "use client";
 import {
   DataGrid,
+  GridToolbarContainer,
+  GridToolbarQuickFilter,
+  type GridToolbarProps,
+  type GridFilterModel,
   type GridColDef,
   type GridValidRowModel,
 } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ServiceResponse, PaginationParams } from "../../common";
 import "./table.css";
@@ -29,8 +33,17 @@ const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export { PencilIcon };
 
+const TableToolbar = (_props: GridToolbarProps) => (
+  <GridToolbarContainer className="table-toolbar">
+    <GridToolbarQuickFilter debounceMs={400} />
+  </GridToolbarContainer>
+);
+
 interface GenericTableProps<T extends GridValidRowModel> {
-  getRows(pagination: PaginationParams): Promise<ServiceResponse<T[]>>;
+  getRows(
+    pagination: PaginationParams,
+    options?: { search?: string }
+  ): Promise<ServiceResponse<T[]>>;
   columns: GridColDef<T>[];
   title: string;
   showEditColumn?: boolean;
@@ -49,6 +62,8 @@ interface GenericTableProps<T extends GridValidRowModel> {
   containerClassName?: string;
   tableWidth?: string;
   maxHeight?: string;
+  enableSearch?: boolean;
+  searchPlaceholder?: string;
 }
 
 export function Table<T extends GridValidRowModel>({
@@ -70,6 +85,8 @@ export function Table<T extends GridValidRowModel>({
   tableWidth = "100%",
   maxHeight = "1200px",
   editColumnWidth = 150,
+  enableSearch = false,
+  searchPlaceholder,
 }: GenericTableProps<T>) {
   const navigate = useNavigate();
 
@@ -80,12 +97,51 @@ export function Table<T extends GridValidRowModel>({
     pageSize: 20,
   });
   const [rowCount, setRowCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const fetchData = async (page: number, pageSize: number) => {
+  const localeText = useMemo(() => {
+    if (searchPlaceholder) {
+      return {
+        ...esES.components.MuiDataGrid.defaultProps.localeText,
+        toolbarQuickFilterPlaceholder: searchPlaceholder,
+      };
+    }
+    return esES.components.MuiDataGrid.defaultProps.localeText;
+  }, [searchPlaceholder]);
+
+  useEffect(() => {
+    if (!enableSearch) {
+      setSearchTerm("");
+      setDebouncedSearch("");
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      const trimmedValue = searchTerm.trim();
+      setDebouncedSearch((current) =>
+        current === trimmedValue ? current : trimmedValue
+      );
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm, enableSearch]);
+
+  const fetchData = async (
+    page: number,
+    pageSize: number,
+    searchValue?: string
+  ) => {
     setLoading(true);
     try {
       // MUI usa páginas base 0, pero el backend usa páginas base 1
-      const response = await getRows({ page: page + 1, limit: pageSize });
+      const normalizedSearch = searchValue?.trim();
+      const response = await getRows(
+        { page: page + 1, limit: pageSize },
+        enableSearch
+          ? { search: normalizedSearch ? normalizedSearch : undefined }
+          : undefined
+      );
 
       if (response.success) {
         setRows(response.data);
@@ -107,14 +163,39 @@ export function Table<T extends GridValidRowModel>({
   };
 
   useEffect(() => {
-    fetchData(paginationModel.page, paginationModel.pageSize);
-  }, [paginationModel.page, paginationModel.pageSize]);
+    fetchData(
+      paginationModel.page,
+      paginationModel.pageSize,
+      enableSearch ? debouncedSearch : undefined
+    );
+  }, [
+    paginationModel.page,
+    paginationModel.pageSize,
+    enableSearch,
+    debouncedSearch,
+  ]);
 
   const handlePaginationChange = (model: any) => {
     setPaginationModel({
       page: model.page,
       pageSize: model.pageSize,
     });
+  };
+
+  const handleFilterModelChange = (model: GridFilterModel) => {
+    if (!enableSearch) return;
+
+    const quickFilterValues = model.quickFilterValues || [];
+    const normalizedSearch = quickFilterValues.join(" ").trim();
+
+    if (normalizedSearch === searchTerm) {
+      return;
+    }
+
+    setSearchTerm(normalizedSearch);
+    setPaginationModel((prev) =>
+      prev.page === 0 ? prev : { ...prev, page: 0 }
+    );
   };
 
   const handleAddButtonClick = () => {
@@ -204,8 +285,14 @@ export function Table<T extends GridValidRowModel>({
           onPaginationModelChange={handlePaginationChange}
           pageSizeOptions={[10, 20, 50, 100]}
           loading={loading}
+          onFilterModelChange={handleFilterModelChange}
+          disableColumnMenu
+          disableColumnFilter
+          disableColumnSelector
+          disableDensitySelector
+          slots={{ toolbar: TableToolbar }}
           showToolbar
-          localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+          localeText={localeText}
           sx={{
             backgroundColor: "#f2f2f2",
             "& .MuiDataGrid-row:nth-of-type(even)": {

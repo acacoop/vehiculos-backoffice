@@ -260,3 +260,52 @@ export function BrandSearch({
     </div>
   );
 }
+
+interface VehicleTypeSearchProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  availableVehicleTypes: string[];
+  showDropdown: boolean;
+  onVehicleTypeSelect: (vehicleType: string) => void;
+  onDropdownToggle: (show: boolean) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function VehicleTypeSearch({
+  searchTerm,
+  onSearchChange,
+  availableVehicleTypes,
+  showDropdown,
+  onVehicleTypeSelect,
+  onDropdownToggle,
+  placeholder = "Buscar tipo de vehículo...",
+  className = "reservation-form-input",
+}: VehicleTypeSearchProps) {
+  return (
+    <div className="brand-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => searchTerm.length >= 1 && onDropdownToggle(true)}
+        onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && availableVehicleTypes.length > 0 && (
+        <div className="brand-dropdown">
+          {availableVehicleTypes.map((type) => (
+            <div
+              key={type}
+              className="brand-dropdown-item"
+              onClick={() => onVehicleTypeSelect(type)}
+            >
+              {type}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

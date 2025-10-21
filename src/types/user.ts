@@ -13,7 +13,8 @@ export interface UserFilterParams {
   cuit?: string;
   firstName?: string;
   lastName?: string;
-  active?: boolean; // Filtrar por estado activo/inactivo
+  active?: boolean;
+  search?: string;
 }
 
 // Respuesta del backend según OpenAPI

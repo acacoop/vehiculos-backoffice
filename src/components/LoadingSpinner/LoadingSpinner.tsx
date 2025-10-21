@@ -1,11 +1,11 @@
 import React from "react";
 import { CircularProgress } from "@mui/material";
+import { COLORS } from "../../common/colors";
 import "./LoadingSpinner.css";
 
 interface LoadingSpinnerProps {
   message?: string;
   fullScreen?: boolean;
-
   visible?: boolean;
 }
 
@@ -27,7 +27,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           size={60}
           thickness={4}
           sx={{
-            color: "#282D86", // Azul empresarial
+            color: COLORS.primary,
           }}
         />
         <p className="loading-message">{message}</p>
