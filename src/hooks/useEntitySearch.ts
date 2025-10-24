@@ -337,13 +337,15 @@ export function useVehicleTypeSearch(initialList: string[] = []) {
     const pool = initialList.length
       ? initialList
       : [
-          "Sedan",
-          "SUV",
+          "Camión",
+          "Convertible",
+          "Coupé",
+          "Furgón",
           "Hatchback",
           "Pickup",
+          "Sedan",
+          "SUV",
           "Van",
-          "Coupé",
-          "Convertible",
           "Wagon",
         ];
     if (term.length >= 1) {

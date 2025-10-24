@@ -2,7 +2,9 @@
   padding-top: 120px;
   max-width: 1100px;
   margin: 0 auto;
-  min-height: 90vh;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
 }
 .title {
   color: #282d86;
