@@ -27,8 +27,8 @@ jobs:
           VITE_ENTRA_TENANT_ID: ${{ vars.ENTRA_TENANT_ID }}
           VITE_API_SCOPE: ${{ vars.API_SCOPE }}
           # PRODUCTION ENVIRONMENT VARIABLES
-          VITE_BACKEND_BASE_URL: ${{ vars.BACKEND_BASE_URL_TEST }}
-          VITE_ENTRA_REDIRECT_URI: ${{ vars.ENTRA_REDIRECT_URI_TEST }}
+          VITE_BACKEND_BASE_URL: ${{ vars.BACKEND_BASE_URL_PROD }}
+          VITE_ENTRA_REDIRECT_URI: ${{ vars.ENTRA_REDIRECT_URI_PROD }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_WATER_08A03860F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
