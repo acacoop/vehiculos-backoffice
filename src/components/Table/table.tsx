@@ -22,8 +22,6 @@ const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
     fill="none"
     stroke="#282D86"
     strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
     {...props}
   >
     <path d="M12 20h9" />
@@ -163,6 +161,10 @@ export function Table<T extends GridValidRowModel>({
   };
 
   useEffect(() => {
+    if (enableSearch && searchTerm.trim() !== debouncedSearch.trim()) {
+      return;
+    }
+
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
@@ -173,13 +175,18 @@ export function Table<T extends GridValidRowModel>({
     paginationModel.pageSize,
     enableSearch,
     debouncedSearch,
+    searchTerm,
   ]);
 
   const handlePaginationChange = (model: any) => {
-    setPaginationModel({
-      page: model.page,
-      pageSize: model.pageSize,
-    });
+    setPaginationModel((prev) =>
+      prev.page === model.page && prev.pageSize === model.pageSize
+        ? prev
+        : {
+            page: model.page,
+            pageSize: model.pageSize,
+          }
+    );
   };
 
   const handleFilterModelChange = (model: GridFilterModel) => {
@@ -209,8 +216,11 @@ export function Table<T extends GridValidRowModel>({
   const finalColumns: GridColDef<T>[] = [
     ...columns.map((col) => ({
       ...col,
-      flex: 1,
-      minWidth: 150,
+      flex: col.flex ?? 1,
+      minWidth: col.minWidth ?? 150,
+      disableColumnMenu: true,
+      disableReorder: true,
+      sortable: col.sortable ?? false,
     })),
 
     ...(showEditColumn
@@ -226,6 +236,7 @@ export function Table<T extends GridValidRowModel>({
             align: "center" as const,
             headerAlign: "center" as const,
             disableColumnMenu: true,
+            disableReorder: true,
             renderCell: (params: any) =>
               customEditCell ? (
                 customEditCell(params)
@@ -277,6 +288,7 @@ export function Table<T extends GridValidRowModel>({
           columns={finalColumns}
           pagination
           paginationMode="server"
+          filterMode="server"
           rowCount={rowCount}
           paginationModel={{
             page: paginationModel.page,

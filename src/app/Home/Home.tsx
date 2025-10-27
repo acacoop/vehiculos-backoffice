@@ -6,7 +6,7 @@ import IconCarBlue from "../../assets/icons/car blue.svg";
 import IconSettingsBlue from "../../assets/icons/security blue.svg";
 import IconMaintenanceBlue from "../../assets/icons/maintenance blue.svg";
 import IconMetricsBlue from "../../assets/icons/metrics blue.svg";
-import UnifiedMetrics from "../../components/UnifiedMetrics/UnifiedMetrics";
+import IconBrandBlue from "../../assets/icons/vehicle brand blue.svg";
 import { LoadingSpinner } from "../../components";
 import { useNavigate } from "react-router-dom";
 import IconResponsible from "../../assets/icons/assignment blue.svg";
@@ -48,7 +48,7 @@ export default function Home() {
     <section className="home">
       <div className="home-content">
         <div className="home-header">
-          <h1>Bienvenido {displayName || "Usuario"} </h1>
+          <h1>Bienvenido/a {displayName || "Usuario"} </h1>
         </div>
         <LoadingSpinner visible={loading} message="Cargando información..." />
         <div className="bento-home-container">
@@ -82,9 +82,11 @@ export default function Home() {
             text="Responsable de Vehículo"
             onClick={() => navigate("/vehicle-responsibles")}
           />
-        </div>
-        <div>
-          <UnifiedMetrics type="dashboard" />
+          <BentoHome
+            icon={IconBrandBlue}
+            text="Modelos y Marcas"
+            onClick={() => navigate("/models")}
+          />
         </div>
       </div>
     </section>

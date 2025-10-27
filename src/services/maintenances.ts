@@ -8,7 +8,7 @@ import { getAccessToken } from "../common/auth";
 
 // Helper to build headers including Authorization when token is available
 async function buildAuthHeaders(
-  includeJson: boolean = false,
+  includeJson: boolean = false
 ): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
   if (includeJson) headers["Content-Type"] = "application/json";
@@ -25,7 +25,7 @@ async function buildAuthHeaders(
  * Obtiene todas las categorías de mantenimiento
  */
 export async function getMaintenanceCategories(
-  pagination?: PaginationParams,
+  pagination?: PaginationParams
 ): Promise<ServiceResponse<Maintenance[]>> {
   try {
     let uri = "/maintenance/categories";
@@ -106,7 +106,7 @@ export const getVehicleMaintenances = async (vehicleId: string) => {
       `${API_CONFIG.BASE_URL}/maintenance/assignments/${vehicleId}`,
       {
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -155,13 +155,13 @@ export const getVehicleMaintenances = async (vehicleId: string) => {
  */
 export const saveVehicleMaintenances = async (
   vehicleId: string,
-  maintenanceIds: string[],
+  maintenanceIds: string[]
 ) => {
   try {
     const url = `${API_CONFIG.BASE_URL}/vehicles/${vehicleId}/maintenances`;
 
     const response = await fetch(url, {
-      method: "PUT",
+      method: "PATCH",
       headers: await buildAuthHeaders(true),
       body: JSON.stringify({
         maintenanceIds: maintenanceIds,
@@ -193,7 +193,7 @@ export const saveVehicleMaintenances = async (
  * Obtener un mantenimiento específico por ID
  */
 export const getMaintenanceById = async (
-  id: string,
+  id: string
 ): Promise<ServiceResponse<Maintenance>> => {
   try {
     // Intentar primero el endpoint específico
@@ -201,7 +201,7 @@ export const getMaintenanceById = async (
       `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
       {
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (response.ok) {
@@ -254,7 +254,7 @@ export interface CreateMaintenanceCategoryDto {
 }
 
 export const createMaintenance = async (
-  maintenance: CreateMaintenanceCategoryDto,
+  maintenance: CreateMaintenanceCategoryDto
 ): Promise<ServiceResponse<Maintenance>> => {
   try {
     const response = await fetch(
@@ -263,7 +263,7 @@ export const createMaintenance = async (
         method: "POST",
         headers: await buildAuthHeaders(true),
         body: JSON.stringify(maintenance),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -292,16 +292,16 @@ export const createMaintenance = async (
  */
 export const updateMaintenance = async (
   id: string,
-  maintenance: Partial<Maintenance>,
+  maintenance: Partial<Maintenance>
 ): Promise<ServiceResponse<Maintenance>> => {
   try {
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/categories/${id}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: await buildAuthHeaders(true),
         body: JSON.stringify(maintenance),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -329,7 +329,7 @@ export const updateMaintenance = async (
  * Eliminar una categoría de mantenimiento
  */
 export const deleteMaintenance = async (
-  id: string,
+  id: string
 ): Promise<ServiceResponse<null>> => {
   try {
     const response = await fetch(
@@ -337,7 +337,7 @@ export const deleteMaintenance = async (
       {
         method: "DELETE",
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -414,7 +414,7 @@ export async function getMaintenancePossibles(): Promise<
           name: item.name,
           categoryName: item.categoryName || "Sin categoría",
         };
-      },
+      }
     );
 
     return {
@@ -451,7 +451,7 @@ export interface MaintenanceItemData {
  * Crear un nuevo mantenimiento individual (maintenance possible)
  */
 export const createMaintenanceItem = async (
-  maintenanceData: MaintenanceItemData,
+  maintenanceData: MaintenanceItemData
 ): Promise<ServiceResponse<MaintenancePossible>> => {
   try {
     const response = await fetch(
@@ -467,7 +467,7 @@ export const createMaintenanceItem = async (
           observations: maintenanceData.observations,
           instructions: maintenanceData.instructions,
         }),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -496,7 +496,7 @@ export const createMaintenanceItem = async (
  */
 export const updateMaintenanceItem = async (
   id: string,
-  maintenanceData: Partial<MaintenanceItemData>,
+  maintenanceData: Partial<MaintenanceItemData>
 ): Promise<ServiceResponse<MaintenancePossible>> => {
   try {
     const bodyData: any = {};
@@ -516,10 +516,10 @@ export const updateMaintenanceItem = async (
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: await buildAuthHeaders(true),
         body: JSON.stringify(bodyData),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -547,7 +547,7 @@ export const updateMaintenanceItem = async (
  * Eliminar un mantenimiento individual
  */
 export const deleteMaintenanceItem = async (
-  id: string,
+  id: string
 ): Promise<ServiceResponse<null>> => {
   try {
     const response = await fetch(
@@ -555,7 +555,7 @@ export const deleteMaintenanceItem = async (
       {
         method: "DELETE",
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -581,14 +581,14 @@ export const deleteMaintenanceItem = async (
  * Obtener un mantenimiento individual específico por ID
  */
 export const getMaintenanceItemById = async (
-  id: string,
+  id: string
 ): Promise<ServiceResponse<MaintenancePossibleNormalized>> => {
   try {
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
       {
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -597,7 +597,7 @@ export const getMaintenanceItemById = async (
 
       if (allMaintenancesResponse.success) {
         const maintenance = allMaintenancesResponse.data.find(
-          (m) => m.id === id,
+          (m) => m.id === id
         );
 
         if (maintenance) {
@@ -652,13 +652,13 @@ export const deleteMaintenanceAssignment = async (assignmentId: string) => {
       {
         method: "DELETE",
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.message || `Error ${response.status}: ${response.statusText}`,
+        errorData.message || `Error ${response.status}: ${response.statusText}`
       );
     }
 
@@ -697,7 +697,7 @@ export const createMaintenanceAssignment = async (payload: {
         method: "POST",
         headers: await buildAuthHeaders(true),
         body: JSON.stringify(payload),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -736,16 +736,16 @@ export async function updateMaintenanceAssignment(
   updateData: {
     kilometersFrequency?: number;
     daysFrequency?: number;
-  },
+  }
 ): Promise<ServiceResponse<any>> {
   try {
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/assignments/${assignmentId}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: await buildAuthHeaders(true),
         body: JSON.stringify(updateData),
-      },
+      }
     );
 
     const data = await response.json();
@@ -778,14 +778,14 @@ export async function updateMaintenanceAssignment(
  * Obtener un mantenimiento posible por ID
  */
 export const getMaintenancePossibleById = async (
-  id: string,
+  id: string
 ): Promise<ServiceResponse<MaintenanceItem>> => {
   try {
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/posibles/${id}`,
       {
         headers: await buildAuthHeaders(false),
-      },
+      }
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

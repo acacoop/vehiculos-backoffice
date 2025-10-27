@@ -441,7 +441,7 @@ export default function UserEdit() {
           getRows={getReservationsForTable}
           columns={reservationColumns}
           title=""
-          showEditColumn={true}
+          showEditColumn={false}
           editRoute="/reservation/edit"
           showTableHeader={true}
           headerTitle={`Reservas de Vehículos${
@@ -456,12 +456,12 @@ export default function UserEdit() {
         />
       </div>
 
-      <div className="user-edit-body">
+      {/*     <div className="user-edit-body">
         <Document
           title="Documentos del usuario"
           initialDocuments={mockDocuments}
         />
-      </div>
+      </div> */}
     </div>
   );
 }

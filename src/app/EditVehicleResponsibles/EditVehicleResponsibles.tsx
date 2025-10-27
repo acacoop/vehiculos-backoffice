@@ -50,7 +50,7 @@ export default function EditVehicleResponsibles() {
 
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
+  const [isIndefinite, setIsIndefinite] = useState<boolean>(true);
 
   const {
     isOpen: isConfirmOpen,

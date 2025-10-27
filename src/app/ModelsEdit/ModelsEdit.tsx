@@ -26,7 +26,7 @@ import {
   ConfirmButton,
   ButtonGroup,
 } from "../../components";
-import type { FormSection } from "../../components";
+import type { FormSection, FormField } from "../../components";
 import { useConfirmDialog, useNotification } from "../../hooks";
 import type { VehicleBrand } from "../../types/vehicle";
 import "./ModelsEdit.css";
@@ -57,9 +57,10 @@ export default function ModelsEdit() {
     setSelectedBrand,
     setSearchTerm: setBrandSearchTerm,
     setShowDropdown: setShowBrandDropdown,
+    selectedBrand,
+    clearSelection: clearBrandSelection,
   } = useVehicleBrandSearch();
 
-  // Vehicle type search (string suggestions)
   const {
     searchTerm: vehicleTypeTerm,
     availableVehicleTypes,
@@ -221,73 +222,107 @@ export default function ModelsEdit() {
   }
 
   // Sections
-  const sections: FormSection[] = [
-    {
-      title: isBrandContext ? "Datos de la Marca" : "Datos del Modelo",
-      fields: [
-        {
-          key: "name",
-          label: isBrandContext ? "Nombre de la Marca" : "Nombre del Modelo",
-          type: "text",
-          value: name,
-          onChange: (_k: string, v: string | number) => setName(v as string),
-          required: true,
-          placeholder: isBrandContext ? "Ej: Toyota" : "Ej: Corolla",
+  const handleBrandClear = () => {
+    clearBrandSelection();
+    setBrandId("");
+    setBrandSearchTerm("");
+    setShowBrandDropdown(false);
+  };
+
+  const sections: FormSection[] = [];
+
+  if (!isBrandContext) {
+    if (selectedBrand) {
+      sections.push({
+        title: "Marca seleccionada",
+        actionButton: {
+          text: "Cambiar marca",
+          onClick: handleBrandClear,
         },
-        !isBrandContext
-          ? {
-              key: "brandId",
-              label: "Marca",
-              type: "brandSearch",
-              entitySearch: true,
-              searchTerm: brandSearchTerm,
-              onSearchChange: (term: string) => {
-                setBrandSearchTerm(term);
-                searchBrands(term);
-              },
-              availableBrands: availableBrands,
-              showDropdown: showBrandDropdown,
-              onBrandSelect: (brand: VehicleBrand) => {
-                selectBrand(brand);
-                setBrandId(brand.id);
-              },
-              onDropdownToggle: (show: boolean) => setShowBrandDropdown(show),
-              value: brandId,
-              onChange: (_k: string, v: string | number) =>
-                setBrandId(v as string),
-              required: true,
-              placeholder: "Buscar y seleccionar una marca...",
-            }
-          : undefined,
-        !isBrandContext
-          ? {
-              key: "vehicleType",
-              label: "Tipo de Vehículo",
-              type: "vehicleTypeSearch",
-              entitySearch: true,
-              searchTerm: vehicleTypeTerm,
-              onSearchChange: (term: string) => {
-                setVehicleTypeTerm(term);
-                searchVehicleTypes(term);
-              },
-              availableVehicleTypes: availableVehicleTypes,
-              showDropdown: showVehicleTypeDropdown,
-              onVehicleTypeSelect: (t: string) => {
-                selectVehicleType(t);
-                setVehicleType(t);
-              },
-              onDropdownToggle: (show: boolean) =>
-                setShowVehicleTypeDropdown(show),
-              value: vehicleType,
-              onChange: (_k: string, v: string | number) =>
-                setVehicleType(v as string),
-              required: true,
-              placeholder: "Escriba el tipo de vehículo...",
-            }
-          : undefined,
-      ].filter(Boolean) as any,
+        fields: [
+          {
+            key: "brandNameDisplay",
+            label: "Marca",
+            type: "text",
+            value: selectedBrand.name,
+            onChange: () => {},
+            disabled: true,
+          },
+        ],
+      });
+    } else {
+      sections.push({
+        title: "Seleccionar Marca",
+        fields: [
+          {
+            key: "brandId",
+            label: "Marca",
+            type: "brandSearch",
+            entitySearch: true,
+            searchTerm: brandSearchTerm,
+            onSearchChange: (term: string) => {
+              setBrandSearchTerm(term);
+              searchBrands(term);
+            },
+            availableBrands: availableBrands,
+            showDropdown: showBrandDropdown,
+            onBrandSelect: (brand: VehicleBrand) => {
+              selectBrand(brand);
+              setBrandId(brand.id);
+            },
+            onDropdownToggle: (show: boolean) => setShowBrandDropdown(show),
+            value: brandId,
+            onChange: (_k: string, v: string | number) =>
+              setBrandId(v as string),
+            required: true,
+            placeholder: "Buscar y seleccionar una marca...",
+          },
+        ],
+      });
+    }
+  }
+
+  const dataFields = [
+    {
+      key: "name",
+      label: isBrandContext ? "Nombre de la Marca" : "Nombre del Modelo",
+      type: "text",
+      value: name,
+      onChange: (_k: string, v: string | number) => setName(v as string),
+      required: true,
+      placeholder: isBrandContext ? "Ej: Toyota" : "Ej: Corolla",
     },
-  ];
+    !isBrandContext
+      ? {
+          key: "vehicleType",
+          label: "Tipo de Vehículo",
+          type: "vehicleTypeSearch",
+          entitySearch: true,
+          searchTerm: vehicleTypeTerm,
+          onSearchChange: (term: string) => {
+            setVehicleTypeTerm(term);
+            searchVehicleTypes(term);
+          },
+          availableVehicleTypes: availableVehicleTypes,
+          showDropdown: showVehicleTypeDropdown,
+          onVehicleTypeSelect: (t: string) => {
+            selectVehicleType(t);
+            setVehicleType(t);
+          },
+          onDropdownToggle: (show: boolean) => setShowVehicleTypeDropdown(show),
+          value: vehicleType,
+          onChange: (_k: string, v: string | number) =>
+            setVehicleType(v as string),
+          required: true,
+          placeholder: "Escriba el tipo de vehículo...",
+        }
+      : undefined,
+  ].filter(Boolean) as FormField[];
+
+  sections.push({
+    title: isBrandContext ? "Datos de la Marca" : "Datos del Modelo",
+    fields: dataFields,
+  });
 
   return (
     <>
