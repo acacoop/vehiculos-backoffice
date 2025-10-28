@@ -200,9 +200,10 @@ export function Table<T extends GridValidRowModel>({
     }
 
     setSearchTerm(normalizedSearch);
-    setPaginationModel((prev) =>
-      prev.page === 0 ? prev : { ...prev, page: 0 }
-    );
+
+    if (paginationModel.page !== 0) {
+      setPaginationModel({ ...paginationModel, page: 0 });
+    }
   };
 
   const handleAddButtonClick = () => {
