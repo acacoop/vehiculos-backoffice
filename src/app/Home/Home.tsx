@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import "./Home.css";
 import BentoHome from "../../components/BentoHome/BentoHome";
-import IconUserBlue from "../../assets/icons/user blue.svg";
-import IconCarBlue from "../../assets/icons/car blue.svg";
-import IconSettingsBlue from "../../assets/icons/security blue.svg";
-import IconMaintenanceBlue from "../../assets/icons/maintenance blue.svg";
-import IconMetricsBlue from "../../assets/icons/metrics blue.svg";
-import IconBrandBlue from "../../assets/icons/vehicle brand blue.svg";
+import IconUserBlue from "../../assets/icons/user_blue.svg";
+import IconCarBlue from "../../assets/icons/car_blue.svg";
+import IconSettingsBlue from "../../assets/icons/security_blue.svg";
+import IconMaintenanceBlue from "../../assets/icons/maintenance_blue.svg";
+import IconMetricsBlue from "../../assets/icons/metrics_blue.svg";
+import IconArgentina from "../../assets/icons/escudo-de-la-rep-argentina.svg";
+import IconBrandBlue from "../../assets/icons/vehicle_brand_blue.svg";
 import { LoadingSpinner } from "../../components";
 import { useNavigate } from "react-router-dom";
-import IconResponsible from "../../assets/icons/assignment blue.svg";
+import IconResponsible from "../../assets/icons/assignment_blue.svg";
 import { isAuthenticated } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
@@ -84,8 +85,16 @@ export default function Home() {
           />
           <BentoHome
             icon={IconBrandBlue}
-            text="Modelos y Marcas"
+            text="Marcas y Modelos"
             onClick={() => navigate("/models")}
+          />
+
+          <BentoHome
+            icon={IconArgentina}
+            text="DNRPA"
+            onClick={() =>
+              window.open("https://www.dnrpa.gov.ar/portal_dnrpa/", "_blank")
+            }
           />
         </div>
       </div>

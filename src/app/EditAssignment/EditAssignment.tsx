@@ -551,7 +551,7 @@ export default function EditAssignment() {
             <CancelButton text="Cancelar" onClick={handleCancel} />
             {!isCreateMode && (
               <DeleteButton
-                text="Eliminar asignación del vehículo"
+                text="Finalizar asignación del vehículo"
                 onClick={handleUnassign}
               />
             )}
