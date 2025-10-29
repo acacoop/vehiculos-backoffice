@@ -192,7 +192,7 @@ export function useVehicleSearch() {
       normalizedVehicle.modelObj?.name ||
       "";
     setSearchTerm(
-      `${brand} ${model}`.trim()
+      `${brand} ${model}`.trim() !== ''
         ? `${brand} ${model} (${normalizedVehicle.licensePlate})`
         : normalizedVehicle.licensePlate
     );
