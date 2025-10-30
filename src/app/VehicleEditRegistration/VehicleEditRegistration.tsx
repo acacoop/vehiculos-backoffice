@@ -4,7 +4,13 @@ import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import { LoadingSpinner } from "../../components";
+import {
+  LoadingSpinner,
+  ConfirmDialog,
+  ConfirmButton,
+  CancelButton,
+  ButtonGroup,
+} from "../../components";
 import { createVehicle } from "../../services/vehicles";
 import { getVehicleModelById } from "../../services/vehicleModels";
 import { getAssignments } from "../../services/assignments";
@@ -13,7 +19,7 @@ import { getVehicleMaintenances } from "../../services/maintenances";
 import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { VehicleKilometersService } from "../../services/kilometers";
 import { getReservationsByVehicle } from "../../services/reservations";
-import { useNotification } from "../../hooks";
+import { useNotification, useConfirmDialog } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams, ServiceResponse } from "../../common";
@@ -41,6 +47,14 @@ export default function VehicleEditRegistration() {
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  const {
+    isOpen: isConfirmDialogOpen,
+    message: confirmMessage,
+    showConfirm,
+    handleConfirm,
+    handleCancel,
+  } = useConfirmDialog();
 
   useEffect(() => {
     const handleFocus = () => {};
@@ -785,19 +799,33 @@ export default function VehicleEditRegistration() {
 
         {isCreateMode && (
           <div className="registration-actions">
-            <button
-              className="table-add-btn"
-              onClick={handleVehicleRegistration}
-              disabled={isRegistering}
-              style={{
-                opacity: isRegistering ? 0.6 : 1,
-                cursor: isRegistering ? "not-allowed" : "pointer",
-              }}
-            >
-              {isRegistering ? "Registrando..." : "Registrar Vehículo"}
-            </button>
+            <ButtonGroup align="center">
+              <CancelButton
+                text="Cancelar"
+                onClick={() => navigate("/vehicles")}
+                disabled={isRegistering}
+              />
+              <ConfirmButton
+                text="Registrar Vehículo"
+                onClick={() =>
+                  showConfirm(
+                    "¿Estás seguro de que deseas registrar este vehículo?",
+                    handleVehicleRegistration
+                  )
+                }
+                disabled={isRegistering}
+                loading={isRegistering}
+              />
+            </ButtonGroup>
           </div>
         )}
+
+        <ConfirmDialog
+          open={isConfirmDialogOpen}
+          message={confirmMessage}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
 
         {notification.isOpen && (
           <NotificationToast
