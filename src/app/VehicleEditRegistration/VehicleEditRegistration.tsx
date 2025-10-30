@@ -639,7 +639,7 @@ export default function VehicleEditRegistration() {
                 navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar responsables..."
             />
 
@@ -661,7 +661,7 @@ export default function VehicleEditRegistration() {
                 )
               }
               maxWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar asignaciones..."
             />
 
@@ -679,7 +679,7 @@ export default function VehicleEditRegistration() {
               }
               maxWidth="900px"
               tableWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar kilometraje..."
             />
 
@@ -777,7 +777,7 @@ export default function VehicleEditRegistration() {
                 navigate(`/reservation/create?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar reservas..."
             />
           </>
