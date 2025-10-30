@@ -777,7 +777,7 @@ export default function VehicleEditRegistration() {
                 navigate(`/reservation/create?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar reservas..."
             />
           </>
