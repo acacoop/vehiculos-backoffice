@@ -89,14 +89,16 @@
 .navbar-sidebar {
   position: fixed;
   top: 0;
-  left: -270px;
-  width: 270px;
+  left: -300px;
+  width: 300px;
   height: 100vh;
   background: #232d85;
   color: #fff;
-  padding-top: 80px;
   transition: left 0.3s;
-  z-index: 101;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
 }
 
 .navbar-sidebar.open {
@@ -105,11 +107,14 @@
 
 .navbar-sidebar ul {
   list-style: none;
-  padding: 0;
+  padding: 32px 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .navbar-sidebar li {
-  margin: 24px 0;
+  margin: 16px 0;
   padding-left: 32px;
 }
 
@@ -134,4 +139,59 @@
 .navbar-sidebar li:hover img {
   filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
     hue-rotate(0deg) brightness(101%) contrast(104%);
+}
+
+.navbar-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.navbar-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-sidebar-logo img {
+  height: 40px;
+}
+
+.navbar-sidebar-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.75rem;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.navbar-sidebar-close:hover {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.navbar-separator {
+  margin: 24px 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.navbar-separator span {
+  display: block;
+  height: 1px;
+
+  width: 90%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
 }

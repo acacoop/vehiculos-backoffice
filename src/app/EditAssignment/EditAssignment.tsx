@@ -59,7 +59,7 @@ export default function EditAssignment() {
 
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [isIndefinite, setIsIndefinite] = useState<boolean>(false);
+  const [isIndefinite, setIsIndefinite] = useState<boolean>(true);
 
   const {
     isOpen: isConfirmOpen,
@@ -551,7 +551,7 @@ export default function EditAssignment() {
             <CancelButton text="Cancelar" onClick={handleCancel} />
             {!isCreateMode && (
               <DeleteButton
-                text="Eliminar asignación del vehículo"
+                text="Finalizar asignación del vehículo"
                 onClick={handleUnassign}
               />
             )}

@@ -6,11 +6,10 @@ import {
   getMaintenancePossibles,
 } from "../services/maintenances";
 import type { User } from "../types/user";
-import type { Vehicle } from "../types/vehicle";
+import type { Vehicle, VehicleModelType, VehicleBrand } from "../types/vehicle";
 import type { Maintenance } from "../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../services/maintenances";
 import { getVehicleBrands } from "../services/vehicleBrands";
-import type { VehicleBrand } from "../types/vehicle";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +71,76 @@ export function useVehicleSearch() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
+  const normalizeVehicle = (
+    vehicle: Vehicle | (Vehicle & Record<string, any>)
+  ): Vehicle => {
+    if (!vehicle) {
+      return {} as Vehicle;
+    }
+
+    const rawModel =
+      vehicle.modelObj ||
+      (typeof (vehicle as any).model === "object"
+        ? ((vehicle as any).model as VehicleModelType)
+        : null);
+
+    const resolvedBrand = (() => {
+      const candidate =
+        (vehicle as any).brandName ||
+        (typeof vehicle.brand === "string" ? vehicle.brand : null) ||
+        (rawModel?.brand?.name ?? null) ||
+        (typeof (vehicle as any).brand === "object"
+          ? (vehicle as any).brand?.name || (vehicle as any).brand?.BrandName
+          : null);
+      return typeof candidate === "string" ? candidate : "";
+    })();
+
+    const resolvedModel = (() => {
+      const candidate =
+        (vehicle as any).modelName ||
+        (typeof vehicle.model === "string" ? vehicle.model : null) ||
+        rawModel?.name ||
+        (typeof (vehicle as any).model === "object"
+          ? (vehicle as any).model?.name || (vehicle as any).model?.modelName
+          : null);
+      return typeof candidate === "string" ? candidate : "";
+    })();
+
+    const normalizedModelObj: VehicleModelType | null = rawModel
+      ? {
+          id: rawModel.id,
+          name: rawModel.name || resolvedModel,
+          vehicleType: rawModel.vehicleType,
+          brand: ((): VehicleBrand => {
+            if (rawModel.brand && typeof rawModel.brand === "object") {
+              return {
+                id: rawModel.brand.id,
+                name: rawModel.brand.name || resolvedBrand,
+              };
+            }
+            return {
+              id: (rawModel as any).brandId || "",
+              name: resolvedBrand,
+            };
+          })(),
+        }
+      : null;
+
+    const normalized: Vehicle = {
+      ...(vehicle as Vehicle),
+      id: vehicle.id,
+      licensePlate: vehicle.licensePlate,
+      year: vehicle.year ?? 0,
+      brand: resolvedBrand,
+      brandName: resolvedBrand,
+      model: resolvedModel,
+      modelName: resolvedModel,
+      modelObj: normalizedModelObj,
+    };
+
+    return normalized;
+  };
+
   const searchVehicles = async (term: string) => {
     setSearchTerm(term);
     if (term.length > 2) {
@@ -97,7 +166,7 @@ export function useVehicleSearch() {
               (vehicle.year ? String(vehicle.year).includes(term) : false)
             );
           });
-          setAvailableVehicles(filtered);
+          setAvailableVehicles(filtered.map((item) => normalizeVehicle(item)));
           setShowDropdown(true);
         }
       } catch (error) {
@@ -110,18 +179,23 @@ export function useVehicleSearch() {
   };
 
   const selectVehicle = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
+    const normalizedVehicle = normalizeVehicle(vehicle);
+    setSelectedVehicle(normalizedVehicle);
     const brand =
-      (vehicle as any).brandName ||
-      vehicle.brand ||
-      vehicle.modelObj?.brand?.name ||
+      normalizedVehicle.brand ||
+      normalizedVehicle.brandName ||
+      normalizedVehicle.modelObj?.brand?.name ||
       "";
     const model =
-      (vehicle as any).modelName ||
-      vehicle.model ||
-      vehicle.modelObj?.name ||
+      normalizedVehicle.model ||
+      normalizedVehicle.modelName ||
+      normalizedVehicle.modelObj?.name ||
       "";
-    setSearchTerm(`${brand} ${model} (${vehicle.licensePlate})`);
+    setSearchTerm(
+      `${brand} ${model}`.trim() !== ''
+        ? `${brand} ${model} (${normalizedVehicle.licensePlate})`
+        : normalizedVehicle.licensePlate
+    );
     setShowDropdown(false);
   };
 

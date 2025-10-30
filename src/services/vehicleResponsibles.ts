@@ -242,7 +242,7 @@ export async function updateVehicleResponsible(
     const token = await getAccessToken().catch(() => undefined);
     const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
     const res = await fetch(url, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",

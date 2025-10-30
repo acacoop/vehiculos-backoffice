@@ -755,7 +755,7 @@ export default function VehicleEditRegistration() {
               getRows={getReservationsForTable}
               columns={reservationColumns}
               title=""
-              showEditColumn={true}
+              showEditColumn={false}
               editRoute="/reservation/edit"
               showTableHeader={true}
               headerTitle="Reservas del Vehículo"
