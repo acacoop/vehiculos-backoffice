@@ -679,7 +679,7 @@ export default function VehicleEditRegistration() {
               }
               maxWidth="900px"
               tableWidth="900px"
-              enableSearch={true}
+              enableSearch
               searchPlaceholder="Buscar kilometraje..."
             />
 
