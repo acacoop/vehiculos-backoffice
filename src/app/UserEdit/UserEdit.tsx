@@ -230,7 +230,10 @@ export default function UserEdit() {
     },
   ];
 
-  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+  const getAssignmentsForTable = async (
+    paginationParams: PaginationParams,
+    options?: { search?: string }
+  ) => {
     if (!userId) {
       return {
         success: false,
@@ -240,7 +243,11 @@ export default function UserEdit() {
     }
 
     try {
-      const response = await getAssignmentsByUser(userId, paginationParams);
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
+      const response = await getAssignmentsByUser(userId, combinedParams);
       if (response.success) {
         return {
           success: true,
@@ -266,7 +273,8 @@ export default function UserEdit() {
   };
 
   const getReservationsForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ) => {
     if (!userId) {
       return {
@@ -277,7 +285,11 @@ export default function UserEdit() {
     }
 
     try {
-      const response = await getReservationsByUser(userId, paginationParams);
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
+      const response = await getReservationsByUser(userId, combinedParams);
       if (response.success) {
         const reservations = response.data || [];
 
@@ -433,6 +445,8 @@ export default function UserEdit() {
             navigate(`/assignment/create?userId=${userId}`)
           }
           maxWidth="900px"
+          enableSearch={true}
+          searchPlaceholder="Buscar asignaciones..."
         />
       </div>
 
@@ -453,6 +467,8 @@ export default function UserEdit() {
             navigate(`/reservation/create?userId=${userId}`)
           }
           maxWidth="900px"
+          enableSearch={true}
+          searchPlaceholder="Buscar reservas..."
         />
       </div>
 

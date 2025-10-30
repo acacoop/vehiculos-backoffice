@@ -338,11 +338,13 @@ export class VehicleKilometersService {
    * Get vehicle kilometers formatted for table display
    * @param vehicleId - UUID of the vehicle
    * @param paginationParams - Pagination parameters
+   * @param options - Optional search parameters
    * @returns Promise with formatted kilometers data for table
    */
   static async getVehicleKilometersForTable(
     vehicleId: string,
-    paginationParams: { page?: number; limit?: number; pageSize?: number }
+    paginationParams: { page?: number; limit?: number; pageSize?: number },
+    options?: { search?: string }
   ): Promise<{
     success: boolean;
     data: Array<{
@@ -368,9 +370,19 @@ export class VehicleKilometersService {
       const logs = await this.getVehicleKilometers(vehicleId);
 
       // Sort by date (most recent first)
-      const sortedLogs = logs.sort(
+      let sortedLogs = logs.sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
+
+      // Apply search filter if provided
+      if (options?.search) {
+        const searchLower = options.search.toLowerCase();
+        sortedLogs = sortedLogs.filter((log) => {
+          const dateStr = new Date(log.date).toLocaleDateString();
+          const kmStr = log.kilometers.toString();
+          return dateStr.includes(searchLower) || kmStr.includes(searchLower);
+        });
+      }
 
       // Apply pagination
       const startIndex = (page - 1) * pageSize;

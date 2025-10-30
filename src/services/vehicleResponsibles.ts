@@ -1,7 +1,10 @@
 import type { ServiceResponse, PaginationParams } from "../common";
 import { API_CONFIG } from "../common/constants";
 import { getAccessToken } from "../common/auth";
-import type { VehicleResponsible } from "../types/vehicleResponsible";
+import type {
+  VehicleResponsible,
+  VehicleResponsibleFilterParams,
+} from "../types/vehicleResponsible";
 
 // Normalize a single vehicle responsible item to a canonical shape used by the UI
 const normalizeVehicleResponsible = (item: any) => {
@@ -77,6 +80,7 @@ const normalizeVehicleResponsible = (item: any) => {
 };
 
 export async function getVehicleResponsibles(
+  filters?: VehicleResponsibleFilterParams,
   pagination?: PaginationParams
 ): Promise<ServiceResponse<VehicleResponsible[]>> {
   try {
@@ -88,6 +92,14 @@ export async function getVehicleResponsibles(
 
     params.append("limit", String(limit));
     params.append("offset", String(offset));
+
+    // Add filter params
+    if (filters?.userId) params.append("userId", filters.userId);
+    if (filters?.vehicleId) params.append("vehicleId", filters.vehicleId);
+    if (filters?.active !== undefined)
+      params.append("active", String(filters.active));
+    if (filters?.date) params.append("date", filters.date);
+    if (filters?.search) params.append("search", filters.search);
 
     const token = await getAccessToken().catch(() => undefined);
 

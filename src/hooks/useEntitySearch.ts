@@ -10,6 +10,7 @@ import type { Vehicle, VehicleModelType, VehicleBrand } from "../types/vehicle";
 import type { Maintenance } from "../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../services/maintenances";
 import { getVehicleBrands } from "../services/vehicleBrands";
+import { getVehicleModels } from "../services/vehicleModels";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -209,15 +210,12 @@ export function useCategorySearch() {
     setSearchTerm(term);
     if (term.length >= 1) {
       try {
-        const response = await getMaintenanceCategories({
-          page: 1,
-          limit: 100,
-        });
+        const response = await getMaintenanceCategories(
+          { search: term },
+          { page: 1, limit: 100 }
+        );
         if (response.success) {
-          const filtered = response.data.filter((category: Maintenance) =>
-            category.name.toLowerCase().includes(term.toLowerCase())
-          );
-          setAvailableCategories(filtered);
+          setAvailableCategories(response.data);
           setShowDropdown(true);
         }
       } catch (error) {
@@ -266,14 +264,9 @@ export function useMaintenanceSearch() {
     setSearchTerm(term);
     if (term.length >= 1) {
       try {
-        // Use getMaintenancePossibles instead of getMaintenanceCategories
-        const response = await getMaintenancePossibles();
+        const response = await getMaintenancePossibles({ search: term });
         if (response.success) {
-          const filtered = response.data.filter(
-            (maintenance: MaintenancePossibleNormalized) =>
-              maintenance.name.toLowerCase().includes(term.toLowerCase())
-          );
-          setAvailableMaintenances(filtered);
+          setAvailableMaintenances(response.data);
           setShowDropdown(true);
         }
       } catch (error) {
@@ -325,20 +318,13 @@ export function useVehicleBrandSearch() {
     setSearchTerm(term);
     if (term.length >= 1) {
       try {
-        // Limit alto para permitir filtrado local adicional si backend no filtra
         const response = await getVehicleBrands({
+          search: term,
           page: 1,
           limit: 100,
-          name: term,
         });
         if (response.success) {
-          // Si backend ya filtra por name solo usamos items. Si no, filtramos localmente.
-          const items = response.data.items || [];
-          const termLower = term.toLowerCase();
-          const filtered = items.filter((b) =>
-            b.name.toLowerCase().includes(termLower)
-          );
-          setAvailableBrands(filtered);
+          setAvailableBrands(response.data.items || []);
           setShowDropdown(true);
         }
       } catch (error) {
@@ -433,6 +419,64 @@ export function useVehicleTypeSearch(initialList: string[] = []) {
     clearSelection,
     setShowDropdown,
     setSelectedVehicleType,
+    setSearchTerm,
+  };
+}
+
+export function useVehicleModelSearch() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [availableModels, setAvailableModels] = useState<VehicleModelType[]>(
+    []
+  );
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<VehicleModelType | null>(
+    null
+  );
+
+  const searchModels = async (term: string, brandId?: string) => {
+    setSearchTerm(term);
+    if (term.length >= 1) {
+      try {
+        const response = await getVehicleModels({
+          search: term,
+          brandId,
+          page: 1,
+          limit: 100,
+        });
+        if (response.success) {
+          setAvailableModels(response.data.items || []);
+          setShowDropdown(true);
+        }
+      } catch (error) {
+        setAvailableModels([]);
+        setShowDropdown(false);
+      }
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const selectModel = (model: VehicleModelType) => {
+    setSelectedModel(model);
+    setSearchTerm(model.name);
+    setShowDropdown(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedModel(null);
+    setSearchTerm("");
+  };
+
+  return {
+    searchTerm,
+    availableModels,
+    showDropdown,
+    selectedModel,
+    searchModels,
+    selectModel,
+    clearSelection,
+    setShowDropdown,
+    setSelectedModel,
     setSearchTerm,
   };
 }

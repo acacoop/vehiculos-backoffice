@@ -327,9 +327,15 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+  const getAssignmentsForTable = async (
+    paginationParams: PaginationParams,
+    options?: { search?: string }
+  ) => {
     try {
-      const filterParams = vehicleId ? { vehicleId } : {};
+      const filterParams = {
+        ...(vehicleId && { vehicleId }),
+        ...(options?.search && { search: options.search }),
+      };
       const response = await getAssignments(filterParams, paginationParams);
       return response;
     } catch (error) {
@@ -396,7 +402,8 @@ export default function VehicleEditRegistration() {
   };
 
   const getMileageForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
@@ -416,7 +423,8 @@ export default function VehicleEditRegistration() {
       const result =
         await VehicleKilometersService.getVehicleKilometersForTable(
           vehicleId,
-          paginationParams
+          paginationParams,
+          options
         );
 
       return {
@@ -445,7 +453,8 @@ export default function VehicleEditRegistration() {
   };
 
   const getReservationsForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ) => {
     if (!vehicleId) {
       return {
@@ -456,9 +465,13 @@ export default function VehicleEditRegistration() {
     }
 
     try {
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
       const response = await getReservationsByVehicle(
         vehicleId,
-        paginationParams
+        combinedParams
       );
       if (response.success) {
         return {
@@ -591,23 +604,17 @@ export default function VehicleEditRegistration() {
         {!isCreateMode && vehicleId && (
           <>
             <Table<any>
-              getRows={async (paginationParams) => {
+              getRows={async (paginationParams, options) => {
                 try {
+                  const filters = {
+                    ...(vehicleId && { vehicleId }),
+                    ...(options?.search && { search: options.search }),
+                  };
                   const response = await getVehicleResponsibles(
+                    filters,
                     paginationParams
                   );
-                  if (!response.success) return response as any;
-                  const filtered = (response.data || []).filter(
-                    (r: any) =>
-                      r.vehicle?.id === vehicleId ||
-                      r.vehicleId === vehicleId ||
-                      r.vehicle?.licensePlate === vehicleId
-                  );
-                  return {
-                    success: true,
-                    data: filtered,
-                    pagination: response.pagination,
-                  } as ServiceResponse<any[]>;
+                  return response as ServiceResponse<any[]>;
                 } catch (error) {
                   return {
                     success: false,
@@ -632,7 +639,8 @@ export default function VehicleEditRegistration() {
                 navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
-              tableWidth="900px"
+              enableSearch={true}
+              searchPlaceholder="Buscar responsables..."
             />
 
             <Table<Assignment>
@@ -653,6 +661,8 @@ export default function VehicleEditRegistration() {
                 )
               }
               maxWidth="900px"
+              enableSearch={true}
+              searchPlaceholder="Buscar asignaciones..."
             />
 
             <Table<any>
@@ -669,6 +679,8 @@ export default function VehicleEditRegistration() {
               }
               maxWidth="900px"
               tableWidth="900px"
+              enableSearch={true}
+              searchPlaceholder="Buscar kilometraje..."
             />
 
             <Table<any>
@@ -765,6 +777,8 @@ export default function VehicleEditRegistration() {
                 navigate(`/reservation/create?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
+              enableSearch={true}
+              searchPlaceholder="Buscar reservas..."
             />
           </>
         )}

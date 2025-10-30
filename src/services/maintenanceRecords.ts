@@ -2,6 +2,7 @@ import type {
   MaintenanceRecord,
   MaintenanceRecordCreateDto,
   MaintenanceRecordsListResponse,
+  MaintenanceRecordFilterParams,
 } from "../types/maintenanceRecord";
 import { getAccessToken } from "../common/auth";
 import { API_CONFIG, type ServiceResponse } from "../common";
@@ -66,19 +67,24 @@ export const getMaintenanceRecordById = async (
   }
 };
 
-export const getAllMaintenanceRecords = async (options?: {
-  page?: number;
-  limit?: number;
-  vehicleId?: string;
-  maintenanceId?: string;
-}): Promise<ServiceResponse<MaintenanceRecordsListResponse>> => {
+export const getAllMaintenanceRecords = async (
+  filters?: MaintenanceRecordFilterParams,
+  options?: {
+    page?: number;
+    limit?: number;
+  }
+): Promise<ServiceResponse<MaintenanceRecordsListResponse>> => {
   try {
     const params = new URLSearchParams();
     if (options?.page) params.append("page", String(options.page));
     if (options?.limit) params.append("limit", String(options.limit));
-    if (options?.vehicleId) params.append("vehicleId", options.vehicleId);
-    if (options?.maintenanceId)
-      params.append("maintenanceId", options.maintenanceId);
+    if (filters?.vehicleId) params.append("vehicleId", filters.vehicleId);
+    if (filters?.maintenanceId)
+      params.append("maintenanceId", filters.maintenanceId);
+    if (filters?.userId) params.append("userId", filters.userId);
+    if (filters?.assignedMaintenanceId)
+      params.append("assignedMaintenanceId", filters.assignedMaintenanceId);
+    if (filters?.search) params.append("search", filters.search);
 
     const resp = await fetch(
       `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,

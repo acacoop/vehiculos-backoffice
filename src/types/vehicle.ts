@@ -16,9 +16,20 @@ export interface VehicleBrandListResponse {
   total: number;
 }
 
+export interface VehicleBrandFilterParams {
+  name?: string;
+  search?: string;
+}
+
 export interface VehicleModelListResponse {
   items: VehicleModelType[];
   total: number;
+}
+
+export interface VehicleModelFilterParams {
+  name?: string;
+  brandId?: string;
+  search?: string;
 }
 
 export interface Vehicle {

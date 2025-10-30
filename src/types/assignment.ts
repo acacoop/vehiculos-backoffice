@@ -22,6 +22,7 @@ export interface AssignmentInput {
 export interface AssignmentFilterParams {
   userId?: string; // UUID format
   vehicleId?: string; // UUID format
+  search?: string;
 }
 
 // Respuesta del backend según OpenAPI
