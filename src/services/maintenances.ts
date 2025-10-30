@@ -25,25 +25,29 @@ async function buildAuthHeaders(
  * Obtiene todas las categorías de mantenimiento
  */
 export async function getMaintenanceCategories(
+  filters?: { search?: string },
   pagination?: PaginationParams
 ): Promise<ServiceResponse<Maintenance[]>> {
   try {
     let uri = "/maintenance/categories";
+    const params = new URLSearchParams();
+
+    if (filters?.search) {
+      params.append("search", filters.search);
+    }
 
     if (pagination) {
-      const params = new URLSearchParams();
-
       if (pagination.page) {
         params.append("page", pagination.page.toString());
       }
       if (pagination.limit) {
         params.append("limit", pagination.limit.toString());
       }
+    }
 
-      const queryString = params.toString();
-      if (queryString) {
-        uri += `?${queryString}`;
-      }
+    const queryString = params.toString();
+    if (queryString) {
+      uri += `?${queryString}`;
     }
 
     const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`, {
@@ -380,11 +384,17 @@ export interface MaintenancePossibleNormalized {
 /**
  * Obtiene todos los mantenimientos posibles con información de categoría
  */
-export async function getMaintenancePossibles(): Promise<
-  ServiceResponse<MaintenancePossibleNormalized[]>
-> {
+export async function getMaintenancePossibles(filters?: {
+  search?: string;
+}): Promise<ServiceResponse<MaintenancePossibleNormalized[]>> {
   try {
-    const uri = "/maintenance/posibles";
+    let uri = "/maintenance/posibles";
+
+    if (filters?.search) {
+      const params = new URLSearchParams();
+      params.append("search", filters.search);
+      uri += `?${params.toString()}`;
+    }
 
     const response = await fetch(`${API_CONFIG.BASE_URL}${uri}`, {
       headers: await buildAuthHeaders(false),

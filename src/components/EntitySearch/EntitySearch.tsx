@@ -2,7 +2,7 @@ import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { Maintenance } from "../../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../../services/maintenances";
-import type { VehicleBrand } from "../../types/vehicle";
+import type { VehicleBrand, VehicleModelType } from "../../types/vehicle";
 
 interface UserSearchProps {
   searchTerm: string;
@@ -302,6 +302,55 @@ export function VehicleTypeSearch({
               onClick={() => onVehicleTypeSelect(type)}
             >
               {type}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface VehicleModelSearchProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  availableModels: VehicleModelType[];
+  showDropdown: boolean;
+  onModelSelect: (model: VehicleModelType) => void;
+  onDropdownToggle: (show: boolean) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function VehicleModelSearch({
+  searchTerm,
+  onSearchChange,
+  availableModels,
+  showDropdown,
+  onModelSelect,
+  onDropdownToggle,
+  placeholder = "Buscar modelo...",
+  className = "reservation-form-input",
+}: VehicleModelSearchProps) {
+  return (
+    <div className="model-search">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => searchTerm.length >= 1 && onDropdownToggle(true)}
+        onBlur={() => setTimeout(() => onDropdownToggle(false), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && availableModels.length > 0 && (
+        <div className="model-dropdown">
+          {availableModels.map((model) => (
+            <div
+              key={model.id}
+              className="model-dropdown-item"
+              onClick={() => onModelSelect(model)}
+            >
+              {model.brand?.name} - {model.name}
             </div>
           ))}
         </div>

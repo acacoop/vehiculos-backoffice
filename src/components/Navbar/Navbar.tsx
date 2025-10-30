@@ -23,7 +23,20 @@ function Navbar() {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string>("");
   const [askLogout, setAskLogout] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -208,6 +221,30 @@ function Navbar() {
                 Métricas
               </Link>
             </li>
+
+            {isMobile && isAuthenticated() && (
+              <>
+                <li className="navbar-sidebar-logout">
+                  <button
+                    className="navbar-sidebar-logout-btn"
+                    onClick={() => {
+                      setOpen(false);
+                      setAskLogout(true);
+                    }}
+                  >
+                    <img
+                      className="icon-navbar"
+                      src={IconLogout}
+                      alt="Cerrar sesión"
+                    />
+                    Cerrar sesión
+                  </button>
+                </li>
+                <li className="navbar-separator" role="separator">
+                  <span />
+                </li>
+              </>
+            )}
           </ul>
         </aside>
       </nav>

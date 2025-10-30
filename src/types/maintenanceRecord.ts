@@ -24,4 +24,12 @@ export interface MaintenanceRecordsListResponse {
   total: number;
 }
 
+export interface MaintenanceRecordFilterParams {
+  userId?: string;
+  vehicleId?: string;
+  maintenanceId?: string;
+  assignedMaintenanceId?: string;
+  search?: string;
+}
+
 export default {};

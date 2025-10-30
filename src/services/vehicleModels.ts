@@ -7,11 +7,10 @@ import { ResponseStatus } from "../types/common";
 import type {
   VehicleModelType,
   VehicleModelListResponse,
+  VehicleModelFilterParams,
 } from "../types/vehicle";
 
-interface ModelFilterParams {
-  name?: string;
-  brandId?: string;
+interface ModelFilterParams extends VehicleModelFilterParams {
   page?: number;
   limit?: number;
 }
@@ -21,6 +20,7 @@ function buildQuery(params?: ModelFilterParams): string {
   const usp = new URLSearchParams();
   if (params.name) usp.append("name", params.name);
   if (params.brandId) usp.append("brandId", params.brandId);
+  if (params.search) usp.append("search", params.search);
   if (params.page) usp.append("page", String(params.page));
   if (params.limit) usp.append("limit", String(params.limit));
   return usp.toString();

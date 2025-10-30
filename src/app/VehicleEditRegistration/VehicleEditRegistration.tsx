@@ -4,7 +4,13 @@ import { type GridColDef } from "@mui/x-data-grid";
 import EntityForm from "../../components/EntityForm/EntityForm";
 import Table, { PencilIcon } from "../../components/Table/table";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import { LoadingSpinner } from "../../components";
+import {
+  LoadingSpinner,
+  ConfirmDialog,
+  ConfirmButton,
+  CancelButton,
+  ButtonGroup,
+} from "../../components";
 import { createVehicle } from "../../services/vehicles";
 import { getVehicleModelById } from "../../services/vehicleModels";
 import { getAssignments } from "../../services/assignments";
@@ -13,7 +19,7 @@ import { getVehicleMaintenances } from "../../services/maintenances";
 import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { VehicleKilometersService } from "../../services/kilometers";
 import { getReservationsByVehicle } from "../../services/reservations";
-import { useNotification } from "../../hooks";
+import { useNotification, useConfirmDialog } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
 import type { Assignment } from "../../types/assignment";
 import type { PaginationParams, ServiceResponse } from "../../common";
@@ -41,6 +47,14 @@ export default function VehicleEditRegistration() {
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  const {
+    isOpen: isConfirmDialogOpen,
+    message: confirmMessage,
+    showConfirm,
+    handleConfirm,
+    handleCancel,
+  } = useConfirmDialog();
 
   useEffect(() => {
     const handleFocus = () => {};
@@ -327,9 +341,15 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+  const getAssignmentsForTable = async (
+    paginationParams: PaginationParams,
+    options?: { search?: string }
+  ) => {
     try {
-      const filterParams = vehicleId ? { vehicleId } : {};
+      const filterParams = {
+        ...(vehicleId && { vehicleId }),
+        ...(options?.search && { search: options.search }),
+      };
       const response = await getAssignments(filterParams, paginationParams);
       return response;
     } catch (error) {
@@ -396,7 +416,8 @@ export default function VehicleEditRegistration() {
   };
 
   const getMileageForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
@@ -416,7 +437,8 @@ export default function VehicleEditRegistration() {
       const result =
         await VehicleKilometersService.getVehicleKilometersForTable(
           vehicleId,
-          paginationParams
+          paginationParams,
+          options
         );
 
       return {
@@ -445,7 +467,8 @@ export default function VehicleEditRegistration() {
   };
 
   const getReservationsForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ) => {
     if (!vehicleId) {
       return {
@@ -456,9 +479,13 @@ export default function VehicleEditRegistration() {
     }
 
     try {
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
       const response = await getReservationsByVehicle(
         vehicleId,
-        paginationParams
+        combinedParams
       );
       if (response.success) {
         return {
@@ -591,23 +618,17 @@ export default function VehicleEditRegistration() {
         {!isCreateMode && vehicleId && (
           <>
             <Table<any>
-              getRows={async (paginationParams) => {
+              getRows={async (paginationParams, options) => {
                 try {
+                  const filters = {
+                    ...(vehicleId && { vehicleId }),
+                    ...(options?.search && { search: options.search }),
+                  };
                   const response = await getVehicleResponsibles(
+                    filters,
                     paginationParams
                   );
-                  if (!response.success) return response as any;
-                  const filtered = (response.data || []).filter(
-                    (r: any) =>
-                      r.vehicle?.id === vehicleId ||
-                      r.vehicleId === vehicleId ||
-                      r.vehicle?.licensePlate === vehicleId
-                  );
-                  return {
-                    success: true,
-                    data: filtered,
-                    pagination: response.pagination,
-                  } as ServiceResponse<any[]>;
+                  return response as ServiceResponse<any[]>;
                 } catch (error) {
                   return {
                     success: false,
@@ -632,7 +653,8 @@ export default function VehicleEditRegistration() {
                 navigate(`/edit-vehicle-responsibles?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
-              tableWidth="900px"
+              enableSearch
+              searchPlaceholder="Buscar responsables..."
             />
 
             <Table<Assignment>
@@ -653,6 +675,8 @@ export default function VehicleEditRegistration() {
                 )
               }
               maxWidth="900px"
+              enableSearch
+              searchPlaceholder="Buscar asignaciones..."
             />
 
             <Table<any>
@@ -669,6 +693,8 @@ export default function VehicleEditRegistration() {
               }
               maxWidth="900px"
               tableWidth="900px"
+              enableSearch
+              searchPlaceholder="Buscar kilometraje..."
             />
 
             <Table<any>
@@ -765,25 +791,41 @@ export default function VehicleEditRegistration() {
                 navigate(`/reservation/create?vehicleId=${vehicleId}`)
               }
               maxWidth="900px"
+              enableSearch
+              searchPlaceholder="Buscar reservas..."
             />
           </>
         )}
 
         {isCreateMode && (
           <div className="registration-actions">
-            <button
-              className="table-add-btn"
-              onClick={handleVehicleRegistration}
-              disabled={isRegistering}
-              style={{
-                opacity: isRegistering ? 0.6 : 1,
-                cursor: isRegistering ? "not-allowed" : "pointer",
-              }}
-            >
-              {isRegistering ? "Registrando..." : "Registrar Vehículo"}
-            </button>
+            <ButtonGroup align="center">
+              <CancelButton
+                text="Cancelar"
+                onClick={() => navigate("/vehicles")}
+                disabled={isRegistering}
+              />
+              <ConfirmButton
+                text="Registrar Vehículo"
+                onClick={() =>
+                  showConfirm(
+                    "¿Estás seguro de que deseas registrar este vehículo?",
+                    handleVehicleRegistration
+                  )
+                }
+                disabled={isRegistering}
+                loading={isRegistering}
+              />
+            </ButtonGroup>
           </div>
         )}
+
+        <ConfirmDialog
+          open={isConfirmDialogOpen}
+          message={confirmMessage}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
 
         {notification.isOpen && (
           <NotificationToast

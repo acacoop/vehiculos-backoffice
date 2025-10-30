@@ -20,3 +20,11 @@ export interface VehicleResponsible {
     currentResponsible?: string;
   };
 }
+
+export interface VehicleResponsibleFilterParams {
+  userId?: string;
+  vehicleId?: string;
+  active?: boolean;
+  date?: string;
+  search?: string;
+}

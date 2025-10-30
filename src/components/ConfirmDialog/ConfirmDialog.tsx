@@ -32,7 +32,11 @@ export default function ConfirmDialog({
       onClose={onCancel}
       PaperProps={{
         style: {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           borderRadius: "12px",
+          padding: "16px",
         },
       }}
     >
@@ -42,11 +46,7 @@ export default function ConfirmDialog({
         {title}
       </DialogTitle>
       <DialogContent>
-        <p
-          style={{ fontFamily: '"Urbanist", sans-serif', padding: "16px 24px" }}
-        >
-          {message}
-        </p>
+        <p style={{ fontFamily: '"Urbanist", sans-serif' }}>{message}</p>
       </DialogContent>
       <DialogActions>
         <div

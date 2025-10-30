@@ -6,7 +6,6 @@ import EntityForm from "../../components/EntityForm/EntityForm";
 import Table from "../../components/Table/table";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { LoadingSpinner } from "../../components";
-import Document from "../../components/Document/Document";
 import { getUserById } from "../../services/users";
 import { getAssignmentsByUser } from "../../services/assignments";
 import { getReservationsByUser } from "../../services/reservations";
@@ -20,30 +19,6 @@ import {
   formatVehicleBrandModel,
 } from "../../common/utils";
 import "./UserEdit.css";
-
-const mockDocuments = [
-  {
-    id: "1",
-    title: "Licencia de conducir",
-    expirationDate: "2026-05-01",
-    fileName: "licencia_miguel.pdf",
-    uploadDate: "2025-08-20",
-  },
-  {
-    id: "2",
-    title: "CUIT",
-    expirationDate: "2028-01-15",
-    fileName: "dni_miguel.pdf",
-    uploadDate: "2025-08-21",
-  },
-  {
-    id: "3",
-    title: "Seguro del vehículo",
-    expirationDate: "2025-12-31",
-    fileName: "seguro_auto.pdf",
-    uploadDate: "2025-08-22",
-  },
-];
 
 export default function UserEdit() {
   const { id } = useParams<{ id: string }>();
@@ -230,7 +205,10 @@ export default function UserEdit() {
     },
   ];
 
-  const getAssignmentsForTable = async (paginationParams: PaginationParams) => {
+  const getAssignmentsForTable = async (
+    paginationParams: PaginationParams,
+    options?: { search?: string }
+  ) => {
     if (!userId) {
       return {
         success: false,
@@ -240,7 +218,11 @@ export default function UserEdit() {
     }
 
     try {
-      const response = await getAssignmentsByUser(userId, paginationParams);
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
+      const response = await getAssignmentsByUser(userId, combinedParams);
       if (response.success) {
         return {
           success: true,
@@ -266,7 +248,8 @@ export default function UserEdit() {
   };
 
   const getReservationsForTable = async (
-    paginationParams: PaginationParams
+    paginationParams: PaginationParams,
+    options?: { search?: string }
   ) => {
     if (!userId) {
       return {
@@ -277,7 +260,11 @@ export default function UserEdit() {
     }
 
     try {
-      const response = await getReservationsByUser(userId, paginationParams);
+      const combinedParams = {
+        ...paginationParams,
+        ...(options?.search && { search: options.search }),
+      };
+      const response = await getReservationsByUser(userId, combinedParams);
       if (response.success) {
         const reservations = response.data || [];
 
@@ -433,6 +420,8 @@ export default function UserEdit() {
             navigate(`/assignment/create?userId=${userId}`)
           }
           maxWidth="900px"
+          enableSearch={true}
+          searchPlaceholder="Buscar asignaciones..."
         />
       </div>
 
@@ -453,15 +442,10 @@ export default function UserEdit() {
             navigate(`/reservation/create?userId=${userId}`)
           }
           maxWidth="900px"
+          enableSearch={true}
+          searchPlaceholder="Buscar reservas..."
         />
       </div>
-
-      {/*     <div className="user-edit-body">
-        <Document
-          title="Documentos del usuario"
-          initialDocuments={mockDocuments}
-        />
-      </div> */}
     </div>
   );
 }

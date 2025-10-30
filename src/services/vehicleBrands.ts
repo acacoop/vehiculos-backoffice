@@ -4,10 +4,13 @@ import {
   type BackendResponse,
 } from "../common";
 import { ResponseStatus } from "../types/common";
-import type { VehicleBrand, VehicleBrandListResponse } from "../types/vehicle";
+import type {
+  VehicleBrand,
+  VehicleBrandListResponse,
+  VehicleBrandFilterParams,
+} from "../types/vehicle";
 
-interface BrandFilterParams {
-  name?: string;
+interface BrandFilterParams extends VehicleBrandFilterParams {
   page?: number;
   limit?: number;
 }
@@ -16,6 +19,7 @@ function buildQuery(params?: BrandFilterParams): string {
   if (!params) return "";
   const usp = new URLSearchParams();
   if (params.name) usp.append("name", params.name);
+  if (params.search) usp.append("search", params.search);
   if (params.page) usp.append("page", String(params.page));
   if (params.limit) usp.append("limit", String(params.limit));
   return usp.toString();

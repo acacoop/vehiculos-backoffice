@@ -8,6 +8,12 @@ export interface Maintenance {
   instructions?: string;
 }
 
+export interface MaintenanceFilterParams {
+  name?: string;
+  categoryId?: string;
+  search?: string;
+}
+
 export interface MaintenanceItem {
   id: string;
   title: string;

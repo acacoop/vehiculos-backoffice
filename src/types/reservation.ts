@@ -54,6 +54,7 @@ export interface ReservationFilterParams {
   userId?: string;
   startDate?: string;
   endDate?: string;
+  search?: string;
 }
 
 // Respuesta específica para reservas

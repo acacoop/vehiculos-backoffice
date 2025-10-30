@@ -20,4 +20,6 @@ export {
   VehicleSearch,
   CategorySearch,
   MaintenanceSearch,
+  BrandSearch,
+  VehicleModelSearch,
 } from "./EntitySearch/EntitySearch";
