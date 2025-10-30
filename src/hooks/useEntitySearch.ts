@@ -21,16 +21,9 @@ export function useUserSearch() {
     setSearchTerm(term);
     if (term.length > 2) {
       try {
-        const response = await getAllUsers();
+        const response = await getAllUsers({ search: term });
         if (response.success) {
-          const filtered = response.data.filter(
-            (user) =>
-              `${user.firstName} ${user.lastName}`
-                .toLowerCase()
-                .includes(term.toLowerCase()) ||
-              user.cuit?.toString().includes(term)
-          );
-          setAvailableUsers(filtered);
+          setAvailableUsers(response.data);
           setShowDropdown(true);
         }
       } catch (error) {
@@ -145,28 +138,14 @@ export function useVehicleSearch() {
     setSearchTerm(term);
     if (term.length > 2) {
       try {
-        const response = await getVehicles({}, { page: 1, limit: 100 });
+        const response = await getVehicles(
+          { search: term },
+          { page: 1, limit: 100 }
+        );
         if (response.success) {
-          const filtered = response.data.filter((vehicle: Vehicle) => {
-            const brand =
-              (vehicle as any).brandName ||
-              vehicle.brand ||
-              vehicle.modelObj?.brand?.name ||
-              "";
-            const model =
-              (vehicle as any).modelName ||
-              vehicle.model ||
-              vehicle.modelObj?.name ||
-              "";
-            const composite = `${brand} ${model}`.toLowerCase();
-            const termLower = term.toLowerCase();
-            return (
-              composite.includes(termLower) ||
-              vehicle.licensePlate.toLowerCase().includes(termLower) ||
-              (vehicle.year ? String(vehicle.year).includes(term) : false)
-            );
-          });
-          setAvailableVehicles(filtered.map((item) => normalizeVehicle(item)));
+          setAvailableVehicles(
+            response.data.map((item) => normalizeVehicle(item))
+          );
           setShowDropdown(true);
         }
       } catch (error) {
@@ -192,7 +171,7 @@ export function useVehicleSearch() {
       normalizedVehicle.modelObj?.name ||
       "";
     setSearchTerm(
-      `${brand} ${model}`.trim() !== ''
+      `${brand} ${model}`.trim() !== ""
         ? `${brand} ${model} (${normalizedVehicle.licensePlate})`
         : normalizedVehicle.licensePlate
     );

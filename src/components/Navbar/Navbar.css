@@ -23,6 +23,12 @@
   color: #fff;
 }
 
+@media (max-width: 767px) {
+  .navbar-user {
+    display: none;
+  }
+}
+
 .navbar-username {
   max-width: 240px;
   overflow: hidden;
@@ -194,4 +200,57 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   z-index: 998;
+}
+
+.navbar-sidebar-user {
+  padding: 0 !important;
+  margin: 8px 0 !important;
+}
+
+.navbar-sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 32px;
+  color: #fff;
+  font-size: 1.1rem;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.navbar-sidebar-username {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.navbar-sidebar-logout {
+  padding: 0 !important;
+  margin: 8px 0 !important;
+}
+
+.navbar-sidebar-logout-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 32px;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+  text-align: left;
+}
+
+.navbar-sidebar-logout-btn:hover {
+  color: #ff9800;
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.navbar-sidebar-logout-btn:hover img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
 }
