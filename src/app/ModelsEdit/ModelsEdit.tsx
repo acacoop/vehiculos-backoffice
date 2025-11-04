@@ -90,7 +90,7 @@ export default function ModelsEdit() {
         if (!isCreateMode && id) {
           setLoading(true);
           const res = await getVehicleBrandById(id);
-          if (res.success) setName(res.data.name);
+          if (res.success && res.data) setName(res.data.name);
           setLoading(false);
         }
       } else {
@@ -100,7 +100,7 @@ export default function ModelsEdit() {
         // Carga diferida via buscador de marcas; ya no pre-cargamos listado completo
         if (!isCreateMode && id) {
           const modelResp = await getVehicleModelById(id);
-          if (modelResp.success) {
+          if (modelResp.success && modelResp.data) {
             setName(modelResp.data.name);
             setBrandId(modelResp.data.brand?.id || "");
             const vt = modelResp.data.vehicleType || "";
@@ -145,24 +145,23 @@ export default function ModelsEdit() {
           let resp;
           if (isBrandContext) {
             resp = isCreateMode
-              ? await createVehicleBrand(name.trim())
+              ? await createVehicleBrand({ name: name.trim() })
               : id
-              ? await updateVehicleBrand(id, name.trim())
+              ? await updateVehicleBrand(id, { name: name.trim() })
               : null;
           } else {
             resp = isCreateMode
-              ? await createVehicleModel(
-                  name.trim(),
+              ? await createVehicleModel({
+                  name: name.trim(),
                   brandId,
-                  vehicleType.trim()
-                )
+                  vehicleType: vehicleType.trim(),
+                })
               : id
-              ? await updateVehicleModel(
-                  id,
-                  name.trim(),
+              ? await updateVehicleModel(id, {
+                  name: name.trim(),
                   brandId,
-                  vehicleType.trim()
-                )
+                  vehicleType: vehicleType.trim(),
+                })
               : null;
           }
           if (resp?.success) {

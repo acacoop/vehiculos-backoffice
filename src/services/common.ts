@@ -3,6 +3,8 @@ import {
   type PaginationData,
   type PaginationParams,
   type ServiceResponse,
+  type OkServiceResponse,
+  type ErrorServiceResponse,
 } from "../common";
 import { getAccessToken } from "../common/auth";
 
@@ -82,7 +84,7 @@ export async function apiFindAllItems<T>(
   usp?: URLSearchParams,
   mapFunction?: (item: any) => T,
   errorMessage = "Error al obtener los datos"
-): Promise<ServiceResponse<T[] | null>> {
+): Promise<OkServiceResponse<T[]> | ErrorServiceResponse> {
   const arrayMapFunction = (items: any): T[] => {
     return mapFunction ? items.map(mapFunction) : (items as T[]);
   };
@@ -95,7 +97,7 @@ export async function apiFindItemById<T>(
   itemId: string,
   mapFunction?: (item: any) => T,
   errorMessage = "Error al obtener el dato"
-): Promise<ServiceResponse<T | null>> {
+): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   return generalApiCall<T>(
     `${uri}/${itemId}`,
     "GET",
@@ -109,7 +111,7 @@ export async function apiCreateItem<T>(
   payload: any,
   mapFunction?: (item: any) => T,
   errorMessage = "Error al crear el dato"
-): Promise<ServiceResponse<T | null>> {
+): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   return generalApiCall<T>(
     uri,
     "POST",
@@ -126,7 +128,7 @@ export async function apiUpdateItem<T>(
   payload: any,
   mapFunction?: (item: any) => T,
   errorMessage = "Error al actualizar el dato"
-): Promise<ServiceResponse<T | null>> {
+): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   return generalApiCall<T>(
     `${uri}/${itemId}`,
     "PATCH",
@@ -142,7 +144,7 @@ export async function apiDeleteItem<T>(
   itemId: string,
   mapFunction?: (item: any) => T,
   errorMessage = "Error al eliminar el dato"
-): Promise<ServiceResponse<T | null>> {
+): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   return generalApiCall<T>(
     `${uri}/${itemId}`,
     "DELETE",
@@ -151,14 +153,14 @@ export async function apiDeleteItem<T>(
   );
 }
 
-async function generalApiCall<T>(
+export async function generalApiCall<T>(
   uri: string,
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   errorMessage = "Error en la solicitud",
   mapFunction?: (item: any) => T,
   usp?: URLSearchParams,
   body?: any
-): Promise<ServiceResponse<T | null>> {
+): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   try {
     const token = await getAccessToken();
     if (!token) {

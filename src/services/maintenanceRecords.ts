@@ -1,3 +1,17 @@
+/**
+ * TODO: Servicio con estructura especial y autenticación manual
+ *
+ * Este servicio tiene las siguientes particularidades:
+ * - fetch() directo en lugar de httpService
+ * - buildAuthHeaders manual para cada request
+ * - Respuestas en formatos variados (status: success, arrays directos, etc.)
+ * - Endpoints con parámetros complejos (vehicleId, assignedMaintenanceId, etc.)
+ * - No sigue el patrón REST estándar completamente
+ *
+ * Requiere análisis detallado del backend antes de refactorizar.
+ * Mantener implementación actual hasta tener más claridad.
+ */
+
 import type {
   MaintenanceRecord,
   MaintenanceRecordCreateDto,

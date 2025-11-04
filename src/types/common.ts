@@ -51,10 +51,23 @@ export interface BackendResponse<T> {
   pagination?: Pagination;
 }
 
+export type OkServiceResponse<T> = {
+  success: true;
+  data: T;
+  message?: string;
+  pagination?: PaginationData;
+};
+
+export type ErrorServiceResponse = {
+  success: false;
+  message: string;
+  error?: ApiError;
+};
+
 // Respuesta de servicios con paginación para el frontend
 export interface ServiceResponse<T> {
   success: boolean;
-  data: T;
+  data?: T;
   message?: string;
   pagination?: PaginationData;
   error?: ApiError;

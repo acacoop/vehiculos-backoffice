@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingSpinner } from "../../components";
 import { getMe } from "../../services/users";
-import VehicleKilometersService from "../../services/kilometers";
+import { createKilometersLog } from "../../services/kilometers";
 import { getVehicleById } from "../../services/vehicles";
 import { useNotification } from "../../hooks";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
@@ -129,16 +129,15 @@ export default function KilometersEdit() {
         kilometers: parseInt(kilometers, 10),
       };
 
-      const created = await VehicleKilometersService.createKilometersLog(
-        preloadedVehicleId,
-        payload
-      );
+      const created = await createKilometersLog(preloadedVehicleId, payload);
 
-      if (created && created.id) {
+      if (created.success && created.data) {
         showSuccess("Registro de kilometraje creado exitosamente");
         setTimeout(() => navigate(-1), 1200);
       } else {
-        showError("Error al crear el registro de kilometraje");
+        showError(
+          created.message || "Error al crear el registro de kilometraje"
+        );
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

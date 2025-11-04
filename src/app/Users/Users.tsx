@@ -4,6 +4,7 @@ import "./Users.css";
 import { getUsers } from "../../services/users";
 import type { ServiceResponse, PaginationParams } from "../../common";
 import type { User as UserType, UserFilterParams } from "../../types/user";
+import type { ApiFindOptions } from "../../services/common";
 
 const userColumns = [
   { field: "cuit", headerName: "CUIT", width: 120 },
@@ -37,18 +38,20 @@ const getUsersData = async (
   pagination: PaginationParams,
   options?: { search?: string }
 ): Promise<ServiceResponse<UserType[]>> => {
-  const filters: UserFilterParams & { includeInactive?: boolean } = {
-    includeInactive: true,
+  const findOptions: ApiFindOptions<UserFilterParams> = {
+    pagination: {
+      page: pagination.page,
+      limit: pagination.limit,
+    },
+    search: options?.search?.trim(),
   };
 
-  if (options?.search) {
-    filters.search = options.search.trim();
-  }
+  const response = await getUsers(findOptions);
 
-  return await getUsers(filters, {
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+  return {
+    ...response,
+    data: response.data || [],
+  };
 };
 
 export default function Users() {

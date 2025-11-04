@@ -126,7 +126,19 @@ const getAssignmentsData = async (
   paginationParams: PaginationParams
 ): Promise<ServiceResponse<Assignment[]>> => {
   try {
-    return await getAssignments({}, paginationParams);
+    const response = await getAssignments({ pagination: paginationParams });
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data,
+        message: response.message,
+      };
+    }
+    return {
+      success: false,
+      data: [],
+      message: response.message || "Error al obtener asignaciones",
+    };
   } catch (error) {
     return {
       success: false,

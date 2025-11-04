@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { getAllUsers } from "../services/users";
 import { getVehicles } from "../services/vehicles";
 import {
   getMaintenanceCategories,
@@ -11,6 +10,7 @@ import type { Maintenance } from "../types/maintenance";
 import type { MaintenancePossibleNormalized } from "../services/maintenances";
 import { getVehicleBrands } from "../services/vehicleBrands";
 import { getVehicleModels } from "../services/vehicleModels";
+import { getUsers } from "../services/users";
 
 export function useUserSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,9 +22,9 @@ export function useUserSearch() {
     setSearchTerm(term);
     if (term.length > 2) {
       try {
-        const response = await getAllUsers({ search: term });
+        const response = await getUsers({ search: term });
         if (response.success) {
-          setAvailableUsers(response.data);
+          setAvailableUsers(response.data || []);
           setShowDropdown(true);
         }
       } catch (error) {
@@ -139,11 +139,8 @@ export function useVehicleSearch() {
     setSearchTerm(term);
     if (term.length > 2) {
       try {
-        const response = await getVehicles(
-          { search: term },
-          { page: 1, limit: 100 }
-        );
-        if (response.success) {
+        const response = await getVehicles({ search: term });
+        if (response.success && response.data) {
           setAvailableVehicles(
             response.data.map((item) => normalizeVehicle(item))
           );
@@ -320,8 +317,6 @@ export function useVehicleBrandSearch() {
       try {
         const response = await getVehicleBrands({
           search: term,
-          page: 1,
-          limit: 100,
         });
         if (response.success) {
           setAvailableBrands(response.data.items || []);
@@ -439,9 +434,7 @@ export function useVehicleModelSearch() {
       try {
         const response = await getVehicleModels({
           search: term,
-          brandId,
-          page: 1,
-          limit: 100,
+          filters: brandId ? { brandId } : undefined,
         });
         if (response.success) {
           setAvailableModels(response.data.items || []);

@@ -17,7 +17,7 @@ import { getAssignments } from "../../services/assignments";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import { getVehicleMaintenances } from "../../services/maintenances";
 import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
-import { VehicleKilometersService } from "../../services/kilometers";
+import { getVehicleKilometers } from "../../services/kilometers";
 import { getReservationsByVehicle } from "../../services/reservations";
 import { useNotification, useConfirmDialog } from "../../hooks";
 import type { Vehicle } from "../../types/vehicle";
@@ -344,64 +344,85 @@ export default function VehicleEditRegistration() {
   const getAssignmentsForTable = async (
     paginationParams: PaginationParams,
     options?: { search?: string }
-  ) => {
-    try {
-      const filterParams = {
-        ...(vehicleId && { vehicleId }),
-        ...(options?.search && { search: options.search }),
-      };
-      const response = await getAssignments(filterParams, paginationParams);
-      return response;
-    } catch (error) {
+  ): Promise<ServiceResponse<Assignment[]>> => {
+    if (!vehicleId) {
       return {
         success: false,
         data: [],
-        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
-        error: error as any,
+        message: "ID del vehículo no disponible",
       };
     }
-  };
 
-  const getMaintenancesForTable = async (
-    paginationParams: PaginationParams
-  ): Promise<ServiceResponse<any[]>> => {
     try {
-      if (!vehicleId) {
-        return {
-          success: false,
-          data: [],
-          message: "ID de vehículo no proporcionado",
-          error: undefined,
-        };
-      }
-
-      const response = await getVehicleMaintenances(vehicleId);
-
-      if (response.success) {
-        const data = response.data || [];
-        const { page = 1, limit = 20 } = paginationParams;
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedData = data.slice(startIndex, endIndex);
-
-        return {
-          success: true,
-          data: paginatedData,
-          message: response.message,
-          pagination: {
-            page,
-            pageSize: limit,
-            total: data.length,
-            pages: Math.ceil(data.length / limit),
-          },
-        };
-      }
+      const response = await getAssignments({
+        filters: { vehicleId },
+        pagination: paginationParams,
+        search: options?.search,
+      });
 
       return {
         success: response.success,
         data: response.data || [],
         message: response.message,
-        error: response.error,
+        pagination: response.pagination,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: `Error al obtener asignaciones: ${(error as Error)?.message}`,
+      };
+    }
+  };
+
+  const getMaintenancesForTable = async (
+    paginationParams: PaginationParams,
+    options?: { search?: string }
+  ): Promise<ServiceResponse<any[]>> => {
+    if (!vehicleId) {
+      return {
+        success: false,
+        data: [],
+        message: "ID de vehículo no proporcionado",
+      };
+    }
+
+    try {
+      const response = await getVehicleMaintenances(vehicleId);
+
+      if (!response.success) {
+        return {
+          success: false,
+          data: [],
+          message: response.message || "Error al obtener mantenimientos",
+        };
+      }
+
+      // Paginación y búsqueda en el cliente (TODO: mover al backend)
+      let data = response.data || [];
+
+      if (options?.search) {
+        const searchLower = options.search.toLowerCase();
+        data = data.filter((item: any) =>
+          JSON.stringify(item).toLowerCase().includes(searchLower)
+        );
+      }
+
+      const { page = 1, limit = 20 } = paginationParams;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedData = data.slice(startIndex, endIndex);
+
+      return {
+        success: true,
+        data: paginatedData,
+        message: response.message,
+        pagination: {
+          page,
+          pageSize: limit,
+          total: data.length,
+          pages: Math.ceil(data.length / limit),
+        },
       };
     } catch (error) {
       return {
@@ -410,7 +431,6 @@ export default function VehicleEditRegistration() {
         message: `Error al obtener mantenimientos: ${
           (error as Error)?.message
         }`,
-        error: error as any,
       };
     }
   };
@@ -424,44 +444,47 @@ export default function VehicleEditRegistration() {
         success: false,
         data: [],
         message: "ID del vehículo no disponible",
-        error: {
-          type: "validation_error",
-          title: "Vehicle ID Required",
-          status: 400,
-          detail: "Vehicle ID is required to fetch kilometers data",
-        },
       };
     }
 
     try {
-      const result =
-        await VehicleKilometersService.getVehicleKilometersForTable(
-          vehicleId,
-          paginationParams,
-          options
-        );
+      const response = await getVehicleKilometers(vehicleId, {
+        pagination: paginationParams,
+        search: options?.search,
+      });
+
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          data: [],
+          message:
+            response.message || "Error al obtener historial de kilometraje",
+          pagination: response.pagination,
+        };
+      }
+
+      // Formatear datos para la tabla
+      const formattedData = response.data.map((log) => ({
+        id: log.id || `${log.vehicleId}-${new Date(log.date).getTime()}`,
+        date: new Date(log.date).toISOString(),
+        kilometers: log.kilometers,
+        userId: log.userId,
+        createdAt: log.createdAt,
+      }));
 
       return {
-        success: result.success,
-        data: result.data,
-        message: result.message,
-        pagination: result.pagination,
-        error: result.error,
+        success: true,
+        data: formattedData,
+        message: response.message,
+        pagination: response.pagination,
       };
     } catch (error) {
-      console.error("Error fetching kilometers data:", error);
       return {
         success: false,
         data: [],
         message: `Error al obtener historial de kilometraje: ${
           (error as Error)?.message
         }`,
-        error: {
-          type: "api_error",
-          title: "Failed to fetch kilometers",
-          status: 500,
-          detail: (error as Error)?.message,
-        },
       };
     }
   };
@@ -469,7 +492,7 @@ export default function VehicleEditRegistration() {
   const getReservationsForTable = async (
     paginationParams: PaginationParams,
     options?: { search?: string }
-  ) => {
+  ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
         success: false,
@@ -479,28 +502,17 @@ export default function VehicleEditRegistration() {
     }
 
     try {
-      const combinedParams = {
-        ...paginationParams,
-        ...(options?.search && { search: options.search }),
+      const response = await getReservationsByVehicle(vehicleId, {
+        pagination: paginationParams,
+        search: options?.search,
+      });
+
+      return {
+        success: response.success,
+        data: response.data || [],
+        pagination: response.pagination,
+        message: response.message,
       };
-      const response = await getReservationsByVehicle(
-        vehicleId,
-        combinedParams
-      );
-      if (response.success) {
-        return {
-          success: true,
-          data: response.data,
-          pagination: response.pagination,
-          message: response.message,
-        };
-      } else {
-        return {
-          success: false,
-          data: [],
-          message: response.message,
-        };
-      }
     } catch (error) {
       return {
         success: false,
@@ -557,7 +569,11 @@ export default function VehicleEditRegistration() {
     setIsRegistering(true);
 
     try {
-      const merged = { ...vehicleData, ...technicalData };
+      const merged = {
+        ...vehicleData,
+        ...technicalData,
+        modelId: vehicleData.modelId, // Asegurar que modelId está presente
+      };
       const response = await createVehicle(merged);
 
       if (response.success) {

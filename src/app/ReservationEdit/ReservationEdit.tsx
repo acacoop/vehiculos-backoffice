@@ -5,9 +5,9 @@ import {
   createReservation,
   updateReservation,
   getReservationById,
-  getAllReservations,
+  getReservations,
 } from "../../services/reservations";
-import { getAllAssignments } from "../../services/assignments";
+import { getAssignments } from "../../services/assignments";
 import { getUserById } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import { useUserSearch, useVehicleSearch, useNotification } from "../../hooks";
@@ -86,7 +86,7 @@ export default function ReservationEdit() {
               userSearch.selectUser(user);
             } else if (reservation.userId) {
               const userResponse = await getUserById(reservation.userId);
-              if (userResponse.success) {
+              if (userResponse.success && userResponse.data) {
                 userSearch.selectUser(userResponse.data);
               }
             }
@@ -98,7 +98,7 @@ export default function ReservationEdit() {
               const vehicleResponse = await getVehicleById(
                 reservation.vehicleId
               );
-              if (vehicleResponse.success) {
+              if (vehicleResponse.success && vehicleResponse.data) {
                 vehicleSearch.selectVehicle(vehicleResponse.data);
               }
             }
@@ -118,13 +118,13 @@ export default function ReservationEdit() {
         try {
           if (preloadedUserId) {
             const userResponse = await getUserById(preloadedUserId);
-            if (userResponse.success) {
+            if (userResponse.success && userResponse.data) {
               userSearch.selectUser(userResponse.data);
             }
           }
           if (preloadedVehicleId) {
             const vehicleResponse = await getVehicleById(preloadedVehicleId);
-            if (vehicleResponse.success) {
+            if (vehicleResponse.success && vehicleResponse.data) {
               vehicleSearch.selectVehicle(vehicleResponse.data);
             }
           }
@@ -175,33 +175,38 @@ export default function ReservationEdit() {
         const newStartDate = new Date(`${startDate}T${startTime}`);
         const newEndDate = new Date(`${endDate}T${endTime}`);
 
-        const reservationsResponse = await getAllReservations();
-
-        const hasConflict = reservationsResponse.data?.some((reservation) => {
-          if (
-            reservation.vehicleId !== vehicleSearch.selectedVehicle?.id &&
-            reservation.userId !== userSearch.selectedUser?.id
-          ) {
-            return false;
-          }
-
-          if (!isCreateMode && reservation.id === reservationId) {
-            return false;
-          }
-
-          const existingStartDate = new Date(reservation.startDate);
-          const existingEndDate = new Date(reservation.endDate);
-
-          return (
-            (newStartDate >= existingStartDate &&
-              newStartDate <= existingEndDate) ||
-            (newEndDate >= existingStartDate &&
-              newEndDate <= existingEndDate) ||
-            (newStartDate <= existingStartDate && newEndDate >= existingEndDate)
-          );
+        const reservationsResponse = await getReservations({
+          pagination: { page: 1, limit: 1000 },
         });
 
-        return hasConflict;
+        const hasConflict = reservationsResponse.data?.some(
+          (reservation: any) => {
+            if (
+              reservation.vehicleId !== vehicleSearch.selectedVehicle?.id &&
+              reservation.userId !== userSearch.selectedUser?.id
+            ) {
+              return false;
+            }
+
+            if (!isCreateMode && reservation.id === reservationId) {
+              return false;
+            }
+
+            const existingStartDate = new Date(reservation.startDate);
+            const existingEndDate = new Date(reservation.endDate);
+
+            return (
+              (newStartDate >= existingStartDate &&
+                newStartDate <= existingEndDate) ||
+              (newEndDate >= existingStartDate &&
+                newEndDate <= existingEndDate) ||
+              (newStartDate <= existingStartDate &&
+                newEndDate >= existingEndDate)
+            );
+          }
+        );
+
+        return hasConflict || false;
       }
       return false;
     } catch (error) {
@@ -214,13 +219,13 @@ export default function ReservationEdit() {
     vehicleId: string
   ): Promise<boolean> => {
     try {
-      const response = await getAllAssignments({
-        userId,
-        vehicleId,
+      const response = await getAssignments({
+        filters: { userId, vehicleId },
+        pagination: { page: 1, limit: 1000 },
       });
 
-      if (response.success && response.data.length > 0) {
-        const hasActiveAssignment = response.data.some((assignment) => {
+      if (response.success && response.data && response.data.length > 0) {
+        const hasActiveAssignment = response.data.some((assignment: any) => {
           if (!assignment.endDate) return true;
           const endDate = new Date(assignment.endDate);
           return endDate > new Date();

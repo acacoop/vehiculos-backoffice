@@ -1,176 +1,91 @@
-import {
-  httpService,
-  type ServiceResponse,
-  type BackendResponse,
-} from "../common";
-import { ResponseStatus } from "../types/common";
+import type { ServiceResponse } from "../common";
 import type {
   VehicleBrand,
   VehicleBrandListResponse,
   VehicleBrandFilterParams,
 } from "../types/vehicle";
-
-interface BrandFilterParams extends VehicleBrandFilterParams {
-  page?: number;
-  limit?: number;
-}
-
-function buildQuery(params?: BrandFilterParams): string {
-  if (!params) return "";
-  const usp = new URLSearchParams();
-  if (params.name) usp.append("name", params.name);
-  if (params.search) usp.append("search", params.search);
-  if (params.page) usp.append("page", String(params.page));
-  if (params.limit) usp.append("limit", String(params.limit));
-  return usp.toString();
-}
+import {
+  addApiFindOptions,
+  apiCreateItem,
+  apiDeleteItem,
+  apiFindAllItems,
+  apiFindItemById,
+  apiUpdateItem,
+  type ApiFindOptions,
+} from "./common";
 
 export async function getVehicleBrands(
-  params?: BrandFilterParams
+  findOptions?: ApiFindOptions<VehicleBrandFilterParams>
 ): Promise<ServiceResponse<VehicleBrandListResponse>> {
-  try {
-    const qs = buildQuery(params);
-    const response: BackendResponse<any> = await httpService.get({
-      uri: `/vehicle-brands${qs ? `?${qs}` : ""}`,
-    });
+  const params = new URLSearchParams();
 
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: { items: [], total: 0 },
-        message: response.message || "Error al obtener marcas",
-      };
-    }
-
-    // Nueva forma: data es un array y total viene en pagination.total
-    const items: VehicleBrand[] = Array.isArray(response.data)
-      ? (response.data as VehicleBrand[])
-      : response.data?.items || [];
-    const total: number =
-      response.pagination?.total || response.data?.total || items.length;
-
-    return {
-      success: true,
-      data: { items, total },
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: { items: [], total: 0 },
-      message: "Error al obtener marcas",
-      error: error as any,
-    };
+  if (findOptions) {
+    addApiFindOptions(params, findOptions, [{ field: "name" }]);
   }
+
+  const response = await apiFindAllItems<VehicleBrand>(
+    "vehicle-brands",
+    params,
+    undefined,
+    "Error al obtener marcas"
+  );
+
+  const items = response.data || [];
+  const total = response.pagination?.total || items.length;
+
+  return {
+    ...response,
+    data: { items, total },
+  };
 }
 
 export async function getVehicleBrandById(
   id: string
-): Promise<ServiceResponse<VehicleBrand>> {
-  try {
-    const response: BackendResponse<VehicleBrand> = await httpService.get({
-      uri: `/vehicle-brands/${id}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as VehicleBrand,
-        message: response.message || "Error al obtener marca",
-      };
-    }
-
-    return { success: true, data: response.data };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as VehicleBrand,
-      message: "Error al obtener marca",
-      error: error as any,
-    };
-  }
+): Promise<ServiceResponse<VehicleBrand | null>> {
+  return await apiFindItemById<VehicleBrand>(
+    "vehicle-brands",
+    id,
+    undefined,
+    "Error al obtener marca"
+  );
 }
 
-export async function createVehicleBrand(
-  name: string
-): Promise<ServiceResponse<VehicleBrand>> {
-  try {
-    const response: BackendResponse<VehicleBrand> = await httpService.post({
-      uri: "/vehicle-brands",
-      body: { name },
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as VehicleBrand,
-        message: response.message || "Error al crear marca",
-      };
-    }
-
-    return { success: true, data: response.data, message: "Marca creada" };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as VehicleBrand,
-      message: "Error al crear marca",
-      error: error as any,
-    };
-  }
+export async function createVehicleBrand(payload: {
+  name: string;
+}): Promise<ServiceResponse<VehicleBrand | null>> {
+  return await apiCreateItem<VehicleBrand>(
+    "vehicle-brands",
+    payload,
+    undefined,
+    "Error al crear marca"
+  );
 }
 
 export async function updateVehicleBrand(
   id: string,
-  name: string
-): Promise<ServiceResponse<VehicleBrand>> {
-  try {
-    const response: BackendResponse<VehicleBrand> = await httpService.patch({
-      uri: `/vehicle-brands/${id}`,
-      body: { name },
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as VehicleBrand,
-        message: response.message || "Error al actualizar marca",
-      };
-    }
-
-    return { success: true, data: response.data, message: "Marca actualizada" };
-  } catch (error) {
-    return {
-      success: false,
-      data: {} as VehicleBrand,
-      message: "Error al actualizar marca",
-      error: error as any,
-    };
-  }
+  payload: { name: string }
+): Promise<ServiceResponse<VehicleBrand | null>> {
+  return await apiUpdateItem<VehicleBrand>(
+    "vehicle-brands",
+    id,
+    payload,
+    undefined,
+    "Error al actualizar marca"
+  );
 }
 
 export async function deleteVehicleBrand(
   id: string
 ): Promise<ServiceResponse<boolean>> {
-  try {
-    const response: BackendResponse<{ success: boolean }> =
-      await httpService.delete({
-        uri: `/vehicle-brands/${id}`,
-      });
+  const response = await apiDeleteItem<null>(
+    "vehicle-brands",
+    id,
+    undefined,
+    "Error al eliminar marca"
+  );
 
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: false,
-        message: response.message || "Error al eliminar marca",
-      };
-    }
-
-    return { success: true, data: true, message: "Marca eliminada" };
-  } catch (error) {
-    return {
-      success: false,
-      data: false,
-      message: "Error al eliminar marca",
-      error: error as any,
-    };
-  }
+  return {
+    ...response,
+    data: response.success,
+  };
 }

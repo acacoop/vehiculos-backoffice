@@ -397,7 +397,9 @@ export default function EntityForm({
   useEffect(() => {
     if (entityType !== "vehicle") return;
     (async () => {
-      const brandsResp = await getVehicleBrands({ limit: 1000, page: 1 });
+      const brandsResp = await getVehicleBrands({
+        pagination: { limit: 1000, page: 1 },
+      });
       if (brandsResp.success) {
         setBrandOptions([
           { label: "Seleccionar marca", value: "" },
@@ -415,9 +417,8 @@ export default function EntityForm({
     }
     (async () => {
       const modelsResp = await getVehicleModels({
-        brandId: formData.brandId,
-        limit: 1000,
-        page: 1,
+        filters: { brandId: formData.brandId },
+        pagination: { limit: 1000, page: 1 },
       });
       if (modelsResp.success) {
         setModelOptions([

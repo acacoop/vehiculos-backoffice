@@ -1,181 +1,66 @@
 import type { User, UserFilterParams } from "../types/user";
+import type { ServiceResponse } from "../common";
 import {
-  httpService,
-  buildQueryParams,
-  type BackendResponse,
-  type ServiceResponse,
-  type PaginationParams,
-} from "../common";
-import { ResponseStatus } from "../types/common";
-
-export async function getAllUsers(
-  params?: UserFilterParams & {
-    includeInactive?: boolean;
-  }
-): Promise<ServiceResponse<User[]>> {
-  try {
-    const allParams = {
-      ...params,
-      limit: 10000,
-    };
-    const queryParams = buildQueryParams(allParams);
-    const response: BackendResponse<User[]> = await httpService.get({
-      uri: `/users?${queryParams.toString()}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener usuarios",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener usuarios",
-      error: error as never,
-    };
-  }
-}
+  addApiFindOptions,
+  apiFindAllItems,
+  apiFindItemById,
+  generalApiCall,
+  type ApiFindOptions,
+} from "./common";
 
 export async function getUsers(
-  params?: UserFilterParams & {
-    includeInactive?: boolean;
-  },
-  pagination?: PaginationParams
-): Promise<ServiceResponse<User[]>> {
-  try {
-    const queryParams = buildQueryParams(params, pagination);
-    const response: BackendResponse<User[]> = await httpService.get({
-      uri: `/users?${queryParams.toString()}`,
-    });
+  findOptions?: ApiFindOptions<UserFilterParams>
+): Promise<ServiceResponse<User[] | null>> {
+  const params = new URLSearchParams();
 
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener usuarios",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      pagination: response.pagination
-        ? {
-            page: response.pagination.page,
-            pageSize: response.pagination.limit,
-            total: response.pagination.total,
-            pages: response.pagination.pages,
-          }
-        : undefined,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener usuarios",
-      error: error as never,
-    };
+  if (findOptions) {
+    addApiFindOptions(params, findOptions, [
+      { field: "email" },
+      { field: "cuit" },
+      { field: "firstName" },
+      { field: "lastName" },
+      { field: "active", transform: (value) => String(value) },
+    ]);
   }
+
+  return await apiFindAllItems<User>(
+    "users",
+    params,
+    undefined,
+    "Error al obtener usuarios"
+  );
 }
 
-export async function getUserById(id: string): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.get({
-      uri: `/users/${id}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message: response.message || "Error al obtener usuario",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al obtener usuario",
-      error: error as never,
-    };
-  }
+export async function getUserById(
+  id: string
+): Promise<ServiceResponse<User | null>> {
+  return await apiFindItemById<User>(
+    "users",
+    id,
+    undefined,
+    "Error al obtener usuario"
+  );
 }
 
 export async function updateUserStatus(
   id: string,
   active: boolean
-): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.patch({
-      uri: `/users/${id}`,
-      body: { active },
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message:
-          response.message || "Error al actualizar el estado del usuario",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      message: "Estado del usuario actualizado exitosamente",
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al actualizar el estado del usuario",
-      error: error as never,
-    };
-  }
+): Promise<ServiceResponse<User | null>> {
+  const endpoint = active ? "activate" : "deactivate";
+  return await generalApiCall<User>(
+    `users/${id}/${endpoint}`,
+    "POST",
+    `Error al ${active ? "activar" : "desactivar"} usuario`
+  );
 }
 
 /**
  * Obtiene el usuario actual (/me)
  */
-export async function getMe(): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.get({
-      uri: "/me",
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message: response.message || "Error al obtener el usuario actual",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al obtener el usuario actual",
-      error: error as never,
-    };
-  }
+export async function getMe(): Promise<ServiceResponse<User | null>> {
+  return await generalApiCall<User>(
+    "me",
+    "GET",
+    "Error al obtener el usuario actual"
+  );
 }

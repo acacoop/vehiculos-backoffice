@@ -139,7 +139,10 @@ export default function EditMaintenance() {
 
   const loadCategories = async () => {
     try {
-      const response = await getMaintenanceCategories({ page: 1, limit: 100 });
+      const response = await getMaintenanceCategories(
+        { search: "" },
+        { page: 1, limit: 100 }
+      );
       if (response.success && response.data) {
         setAllCategories(response.data);
       }

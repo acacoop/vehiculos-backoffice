@@ -1,3 +1,17 @@
+/**
+ * TODO: Servicio con estructura compleja y múltiples endpoints especiales
+ *
+ * Este servicio tiene las siguientes particularidades:
+ * - Múltiples endpoints custom (/categories, /assignments, /posibles)
+ * - Respuestas en formatos muy variados (array directo, objeto con status, etc.)
+ * - Lógica de autenticación manual con buildAuthHeaders
+ * - Endpoints que no siguen el patrón REST estándar
+ * - fetch() directo en lugar de httpService
+ *
+ * Requiere análisis detallado del backend y posible reestructuración antes de refactorizar.
+ * Mantener implementación actual hasta tener más claridad sobre la API.
+ */
+
 import type { Maintenance, MaintenanceItem } from "../types/maintenance";
 import {
   type PaginationParams,

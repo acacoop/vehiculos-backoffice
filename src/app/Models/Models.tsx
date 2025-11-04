@@ -29,8 +29,10 @@ async function fetchBrands(
 ): Promise<ServiceResponse<BrandRow[]>> {
   try {
     const resp = await getVehicleBrands({
-      page: pagination.page,
-      limit: pagination.limit,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+      },
     });
     if (!resp.success) {
       return { success: false, data: [], message: resp.message };
@@ -60,8 +62,10 @@ async function fetchModels(
 ): Promise<ServiceResponse<ModelRow[]>> {
   try {
     const resp = await getVehicleModels({
-      page: pagination.page,
-      limit: pagination.limit,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+      },
     });
     if (!resp.success) {
       return { success: false, data: [], message: resp.message };

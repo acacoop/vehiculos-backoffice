@@ -7,8 +7,8 @@ import Table from "../../components/Table/table";
 import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { LoadingSpinner } from "../../components";
 import { getUserById } from "../../services/users";
-import { getAssignmentsByUser } from "../../services/assignments";
-import { getReservationsByUser } from "../../services/reservations";
+import { getAssignments } from "../../services/assignments";
+import { getReservations } from "../../services/reservations";
 import { getVehicleById } from "../../services/vehicles";
 import type { User } from "../../types/user";
 import type { Assignment } from "../../types/assignment";
@@ -218,12 +218,12 @@ export default function UserEdit() {
     }
 
     try {
-      const combinedParams = {
-        ...paginationParams,
-        ...(options?.search && { search: options.search }),
-      };
-      const response = await getAssignmentsByUser(userId, combinedParams);
-      if (response.success) {
+      const response = await getAssignments({
+        filters: { userId },
+        pagination: paginationParams,
+        search: options?.search,
+      });
+      if (response.success && response.data) {
         return {
           success: true,
           data: response.data,
@@ -260,13 +260,13 @@ export default function UserEdit() {
     }
 
     try {
-      const combinedParams = {
-        ...paginationParams,
-        ...(options?.search && { search: options.search }),
-      };
-      const response = await getReservationsByUser(userId, combinedParams);
-      if (response.success) {
-        const reservations = response.data || [];
+      const response = await getReservations({
+        filters: { userId },
+        pagination: paginationParams,
+        search: options?.search,
+      });
+      if (response.success && response.data) {
+        const reservations = response.data;
 
         // Enrich each reservation with full vehicle data (brand/model) when missing
         const uniqueVehicleIds = Array.from(

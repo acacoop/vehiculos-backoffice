@@ -5,7 +5,7 @@ import {
   createAssignment,
   updateAssignment,
   finishAssignment,
-  getAllAssignments,
+  getAssignments,
 } from "../../services/assignments";
 import { getVehicleById } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
@@ -145,13 +145,13 @@ export default function EditAssignment() {
     vehicleId: string
   ): Promise<boolean> => {
     try {
-      const response = await getAllAssignments({
-        userId,
-        vehicleId,
+      const response = await getAssignments({
+        filters: { userId, vehicleId },
+        pagination: { page: 1, limit: 1000 },
       });
 
-      if (response.success && response.data.length > 0) {
-        const hasActiveAssignment = response.data.some((assignment) => {
+      if (response.success && response.data && response.data.length > 0) {
+        const hasActiveAssignment = response.data.some((assignment: any) => {
           if (!assignment.endDate) return true;
           const endDate = new Date(assignment.endDate);
           return endDate > new Date();
@@ -323,7 +323,9 @@ export default function EditAssignment() {
             return;
           }
 
-          const response = await finishAssignment(assignmentId);
+          const response = await finishAssignment(assignmentId, {
+            endDate: new Date().toISOString(),
+          });
 
           if (response.success) {
             showSuccess("Vehículo desasignado exitosamente");

@@ -26,9 +26,9 @@ const getVehiclesData = async (
       }
     }
 
-    const response = await getVehicles(filters, pagination);
+    const response = await getVehicles({ filters, pagination });
 
-    if (!response.success) {
+    if (!response.success || !response.data) {
       return {
         success: false,
         data: [],
