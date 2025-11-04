@@ -24,7 +24,7 @@ export default function KilometersEdit() {
 
   const preloadedVehicleId = vehicleId || searchParams.get("vehicleId");
 
-  const [mileage, setMileage] = useState("");
+  const [kilometers, setKilometers] = useState("");
   const [registrationDate, setRegistrationDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -79,13 +79,13 @@ export default function KilometersEdit() {
   }, [preloadedVehicleId]);
 
   const validateForm = () => {
-    if (!mileage || mileage.trim() === "") {
+    if (!kilometers || kilometers.trim() === "") {
       showError("Debe ingresar el kilometraje");
       return false;
     }
 
-    const mileageNum = parseInt(mileage);
-    if (isNaN(mileageNum) || mileageNum < 0) {
+    const kilometersNum = parseInt(kilometers);
+    if (isNaN(kilometersNum) || kilometersNum < 0) {
       showError("El kilometraje debe ser un número válido mayor a 0");
       return false;
     }
@@ -126,7 +126,7 @@ export default function KilometersEdit() {
       const payload = {
         userId: me.data.id,
         date: registrationDate,
-        kilometers: parseInt(mileage, 10),
+        kilometers: parseInt(kilometers, 10),
       };
 
       const created = await VehicleKilometersService.createKilometersLog(
@@ -176,8 +176,8 @@ export default function KilometersEdit() {
       case "registrationDate":
         setRegistrationDate(value as string);
         break;
-      case "mileage":
-        setMileage(value.toString());
+      case "kilometers":
+        setKilometers(value.toString());
         break;
     }
   };
@@ -235,11 +235,11 @@ export default function KilometersEdit() {
           disabled: saving,
         },
         {
-          key: "mileage",
+          key: "kilometers",
           label: "Kilometraje",
           type: "number",
           placeholder: "Ingrese el kilometraje actual",
-          value: mileage,
+          value: kilometers,
           onChange: handleRegistrationChange,
           required: true,
           disabled: saving,

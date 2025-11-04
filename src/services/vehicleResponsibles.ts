@@ -1,10 +1,17 @@
-import type { ServiceResponse, PaginationParams } from "../common";
-import { API_CONFIG } from "../common/constants";
-import { getAccessToken } from "../common/auth";
+import type { ServiceResponse } from "../common";
 import type {
   VehicleResponsible,
   VehicleResponsibleFilterParams,
 } from "../types/vehicleResponsible";
+import {
+  addApiFindOptions,
+  apiCreateItem,
+  apiDeleteItem,
+  apiFindAllItems,
+  apiFindItemById,
+  apiUpdateItem,
+  type ApiFindOptions,
+} from "./common";
 
 // Normalize a single vehicle responsible item to a canonical shape used by the UI
 const normalizeVehicleResponsible = (item: any) => {
@@ -80,133 +87,37 @@ const normalizeVehicleResponsible = (item: any) => {
 };
 
 export async function getVehicleResponsibles(
-  filters?: VehicleResponsibleFilterParams,
-  pagination?: PaginationParams
-): Promise<ServiceResponse<VehicleResponsible[]>> {
-  try {
-    // Build query params for backend: backend expects limit & offset
-    const params = new URLSearchParams();
-    const page = pagination?.page ?? API_CONFIG.DEFAULT_PAGE;
-    const limit = pagination?.limit ?? API_CONFIG.DEFAULT_LIMIT;
-    const offset = (page - 1) * limit;
+  findOptions?: ApiFindOptions<VehicleResponsibleFilterParams>
+): Promise<ServiceResponse<VehicleResponsible[] | null>> {
+  const params = new URLSearchParams();
 
-    params.append("limit", String(limit));
-    params.append("offset", String(offset));
-
-    // Add filter params
-    if (filters?.userId) params.append("userId", filters.userId);
-    if (filters?.vehicleId) params.append("vehicleId", filters.vehicleId);
-    if (filters?.active !== undefined)
-      params.append("active", String(filters.active));
-    if (filters?.date) params.append("date", filters.date);
-    if (filters?.search) params.append("search", filters.search);
-
-    const token = await getAccessToken().catch(() => undefined);
-
-    const url = `${
-      API_CONFIG.BASE_URL
-    }/vehicle-responsibles?${params.toString()}`;
-
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    const parsed = await res.json().catch(() => ({}));
-
-    // Normalize response shapes (support array, { data }, or { items })
-    let itemsRaw: any[] = [];
-    let total = 0;
-    let pages = 0;
-
-    if (Array.isArray(parsed)) {
-      itemsRaw = parsed;
-      total = parsed.length;
-      pages = Math.ceil(total / limit);
-    } else if (parsed && typeof parsed === "object") {
-      if (Array.isArray(parsed.data)) {
-        itemsRaw = parsed.data;
-        if (parsed.pagination) {
-          total = parsed.pagination.total ?? 0;
-          pages = parsed.pagination.pages ?? Math.ceil(total / limit);
-        } else if (typeof parsed.total === "number") {
-          total = parsed.total;
-          pages = Math.ceil(total / limit);
-        }
-      } else if (Array.isArray(parsed.items)) {
-        itemsRaw = parsed.items;
-        total = parsed.total ?? itemsRaw.length;
-        pages = Math.ceil(total / limit);
-      }
-    }
-
-    const items = itemsRaw.map(normalizeVehicleResponsible);
-
-    const paginationData = {
-      page,
-      pageSize: limit,
-      total,
-      pages,
-    };
-
-    return {
-      success: true,
-      data: items,
-      pagination: paginationData,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener responsables de vehículos",
-      error: error as any,
-    };
+  if (findOptions) {
+    addApiFindOptions(params, findOptions, [
+      { field: "userId" },
+      { field: "vehicleId" },
+      { field: "active", transform: (value) => String(value) },
+      { field: "date" },
+      { field: "search" },
+    ]);
   }
+
+  return await apiFindAllItems<VehicleResponsible>(
+    "vehicle-responsibles",
+    params,
+    normalizeVehicleResponsible,
+    "Error al obtener responsables de vehículos"
+  );
 }
 
 export async function getVehicleResponsibleById(
   id: string
 ): Promise<ServiceResponse<VehicleResponsible | null>> {
-  try {
-    const token = await getAccessToken().catch(() => undefined);
-    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    const parsed = await res.json().catch(() => null);
-    if (!parsed) {
-      return { success: false, data: null, message: "Respuesta vacía" };
-    }
-
-    // Support various response shapes: { data: {...} }, { item: {...} }, { result: {...} }, or direct object
-    const payload =
-      (parsed &&
-        typeof parsed === "object" &&
-        (parsed.data ?? parsed.item ?? parsed.result)) ||
-      parsed;
-
-    if (!payload || typeof payload !== "object") {
-      return { success: false, data: null, message: "Respuesta inválida" };
-    }
-
-    return { success: true, data: normalizeVehicleResponsible(payload) as any };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: null,
-      message: "Error al obtener responsable de vehículo",
-      error: error as any,
-    };
-  }
+  return await apiFindItemById<VehicleResponsible>(
+    "vehicle-responsibles",
+    id,
+    normalizeVehicleResponsible,
+    "Error al obtener responsable de vehículo"
+  );
 }
 
 export async function createVehicleResponsible(payload: {
@@ -214,31 +125,13 @@ export async function createVehicleResponsible(payload: {
   userId: string;
   startDate: string; // ISO
   endDate?: string | null; // ISO or null
-}): Promise<ServiceResponse<any>> {
-  try {
-    const token = await getAccessToken().catch(() => undefined);
-    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
-    const parsed = await res.json().catch(() => null);
-    if (!parsed)
-      return { success: false, data: null, message: "Respuesta inválida" };
-    return { success: true, data: normalizeVehicleResponsible(parsed) as any };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: null,
-      message: "Error al crear responsable de vehículo",
-      error: error as any,
-    };
-  }
+}): Promise<ServiceResponse<VehicleResponsible | null>> {
+  return await apiCreateItem<VehicleResponsible>(
+    "vehicle-responsibles",
+    payload,
+    normalizeVehicleResponsible,
+    "Error al crear responsable de vehículo"
+  );
 }
 
 export async function updateVehicleResponsible(
@@ -249,59 +142,23 @@ export async function updateVehicleResponsible(
     startDate: string;
     endDate: string | null;
   }>
-): Promise<ServiceResponse<any>> {
-  try {
-    const token = await getAccessToken().catch(() => undefined);
-    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
-    const res = await fetch(url, {
-      method: "PATCH",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
-    const parsed = await res.json().catch(() => null);
-    if (!parsed)
-      return { success: false, data: null, message: "Respuesta inválida" };
-    return { success: true, data: normalizeVehicleResponsible(parsed) as any };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: null,
-      message: "Error al actualizar responsable de vehículo",
-      error: error as any,
-    };
-  }
+): Promise<ServiceResponse<VehicleResponsible | null>> {
+  return await apiUpdateItem<VehicleResponsible>(
+    "vehicle-responsibles",
+    id,
+    payload,
+    normalizeVehicleResponsible,
+    "Error al actualizar responsable de vehículo"
+  );
 }
 
 export async function deleteVehicleResponsible(
   id: string
 ): Promise<ServiceResponse<null>> {
-  try {
-    const token = await getAccessToken().catch(() => undefined);
-    const url = `${API_CONFIG.BASE_URL}/vehicle-responsibles/${id}`;
-    const res = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    // Some APIs return empty body on delete
-    if (res.status === 204) {
-      return { success: true, data: null };
-    }
-    const parsed = await res.json().catch(() => null);
-    return { success: true, data: null, message: parsed?.message };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: null,
-      message: "Error al eliminar responsable de vehículo",
-      error: error as any,
-    };
-  }
+  return await apiDeleteItem<null>(
+    "vehicle-responsibles",
+    id,
+    normalizeVehicleResponsible,
+    "Error al eliminar responsable de vehículo"
+  );
 }

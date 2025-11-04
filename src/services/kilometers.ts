@@ -350,7 +350,7 @@ export class VehicleKilometersService {
     data: Array<{
       id: string;
       date: string;
-      mileage: number;
+      kilometers: number;
       notes?: string;
       createdBy?: string;
     }>;
@@ -407,7 +407,7 @@ export class VehicleKilometersService {
       const formattedData = paginatedLogs.map((log) => ({
         id: log.id || `${log.vehicleId}-${new Date(log.date).getTime()}`,
         date: new Date(log.date).toISOString(),
-        mileage: log.kilometers,
+        kilometers: log.kilometers,
         notes: "Registro de kilometraje",
         createdBy: userMap[log.userId] || log.userId,
       }));

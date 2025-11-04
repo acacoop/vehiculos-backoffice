@@ -204,7 +204,7 @@ export default function VehicleEditRegistration() {
     },
   ];
 
-  const mileageColumns: GridColDef[] = [
+  const kilometersColumns: GridColDef[] = [
     {
       field: "date",
       headerName: "Fecha de Registro",
@@ -220,13 +220,13 @@ export default function VehicleEditRegistration() {
       },
     },
     {
-      field: "mileage",
+      field: "kilometers",
       headerName: "Kilometraje",
       width: 150,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        const km = params.row.mileage || params.row.kilometers;
+        const km = params.row.kilometers || params.row.kilometers;
         return km ? `${km.toLocaleString()} km` : "N/A";
       },
     },
@@ -415,7 +415,7 @@ export default function VehicleEditRegistration() {
     }
   };
 
-  const getMileageForTable = async (
+  const getKilometersForTable = async (
     paginationParams: PaginationParams,
     options?: { search?: string }
   ): Promise<ServiceResponse<any[]>> => {
@@ -624,10 +624,10 @@ export default function VehicleEditRegistration() {
                     ...(vehicleId && { vehicleId }),
                     ...(options?.search && { search: options.search }),
                   };
-                  const response = await getVehicleResponsibles(
+                  const response = await getVehicleResponsibles({
                     filters,
-                    paginationParams
-                  );
+                    pagination: paginationParams,
+                  });
                   return response as ServiceResponse<any[]>;
                 } catch (error) {
                   return {
@@ -680,8 +680,8 @@ export default function VehicleEditRegistration() {
             />
 
             <Table<any>
-              getRows={getMileageForTable}
-              columns={mileageColumns}
+              getRows={getKilometersForTable}
+              columns={kilometersColumns}
               title=""
               showEditColumn={false}
               showTableHeader={true}
