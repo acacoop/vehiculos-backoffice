@@ -1,5 +1,5 @@
+import type { ServiceResponse } from "../types/common";
 import type { User, UserFilterParams } from "../types/user";
-import type { ServiceResponse } from "../common";
 import {
   apiFindItems,
   apiFindItemById,

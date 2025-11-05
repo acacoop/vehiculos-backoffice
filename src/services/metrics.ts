@@ -1,6 +1,5 @@
-import type { ServiceResponse } from "../common";
+import type { ServiceResponse } from "../types/common";
 
-// Tipos para las métricas
 export interface UserMetrics {
   total: number;
   active: number;

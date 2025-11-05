@@ -1,9 +1,9 @@
+import type { ServiceResponse } from "../types/common";
 import type {
   Reservation,
   ReservationInput,
   ReservationFilterParams,
 } from "../types/reservation";
-import type { ServiceResponse } from "../common";
 import {
   apiFindItems,
   apiFindItemById,

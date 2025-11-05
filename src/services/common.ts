@@ -1,13 +1,13 @@
-import {
-  API_CONFIG,
-  type PaginationData,
-  type PaginationParams,
-  type OkServiceResponse,
-  type ErrorServiceResponse,
-  type ApiError,
-  type FilterParams,
-} from "../common";
 import { getAccessToken } from "../common/auth";
+import { API_CONFIG } from "../common/constants";
+import type {
+  FilterParams,
+  PaginationParams,
+  OkServiceResponse,
+  ErrorServiceResponse,
+  ApiError,
+  PaginationData,
+} from "../types/common";
 
 export type ApiFindOptions<TFilters extends FilterParams> = {
   pagination?: PaginationParams;

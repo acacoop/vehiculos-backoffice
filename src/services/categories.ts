@@ -1,4 +1,3 @@
-import { type ServiceResponse } from "../common";
 import {
   apiCreateItem,
   apiFindItemById,
@@ -11,6 +10,7 @@ import type {
   CategoryFilterParams,
   CategoryInput,
 } from "../types/category";
+import type { ServiceResponse } from "../types/common";
 
 export async function getMaintenanceCategories(
   findOptions?: ApiFindOptions<CategoryFilterParams>,

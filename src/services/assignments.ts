@@ -3,7 +3,7 @@ import type {
   AssignmentInput,
   AssignmentFilterParams,
 } from "../types/assignment";
-import type { ServiceResponse } from "../common";
+import type { ServiceResponse } from "../types/common";
 import {
   apiCreateItem,
   apiFindItems,
@@ -19,13 +19,7 @@ export async function getAssignments(
   return await apiFindItems({
     uri: "assignments",
     findOptions,
-    paramsConfig: [
-      { field: "userId" },
-      { field: "vehicleId" },
-      { field: "startDate" },
-      { field: "endDate" },
-      { field: "active", transform: (value) => String(value) },
-    ],
+    paramsConfig: [{ field: "active", transform: (value) => String(value) }],
     errorMessage: "Error al obtener asignaciones",
   });
 }

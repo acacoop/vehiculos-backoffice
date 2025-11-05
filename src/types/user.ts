@@ -5,7 +5,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  cuit: number;
+  cuit: string;
   active?: boolean;
 }
 
@@ -13,7 +13,7 @@ export interface UserInput {
   firstName: string;
   lastName: string;
   email: string;
-  cuit: number;
+  cuit: string;
   password: string;
 }
 

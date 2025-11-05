@@ -1,5 +1,4 @@
-import type { ServiceResponse } from "../common";
-
+import type { ServiceResponse } from "../types/common";
 import type {
   Maintenance,
   MaintenanceFilterParams,

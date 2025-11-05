@@ -1,9 +1,9 @@
+import type { ServiceResponse } from "../types/common";
 import type {
   VehicleKilometersLog,
   KilometersFilterParams,
   VehicleKilometersLogInput,
 } from "../types/kilometer";
-import type { ServiceResponse } from "../common";
 import { apiFindItems, apiCreateItem, type ApiFindOptions } from "./common";
 
 export async function getVehicleKilometersLogs(

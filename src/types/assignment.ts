@@ -21,4 +21,6 @@ export interface AssignmentInput {
 export interface AssignmentFilterParams extends FilterParams {
   userId?: string;
   vehicleId?: string;
+  date?: string;
+  active?: boolean;
 }

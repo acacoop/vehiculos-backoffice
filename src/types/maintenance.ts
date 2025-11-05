@@ -1,5 +1,5 @@
-import type { FilterParams } from "../common";
 import type { Category } from "./category";
+import type { FilterParams } from "./common";
 
 export interface Maintenance {
   id: string;

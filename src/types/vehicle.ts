@@ -29,4 +29,5 @@ export interface VehicleFilterParams extends FilterParams {
   brandId?: string;
   modelId?: string;
   year?: number;
+  chassisNumber?: string;
 }

@@ -1,9 +1,9 @@
+import type { ServiceResponse } from "../types/common";
 import type {
   Vehicle,
   VehicleInput,
   VehicleFilterParams,
 } from "../types/vehicle";
-import type { ServiceResponse } from "../common";
 import {
   apiCreateItem,
   apiFindItems,
