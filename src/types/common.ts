@@ -5,8 +5,8 @@ export enum ResponseStatus {
 
 // Configuración de paginación
 export interface PaginationParams {
-  page: number;
   limit: number;
+  offset: number;
 }
 
 // Respuesta paginada del backend (según OpenAPI)

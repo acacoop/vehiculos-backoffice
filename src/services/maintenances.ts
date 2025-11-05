@@ -18,7 +18,7 @@ export async function getMaintenances(
   findOptions?: ApiFindOptions<MaintenanceFilterParams>,
 ): Promise<ServiceResponse<Maintenance[]>> {
   return await apiFindItems<Maintenance, MaintenanceFilterParams>({
-    uri: "maintenance/categories",
+    uri: "maintenance/posibles",
     findOptions,
     errorMessage: "Error al obtener mantenimientos",
   });
@@ -28,7 +28,7 @@ export async function getMaintenanceById(
   id: string,
 ): Promise<ServiceResponse<Maintenance>> {
   return await apiFindItemById<Maintenance>({
-    uri: "maintenance/categories",
+    uri: "maintenance/posibles",
     itemId: id,
     errorMessage: "Error al obtener mantenimiento",
   });
@@ -38,7 +38,7 @@ export async function createMaintenance(
   payload: MaintenanceInput,
 ): Promise<ServiceResponse<Maintenance>> {
   return await apiCreateItem<Maintenance>({
-    uri: "maintenance/categories",
+    uri: "maintenance/posibles",
     payload,
     errorMessage: "Error al crear mantenimiento",
   });
@@ -49,7 +49,7 @@ export async function updateMaintenance(
   payload: MaintenanceInput,
 ): Promise<ServiceResponse<Maintenance>> {
   return await apiUpdateItem<Maintenance>({
-    uri: "maintenance/categories",
+    uri: "maintenance/posibles",
     itemId: id,
     payload,
     errorMessage: "Error al actualizar mantenimiento",
@@ -60,7 +60,7 @@ export async function deleteMaintenance(
   id: string,
 ): Promise<ServiceResponse<Maintenance>> {
   return await apiDeleteItem<Maintenance>({
-    uri: "maintenance/categories",
+    uri: "maintenance/posibles",
     itemId: id,
     errorMessage: "Error al eliminar mantenimiento",
   });

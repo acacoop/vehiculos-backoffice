@@ -1,111 +1,65 @@
 import "./Assignment.css";
-import Table from "../../components/Table/table";
+import { Table } from "../../components/Table/table";
 import { getAssignments } from "../../services/assignments";
 import type { Assignment } from "../../types/assignment";
-import type { ServiceResponse, PaginationParams } from "../../common";
-import { type GridColDef } from "@mui/x-data-grid";
 import { Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import type { TableColumn } from "../../components/Table/types";
+import { formatDate } from "../../common/date";
+import { isAssignmentActive } from "../../common/utils";
+import type { PaginationParams } from "../../common/types";
+import type { ServiceResponse } from "../../common/types";
 
-const isAssignmentActive = (endDate: string | null | undefined): boolean => {
-  if (!endDate) return true;
-
-  try {
-    const endDateTime = new Date(endDate);
-    return endDateTime > new Date();
-  } catch {
-    return false;
-  }
-};
-
-const formatDate = (date: string | null | undefined): string => {
-  if (!date) return "Sin fecha";
-
-  try {
-    const dateObj = new Date(date);
-    return isNaN(dateObj.getTime())
-      ? "Fecha inválida"
-      : dateObj.toLocaleDateString("es-AR");
-  } catch {
-    return "Fecha inválida";
-  }
-};
-
-const assignmentColumns: GridColDef<Assignment>[] = [
+const assignmentColumns: TableColumn<Assignment>[] = [
   {
     field: "user.cuit",
     headerName: "CUIT Usuario",
     width: 90,
-    renderCell: (params) =>
-      params.row.user.cuit?.toLocaleString() || "Sin CUIT",
   },
   {
-    field: "user.name",
+    field: "user.firstName",
     headerName: "Usuario",
     width: 200,
-    valueGetter: (_, row) => `${row.user.firstName} ${row.user.lastName}`,
-    renderCell: (params) =>
-      `${params.row.user.firstName} ${params.row.user.lastName}`,
+    transform: (value, row) => `${row.user.firstName} ${row.user.lastName}`,
   },
   {
     field: "vehicle.licensePlate",
     headerName: "Patente",
     width: 120,
-    valueGetter: (_, row) => row.vehicle?.licensePlate || "N/A",
-    renderCell: (params) => params.row.vehicle?.licensePlate || "N/A",
   },
   {
-    field: "vehicleBrand",
+    field: "vehicle.modelObj.brand.name",
     headerName: "Marca",
     width: 140,
-    valueGetter: (_, row) =>
-      row.vehicle
-        ? (row.vehicle as any).brandName ||
-          row.vehicle.brand ||
-          row.vehicle.modelObj?.brand?.name ||
-          "N/A"
-        : "N/A",
   },
   {
-    field: "vehicleModel",
+    field: "vehicle.modelObj.name",
     headerName: "Modelo",
     width: 160,
-    valueGetter: (_, row) =>
-      row.vehicle
-        ? (row.vehicle as any).modelName ||
-          row.vehicle.model ||
-          row.vehicle.modelObj?.name ||
-          "N/A"
-        : "N/A",
   },
   {
-    field: "vehicleYear",
+    field: "vehicle.year",
     headerName: "Año",
     width: 110,
-    valueGetter: (_, row) =>
-      row.vehicle?.year ? row.vehicle.year.toString() : "N/A",
   },
   {
     field: "startDate",
     headerName: "Fecha Inicio",
     width: 130,
-    renderCell: (params) => formatDate(params.row.startDate),
+    transform: (value) => formatDate(value),
   },
   {
     field: "endDate",
     headerName: "Fecha Fin",
     width: 130,
-    renderCell: (params) =>
-      params.row.endDate ? formatDate(params.row.endDate) : "Sin fecha fin",
+    transform: (value, row) => (value ? formatDate(value) : "Sin fecha fin"),
   },
   {
-    field: "status",
+    field: "endDate",
     headerName: "Estado",
     width: 100,
-    valueGetter: (_, row) =>
-      isAssignmentActive(row.endDate) ? "Activa" : "Finalizada",
-    renderCell: (params) => {
-      const isActive = isAssignmentActive(params.row.endDate);
+    transform: (value) => {
+      const isActive = isAssignmentActive(value);
       return (
         <Chip
           label={isActive ? "Activa" : "Finalizada"}
@@ -123,7 +77,7 @@ const assignmentColumns: GridColDef<Assignment>[] = [
 ];
 
 const getAssignmentsData = async (
-  paginationParams: PaginationParams
+  paginationParams: PaginationParams,
 ): Promise<ServiceResponse<Assignment[]>> => {
   try {
     const response = await getAssignments({ pagination: paginationParams });
@@ -150,12 +104,12 @@ const getAssignmentsData = async (
   }
 };
 
-export default function Assignment() {
+export default function AssignmentPage() {
   const navigate = useNavigate();
 
   return (
     <main className="assignment-container">
-      <Table<Assignment>
+      <Table
         showTableHeader={true}
         headerTitle="Gestión de Asignaciones"
         getRows={getAssignmentsData}

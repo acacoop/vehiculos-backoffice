@@ -24,6 +24,15 @@ export async function getAssignments(
   });
 }
 
+export async function getAssignmentById(
+  assignmentId: string,
+): Promise<ServiceResponse<Assignment>> {
+  return await apiFindItemById({
+    uri: "assignments",
+    itemId: assignmentId,
+    errorMessage: "Error al obtener asignación",
+  });
+}
 export async function createAssignment(
   payload: AssignmentInput,
 ): Promise<ServiceResponse<Assignment>> {
@@ -57,15 +66,5 @@ export async function finishAssignment(
     method: "PATCH",
     errorMessage: "Error al finalizar asignación",
     body: { endDate: finalEndDate },
-  });
-}
-
-export async function getAssignmentById(
-  assignmentId: string,
-): Promise<ServiceResponse<Assignment>> {
-  return await apiFindItemById({
-    uri: "assignments",
-    itemId: assignmentId,
-    errorMessage: "Error al obtener asignación",
   });
 }

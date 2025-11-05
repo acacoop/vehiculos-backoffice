@@ -1,11 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { getMaintenanceCategories } from "../../services/categories";
 import {
-  getMaintenanceCategories,
-  createMaintenanceItem,
-  updateMaintenanceItem,
-  deleteMaintenanceItem,
-  getMaintenancePossibleById,
+  createMaintenance,
+  updateMaintenance,
+  deleteMaintenance,
+  getMaintenanceById,
 } from "../../services/maintenances";
 import { getVehiclesByMaintenanceId } from "../../services/vehicles";
 import { getVehicleBrand, getVehicleModel } from "../../common/utils";
@@ -154,7 +154,7 @@ export default function EditMaintenance() {
   const loadMaintenance = async (id: string) => {
     setLoading(true);
     try {
-      const response = await getMaintenancePossibleById(id);
+      const response = await getMaintenanceById(id);
       console.log("Maintenance fetch response:", response);
       if (response.success && response.data) {
         const maintenance: MaintenanceItem = response.data;
@@ -224,29 +224,29 @@ export default function EditMaintenance() {
 
           switch (operation) {
             case "create":
-              response = await createMaintenanceItem({
-                title: title.trim(),
+              response = await createMaintenance({
+                name: title.trim(),
                 categoryId: categorySearch.selectedCategory!.id,
-                frequencyKm,
-                frequencyDays,
+                kilometersFrequency: frequencyKm,
+                daysFrequency: frequencyDays,
                 observations: observations.trim() || undefined,
                 instructions: instructions.trim() || undefined,
               });
               break;
             case "update":
               if (!maintenanceId) return;
-              response = await updateMaintenanceItem(maintenanceId, {
-                title: title.trim(),
+              response = await updateMaintenance(maintenanceId, {
+                name: title.trim(),
                 categoryId: categorySearch.selectedCategory!.id,
-                frequencyKm,
-                frequencyDays,
+                kilometersFrequency: frequencyKm,
+                daysFrequency: frequencyDays,
                 observations: observations.trim() || undefined,
                 instructions: instructions.trim() || undefined,
               });
               break;
             case "delete":
               if (!maintenanceId) return;
-              response = await deleteMaintenanceItem(maintenanceId);
+              response = await deleteMaintenance(maintenanceId);
               break;
           }
 

@@ -30,7 +30,7 @@ const addApiFindOptions = <TFilters extends FilterParams>(
     options.pagination
       ? options.pagination
       : {
-          page: API_CONFIG.DEFAULT_PAGE,
+          offset: API_CONFIG.DEFAULT_OFFSET,
           limit: API_CONFIG.DEFAULT_LIMIT,
         },
   );
@@ -46,12 +46,8 @@ const addPaginationParams = (
   usp: URLSearchParams,
   params: PaginationParams,
 ) => {
-  const page = params.page;
-  const limit = params.limit;
-  const offset = (page - 1) * limit;
-
-  usp.set("limit", limit.toString());
-  usp.set("offset", offset.toString());
+  usp.set("limit", params.limit.toString());
+  usp.set("offset", params.offset.toString());
 };
 
 const addGeneralFilters = (

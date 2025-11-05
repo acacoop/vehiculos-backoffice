@@ -1,17 +1,18 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
-  getMaintenancePossibles,
   getVehicleMaintenances,
-  getMaintenancePossibleById,
   createMaintenanceAssignment,
   deleteMaintenanceAssignment,
   updateMaintenanceAssignment,
-  type MaintenancePossibleNormalized,
+} from "../../services/maintenanceAssignments";
+import {
+  getMaintenances,
+  getMaintenanceById,
 } from "../../services/maintenances";
-
-import { getAllMaintenanceRecords } from "../../services/maintenanceRecords";
+import { getMaintenanceRecords } from "../../services/maintenanceRecords";
 import { getVehicleById } from "../../services/vehicles";
+import type { Maintenance } from "../../types/maintenance";
 import {
   FormLayout,
   NotificationToast,
@@ -58,11 +59,12 @@ export default function MaintenanceAssignment() {
   const isVehicleToMaintenance = !!vehicleId && !maintenanceId && !assignmentId;
   const isEditMode = !!vehicleId && !!maintenanceId && !!assignmentId;
 
-  const [maintenanceData, setMaintenanceData] =
-    useState<MaintenancePossibleNormalized | null>(null);
+  const [maintenanceData, setMaintenanceData] = useState<Maintenance | null>(
+    null,
+  );
   const [loadingData, setLoadingData] = useState(true);
   const [kilometersFrequency, setKilometersFrequency] = useState<number | null>(
-    null
+    null,
   );
   const [daysFrequency, setDaysFrequency] = useState<number | null>(null);
   const [observations, setObservations] = useState<string>("");
@@ -134,23 +136,23 @@ export default function MaintenanceAssignment() {
   // Helper function to normalize maintenance data
   const normalizeMaintenanceData = (
     maintenanceData: any,
-    id: string
-  ): MaintenancePossibleNormalized => ({
+    id: string,
+  ): Maintenance => ({
     id: maintenanceData.id || id,
     name: maintenanceData.name || maintenanceData.title || "Sin título",
-    categoryName:
-      maintenanceData.categoryName ||
-      maintenanceData.categoryName ||
-      maintenanceData.category_name ||
-      "Sin categoría",
+    category: maintenanceData.category || { id: "", name: "Sin categoría" },
+    kilometersFrequency: maintenanceData.kilometersFrequency,
+    daysFrequency: maintenanceData.daysFrequency,
+    observations: maintenanceData.observations,
+    instructions: maintenanceData.instructions,
   });
 
   // Helper function for maintenance loading
   const loadMaintenanceFromAPI = async (
-    id: string
-  ): Promise<MaintenancePossibleNormalized | null> => {
+    id: string,
+  ): Promise<Maintenance | null> => {
     try {
-      const resp = await getMaintenancePossibleById(id);
+      const resp = await getMaintenanceById(id);
       if (resp.success && resp.data) {
         return normalizeMaintenanceData(resp.data, id);
       }
@@ -274,7 +276,7 @@ export default function MaintenanceAssignment() {
           if (Array.isArray(assignments)) {
             if (effectiveAssignmentId) {
               currentAssignment = assignments.find(
-                (a: any) => a.id?.toString() === effectiveAssignmentId
+                (a: any) => a.id?.toString() === effectiveAssignmentId,
               );
             }
 
@@ -331,7 +333,7 @@ export default function MaintenanceAssignment() {
         } else {
           console.error(
             "Error loading assignment data:",
-            assignmentsResp.message
+            assignmentsResp.message,
           );
         }
       } catch (error) {
@@ -357,7 +359,7 @@ export default function MaintenanceAssignment() {
             if (id) setResolvedAssignmentId(id);
           } else {
             showError(
-              "No se pudo resolver la asignación para este mantenimiento y vehículo"
+              "No se pudo resolver la asignación para este mantenimiento y vehículo",
             );
           }
         }
@@ -393,33 +395,40 @@ export default function MaintenanceAssignment() {
     const loadMaintenanceData = async () => {
       try {
         // Try to load the maintenance with full details (frequencies + details)
-        const resp = await getMaintenancePossibleById(maintenanceId!);
+        const resp = await getMaintenanceById(maintenanceId!);
 
         if (resp.success && resp.data) {
           const full = resp.data;
           // set minimal maintenanceData for display in lists
           setMaintenanceData({
             id: full.id,
-            name: full.title || full.id,
-            categoryName: full.categoryName || full.categoryId || "",
+            name: full.name || full.id,
+            category: full.category || { id: "", name: "" },
+            kilometersFrequency: full.kilometersFrequency,
+            daysFrequency: full.daysFrequency,
+            observations: full.observations,
+            instructions: full.instructions,
           });
 
           // Prefill frequencies and details from the maintenance defaults
-          if (full.frequencyKm !== undefined && full.frequencyKm !== null)
-            setKilometersFrequency(full.frequencyKm);
-          if (full.frequencyDays !== undefined && full.frequencyDays !== null)
-            setDaysFrequency(full.frequencyDays);
+          if (
+            full.kilometersFrequency !== undefined &&
+            full.kilometersFrequency !== null
+          )
+            setKilometersFrequency(full.kilometersFrequency);
+          if (full.daysFrequency !== undefined && full.daysFrequency !== null)
+            setDaysFrequency(full.daysFrequency);
           if (full.observations !== undefined)
             setObservations(full.observations || "");
           if (full.instructions !== undefined)
             setInstructions(full.instructions || "");
         } else {
           // Fallback: Get all maintenance possibles and find the specific one
-          const response = await getMaintenancePossibles();
+          const response = await getMaintenances();
 
           if (response.success && response.data) {
             const specificMaintenance = response.data.find(
-              (m) => m.id === maintenanceId
+              (m) => m.id === maintenanceId,
             );
 
             if (specificMaintenance) {
@@ -428,7 +437,7 @@ export default function MaintenanceAssignment() {
               showError(
                 `No se encontró el mantenimiento con ID: ${maintenanceId}. IDs disponibles: ${response.data
                   .map((m) => m.id)
-                  .join(", ")}`
+                  .join(", ")}`,
               );
             }
           } else {
@@ -484,7 +493,7 @@ export default function MaintenanceAssignment() {
     try {
       // First, check if the maintenance is already assigned to this vehicle
       const existingMaintenances = await getVehicleMaintenances(
-        vehicleSearch.selectedVehicle!.id.toString()
+        vehicleSearch.selectedVehicle!.id.toString(),
       );
 
       if (existingMaintenances.success && existingMaintenances.data) {
@@ -493,12 +502,12 @@ export default function MaintenanceAssignment() {
           (assignment: any) =>
             assignment.maintenance_id?.toString() === currentMaintenanceId ||
             assignment.maintenanceId?.toString() === currentMaintenanceId ||
-            assignment.id?.toString() === currentMaintenanceId
+            assignment.id?.toString() === currentMaintenanceId,
         );
 
         if (isAlreadyAssigned) {
           showError(
-            "Este mantenimiento ya se encuentra asignado a este vehículo"
+            "Este mantenimiento ya se encuentra asignado a este vehículo",
           );
           setLoading(false);
           return;
@@ -559,7 +568,7 @@ export default function MaintenanceAssignment() {
 
       const response = await updateMaintenanceAssignment(
         targetAssignmentId,
-        updateData
+        updateData,
       );
 
       if (response.success) {
@@ -593,7 +602,7 @@ export default function MaintenanceAssignment() {
         setLoading(true);
         try {
           const response = await deleteMaintenanceAssignment(
-            targetAssignmentId
+            targetAssignmentId,
           );
 
           if (response.success) {
@@ -608,7 +617,7 @@ export default function MaintenanceAssignment() {
         } finally {
           setLoading(false);
         }
-      }
+      },
     );
   };
 
@@ -770,7 +779,7 @@ export default function MaintenanceAssignment() {
         onChange: (_key: string, value: string | number) => {
           const numValue = Number(value);
           setKilometersFrequency(
-            isNaN(numValue) || numValue === 0 ? null : numValue
+            isNaN(numValue) || numValue === 0 ? null : numValue,
           );
         },
         min: 1,
@@ -913,16 +922,18 @@ export default function MaintenanceAssignment() {
                 getRows={async (_pagination) => {
                   try {
                     if (vehicleId && maintenanceId) {
-                      const resp = await getAllMaintenanceRecords({
-                        vehicleId,
-                        maintenanceId,
+                      const resp = await getMaintenanceRecords({
+                        filters: {
+                          vehicleId,
+                          maintenanceId,
+                        },
                       });
 
                       if (resp.success) {
-                        const items = resp.data?.items ?? [];
+                        const items = resp.data || [];
                         const mapped = items.map((r, i) => ({
-                          id: r.id || `mr-${i}`,
                           ...r,
+                          id: r.id || `mr-${i}`,
                         }));
                         return { success: true, data: mapped };
                       }
@@ -944,7 +955,7 @@ export default function MaintenanceAssignment() {
                 onAddButtonClick={() => {
                   if (vehicleId && maintenanceId && effectiveAssignmentId) {
                     navigate(
-                      `/maintenance-record-register-edit/${vehicleId}/${maintenanceId}/${effectiveAssignmentId}`
+                      `/maintenance-record-register-edit/${vehicleId}/${maintenanceId}/${effectiveAssignmentId}`,
                     );
                   }
                 }}

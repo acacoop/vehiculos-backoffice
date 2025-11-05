@@ -15,7 +15,7 @@ import { createVehicle } from "../../services/vehicles";
 import { getVehicleModelById } from "../../services/vehicleModels";
 import { getAssignments } from "../../services/assignments";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
-import { getVehicleMaintenances } from "../../services/maintenances";
+import { getVehicleMaintenances } from "../../services/maintenanceAssignments";
 import { getMaintenanceRecordsByVehicle } from "../../services/maintenanceRecords";
 import { getVehicleKilometers } from "../../services/kilometers";
 import { getReservationsByVehicle } from "../../services/reservations";
@@ -343,7 +343,7 @@ export default function VehicleEditRegistration() {
 
   const getAssignmentsForTable = async (
     paginationParams: PaginationParams,
-    options?: { search?: string }
+    options?: { search?: string },
   ): Promise<ServiceResponse<Assignment[]>> => {
     if (!vehicleId) {
       return {
@@ -377,7 +377,7 @@ export default function VehicleEditRegistration() {
 
   const getMaintenancesForTable = async (
     paginationParams: PaginationParams,
-    options?: { search?: string }
+    options?: { search?: string },
   ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
@@ -404,7 +404,7 @@ export default function VehicleEditRegistration() {
       if (options?.search) {
         const searchLower = options.search.toLowerCase();
         data = data.filter((item: any) =>
-          JSON.stringify(item).toLowerCase().includes(searchLower)
+          JSON.stringify(item).toLowerCase().includes(searchLower),
         );
       }
 
@@ -437,7 +437,7 @@ export default function VehicleEditRegistration() {
 
   const getKilometersForTable = async (
     paginationParams: PaginationParams,
-    options?: { search?: string }
+    options?: { search?: string },
   ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
@@ -491,7 +491,7 @@ export default function VehicleEditRegistration() {
 
   const getReservationsForTable = async (
     paginationParams: PaginationParams,
-    options?: { search?: string }
+    options?: { search?: string },
   ): Promise<ServiceResponse<any[]>> => {
     if (!vehicleId) {
       return {
@@ -687,7 +687,7 @@ export default function VehicleEditRegistration() {
                 navigate(
                   vehicleId
                     ? `/assignment/create/${vehicleId}`
-                    : "/assignment/create"
+                    : "/assignment/create",
                 )
               }
               maxWidth="900px"
@@ -729,7 +729,7 @@ export default function VehicleEditRegistration() {
                     const assignmentId =
                       params.row.id || params.row.assignment_id;
                     navigate(
-                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=vehicle`,
                     );
                   }}
                 >
@@ -751,14 +751,14 @@ export default function VehicleEditRegistration() {
               getRows={async (_pagination) => {
                 try {
                   const response = await getMaintenanceRecordsByVehicle(
-                    vehicleId
+                    vehicleId,
                   );
                   if (response.success) {
                     const mapped = (response.data || []).map(
                       (r: any, i: number) => ({
                         id: r.id || `mr-${i}`,
                         ...r,
-                      })
+                      }),
                     );
                     return {
                       success: true,
@@ -826,7 +826,7 @@ export default function VehicleEditRegistration() {
                 onClick={() =>
                   showConfirm(
                     "¿Estás seguro de que deseas registrar este vehículo?",
-                    handleVehicleRegistration
+                    handleVehicleRegistration,
                   )
                 }
                 disabled={isRegistering}

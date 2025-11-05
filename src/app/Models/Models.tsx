@@ -25,7 +25,7 @@ const modelColumns = [
 ];
 
 async function fetchBrands(
-  pagination: PaginationParams
+  pagination: PaginationParams,
 ): Promise<ServiceResponse<BrandRow[]>> {
   try {
     const resp = await getVehicleBrands({
@@ -58,7 +58,7 @@ async function fetchBrands(
 }
 
 async function fetchModels(
-  pagination: PaginationParams
+  pagination: PaginationParams,
 ): Promise<ServiceResponse<ModelRow[]>> {
   try {
     const resp = await getVehicleModels({

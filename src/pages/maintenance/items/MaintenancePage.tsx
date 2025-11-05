@@ -1,0 +1,281 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Form } from "../../../components/Form";
+import type { FormSection, FormButton } from "../../../components/Form";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import {
+  getMaintenanceById,
+  createMaintenance,
+  updateMaintenance,
+} from "../../../services/maintenances";
+import { getMaintenanceCategories } from "../../../services/categories";
+import { usePageState } from "../../../hooks";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import type { Category } from "../../../types/category";
+import "./MaintenancePage.css";
+
+export default function MaintenancePage() {
+  const { id } = useParams<{ id: string }>();
+  const isNew = id === "new";
+  const isReadOnly = !isNew && !id;
+
+  const [formData, setFormData] = useState({
+    name: "",
+    categoryId: "",
+    kilometersFrequency: undefined as number | undefined,
+    daysFrequency: undefined as number | undefined,
+    observations: "",
+    instructions: "",
+  });
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const {
+    loading,
+    saving,
+    isDialogOpen,
+    dialogMessage,
+    notification,
+    executeLoad,
+    executeSave,
+    showError,
+    goTo,
+    handleDialogConfirm,
+    handleDialogCancel,
+    closeNotification,
+  } = usePageState({ redirectOnSuccess: "/maintenance/items" });
+
+  useEffect(() => {
+    // Load categories for the dropdown
+    const loadCategories = async () => {
+      const response = await getMaintenanceCategories();
+      if (response.success && response.data) {
+        setCategories(response.data);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    if (isNew || !id) return;
+
+    let cancelled = false;
+
+    (async () => {
+      await executeLoad(async () => {
+        const response = await getMaintenanceById(id);
+
+        if (cancelled) return;
+
+        if (response.success && response.data) {
+          setFormData({
+            name: response.data.name || "",
+            categoryId: response.data.category?.id || "",
+            kilometersFrequency: response.data.kilometersFrequency,
+            daysFrequency: response.data.daysFrequency,
+            observations: response.data.observations || "",
+            instructions: response.data.instructions || "",
+          });
+        } else {
+          showError(response.message || "Error al cargar el mantenimiento");
+        }
+      }, "Error al cargar el mantenimiento");
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isNew, executeLoad, showError]);
+
+  const handleSave = () => {
+    if (!formData.name.trim()) {
+      showError("El nombre del mantenimiento es obligatorio");
+      return;
+    }
+
+    if (!formData.categoryId) {
+      showError("Debe seleccionar una categoría");
+      return;
+    }
+
+    const kilometersFreq = formData.kilometersFrequency;
+    const daysFreq = formData.daysFrequency;
+
+    if (!kilometersFreq && !daysFreq) {
+      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
+      return;
+    }
+
+    const actionText = isNew ? "crear" : "actualizar";
+    executeSave(
+      `¿Está seguro que desea ${actionText} este mantenimiento?`,
+      () =>
+        isNew
+          ? createMaintenance({
+              name: formData.name.trim(),
+              categoryId: formData.categoryId,
+              kilometersFrequency: formData.kilometersFrequency,
+              daysFrequency: formData.daysFrequency,
+              observations: formData.observations.trim() || undefined,
+              instructions: formData.instructions.trim() || undefined,
+            })
+          : updateMaintenance(id!, {
+              name: formData.name.trim(),
+              categoryId: formData.categoryId,
+              kilometersFrequency: formData.kilometersFrequency,
+              daysFrequency: formData.daysFrequency,
+              observations: formData.observations.trim() || undefined,
+              instructions: formData.instructions.trim() || undefined,
+            }),
+      `Mantenimiento ${actionText}do exitosamente`,
+    );
+  };
+
+  if (loading) {
+    return <LoadingSpinner message="Cargando mantenimiento..." />;
+  }
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+  }));
+
+  const sections: FormSection[] = [
+    {
+      title: "Información del Mantenimiento",
+      layout: "vertical",
+      fields: [
+        {
+          type: "text",
+          key: "name",
+          label: "Nombre",
+          value: formData.name,
+          onChange: (value) => setFormData({ ...formData, name: value }),
+          required: true,
+          placeholder: "Ej: Cambio de aceite de motor",
+          disabled: isReadOnly,
+        },
+        {
+          type: "select",
+          key: "categoryId",
+          label: "Categoría",
+          value: formData.categoryId,
+          onChange: (value) => setFormData({ ...formData, categoryId: value }),
+          options: categoryOptions,
+          required: true,
+          disabled: isReadOnly,
+        },
+      ],
+    },
+    {
+      title: "Frecuencia",
+      layout: "horizontal",
+      fields: [
+        {
+          type: "number",
+          key: "kilometersFrequency",
+          label: "Kilómetros",
+          value: formData.kilometersFrequency || 0,
+          onChange: (value) =>
+            setFormData({
+              ...formData,
+              kilometersFrequency: value || undefined,
+            }),
+          placeholder: "Frecuencia en kilómetros",
+          min: 1,
+          disabled: isReadOnly,
+        },
+        {
+          type: "number",
+          key: "daysFrequency",
+          label: "Días",
+          value: formData.daysFrequency || 0,
+          onChange: (value) =>
+            setFormData({ ...formData, daysFrequency: value || undefined }),
+          placeholder: "Frecuencia en días",
+          min: 1,
+          disabled: isReadOnly,
+        },
+      ],
+    },
+    {
+      title: "Detalles Adicionales",
+      layout: "vertical",
+      fields: [
+        {
+          type: "textarea",
+          key: "observations",
+          label: "Observaciones",
+          value: formData.observations,
+          onChange: (value) =>
+            setFormData({ ...formData, observations: value }),
+          placeholder: "Observaciones adicionales...",
+          rows: 3,
+          disabled: isReadOnly,
+        },
+        {
+          type: "textarea",
+          key: "instructions",
+          label: "Instrucciones",
+          value: formData.instructions,
+          onChange: (value) =>
+            setFormData({ ...formData, instructions: value }),
+          placeholder: "Instrucciones para realizar el mantenimiento...",
+          rows: 4,
+          disabled: isReadOnly,
+        },
+      ],
+    },
+  ];
+
+  const buttons: FormButton[] = [
+    {
+      text: "Cancelar",
+      variant: "secondary",
+      onClick: () => goTo("/maintenance/items"),
+      disabled: saving,
+    },
+    ...(!isReadOnly
+      ? [
+          {
+            text: saving
+              ? "Guardando..."
+              : isNew
+              ? "Crear Mantenimiento"
+              : "Actualizar Mantenimiento",
+            variant: "primary" as const,
+            onClick: handleSave,
+            disabled: saving,
+            loading: saving,
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="maintenance-page">
+      <Form
+        title={isNew ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
+        sections={sections}
+        buttons={buttons}
+        mode="compact"
+      />
+
+      <ConfirmDialog
+        open={isDialogOpen}
+        message={dialogMessage}
+        onConfirm={handleDialogConfirm}
+        onCancel={handleDialogCancel}
+      />
+
+      <NotificationToast
+        message={notification.message}
+        type={notification.type}
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+      />
+    </div>
+  );
+}

@@ -1,91 +1,96 @@
-"use client";
 import {
   DataGrid,
-  GridToolbarContainer,
-  GridToolbarQuickFilter,
-  type GridToolbarProps,
   type GridFilterModel,
   type GridColDef,
   type GridValidRowModel,
+  type GridRenderCellParams,
 } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { ServiceResponse, PaginationParams } from "../../common";
+import type { ApiFindOptions } from "../../services/common";
+import type { FilterParams, ServiceResponse } from "../../types/common";
+import { PencilIcon } from "./icons";
 import "./table.css";
+import { getNestedString } from "../../common/utils";
 
-const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#282D86"
-    strokeWidth="2"
-    {...props}
-  >
-    <path d="M12 20h9" />
-    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-  </svg>
-);
-
-export { PencilIcon };
-
-const TableToolbar = (_props: GridToolbarProps) => (
-  <GridToolbarContainer className="table-toolbar">
-    <GridToolbarQuickFilter debounceMs={400} />
-  </GridToolbarContainer>
-);
-
-interface GenericTableProps<T extends GridValidRowModel> {
-  getRows(
-    pagination: PaginationParams,
-    options?: { search?: string }
-  ): Promise<ServiceResponse<T[]>>;
-  columns: GridColDef<T>[];
-  title: string;
-  showEditColumn?: boolean;
-  editRoute?: string;
-  additionalRouteParams?: string;
-  customEditCell?: (params: any) => React.ReactNode;
-  editColumnWidth?: number;
-
-  showTableHeader?: boolean;
-  headerTitle?: string;
-  showAddButton?: boolean;
-  addButtonText?: string;
-  addButtonRoute?: string;
-  onAddButtonClick?: () => void;
-  maxWidth?: string;
-  containerClassName?: string;
-  tableWidth?: string;
-  maxHeight?: string;
-  enableSearch?: boolean;
-  searchPlaceholder?: string;
+function createGridColumn<T extends GridValidRowModel>(
+  column: TableColumn<T>,
+): GridColDef<T> {
+  return {
+    field: column.field,
+    headerName: column.headerName,
+    width: column.width,
+    minWidth: column.minWidth ?? 150,
+    flex: column.flex ?? 1,
+    disableColumnMenu: true,
+    disableReorder: true,
+    sortable: false,
+    valueGetter: (params: { row: T }) => {
+      const rawValue = getNestedString(params.row, column.field);
+      return column.transform
+        ? column.transform(rawValue, params.row)
+        : rawValue;
+    },
+  };
 }
 
-export function Table<T extends GridValidRowModel>({
+export interface TableColumn<T extends GridValidRowModel> {
+  field: string; // Can be dot-separated path like "model.name"
+  headerName: string;
+  width?: number;
+  minWidth?: number;
+  flex?: number;
+  transform?: (value: string, row: T) => string;
+}
+
+interface TableHeader {
+  title: string;
+  addButton?: {
+    text: string;
+    onClick: () => void;
+  };
+}
+
+interface TableActionColumn<T extends GridValidRowModel> {
+  route: string;
+  width?: number;
+  pinned?: boolean;
+  customRender?: (params: GridRenderCellParams<T>) => React.ReactNode;
+}
+
+interface TableSearch {
+  enabled: boolean;
+  placeholder?: string;
+}
+
+interface TableProps<
+  TFilters extends FilterParams,
+  T extends GridValidRowModel,
+> {
+  getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
+  columns: TableColumn<T>[];
+
+  header?: TableHeader;
+  actionColumn?: TableActionColumn<T>;
+  search?: TableSearch;
+
+  maxWidth?: string;
+  maxHeight?: string;
+}
+
+export function Table<
+  TFilters extends FilterParams,
+  T extends GridValidRowModel,
+>({
   getRows,
   columns,
-  title,
-  showEditColumn = false,
-  editRoute = "/user/edit",
-  additionalRouteParams = "",
-  customEditCell,
-  showTableHeader = false,
-  headerTitle = "",
-  showAddButton = false,
-  addButtonText = "+ Agregar",
-  addButtonRoute = "",
-  onAddButtonClick,
+  header,
+  actionColumn,
+  search,
   maxWidth = "1200px",
-  containerClassName = "",
-  tableWidth = "100%",
-  maxHeight = "1200px",
-  editColumnWidth = 150,
-  enableSearch = false,
-  searchPlaceholder,
-}: GenericTableProps<T>) {
+  maxHeight = "800px",
+}: TableProps<TFilters, T>) {
   const navigate = useNavigate();
 
   const [rows, setRows] = useState<T[]>([]);
@@ -99,17 +104,18 @@ export function Table<T extends GridValidRowModel>({
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const localeText = useMemo(() => {
-    if (searchPlaceholder) {
+    if (search?.placeholder) {
       return {
         ...esES.components.MuiDataGrid.defaultProps.localeText,
-        toolbarQuickFilterPlaceholder: searchPlaceholder,
+        toolbarQuickFilterPlaceholder: search.placeholder,
       };
     }
     return esES.components.MuiDataGrid.defaultProps.localeText;
-  }, [searchPlaceholder]);
+  }, [search?.placeholder]);
 
+  // Debounce search input
   useEffect(() => {
-    if (!enableSearch) {
+    if (!search?.enabled) {
       setSearchTerm("");
       setDebouncedSearch("");
       return;
@@ -118,157 +124,138 @@ export function Table<T extends GridValidRowModel>({
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue
+        current === trimmedValue ? current : trimmedValue,
       );
     }, 400);
 
     return () => clearTimeout(handler);
-  }, [searchTerm, enableSearch]);
+  }, [searchTerm, search?.enabled]);
 
-  const fetchData = async (
-    page: number,
-    pageSize: number,
-    searchValue?: string
-  ) => {
-    setLoading(true);
-    try {
-      // MUI usa páginas base 0, pero el backend usa páginas base 1
-      const normalizedSearch = searchValue?.trim();
-      const response = await getRows(
-        { page: page + 1, limit: pageSize },
-        enableSearch
-          ? { search: normalizedSearch ? normalizedSearch : undefined }
-          : undefined
-      );
+  // Fetch data
+  const fetchData = useCallback(
+    async (page: number, pageSize: number, searchValue?: string) => {
+      setLoading(true);
+      try {
+        // MUI uses 0-based pages, convert to offset for backend
+        const offset = page * pageSize;
+        const normalizedSearch = searchValue?.trim();
+        const response = await getRows({
+          pagination: { limit: pageSize, offset },
+          search:
+            search?.enabled && normalizedSearch ? normalizedSearch : undefined,
+        });
 
-      if (response.success) {
-        setRows(response.data);
-
-        // Actualizar información de paginación si está disponible
-        if (response.pagination) {
-          setRowCount(response.pagination.total);
+        if (response.success) {
+          setRows(response.data || []);
+          setRowCount(response.pagination?.total || response.data?.length || 0);
         } else {
-          setRowCount(response.data?.length || 0);
+          setRows([]);
+          setRowCount(0);
         }
-      } else {
+      } catch {
         setRows([]);
+        setRowCount(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [getRows, search?.enabled],
+  );
 
   useEffect(() => {
-    if (enableSearch && searchTerm.trim() !== debouncedSearch.trim()) {
+    // Don't fetch while still debouncing search
+    if (search?.enabled && searchTerm.trim() !== debouncedSearch.trim()) {
       return;
     }
 
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      enableSearch ? debouncedSearch : undefined
+      search?.enabled ? debouncedSearch : undefined,
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     paginationModel.page,
     paginationModel.pageSize,
-    enableSearch,
+    search?.enabled,
     debouncedSearch,
-    searchTerm,
+    fetchData,
   ]);
 
-  const handlePaginationChange = (model: any) => {
-    setPaginationModel((prev) =>
-      prev.page === model.page && prev.pageSize === model.pageSize
-        ? prev
-        : {
-            page: model.page,
-            pageSize: model.pageSize,
-          }
-    );
-  };
+  const handlePaginationChange = useCallback(
+    (model: { page: number; pageSize: number }) => {
+      setPaginationModel((prev) =>
+        prev.page === model.page && prev.pageSize === model.pageSize
+          ? prev
+          : model,
+      );
+    },
+    [],
+  );
 
-  const handleFilterModelChange = (model: GridFilterModel) => {
-    if (!enableSearch) return;
+  const handleFilterModelChange = useCallback(
+    (model: GridFilterModel) => {
+      if (!search?.enabled) return;
 
-    const quickFilterValues = model.quickFilterValues || [];
-    const normalizedSearch = quickFilterValues.join(" ").trim();
+      const quickFilterValues = model.quickFilterValues || [];
+      const normalizedSearch = quickFilterValues.join(" ").trim();
 
-    if (normalizedSearch === searchTerm) {
-      return;
-    }
+      if (normalizedSearch === searchTerm) return;
 
-    setSearchTerm(normalizedSearch);
+      setSearchTerm(normalizedSearch);
 
-    if (paginationModel.page !== 0) {
-      setPaginationModel({ ...paginationModel, page: 0 });
-    }
-  };
+      if (paginationModel.page !== 0) {
+        setPaginationModel({ ...paginationModel, page: 0 });
+      }
+    },
+    [search?.enabled, searchTerm, paginationModel],
+  );
 
-  const handleAddButtonClick = () => {
-    if (onAddButtonClick) {
-      onAddButtonClick();
-    } else if (addButtonRoute) {
-      navigate(addButtonRoute);
-    }
-  };
+  // Build final columns with action column if needed
+  const finalColumns: GridColDef<T>[] = useMemo(() => {
+    const baseColumns = columns.map((col) => createGridColumn(col));
 
-  const finalColumns: GridColDef<T>[] = [
-    ...columns.map((col) => ({
-      ...col,
-      flex: col.flex ?? 1,
-      minWidth: col.minWidth ?? 150,
+    if (!actionColumn) return baseColumns;
+
+    const actionCol: GridColDef<T> = {
+      field: "actions",
+      headerName: "Acciones",
+      width: actionColumn.width ?? 100,
+      minWidth: actionColumn.width ?? 100,
+      maxWidth: actionColumn.width ?? 100,
+      sortable: false,
+      filterable: false,
+      align: "center",
+      headerAlign: "center",
       disableColumnMenu: true,
       disableReorder: true,
-      sortable: col.sortable ?? false,
-    })),
+      renderCell: (params: GridRenderCellParams<T>) =>
+        actionColumn.customRender ? (
+          actionColumn.customRender(params)
+        ) : (
+          <span
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate(`${actionColumn.route}/${params.row.id}`)}
+          >
+            <PencilIcon />
+          </span>
+        ),
+    };
 
-    ...(showEditColumn
-      ? [
-          {
-            field: "edit",
-            headerName: "Editar",
-            width: editColumnWidth,
-            minWidth: editColumnWidth,
-            maxWidth: editColumnWidth,
-            sortable: false,
-            filterable: false,
-            align: "center" as const,
-            headerAlign: "center" as const,
-            disableColumnMenu: true,
-            disableReorder: true,
-            renderCell: (params: any) =>
-              customEditCell ? (
-                customEditCell(params)
-              ) : (
-                <span
-                  style={{ cursor: "pointer" }}
-                  onClick={() =>
-                    navigate(
-                      `${editRoute}/${params.row.id}${additionalRouteParams}`
-                    )
-                  }
-                >
-                  <PencilIcon />
-                </span>
-              ),
-          } as GridColDef<T>,
-        ]
-      : []),
-  ];
+    return [...baseColumns, actionCol];
+  }, [columns, actionColumn, navigate]);
 
   return (
-    <div
-      className={`table-main-container ${containerClassName}`}
-      style={{ maxWidth }}
-    >
-      {showTableHeader && (
+    <div className="table-main-container" style={{ maxWidth }}>
+      {header && (
         <div className="table-header">
-          <h2 className="table-header-title">{headerTitle}</h2>
-          {showAddButton && (
-            <button className="table-add-btn" onClick={handleAddButtonClick}>
-              {addButtonText}
+          <h2 className="table-header-title">{header.title}</h2>
+          {header.addButton && (
+            <button
+              className="table-add-btn"
+              onClick={header.addButton.onClick}
+            >
+              {header.addButton.text}
             </button>
           )}
         </div>
@@ -278,12 +265,11 @@ export function Table<T extends GridValidRowModel>({
           borderRadius: 20,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           overflow: "auto",
-          width: tableWidth,
+          width: "100%",
           maxWidth: "1400px",
           maxHeight,
         }}
       >
-        <h2 style={{ textAlign: "start" }}>{title}</h2>
         <DataGrid
           rows={rows}
           columns={finalColumns}
@@ -291,10 +277,7 @@ export function Table<T extends GridValidRowModel>({
           paginationMode="server"
           filterMode="server"
           rowCount={rowCount}
-          paginationModel={{
-            page: paginationModel.page,
-            pageSize: paginationModel.pageSize,
-          }}
+          paginationModel={paginationModel}
           onPaginationModelChange={handlePaginationChange}
           pageSizeOptions={[10, 20, 50, 100]}
           loading={loading}
@@ -303,8 +286,13 @@ export function Table<T extends GridValidRowModel>({
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
-          slots={{ toolbar: TableToolbar }}
           showToolbar
+          slotProps={{
+            toolbar: {
+              showQuickFilter: true,
+              quickFilterProps: { debounceMs: 400 },
+            },
+          }}
           localeText={localeText}
           sx={{
             backgroundColor: "#f2f2f2",
@@ -318,11 +306,27 @@ export function Table<T extends GridValidRowModel>({
             height: "calc(100% - 60px)",
             minHeight: "400px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            ...(actionColumn?.pinned && {
+              "& .MuiDataGrid-cell[data-field='actions']": {
+                position: "sticky",
+                right: 0,
+                backgroundColor: "#ffffff",
+                zIndex: 1,
+              },
+              "& .MuiDataGrid-columnHeader[data-field='actions']": {
+                position: "sticky",
+                right: 0,
+                backgroundColor: "#ffffff",
+                zIndex: 2,
+              },
+              "& .MuiDataGrid-row:nth-of-type(even) .MuiDataGrid-cell[data-field='actions']":
+                {
+                  backgroundColor: "#f2f2f2",
+                },
+            }),
           }}
         />
       </div>
     </div>
   );
 }
-
-export default Table;

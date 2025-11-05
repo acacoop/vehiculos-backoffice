@@ -36,7 +36,7 @@ const userColumns = [
 
 const getUsersData = async (
   pagination: PaginationParams,
-  options?: { search?: string }
+  options?: { search?: string },
 ): Promise<ServiceResponse<UserType[]>> => {
   const findOptions: ApiFindOptions<UserFilterParams> = {
     pagination: {

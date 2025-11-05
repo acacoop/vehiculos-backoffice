@@ -209,7 +209,7 @@ async function searchVehicles(term: string): Promise<Vehicle[]> {
   const response = await getVehicles({
     findOptions: {
       search: term,
-      pagination: { page: 1, limit: 10 },
+      pagination: { offset: 0, limit: 10 },
     },
   });
   return response.success ? response.data : [];
@@ -218,7 +218,7 @@ async function searchVehicles(term: string): Promise<Vehicle[]> {
 async function searchUsers(term: string): Promise<User[]> {
   const response = await getUsers({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }
@@ -230,7 +230,7 @@ async function searchVehicleModels(
   const filters = brandId ? { brandId } : undefined;
   const response = await getVehicleModels({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
     filters,
   });
   return response.success ? response.data : [];
@@ -239,7 +239,7 @@ async function searchVehicleModels(
 async function searchVehicleBrands(term: string): Promise<VehicleBrand[]> {
   const response = await getVehicleBrands({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }
@@ -247,7 +247,7 @@ async function searchVehicleBrands(term: string): Promise<VehicleBrand[]> {
 async function searchCategories(term: string): Promise<Category[]> {
   const response = await getMaintenanceCategories({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }
@@ -255,7 +255,7 @@ async function searchCategories(term: string): Promise<Category[]> {
 async function searchMaintenances(term: string): Promise<Maintenance[]> {
   const response = await getMaintenances({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }
@@ -263,7 +263,7 @@ async function searchMaintenances(term: string): Promise<Maintenance[]> {
 async function searchAssignments(term: string): Promise<Assignment[]> {
   const response = await getAssignments({
     search: term,
-    pagination: { page: 1, limit: 10 },
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }

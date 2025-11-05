@@ -1,11 +1,8 @@
 import { type GridColDef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import Table from "../../components/Table/table";
-import {
-  getMaintenanceCategories,
-  getMaintenancePossibles,
-  type MaintenancePossibleNormalized,
-} from "../../services/maintenances";
+import { getMaintenanceCategories } from "../../services/categories";
+import { getMaintenances } from "../../services/maintenances";
 import type { Maintenance } from "../../types/maintenance";
 import type { PaginationParams } from "../../common";
 import "./Maintenances.css";
@@ -20,23 +17,22 @@ const maintenanceColumns: GridColDef<Maintenance>[] = [
   },
 ];
 
-const possibleMaintenanceColumns: GridColDef<MaintenancePossibleNormalized>[] =
-  [
-    {
-      field: "categoryName",
-      headerName: "Nombre de Categoría",
-      width: 250,
-      flex: 1,
-      renderCell: (params) => params.row.categoryName || "Sin categoría",
-    },
-    {
-      field: "name",
-      headerName: "Mantenimiento",
-      width: 300,
-      flex: 1,
-      renderCell: (params) => params.row.name || "Sin nombre",
-    },
-  ];
+const possibleMaintenanceColumns: GridColDef<Maintenance>[] = [
+  {
+    field: "categoryName",
+    headerName: "Nombre de Categoría",
+    width: 250,
+    flex: 1,
+    renderCell: (params) => params.row.category?.name || "Sin categoría",
+  },
+  {
+    field: "name",
+    headerName: "Mantenimiento",
+    width: 300,
+    flex: 1,
+    renderCell: (params) => params.row.name || "Sin nombre",
+  },
+];
 
 const createTableDataHandler =
   (serviceCall: any, errorMessage: string) =>
@@ -80,7 +76,7 @@ const getMaintenancesForTable = createTableDataHandler(
 );
 
 const getPossibleMaintenancesForTable = createTableDataHandler(
-  getMaintenancePossibles,
+  getMaintenances,
   "Error al obtener mantenimientos",
 );
 
@@ -106,7 +102,7 @@ export default function MaintenancePage() {
       <div style={{ padding: "40px 0" }} />
 
       <div style={{ padding: "40px 0" }}>
-        <Table<MaintenancePossibleNormalized>
+        <Table<Maintenance>
           getRows={getPossibleMaintenancesForTable}
           columns={possibleMaintenanceColumns}
           title=""

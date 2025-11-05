@@ -1,5 +1,6 @@
 import {
   apiCreateItem,
+  apiDeleteItem,
   apiFindItemById,
   apiFindItems,
   apiUpdateItem,
@@ -51,5 +52,15 @@ export async function updateMaintenanceCategory(
     itemId: id,
     payload,
     errorMessage: "Error al actualizar categoría de mantenimiento",
+  });
+}
+
+export async function deleteMaintenanceCategory(
+  id: string,
+): Promise<ServiceResponse<void>> {
+  return await apiDeleteItem({
+    uri: "/maintenance/categories",
+    itemId: id,
+    errorMessage: "Error al eliminar categoría de mantenimiento",
   });
 }

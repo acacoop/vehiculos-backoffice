@@ -1,0 +1,18 @@
+.brands-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.brand-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.brand-vehicles-section {
+  margin-top: 2rem;
+  padding: 1rem;
+}

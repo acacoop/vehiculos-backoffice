@@ -11,13 +11,15 @@ import {
 import type { FormSection } from "../../components";
 import { getMe } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
-import { getMaintenancePossibleById } from "../../services/maintenances";
-import { addMaintenanceRecord } from "../../services/maintenanceRecords";
+import {
+  getMaintenanceAssignmentById,
+  getVehicleMaintenances,
+} from "../../services/maintenanceAssignments";
+import { createMaintenanceRecord } from "../../services/maintenanceRecords";
 import { useMaintenanceSearch } from "../../hooks";
-import { getVehicleMaintenances } from "../../services/maintenances";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
-import type { MaintenancePossibleNormalized } from "../../services/maintenances";
+import type { MaintenanceAssignment } from "../../types/maintenanceAsignment";
 import "./MaintenanceRecordRegisterEdit.css";
 
 export default function MaintenanceRecordRegisterEdit() {
@@ -31,8 +33,9 @@ export default function MaintenanceRecordRegisterEdit() {
   // Estado para datos pre-cargados
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [maintenance, setMaintenance] =
-    useState<MaintenancePossibleNormalized | null>(null);
+  const [maintenance, setMaintenance] = useState<MaintenanceAssignment | null>(
+    null,
+  );
 
   // Hook para buscar mantenimientos
   const maintenanceSearch = useMaintenanceSearch();
@@ -41,7 +44,7 @@ export default function MaintenanceRecordRegisterEdit() {
 
   async function getAssignedForVehicleAndMaintenance(
     vehicleId: string,
-    maintenanceId: string
+    maintenanceId: string,
   ): Promise<string | undefined> {
     const resp = await getVehicleMaintenances(vehicleId);
     if (!resp.success) return undefined;
@@ -73,7 +76,7 @@ export default function MaintenanceRecordRegisterEdit() {
   const [notes, setNotes] = useState<string>("");
   const [kilometers, setKilometers] = useState<number | null>(null);
   const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
 
   // Estado de UI
@@ -104,16 +107,11 @@ export default function MaintenanceRecordRegisterEdit() {
         }
 
         if (maintenanceId) {
-          const maintenanceResponse = await getMaintenancePossibleById(
-            maintenanceId
+          const maintenanceResponse = await getMaintenanceAssignmentById(
+            maintenanceId,
           );
           if (maintenanceResponse.success) {
-            const normalizedMaintenance = {
-              id: maintenanceResponse.data.id,
-              name: maintenanceResponse.data.title || maintenanceId,
-              categoryName: maintenanceResponse.data.categoryName || "",
-            };
-            setMaintenance(normalizedMaintenance);
+            setMaintenance(maintenanceResponse.data);
           }
         }
       } catch (error) {
@@ -167,7 +165,7 @@ export default function MaintenanceRecordRegisterEdit() {
       if (!effectiveAssignedId) {
         const resolved = await getAssignedForVehicleAndMaintenance(
           vehicleId,
-          String(selectedMaintenanceId)
+          String(selectedMaintenanceId),
         );
         if (!resolved) {
           showError("Ese mantenimiento no está asignado a este vehículo.");
@@ -178,15 +176,13 @@ export default function MaintenanceRecordRegisterEdit() {
       }
 
       const payload = {
-        vehicleId,
         assignedMaintenanceId: effectiveAssignedId,
-        userId: currentUser.id,
+        date: new Date(date).toISOString().split("T")[0], // Convert to YYYY-MM-DD format
         kilometers,
-        date: new Date(date),
         notes: notes.trim() || undefined,
       };
 
-      const response = await addMaintenanceRecord(payload);
+      const response = await createMaintenanceRecord(payload);
 
       if (response.success) {
         showSuccess("Registro de mantenimiento creado exitosamente");
@@ -290,9 +286,7 @@ export default function MaintenanceRecordRegisterEdit() {
               onSearchChange: maintenanceSearch.searchMaintenances,
               availableMaintenances: maintenanceSearch.availableMaintenances,
               showDropdown: maintenanceSearch.showDropdown,
-              onMaintenanceSelect: (
-                maintenance: MaintenancePossibleNormalized
-              ) => {
+              onMaintenanceSelect: (maintenance: MaintenanceAssignment) => {
                 maintenanceSearch.selectMaintenance(maintenance);
               },
               onDropdownToggle: maintenanceSearch.setShowDropdown,
@@ -301,7 +295,7 @@ export default function MaintenanceRecordRegisterEdit() {
             key: "maintenance",
             label: "Mantenimiento:",
             type: "text" as const,
-            value: maintenance?.name || "Cargando...",
+            value: maintenance?.maintenance?.name || "Cargando...",
             onChange: () => {},
             disabled: true,
           },

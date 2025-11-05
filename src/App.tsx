@@ -18,7 +18,6 @@ import Metrics from "./app/Metrics/Metrics";
 import Assignaments from "./app/Assignment/Assignment";
 import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
 import MaintenancePage from "./app/Maintenances/Maintenances";
-import EditCategory from "./app/EditCategory/EditCategory";
 import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
 import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
 import MaintenanceRecordRegisterEdit from "./app/MaintenanceRecordRegisterEdit/MaintenanceRecordRegisterEdit";
@@ -28,6 +27,16 @@ import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
 import LogIn from "./app/LogIn/LogIn";
 import Models from "./app/Models/Models";
 import ModelsEdit from "./app/ModelsEdit/ModelsEdit";
+import MaintenanceCategoriesPage from "./pages/maintenance/categories/CategoriesPage";
+import MaintenanceCategoryPage from "./pages/maintenance/categories/CategoryPage";
+import MaintenanceItemPage from "./pages/maintenance/items/MaintenancePage";
+import MaintenanceItemsPage from "./pages/maintenance/items/MaintenancesPage";
+import BrandsPage from "./pages/vehicles/brands/BrandsPage";
+import BrandPage from "./pages/vehicles/brands/BrandPage";
+import ModelsPage from "./pages/vehicles/models/ModelsPage";
+import ModelPage from "./pages/vehicles/models/ModelPage";
+import AssignmentsPage from "./pages/maintenance/assignments/AssignmentsPage";
+import AssignmentPage from "./pages/maintenance/assignments/AssignmentPage";
 
 import { useMsal } from "@azure/msal-react";
 import { getActiveAccount } from "./common/auth";
@@ -81,8 +90,39 @@ function App() {
           <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
           <Route path="/assignments" element={<Assignaments />} />
           <Route path="/maintenances" element={<MaintenancePage />} />
-          <Route path="/category/create" element={<EditCategory />} />
-          <Route path="/category/edit/:id" element={<EditCategory />} />
+          <Route
+            path="/maintenance/categories"
+            element={<MaintenanceCategoriesPage />}
+          />
+          <Route
+            path="/maintenance/categories/new"
+            element={<MaintenanceCategoryPage />}
+          />
+          <Route
+            path="/maintenance/categories/:id"
+            element={<MaintenanceCategoryPage />}
+          />
+          <Route path="/maintenance/items" element={<MaintenanceItemsPage />} />
+          <Route
+            path="/maintenance/items/new"
+            element={<MaintenanceItemPage />}
+          />
+          <Route
+            path="/maintenance/items/:id"
+            element={<MaintenanceItemPage />}
+          />
+          <Route
+            path="/maintenance/assignments"
+            element={<AssignmentsPage />}
+          />
+          <Route
+            path="/maintenance/assignments/new"
+            element={<AssignmentPage />}
+          />
+          <Route
+            path="/maintenance/assignments/:id"
+            element={<AssignmentPage />}
+          />
           <Route path="/maintenance/create" element={<EditMaintenance />} />
           <Route
             path="/maintenance/edit/:maintenanceId"
@@ -129,6 +169,12 @@ function App() {
             element={<EditVehicleResponsibles />}
           />
           <Route path="/models" element={<Models />} />
+          <Route path="/vehicles/brands" element={<BrandsPage />} />
+          <Route path="/vehicles/brands/new" element={<BrandPage />} />
+          <Route path="/vehicles/brands/:id" element={<BrandPage />} />
+          <Route path="/vehicles/models" element={<ModelsPage />} />
+          <Route path="/vehicles/models/new" element={<ModelPage />} />
+          <Route path="/vehicles/models/:id" element={<ModelPage />} />
           <Route path="/vehicle-brand/create" element={<ModelsEdit />} />
           <Route path="/vehicle-brand/edit/:id" element={<ModelsEdit />} />
           <Route path="/vehicle-model/create" element={<ModelsEdit />} />
