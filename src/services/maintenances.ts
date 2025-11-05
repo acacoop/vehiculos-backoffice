@@ -14,7 +14,7 @@ import {
   type ApiFindOptions,
 } from "./common";
 
-export async function geteMaintenances(
+export async function getMaintenances(
   findOptions?: ApiFindOptions<MaintenanceFilterParams>,
 ): Promise<ServiceResponse<Maintenance[]>> {
   return await apiFindItems<Maintenance, MaintenanceFilterParams>({
