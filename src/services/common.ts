@@ -2,17 +2,14 @@ import {
   API_CONFIG,
   type PaginationData,
   type PaginationParams,
-  type ServiceResponse,
   type OkServiceResponse,
   type ErrorServiceResponse,
+  type ApiError,
+  type FilterParams,
 } from "../common";
 import { getAccessToken } from "../common/auth";
 
-export interface TFilters {
-  [key: string]: any;
-}
-
-export type ApiFindOptions<TFilters> = {
+export type ApiFindOptions<TFilters extends FilterParams> = {
   pagination?: PaginationParams;
   search?: string;
   filters?: TFilters;
@@ -20,13 +17,13 @@ export type ApiFindOptions<TFilters> = {
 
 export type ParamConfig = {
   field: string;
-  transform?: (value: any) => string;
+  transform?: (value: string | number | boolean) => string;
 };
 
-export const addApiFindOptions = <TFilters>(
+const addApiFindOptions = <TFilters extends FilterParams>(
   usp: URLSearchParams,
   options: ApiFindOptions<TFilters>,
-  paramsConfig: ParamConfig[] = []
+  paramsConfig: ParamConfig[] = [],
 ) => {
   addPaginationParams(
     usp,
@@ -35,7 +32,7 @@ export const addApiFindOptions = <TFilters>(
       : {
           page: API_CONFIG.DEFAULT_PAGE,
           limit: API_CONFIG.DEFAULT_LIMIT,
-        }
+        },
   );
 
   addSearchParam(usp, options.search);
@@ -45,9 +42,9 @@ export const addApiFindOptions = <TFilters>(
   }
 };
 
-export const addPaginationParams = (
+const addPaginationParams = (
   usp: URLSearchParams,
-  params: PaginationParams
+  params: PaginationParams,
 ) => {
   const page = params.page;
   const limit = params.limit;
@@ -57,116 +54,165 @@ export const addPaginationParams = (
   usp.set("offset", offset.toString());
 };
 
-export const addGeneralFilters = (
+const addGeneralFilters = (
   usp: URLSearchParams,
-  filters: Record<string, any>,
-  paramsConfig: ParamConfig[]
+  filters: Record<string, string | number | boolean | undefined | null>,
+  paramsConfig: ParamConfig[],
 ) => {
-  for (const paramConfig of paramsConfig) {
-    const value = filters[paramConfig.field];
+  for (const [key, value] of Object.entries(filters)) {
     if (value === undefined || value === null) continue;
 
-    const transformedValue = paramConfig.transform
-      ? paramConfig.transform(value)
+    const paramConfig = paramsConfig.find((p) => p.field === key);
+
+    const transformedValue = paramConfig?.transform
+      ? paramConfig.transform(value as string | number | boolean)
       : value;
-    usp.set(paramConfig.field, String(transformedValue));
+
+    usp.set(paramConfig?.field ?? key, String(transformedValue));
   }
 };
 
-export const addSearchParam = (usp: URLSearchParams, search?: string) => {
+const addSearchParam = (usp: URLSearchParams, search?: string) => {
   if (search) {
     usp.set("search", search);
   }
 };
 
-export async function apiFindAllItems<T>(
-  uri: string,
-  usp?: URLSearchParams,
-  mapFunction?: (item: any) => T,
-  errorMessage = "Error al obtener los datos"
-): Promise<OkServiceResponse<T[]> | ErrorServiceResponse> {
-  const arrayMapFunction = (items: any): T[] => {
+export async function apiFindItems<T, TFilters extends FilterParams>({
+  uri,
+  findOptions,
+  paramsConfig = [],
+  mapFunction,
+  errorMessage = "Error al obtener los datos",
+}: {
+  uri: string;
+  findOptions?: ApiFindOptions<TFilters>;
+  paramsConfig?: ParamConfig[];
+  mapFunction?: (item: unknown) => T;
+  errorMessage?: string;
+}): Promise<OkServiceResponse<T[]> | ErrorServiceResponse> {
+  const usp = new URLSearchParams();
+
+  if (findOptions) {
+    addApiFindOptions(usp, findOptions, paramsConfig);
+  }
+
+  const arrayMapFunction = (items: unknown): T[] => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
     return mapFunction ? items.map(mapFunction) : (items as T[]);
   };
 
-  return generalApiCall<T[]>(uri, "GET", errorMessage, arrayMapFunction, usp);
-}
-
-export async function apiFindItemById<T>(
-  uri: string,
-  itemId: string,
-  mapFunction?: (item: any) => T,
-  errorMessage = "Error al obtener el dato"
-): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
-  return generalApiCall<T>(
-    `${uri}/${itemId}`,
-    "GET",
-    errorMessage,
-    mapFunction
-  );
-}
-
-export async function apiCreateItem<T>(
-  uri: string,
-  payload: any,
-  mapFunction?: (item: any) => T,
-  errorMessage = "Error al crear el dato"
-): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
-  return generalApiCall<T>(
+  return generalApiCall({
     uri,
-    "POST",
+    method: "GET",
+    errorMessage,
+    mapFunction: arrayMapFunction,
+    usp,
+  });
+}
+
+export async function apiFindItemById<T>({
+  uri,
+  itemId,
+  mapFunction,
+  errorMessage = "Error al obtener el dato",
+}: {
+  uri: string;
+  itemId: string;
+  mapFunction?: (item: unknown) => T;
+  errorMessage?: string;
+}): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
+  return generalApiCall<T>({
+    uri: `${uri}/${itemId}`,
+    method: "GET",
     errorMessage,
     mapFunction,
-    undefined,
-    payload
-  );
+  });
 }
 
-export async function apiUpdateItem<T>(
-  uri: string,
-  itemId: string,
-  payload: any,
-  mapFunction?: (item: any) => T,
-  errorMessage = "Error al actualizar el dato"
-): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
-  return generalApiCall<T>(
-    `${uri}/${itemId}`,
-    "PATCH",
+export async function apiCreateItem<T>({
+  uri,
+  payload,
+  mapFunction,
+  errorMessage = "Error al crear el dato",
+}: {
+  uri: string;
+  payload: unknown;
+  mapFunction?: (item: unknown) => T;
+  errorMessage?: string;
+}): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
+  return generalApiCall<T>({
+    uri,
+    method: "POST",
     errorMessage,
     mapFunction,
-    undefined,
-    payload
-  );
+    body: payload as Record<string, unknown>,
+  });
 }
 
-export async function apiDeleteItem<T>(
-  uri: string,
-  itemId: string,
-  mapFunction?: (item: any) => T,
-  errorMessage = "Error al eliminar el dato"
-): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
-  return generalApiCall<T>(
-    `${uri}/${itemId}`,
-    "DELETE",
+export async function apiUpdateItem<T>({
+  uri,
+  itemId,
+  payload,
+  mapFunction,
+  errorMessage = "Error al actualizar el dato",
+}: {
+  uri: string;
+  itemId: string;
+  payload: unknown;
+  mapFunction?: (item: unknown) => T;
+  errorMessage?: string;
+}): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
+  return generalApiCall<T>({
+    uri: `${uri}/${itemId}`,
+    method: "PATCH",
     errorMessage,
-    mapFunction
-  );
+    mapFunction,
+    body: payload as Record<string, unknown>,
+  });
 }
 
-export async function generalApiCall<T>(
-  uri: string,
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+export async function apiDeleteItem<T>({
+  uri,
+  itemId,
+  mapFunction,
+  errorMessage = "Error al eliminar el dato",
+}: {
+  uri: string;
+  itemId: string;
+  mapFunction?: (item: unknown) => T;
+  errorMessage?: string;
+}): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
+  return generalApiCall<T>({
+    uri: `${uri}/${itemId}`,
+    method: "DELETE",
+    errorMessage,
+    mapFunction,
+  });
+}
+
+export async function generalApiCall<T>({
+  uri,
+  method,
   errorMessage = "Error en la solicitud",
-  mapFunction?: (item: any) => T,
-  usp?: URLSearchParams,
-  body?: any
-): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
+  mapFunction,
+  usp,
+  body,
+}: {
+  uri: string;
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  errorMessage?: string;
+  mapFunction?: (item: unknown) => T;
+  usp?: URLSearchParams;
+  body?: Record<string, unknown>;
+}): Promise<OkServiceResponse<T> | ErrorServiceResponse> {
   try {
     const token = await getAccessToken();
     if (!token) {
       return {
         success: false,
-        data: null,
         message: "No se pudo obtener el token de autenticación",
       };
     }
@@ -185,10 +231,26 @@ export async function generalApiCall<T>(
     });
 
     if (!response.ok) {
+      let parsedErrorMessage = errorMessage;
+      let apiError: ApiError | undefined;
+
+      try {
+        const errorResponse = await response.json();
+        if (errorResponse.type && errorResponse.title) {
+          // Es un error RFC7807
+          apiError = errorResponse as ApiError;
+          parsedErrorMessage = apiError.detail || apiError.title;
+        } else if (errorResponse.message) {
+          parsedErrorMessage = errorResponse.message;
+        }
+      } catch {
+        // Si no se puede parsear, usar mensaje genérico
+      }
+
       return {
         success: false,
-        data: null,
-        message: errorMessage,
+        message: parsedErrorMessage,
+        error: apiError,
       };
     }
 
@@ -200,22 +262,21 @@ export async function generalApiCall<T>(
     const pagination = mapPaginationResponse(parsedResponse.pagination);
 
     return { success: true, data: transformedData, pagination };
-  } catch (error: unknown) {
+  } catch {
     return {
       success: false,
-      data: null,
       message: errorMessage,
-      error: error as any,
     };
   }
 }
 
-const mapPaginationResponse = (raw: any): PaginationData | undefined => {
+const mapPaginationResponse = (raw: unknown): PaginationData | undefined => {
   if (!raw || typeof raw !== "object") return undefined;
 
-  const page = Number(raw.page) || 1;
-  const pageSize = Number(raw.pageSize) || 10;
-  const total = Number(raw.total) || 0;
+  const paginationData = raw as Record<string, unknown>;
+  const page = Number(paginationData.page) || 1;
+  const pageSize = Number(paginationData.pageSize) || 10;
+  const total = Number(paginationData.total) || 0;
   const pages = Math.ceil(total / pageSize);
 
   return {

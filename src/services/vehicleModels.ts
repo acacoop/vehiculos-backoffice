@@ -1,107 +1,66 @@
-import type { ServiceResponse } from "../common";
+import type { ServiceResponse } from "../types/common";
 import type {
-  VehicleModelType,
-  VehicleModelListResponse,
+  VehicleModel,
+  VehicleModelInput,
   VehicleModelFilterParams,
-} from "../types/vehicle";
+} from "../types/vehicleModel";
 import {
-  addApiFindOptions,
   apiCreateItem,
   apiDeleteItem,
-  apiFindAllItems,
+  apiFindItems,
   apiFindItemById,
   apiUpdateItem,
   type ApiFindOptions,
 } from "./common";
 
-const normalizeVehicleModel = (item: any): VehicleModelType => ({
-  id: item.id,
-  name: item.name,
-  vehicleType: item.vehicleType || item.vehicle_type,
-  brand: item.brand,
-});
-
 export async function getVehicleModels(
-  findOptions?: ApiFindOptions<VehicleModelFilterParams>
-): Promise<ServiceResponse<VehicleModelListResponse>> {
-  const params = new URLSearchParams();
-
-  if (findOptions) {
-    addApiFindOptions(params, findOptions, [
-      { field: "name" },
-      { field: "brandId" },
-    ]);
-  }
-
-  const response = await apiFindAllItems<VehicleModelType>(
-    "vehicle-models",
-    params,
-    normalizeVehicleModel,
-    "Error al obtener modelos"
-  );
-
-  const items = response.data || [];
-  const total = response.pagination?.total || items.length;
-
-  return {
-    ...response,
-    data: { items, total },
-  };
+  findOptions?: ApiFindOptions<VehicleModelFilterParams>,
+): Promise<ServiceResponse<VehicleModel[]>> {
+  return await apiFindItems({
+    uri: "vehicle-models",
+    findOptions,
+    errorMessage: "Error al obtener modelos",
+  });
 }
 
 export async function getVehicleModelById(
-  id: string
-): Promise<ServiceResponse<VehicleModelType | null>> {
-  return await apiFindItemById<VehicleModelType>(
-    "vehicle-models",
-    id,
-    normalizeVehicleModel,
-    "Error al obtener modelo"
-  );
+  id: string,
+): Promise<ServiceResponse<VehicleModel>> {
+  return await apiFindItemById<VehicleModel>({
+    uri: "vehicle-models",
+    itemId: id,
+    errorMessage: "Error al obtener modelo",
+  });
 }
 
-export async function createVehicleModel(payload: {
-  name: string;
-  brandId: string;
-  vehicleType?: string;
-}): Promise<ServiceResponse<VehicleModelType | null>> {
-  return await apiCreateItem<VehicleModelType>(
-    "vehicle-models",
+export async function createVehicleModel(
+  payload: VehicleModelInput,
+): Promise<ServiceResponse<VehicleModel>> {
+  return await apiCreateItem({
+    uri: "vehicle-models",
     payload,
-    normalizeVehicleModel,
-    "Error al crear modelo"
-  );
+    errorMessage: "Error al crear modelo",
+  });
 }
 
 export async function updateVehicleModel(
   id: string,
-  payload: {
-    name: string;
-    brandId?: string;
-    vehicleType?: string;
-  }
-): Promise<ServiceResponse<VehicleModelType | null>> {
-  return await apiUpdateItem<VehicleModelType>(
-    "vehicle-models",
-    id,
+  payload: Partial<VehicleModelInput>,
+): Promise<ServiceResponse<VehicleModel>> {
+  return await apiUpdateItem({
+    uri: "vehicle-models",
+    itemId: id,
     payload,
-    normalizeVehicleModel,
-    "Error al actualizar modelo"
-  );
+    errorMessage: "Error al actualizar modelo",
+  });
 }
 
 export async function deleteVehicleModel(
-  id: string
-): Promise<ServiceResponse<boolean>> {
-  const response = await apiDeleteItem<null>(
-    "vehicle-models",
-    id,
-    undefined,
-    "Error al eliminar modelo"
-  );
-
-  return {
-    ...response,
-    data: response.success,
-  };
+  id: string,
+): Promise<ServiceResponse<VehicleModel>> {
+  return await apiDeleteItem<VehicleModel>({
+    uri: "vehicle-models",
+    itemId: id,
+    errorMessage: "Error al eliminar modelo",
+  });
 }

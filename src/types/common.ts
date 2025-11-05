@@ -29,9 +29,9 @@ export interface ApiError {
 // Configuración para requests
 export interface RequestConfig {
   uri: string;
-  queryParams?: Record<string, any>;
+  queryParams?: Record<string, string | number | boolean>;
   pagination?: PaginationParams;
-  body?: any;
+  body?: Record<string, unknown>;
   headers?: Record<string, string>;
 }
 
@@ -43,32 +43,22 @@ export interface PaginationData {
   pages: number;
 }
 
-// Respuesta unificada del backend (según OpenAPI)
-export interface BackendResponse<T> {
-  status: ResponseStatus;
-  message?: string;
-  data: T;
-  pagination?: Pagination;
+// Tipo base para filtros de cualquier entidad
+export interface FilterParams {
+  [key: string]: string | number | boolean | undefined | null;
 }
 
 export type OkServiceResponse<T> = {
-  success: true;
-  data: T;
-  message?: string;
-  pagination?: PaginationData;
+  readonly success: true;
+  readonly data: T;
+  readonly message?: string;
+  readonly pagination?: PaginationData;
 };
 
 export type ErrorServiceResponse = {
-  success: false;
-  message: string;
-  error?: ApiError;
+  readonly success: false;
+  readonly message: string;
+  readonly error?: ApiError;
 };
 
-// Respuesta de servicios con paginación para el frontend
-export interface ServiceResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  pagination?: PaginationData;
-  error?: ApiError;
-}
+export type ServiceResponse<T> = OkServiceResponse<T> | ErrorServiceResponse;

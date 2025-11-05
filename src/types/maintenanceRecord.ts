@@ -1,35 +1,24 @@
+import type { FilterParams } from "./common";
+import type { MaintenanceAssignment } from "./maintenanceAsignment";
+
 export interface MaintenanceRecord {
-  id?: string; // UUID
-  assignedMaintenanceId?: string; // UUID
-  vehicleId?: string; // UUID
-  maintenanceId?: string; // UUID
-  userId: string; // UUID
-  date: string | Date;
+  id: string;
+  assignedMaintenance: MaintenanceAssignment;
+  date: string;
   kilometers: number;
   notes?: string;
 }
 
-export interface MaintenanceRecordCreateDto {
-  assignedMaintenanceId?: string;
-  vehicleId?: string;
-  //maintenanceId?: string;
-  userId: string;
-  date: Date;
+export interface MaintenanceRecordInput {
+  assignedMaintenanceId: string;
+  date: string;
   kilometers: number;
-  notes?: string | null;
+  notes?: string;
 }
 
-export interface MaintenanceRecordsListResponse {
-  items: MaintenanceRecord[];
-  total: number;
-}
-
-export interface MaintenanceRecordFilterParams {
+export interface MaintenanceRecordFilterParams extends FilterParams {
   userId?: string;
   vehicleId?: string;
   maintenanceId?: string;
   assignedMaintenanceId?: string;
-  search?: string;
 }
-
-export default {};
