@@ -1,0 +1,148 @@
+.entity-search {
+  position: relative;
+  width: 100%;
+}
+
+.entity-search-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #282d86;
+}
+
+.entity-search-required {
+  color: #e53935;
+}
+
+.entity-search-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.entity-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.entity-search-input:focus {
+  outline: none;
+  border-color: #282d86;
+  box-shadow: 0 0 0 2px rgba(40, 45, 134, 0.25);
+}
+
+.entity-search-loading,
+.entity-search-no-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666;
+  z-index: 1000;
+}
+
+.entity-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.entity-search-dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.entity-search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.entity-search-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.entity-search-selected-container {
+  border: 2px solid #fe9000;
+  border-left: 4px solid #fe9000;
+  border-radius: 4px;
+  padding: 16px;
+  background: white;
+}
+
+.entity-search-selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.entity-search-selected-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #282d86;
+}
+
+.entity-search-change-button {
+  background: #fe9000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.entity-search-change-button:hover {
+  background: #e58200;
+}
+
+.entity-search-selected-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.entity-search-selected-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entity-search-selected-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #282d86;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.entity-search-selected-value {
+  font-size: 14px;
+  color: #495057;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
