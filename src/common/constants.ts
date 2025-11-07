@@ -5,3 +5,17 @@ export const API_CONFIG = {
   DEFAULT_LIMIT: 10,
   TIMEOUT: 10000, // 10 segundos
 } as const;
+
+// Tipos de vehículos
+export const VEHICLE_TYPES = [
+  "Camión",
+  "Convertible",
+  "Coupé",
+  "Furgón",
+  "Hatchback",
+  "Pickup",
+  "Sedan",
+  "SUV",
+  "Van",
+  "Wagon",
+] as const;

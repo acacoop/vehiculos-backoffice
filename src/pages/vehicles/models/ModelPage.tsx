@@ -14,6 +14,7 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/EntitySearch";
+import { VEHICLE_TYPES } from "../../../common/constants";
 
 export default function ModelPage() {
   const { id } = useParams<{ id: string }>();
@@ -141,13 +142,14 @@ export default function ModelPage() {
           disabled: false,
         },
         {
-          type: "text",
+          type: "select",
           key: "vehicleType",
           label: "Tipo de Vehículo",
           value: formData.vehicleType,
           onChange: (value) => setFormData({ ...formData, vehicleType: value }),
           required: true,
-          placeholder: "Ej: Sedan, SUV, Pickup",
+          placeholder: "Seleccione un tipo de vehículo",
+          options: VEHICLE_TYPES.map((type) => ({ value: type, label: type })),
           disabled: false,
         },
       ],

@@ -50,6 +50,7 @@ export interface SelectField extends BaseField {
   value: string;
   onChange: (value: string) => void;
   options: { label: string; value: string }[];
+  placeholder?: string;
 }
 
 export interface CheckboxField extends BaseField {
@@ -172,6 +173,11 @@ const Form: React.FC<FormProps> = ({
             disabled={field.disabled}
             required={field.required}
           >
+            {field.placeholder && (
+              <option value="" disabled>
+                {field.placeholder}
+              </option>
+            )}
             {field.options.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
