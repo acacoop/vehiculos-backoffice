@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Form } from "../../../components/Form";
-import type { FormSection, FormButton } from "../../../components/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getMaintenanceById,
@@ -14,6 +12,11 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Category } from "../../../types/category";
 import "./MaintenancePage.css";
+import {
+  Form,
+  type FormButton,
+  type FormSection,
+} from "../../../components/Form";
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
@@ -144,6 +147,7 @@ export default function MaintenancePage() {
 
   const sections: FormSection[] = [
     {
+      type: "fields",
       title: "Información del Mantenimiento",
       layout: "vertical",
       fields: [
@@ -152,7 +156,8 @@ export default function MaintenancePage() {
           key: "name",
           label: "Nombre",
           value: formData.name,
-          onChange: (value) => setFormData({ ...formData, name: value }),
+          onChange: (value: string) =>
+            setFormData({ ...formData, name: value }),
           required: true,
           placeholder: "Ej: Cambio de aceite de motor",
           disabled: isReadOnly,
@@ -162,7 +167,8 @@ export default function MaintenancePage() {
           key: "categoryId",
           label: "Categoría",
           value: formData.categoryId,
-          onChange: (value) => setFormData({ ...formData, categoryId: value }),
+          onChange: (value: string) =>
+            setFormData({ ...formData, categoryId: value }),
           options: categoryOptions,
           required: true,
           disabled: isReadOnly,
@@ -170,6 +176,7 @@ export default function MaintenancePage() {
       ],
     },
     {
+      type: "fields",
       title: "Frecuencia",
       layout: "horizontal",
       fields: [
@@ -178,7 +185,7 @@ export default function MaintenancePage() {
           key: "kilometersFrequency",
           label: "Kilómetros",
           value: formData.kilometersFrequency || 0,
-          onChange: (value) =>
+          onChange: (value: number | undefined) =>
             setFormData({
               ...formData,
               kilometersFrequency: value || undefined,
@@ -192,7 +199,7 @@ export default function MaintenancePage() {
           key: "daysFrequency",
           label: "Días",
           value: formData.daysFrequency || 0,
-          onChange: (value) =>
+          onChange: (value: number | undefined) =>
             setFormData({ ...formData, daysFrequency: value || undefined }),
           placeholder: "Frecuencia en días",
           min: 1,
@@ -201,6 +208,7 @@ export default function MaintenancePage() {
       ],
     },
     {
+      type: "fields",
       title: "Detalles Adicionales",
       layout: "vertical",
       fields: [
@@ -209,7 +217,7 @@ export default function MaintenancePage() {
           key: "observations",
           label: "Observaciones",
           value: formData.observations,
-          onChange: (value) =>
+          onChange: (value: string) =>
             setFormData({ ...formData, observations: value }),
           placeholder: "Observaciones adicionales...",
           rows: 3,
@@ -220,7 +228,7 @@ export default function MaintenancePage() {
           key: "instructions",
           label: "Instrucciones",
           value: formData.instructions,
-          onChange: (value) =>
+          onChange: (value: string) =>
             setFormData({ ...formData, instructions: value }),
           placeholder: "Instrucciones para realizar el mantenimiento...",
           rows: 4,
@@ -260,7 +268,6 @@ export default function MaintenancePage() {
         title={isNew ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
         sections={sections}
         buttons={buttons}
-        mode="compact"
       />
 
       <ConfirmDialog

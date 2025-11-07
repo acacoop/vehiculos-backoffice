@@ -87,9 +87,6 @@ function App() {
           {/* <Route path="/reservation/create" element={<ReservationEdit />} /> */}
           {/* <Route path="/reservation/edit/:id" element={<ReservationEdit />} /> */}
           {/* <Route path="/metrics" element={<Metrics />} /> */}
-          {/* <Route path="/vehicles" element={<Vehicles />} /> */}
-          {/* <Route path="/vehicle/edit/:id" element={<VehicleEditRegistration />} /> */}
-          {/* <Route path="/vehicle/create" element={<VehicleEditRegistration />} /> */}
           {/* <Route path="/assignments" element={<Assignaments />} /> */}
           {/* <Route path="/maintenances" element={<MaintenancePage />} /> */}
 
@@ -160,12 +157,6 @@ function App() {
           <Route path="/vehicles/models" element={<ModelsPage />} />
           <Route path="/vehicles/models/new" element={<ModelPage />} />
           <Route path="/vehicles/models/:id" element={<ModelPage />} />
-
-          {/* NO MIGRADAS - Old vehicle brand/model routes */}
-          {/* <Route path="/vehicle-brand/create" element={<ModelsEdit />} /> */}
-          {/* <Route path="/vehicle-brand/edit/:id" element={<ModelsEdit />} /> */}
-          {/* <Route path="/vehicle-model/create" element={<ModelsEdit />} /> */}
-          {/* <Route path="/vehicle-model/edit/:id" element={<ModelsEdit />} /> */}
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

@@ -128,36 +128,22 @@ export default function AssignmentPage() {
 
   const sections: FormSection[] = [
     {
-      title: "Vehículo y Mantenimiento",
-      layout: "vertical",
-      fields: [
-        {
-          type: "custom",
-          key: "vehicle",
-          label: "Vehículo",
-          render: () => (
-            <VehicleEntitySearch
-              vehicle={vehicle}
-              onVehicleChange={setVehicle}
-            />
-          ),
-          disabled: isReadOnly || !isNew,
-        },
-        {
-          type: "custom",
-          key: "maintenance",
-          label: "Mantenimiento",
-          render: () => (
-            <MaintenanceEntitySearch
-              maintenance={maintenance}
-              onMaintenanceChange={setMaintenance}
-            />
-          ),
-          disabled: isReadOnly || !isNew,
-        },
-      ],
+      type: "entity",
+      render: (
+        <VehicleEntitySearch vehicle={vehicle} onVehicleChange={setVehicle} />
+      ),
     },
     {
+      type: "entity",
+      render: (
+        <MaintenanceEntitySearch
+          maintenance={maintenance}
+          onMaintenanceChange={setMaintenance}
+        />
+      ),
+    },
+    {
+      type: "fields",
       title: "Frecuencias",
       layout: "horizontal",
       fields: [
@@ -189,6 +175,7 @@ export default function AssignmentPage() {
       ],
     },
     {
+      type: "fields",
       title: "Información Adicional",
       layout: "vertical",
       fields: [
@@ -252,7 +239,6 @@ export default function AssignmentPage() {
         }
         sections={sections}
         buttons={buttons}
-        mode="compact"
       />
 
       <ConfirmDialog

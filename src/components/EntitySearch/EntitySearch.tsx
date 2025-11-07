@@ -27,12 +27,10 @@ interface EntitySearchProps<T> {
   displayFields: DisplayField<T>[];
   dropdownRender: (item: T) => string;
 
-  label?: string;
   placeholder?: string;
-  title?: string;
+  title: string; // Ahora es obligatorio
   changeButtonText?: string;
 
-  required?: boolean;
   minChars?: number;
   debounceMs?: number;
 }
@@ -44,12 +42,10 @@ export function EntitySearch<T>({
   displayFields,
   dropdownRender,
 
-  label,
   placeholder = "Buscar...",
   title,
   changeButtonText = "Cambiar",
 
-  required = true,
   minChars = 1,
   debounceMs = 300,
 }: EntitySearchProps<T>) {
@@ -119,43 +115,35 @@ export function EntitySearch<T>({
 
   const renderSelectedEntity = (item: T) => {
     return (
-      <div className="entity-search-selected-container">
-        {title && (
-          <div className="entity-search-selected-header">
-            <h3 className="entity-search-selected-title">{title}</h3>
-            <button
-              type="button"
-              className="entity-search-change-button"
-              onClick={handleClear}
-            >
-              {changeButtonText}
-            </button>
+      <div className="entity-search-selected-grid">
+        {displayFields.map((field, index) => (
+          <div key={index} className="entity-search-selected-field">
+            <span className="entity-search-selected-label">
+              {field.label}:
+            </span>
+            <span className="entity-search-selected-value">
+              {getNestedValue(item, String(field.path))}
+            </span>
           </div>
-        )}
-        <div className="entity-search-selected-grid">
-          {displayFields.map((field, index) => (
-            <div key={index} className="entity-search-selected-field">
-              <span className="entity-search-selected-label">
-                {field.label}:
-              </span>
-              <span className="entity-search-selected-value">
-                {getNestedValue(item, String(field.path))}
-              </span>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     );
   };
 
   return (
     <div className="entity-search">
-      {label && (
-        <label className="entity-search-label">
-          {label}
-          {required && <span className="entity-search-required"> *</span>}
-        </label>
-      )}
+      <div className="entity-search-header">
+        <h3 className="entity-search-title">{title}</h3>
+        {entity && (
+          <button
+            type="button"
+            className="entity-search-change-button"
+            onClick={handleClear}
+          >
+            {changeButtonText}
+          </button>
+        )}
+      </div>
       {entity ? (
         renderSelectedEntity(entity)
       ) : (
@@ -207,10 +195,8 @@ export function EntitySearch<T>({
 
 async function searchVehicles(term: string): Promise<Vehicle[]> {
   const response = await getVehicles({
-    findOptions: {
-      search: term,
-      pagination: { offset: 0, limit: 10 },
-    },
+    search: term,
+    pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
 }
@@ -223,15 +209,10 @@ async function searchUsers(term: string): Promise<User[]> {
   return response.success ? response.data : [];
 }
 
-async function searchVehicleModels(
-  term: string,
-  brandId?: string,
-): Promise<VehicleModel[]> {
-  const filters = brandId ? { brandId } : undefined;
+async function searchVehicleModels(term: string): Promise<VehicleModel[]> {
   const response = await getVehicleModels({
     search: term,
     pagination: { offset: 0, limit: 10 },
-    filters,
   });
   return response.success ? response.data : [];
 }
@@ -341,15 +322,13 @@ export function UserEntitySearch({
 interface VehicleModelEntitySearchProps {
   model: VehicleModel | null;
   onModelChange: (model: VehicleModel | null) => void;
-  brandId?: string;
 }
 
 export function VehicleModelEntitySearch({
   model,
   onModelChange,
-  brandId,
 }: VehicleModelEntitySearchProps) {
-  const searchFunction = (term: string) => searchVehicleModels(term, brandId);
+  const searchFunction = (term: string) => searchVehicleModels(term);
 
   const dropdownRender = (model: VehicleModel) => {
     const brand = model.brand?.name || "";

@@ -101,12 +101,12 @@ export default function BrandPage() {
           : updateVehicleBrand(id!, {
               name: formData.name.trim(),
             }),
-      `Marca ${actionText}da exitosamente`
+      `Marca ${actionText}da exitosamente`,
     );
   };
 
   const getVehiclesByBrand = async (
-    findOptions?: ApiFindOptions<VehicleFilterParams>
+    findOptions?: ApiFindOptions<VehicleFilterParams>,
   ) => {
     const brandFilter: VehicleFilterParams = {
       ...findOptions?.filters,
@@ -122,6 +122,7 @@ export default function BrandPage() {
 
   const sections: FormSection[] = [
     {
+      type: "fields",
       title: "Información de la Marca",
       layout: "vertical",
       fields: [
@@ -165,7 +166,6 @@ export default function BrandPage() {
         title={isNew ? "Nueva Marca" : "Editar Marca"}
         sections={sections}
         buttons={buttons}
-        mode="compact"
       />
 
       {!isNew && id && (

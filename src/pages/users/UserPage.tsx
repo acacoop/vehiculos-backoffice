@@ -134,6 +134,7 @@ export default function UserPage() {
 
   const userInfoSections: FormSection[] = [
     {
+      type: "fields",
       title: "Información Personal",
       layout: "grid",
       columns: 2,
@@ -177,11 +178,7 @@ export default function UserPage() {
           gap: "1rem",
         }}
       >
-        <Form
-          title="Detalle del Usuario"
-          sections={userInfoSections}
-          mode="relaxed"
-        />
+        <Form title="Detalle del Usuario" sections={userInfoSections} />
 
         <StatusToggle
           entityId={id!}

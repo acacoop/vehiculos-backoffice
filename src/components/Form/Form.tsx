@@ -62,11 +62,6 @@ export interface DisplayField extends BaseField {
   value: string | number | React.ReactNode;
 }
 
-export interface CustomField extends BaseField {
-  type: "custom";
-  render: () => React.ReactNode;
-}
-
 // ============ UNION TYPE ============
 export type FormField =
   | TextField
@@ -75,17 +70,25 @@ export type FormField =
   | TextAreaField
   | SelectField
   | CheckboxField
-  | DisplayField
-  | CustomField;
+  | DisplayField;
 
 // ============ SECTION CONFIGURATION ============
-export interface FormSection {
+export interface FieldsSection {
+  type: "fields";
   title: string;
   fields: FormField[];
   layout?: "vertical" | "horizontal" | "grid";
   columns?: number; // For grid layout (default: 2)
   className?: string;
 }
+
+export interface EntitySection {
+  type: "entity";
+  className?: string;
+  render: React.ReactNode;
+}
+
+export type FormSection = FieldsSection | EntitySection;
 
 // ============ BUTTON CONFIGURATION ============
 export interface FormButton {
@@ -97,15 +100,11 @@ export interface FormButton {
   type?: "button" | "submit";
 }
 
-// ============ FORM MODES ============
-export type FormMode = "compact" | "relaxed";
-
 // ============ MAIN PROPS ============
 interface FormProps {
   title?: string;
   sections: FormSection[];
   buttons?: FormButton[];
-  mode?: FormMode;
   className?: string;
   onSubmit?: (e: React.FormEvent) => void;
 }
@@ -114,7 +113,6 @@ const Form: React.FC<FormProps> = ({
   title,
   sections,
   buttons = [],
-  mode = "relaxed",
   className = "",
   onSubmit,
 }) => {
@@ -125,15 +123,6 @@ const Form: React.FC<FormProps> = ({
     }
 
     const baseClassName = `form-field ${field.className || ""}`;
-
-    // ========== CUSTOM RENDER ==========
-    if (field.type === "custom") {
-      return (
-        <div key={field.key} className={baseClassName}>
-          {field.render()}
-        </div>
-      );
-    }
 
     // ========== DISPLAY FIELD ==========
     if (field.type === "display") {
@@ -286,7 +275,7 @@ const Form: React.FC<FormProps> = ({
     return null;
   };
 
-  const getLayoutClass = (section: FormSection) => {
+  const getLayoutClass = (section: FieldsSection) => {
     const layout = section.layout || "vertical";
     if (layout === "grid") {
       return `section-fields-grid grid-cols-${section.columns || 2}`;
@@ -317,7 +306,7 @@ const Form: React.FC<FormProps> = ({
   };
 
   return (
-    <div className={`form form--${mode} ${className}`}>
+    <div className={`form ${className}`}>
       <form className="form-content" onSubmit={handleFormSubmit}>
         {title && (
           <div className="form-header">
@@ -330,13 +319,21 @@ const Form: React.FC<FormProps> = ({
             key={sectionIndex}
             className={`form-section ${section.className || ""}`}
           >
-            <div className="section-header">
-              <h2 className="section-title">{section.title}</h2>
-            </div>
+            {section.type === "entity" ? (
+              // ========== ENTITY SECTION ==========
+              section.render
+            ) : (
+              // ========== FIELDS SECTION ==========
+              <>
+                <div className="section-header">
+                  <h2 className="section-title">{section.title}</h2>
+                </div>
 
-            <div className={`section-fields ${getLayoutClass(section)}`}>
-              {section.fields.map((field) => renderField(field))}
-            </div>
+                <div className={`section-fields ${getLayoutClass(section)}`}>
+                  {section.fields.map((field) => renderField(field))}
+                </div>
+              </>
+            )}
           </div>
         ))}
 

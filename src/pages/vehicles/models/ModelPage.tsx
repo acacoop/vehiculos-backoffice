@@ -8,12 +8,12 @@ import {
   createVehicleModel,
   updateVehicleModel,
 } from "../../../services/vehicleModels";
-import { getVehicleBrands } from "../../../services/vehicleBrands";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import "./ModelPage.css";
+import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 
 export default function ModelPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,11 +21,9 @@ export default function ModelPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    brandId: "",
     vehicleType: "",
   });
-
-  const [brands, setBrands] = useState<VehicleBrand[]>([]);
+  const [brand, setBrand] = useState<VehicleBrand | null>(null);
 
   const {
     loading,
@@ -43,21 +41,11 @@ export default function ModelPage() {
   } = usePageState({ redirectOnSuccess: "/vehicles/models" });
 
   useEffect(() => {
-    loadBrands();
     if (!isNew && id) {
       loadModel(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  const loadBrands = async () => {
-    await executeLoad(async () => {
-      const response = await getVehicleBrands();
-      if (response.success && response.data) {
-        setBrands(response.data);
-      }
-    }, "Error al cargar marcas");
-  };
 
   const loadModel = async (modelId: string) => {
     await executeLoad(async () => {
@@ -66,7 +54,6 @@ export default function ModelPage() {
       if (response.success && response.data) {
         setFormData({
           name: response.data.name || "",
-          brandId: response.data.brand?.id || "",
           vehicleType: response.data.vehicleType || "",
         });
       } else {
@@ -80,7 +67,7 @@ export default function ModelPage() {
       showError("El nombre del modelo es obligatorio");
       return;
     }
-    if (!formData.brandId) {
+    if (!brand) {
       showError("Debe seleccionar una marca");
       return;
     }
@@ -96,12 +83,12 @@ export default function ModelPage() {
         isNew
           ? createVehicleModel({
               name: formData.name.trim(),
-              brandId: formData.brandId,
+              brandId: brand.id,
               vehicleType: formData.vehicleType.trim(),
             })
           : updateVehicleModel(id!, {
               name: formData.name.trim(),
-              brandId: formData.brandId,
+              brandId: brand.id,
               vehicleType: formData.vehicleType.trim(),
             }),
       `Modelo ${actionText}do exitosamente`,
@@ -112,13 +99,15 @@ export default function ModelPage() {
     return <LoadingSpinner message="Cargando modelo..." />;
   }
 
-  const brandOptions = brands.map((brand) => ({
-    value: brand.id,
-    label: brand.name,
-  }));
-
   const sections: FormSection[] = [
     {
+      type: "entity",
+      render: (
+        <VehicleBrandEntitySearch brand={brand} onBrandChange={setBrand} />
+      ),
+    },
+    {
+      type: "fields",
       title: "Información del Modelo",
       layout: "vertical",
       fields: [
@@ -130,16 +119,6 @@ export default function ModelPage() {
           onChange: (value) => setFormData({ ...formData, name: value }),
           required: true,
           placeholder: "Ej: Corolla",
-          disabled: false,
-        },
-        {
-          type: "select",
-          key: "brandId",
-          label: "Marca",
-          value: formData.brandId,
-          onChange: (value) => setFormData({ ...formData, brandId: value }),
-          options: brandOptions,
-          required: true,
           disabled: false,
         },
         {
@@ -182,7 +161,6 @@ export default function ModelPage() {
         title={isNew ? "Nuevo Modelo" : "Editar Modelo"}
         sections={sections}
         buttons={buttons}
-        mode="compact"
       />
 
       <ConfirmDialog
