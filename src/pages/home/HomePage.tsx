@@ -80,7 +80,7 @@ export default function HomePage() {
         <BentoHome
           icon={IconResponsible}
           text="Responsables"
-          onClick={() => navigate("/vehicle-responsibles")}
+          onClick={() => navigate("/vehicles/responsibles")}
         />
         <BentoHome
           icon={IconBrandBlue}

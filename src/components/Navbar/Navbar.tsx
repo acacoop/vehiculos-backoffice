@@ -222,6 +222,16 @@ function Navbar() {
                 Modelos
               </Link>
             </li>
+            <li>
+              <Link to="/vehicles/responsibles" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconPermissions}
+                  alt="Icono responsables"
+                />
+                Responsables
+              </Link>
+            </li>
 
             {isMobile && isAuthenticated() && (
               <>

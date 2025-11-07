@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -10,16 +10,16 @@ import {
   updateVehicleBrand,
 } from "../../../services/vehicleBrands";
 import { getVehicles } from "../../../services/vehicles";
+import { getVehicleModels } from "../../../services/vehicleModels";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
-import type { ApiFindOptions } from "../../../services/common";
 import type {
   VehicleModel,
   VehicleModelFilterParams,
 } from "../../../types/vehicleModel";
-import { getVehicleModels } from "../../../services/vehicleModels";
+import type { ApiFindOptions } from "../../../services/common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -54,6 +54,7 @@ const modelColumns: TableColumn<VehicleModel>[] = [
 
 export default function BrandPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const isNew = id === "new";
 
   const [formData, setFormData] = useState({
@@ -113,8 +114,30 @@ export default function BrandPage() {
           : updateVehicleBrand(id!, {
               name: formData.name.trim(),
             }),
-      `Marca ${actionText}da exitosamente`
+      `Marca ${actionText}da exitosamente`,
     );
+  };
+
+  const getVehiclesByBrand = async (
+    findOptions?: ApiFindOptions<VehicleFilterParams>,
+  ) => {
+    const brandFilter: VehicleFilterParams = {
+      ...findOptions?.filters,
+      brandId: id!,
+    };
+
+    return getVehicles({ ...findOptions, filters: brandFilter });
+  };
+
+  const getModelsByBrand = async (
+    findOptions?: ApiFindOptions<VehicleModelFilterParams>,
+  ) => {
+    const brandFilter: VehicleModelFilterParams = {
+      ...findOptions?.filters,
+      brandId: id!,
+    };
+
+    return getVehicleModels({ ...findOptions, filters: brandFilter });
   };
 
   if (loading) {
@@ -172,22 +195,17 @@ export default function BrandPage() {
       {!isNew && id && (
         <>
           <Table
-            getRows={(findOptions?: ApiFindOptions<VehicleModelFilterParams>) =>
-              getVehicleModels({
-                ...findOptions,
-                filters: {
-                  ...findOptions?.filters,
-                  brandId: id,
-                },
-              })
-            }
+            getRows={getModelsByBrand}
             columns={modelColumns}
             header={{
               title: "Modelos de esta Marca",
               addButton: {
                 text: "+ Nuevo Modelo",
-                onClick: () => goTo(`/vehicles/models/new?brandId=${id}`),
+                onClick: () => navigate(`/vehicles/models/new?brandId=${id}`),
               },
+            }}
+            actionColumn={{
+              route: "/vehicles/models",
             }}
             search={{
               enabled: true,
@@ -196,15 +214,7 @@ export default function BrandPage() {
           />
 
           <Table
-            getRows={(findOptions?: ApiFindOptions<VehicleFilterParams>) =>
-              getVehicles({
-                ...findOptions,
-                filters: {
-                  ...findOptions?.filters,
-                  brandId: id,
-                },
-              })
-            }
+            getRows={getVehiclesByBrand}
             columns={vehicleColumns}
             header={{
               title: "Vehículos de esta Marca",

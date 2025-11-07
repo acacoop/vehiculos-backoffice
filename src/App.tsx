@@ -9,24 +9,6 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import "./App.css";
 
-// NO MIGRADAS - Comentadas temporalmente
-// import UserEdit from "./app/UserEdit/UserEdit";
-// import EditAssignment from "./app/EditAssignment/EditAssignment";
-// import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
-// import Vehicles from "./app/Vehicles/Vehicles";
-// import Metrics from "./app/Metrics/Metrics";
-// import Assignaments from "./app/Assignment/Assignment";
-// import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
-// import MaintenancePage from "./app/Maintenances/Maintenances";
-// import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
-// import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
-// import MaintenanceRecordRegisterEdit from "./app/MaintenanceRecordRegisterEdit/MaintenanceRecordRegisterEdit";
-// import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
-// import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
-// import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
-// import Models from "./app/Models/Models";
-// import ModelsEdit from "./app/ModelsEdit/ModelsEdit";
-
 // MIGRADAS - Auth, Home & Users
 import { LoginPage } from "./pages/auth";
 import { HomePage } from "./pages/home";
@@ -48,6 +30,8 @@ import { getActiveAccount } from "./common/auth";
 import { UserPage, UsersPage } from "./pages/users";
 import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
 import VehiclePage from "./pages/vehicles/items/VehiclePage";
+import ResponsiblesPage from "./pages/vehicles/responsibles/ResponsiblesPage";
+import ResponsiblePage from "./pages/vehicles/responsibles/ResponsiblePage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -133,21 +117,6 @@ function App() {
             element={<AssignmentPage />}
           />
 
-          {/* NO MIGRADAS - Maintenance (old routes) */}
-          {/* <Route path="/maintenance/create" element={<EditMaintenance />} /> */}
-          {/* <Route path="/maintenance/edit/:maintenanceId" element={<EditMaintenance />} /> */}
-          {/* <Route path="/maintenance-assignment/:maintenanceId" element={<MaintenanceAssignment />} /> */}
-          {/* <Route path="/vehicle-maintenance-assignment/:vehicleId" element={<MaintenanceAssignment />} /> */}
-          {/* <Route path="/edit-maintenance-assignment/:vehicleId/:maintenanceId/:assignmentId" element={<MaintenanceAssignment />} /> */}
-          {/* <Route path="/maintenance-record-register-edit/:vehicleId/:maintenanceId/:assignedMaintenanceId" element={<MaintenanceRecordRegisterEdit />} /> */}
-          {/* <Route path="/maintenance-record-register-edit/:vehicleId" element={<MaintenanceRecordRegisterEdit />} /> */}
-          {/* <Route path="/maintenance/possible/edit/:maintenanceId" element={<EditMaintenance />} /> */}
-          {/* <Route path="/kilometers/create/:vehicleId" element={<KilometersEdit />} /> */}
-          {/* <Route path="/vehicle-responsibles" element={<VehicleResponsibles />} /> */}
-          {/* <Route path="/edit-vehicle-responsibles" element={<EditVehicleResponsibles />} /> */}
-          {/* <Route path="/edit-vehicle-responsibles/:id" element={<EditVehicleResponsibles />} /> */}
-          {/* <Route path="/models" element={<Models />} /> */}
-
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/new" element={<VehiclePage />} />
           <Route path="/vehicles/:id" element={<VehiclePage />} />
@@ -161,6 +130,17 @@ function App() {
           <Route path="/vehicles/models" element={<ModelsPage />} />
           <Route path="/vehicles/models/new" element={<ModelPage />} />
           <Route path="/vehicles/models/:id" element={<ModelPage />} />
+
+          {/* MIGRADAS - Vehicle Responsibles */}
+          <Route path="/vehicles/responsibles" element={<ResponsiblesPage />} />
+          <Route
+            path="/vehicles/responsibles/new"
+            element={<ResponsiblePage />}
+          />
+          <Route
+            path="/vehicles/responsibles/:id"
+            element={<ResponsiblePage />}
+          />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

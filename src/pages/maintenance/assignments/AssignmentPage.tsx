@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
@@ -7,6 +7,8 @@ import {
   getMaintenanceAssignmentById,
   updateMaintenanceAssignment,
 } from "../../../services/maintenanceAssignments";
+import { getVehicleById } from "../../../services/vehicles";
+import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -20,6 +22,7 @@ import type { FormSection, FormButton } from "../../../components/Form/Form";
 
 export default function AssignmentPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const isNew = id === "new";
   const isReadOnly = !isNew && !id;
 
@@ -78,6 +81,42 @@ export default function AssignmentPage() {
       cancelled = true;
     };
   }, [id, isNew, executeLoad, showError]);
+
+  // Load vehicle from query parameter
+  useEffect(() => {
+    if (!isNew) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const vehicleId = searchParams.get("vehicleId");
+
+    if (vehicleId) {
+      executeLoad(async () => {
+        const response = await getVehicleById(vehicleId);
+        if (response.success && response.data) {
+          setVehicle(response.data);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNew, location.search]);
+
+  // Load maintenance from query parameter
+  useEffect(() => {
+    if (!isNew) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const maintenanceId = searchParams.get("maintenanceId");
+
+    if (maintenanceId) {
+      executeLoad(async () => {
+        const response = await getMaintenanceById(maintenanceId);
+        if (response.success && response.data) {
+          setMaintenance(response.data);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNew, location.search]);
 
   const handleSave = () => {
     if (!vehicle) {

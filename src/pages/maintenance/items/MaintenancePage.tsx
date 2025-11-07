@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getMaintenanceById,
   createMaintenance,
   updateMaintenance,
 } from "../../../services/maintenances";
-import { getMaintenanceCategories } from "../../../services/categories";
+import {
+  getMaintenanceCategories,
+  getMaintenanceCategoriesById,
+} from "../../../services/categories";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -20,6 +23,7 @@ import {
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const isNew = id === "new";
   const isReadOnly = !isNew && !id;
 
@@ -91,6 +95,24 @@ export default function MaintenancePage() {
       cancelled = true;
     };
   }, [id, isNew, executeLoad, showError]);
+
+  // Load category from query parameter
+  useEffect(() => {
+    if (!isNew) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const categoryId = searchParams.get("categoryId");
+
+    if (categoryId) {
+      executeLoad(async () => {
+        const response = await getMaintenanceCategoriesById(categoryId);
+        if (response.success && response.data) {
+          setFormData((prev) => ({ ...prev, categoryId: response.data!.id }));
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNew, location.search]);
 
   const handleSave = () => {
     if (!formData.name.trim()) {

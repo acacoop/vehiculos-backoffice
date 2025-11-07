@@ -9,6 +9,7 @@ import StatusToggle from "../../components/StatusToggle/StatusToggle";
 import { getUserById } from "../../services/users";
 import { getAssignments } from "../../services/assignments";
 import { getReservations } from "../../services/reservations";
+import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
 import type { User } from "../../types/user";
 import type {
   Assignment,
@@ -18,6 +19,7 @@ import type {
   Reservation,
   ReservationFilterParams,
 } from "../../types/reservation";
+import type { VehicleResponsibleFilterParams } from "../../types/vehicleResponsible";
 
 export default function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -225,6 +227,31 @@ export default function UserPage() {
         search={{
           enabled: true,
           placeholder: "Buscar reservas...",
+        }}
+      />
+
+      <Table<VehicleResponsibleFilterParams, Assignment>
+        getRows={(options) =>
+          getVehicleResponsibles({
+            ...options,
+            filters: { ...options?.filters, userId: id },
+          })
+        }
+        columns={assignmentColumns}
+        header={{
+          title: "Vehículos bajo Responsabilidad",
+          addButton: {
+            text: "+ Agregar Responsable",
+            onClick: () => navigate(`/vehicles/responsibles/new?userId=${id}`),
+          },
+        }}
+        actionColumn={{
+          route: "/vehicles/responsibles",
+          width: 80,
+        }}
+        search={{
+          enabled: true,
+          placeholder: "Buscar responsables...",
         }}
       />
     </div>

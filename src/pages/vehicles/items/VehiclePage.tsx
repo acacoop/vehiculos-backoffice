@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Form,
   type FormButton,
@@ -11,6 +11,7 @@ import {
   getVehicleById,
   updateVehicle,
 } from "../../../services/vehicles";
+import { getVehicleModelById } from "../../../services/vehicleModels";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { VehicleModelEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
@@ -48,6 +49,8 @@ import type { VehicleResponsibleFilterParams } from "../../../types/vehicleRespo
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const isNew = id === "new";
 
   const [brand, setBrand] = useState<VehicleBrand | null>(null);
@@ -91,6 +94,24 @@ export default function VehiclesPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand]);
+
+  // Load model from query parameter
+  useEffect(() => {
+    if (!isNew) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const modelId = searchParams.get("modelId");
+
+    if (modelId) {
+      executeLoad(async () => {
+        const response = await getVehicleModelById(modelId);
+        if (response.success && response.data) {
+          setModel(response.data);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNew, location.search]);
 
   const loadVehicle = async (vehicleId: string) => {
     await executeLoad(async () => {
@@ -158,7 +179,7 @@ export default function VehiclesPage() {
               transmission: formData.transmission || undefined,
               fuelType: formData.fuelType || undefined,
             }),
-      `Vehículo ${actionText}do con éxito`
+      `Vehículo ${actionText}do con éxito`,
     );
   };
 
@@ -451,7 +472,17 @@ export default function VehiclesPage() {
               })
             }
             columns={assignmentColumns}
-            header={{ title: "Responsables" }}
+            header={{
+              title: "Responsables",
+              addButton: {
+                text: "+ Agregar Responsable",
+                onClick: () =>
+                  navigate(`/vehicles/responsibles/new?vehicleId=${id}`),
+              },
+            }}
+            actionColumn={{
+              route: "/vehicles/responsibles",
+            }}
             search={{ enabled: true, placeholder: "Buscar responsables..." }}
           />
 
@@ -477,7 +508,17 @@ export default function VehiclesPage() {
               })
             }
             columns={maintenanceColumns}
-            header={{ title: "Mantenimientos Programados" }}
+            header={{
+              title: "Mantenimientos Programados",
+              addButton: {
+                text: "+ Asignar Mantenimiento",
+                onClick: () =>
+                  navigate(`/maintenance/assignments/new?vehicleId=${id}`),
+              },
+            }}
+            actionColumn={{
+              route: "/maintenance/assignments",
+            }}
             search={{ enabled: true, placeholder: "Buscar mantenimientos..." }}
           />
 
