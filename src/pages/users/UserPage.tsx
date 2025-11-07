@@ -168,79 +168,71 @@ export default function UserPage() {
   ];
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <div
-        style={{
-          maxWidth: "900px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "50px",
+      }}
+    >
+      <Form title="Detalle del Usuario" sections={userInfoSections} />
+
+      <StatusToggle
+        entityId={id!}
+        entityType="user"
+        active={userData.active}
+        onToggle={handleStatusToggle}
+      />
+
+      <Table<AssignmentFilterParams, Assignment>
+        getRows={(options) =>
+          getAssignments({
+            ...options,
+            filters: { ...options?.filters, userId: id },
+          })
+        }
+        columns={assignmentColumns}
+        header={{
+          title: "Vehículos Asignados",
+          addButton: {
+            text: "Agregar Vehículo",
+            onClick: () => navigate(`/assignments/create?userId=${id}`),
+          },
         }}
-      >
-        <Form title="Detalle del Usuario" sections={userInfoSections} />
+        actionColumn={{
+          route: "/assignments",
+          width: 80,
+        }}
+        search={{
+          enabled: true,
+          placeholder: "Buscar asignaciones...",
+        }}
+      />
 
-        <StatusToggle
-          entityId={id!}
-          entityType="user"
-          active={userData.active}
-          onToggle={handleStatusToggle}
-        />
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <Table<AssignmentFilterParams, Assignment>
-          getRows={(options) =>
-            getAssignments({
-              ...options,
-              filters: { ...options?.filters, userId: id },
-            })
-          }
-          columns={assignmentColumns}
-          header={{
-            title: "Vehículos Asignados",
-            addButton: {
-              text: "Agregar Vehículo",
-              onClick: () => navigate(`/assignments/create?userId=${id}`),
-            },
-          }}
-          actionColumn={{
-            route: "/assignments",
-            width: 80,
-          }}
-          search={{
-            enabled: true,
-            placeholder: "Buscar asignaciones...",
-          }}
-        />
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <Table<ReservationFilterParams, Reservation>
-          getRows={(options) =>
-            getReservations({
-              ...options,
-              filters: { ...options?.filters, userId: id },
-            })
-          }
-          columns={reservationColumns}
-          header={{
-            title: "Reservas de Vehículos",
-            addButton: {
-              text: "Nueva Reserva",
-              onClick: () => navigate(`/reservations/create?userId=${id}`),
-            },
-          }}
-          actionColumn={{
-            route: "/reservations",
-            width: 80,
-          }}
-          search={{
-            enabled: true,
-            placeholder: "Buscar reservas...",
-          }}
-        />
-      </div>
+      <Table<ReservationFilterParams, Reservation>
+        getRows={(options) =>
+          getReservations({
+            ...options,
+            filters: { ...options?.filters, userId: id },
+          })
+        }
+        columns={reservationColumns}
+        header={{
+          title: "Reservas de Vehículos",
+          addButton: {
+            text: "Nueva Reserva",
+            onClick: () => navigate(`/reservations/create?userId=${id}`),
+          },
+        }}
+        actionColumn={{
+          route: "/reservations",
+          width: 80,
+        }}
+        search={{
+          enabled: true,
+          placeholder: "Buscar reservas...",
+        }}
+      />
     </div>
   );
 }

@@ -12,7 +12,6 @@ import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
-import "./ModelPage.css";
 import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 
 export default function ModelPage() {
@@ -91,7 +90,7 @@ export default function ModelPage() {
               brandId: brand.id,
               vehicleType: formData.vehicleType.trim(),
             }),
-      `Modelo ${actionText}do exitosamente`,
+      `Modelo ${actionText}do exitosamente`
     );
   };
 

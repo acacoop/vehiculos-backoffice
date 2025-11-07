@@ -116,7 +116,7 @@ export default function VehiclesPage() {
               transmission: formData.transmission || undefined,
               fuelType: formData.fuelType || undefined,
             }),
-      `Vehículo ${actionText}do con éxito`,
+      `Vehículo ${actionText}do con éxito`
     );
   };
 

@@ -32,6 +32,7 @@ export default function VehiclesPage() {
           enabled: true,
           placeholder: "Buscar Vehiculos...",
         }}
+        width={1200}
       />
     </div>
   );

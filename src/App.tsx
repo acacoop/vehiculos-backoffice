@@ -61,8 +61,12 @@ function ProtectedRoute() {
   return (
     <>
       <Navbar />
-      <Outlet />
-      <Footer />
+      <main className="app-content">
+        <div className="app-content-inner">
+          <Outlet />
+        </div>
+        <Footer />
+      </main>
     </>
   );
 }

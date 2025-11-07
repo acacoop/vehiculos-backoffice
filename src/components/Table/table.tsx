@@ -150,6 +150,7 @@ interface TableProps<
   actionColumn?: TableActionColumn<T>;
   search?: TableSearch;
 
+  width?: number | string;
   maxWidth?: string;
   maxHeight?: string;
 }
@@ -163,6 +164,7 @@ export function Table<
   header,
   actionColumn,
   search,
+  width,
   maxWidth = "1200px",
   maxHeight = "600px",
 }: TableProps<TFilters, T>) {
@@ -324,7 +326,7 @@ export function Table<
   const hasRows = rows.length > 0;
 
   return (
-    <div className="table-main-container" style={{ maxWidth }}>
+    <div className="table-main-container" style={{ maxWidth, width }}>
       {header && (
         <div className="table-header">
           <h2 className="table-header-title">{header.title}</h2>
@@ -369,6 +371,7 @@ export function Table<
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
+          showToolbar={search?.enabled}
           slotProps={{
             toolbar: search?.enabled
               ? {

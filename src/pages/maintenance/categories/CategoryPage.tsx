@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getMaintenanceCategoriesById,
@@ -9,20 +9,10 @@ import {
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import "./CategoryPage.css";
 import { Form } from "../../../components/Form";
 import type { FormSection, FormButton } from "../../../components/Form";
 
 export default function CategoryPage() {
-  const { id } = useParams<{ id: string }>();
-  const isNew = id === "new";
-  const isReadOnly = !isNew && !id; // View mode (if needed in future)
-
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-  });
-
   const {
     loading,
     saving,
@@ -36,7 +26,16 @@ export default function CategoryPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/categories" });
+  } = usePageState({ redirectOnSuccess: "/maintenance/categories" });
+
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+
+  const isNew = location.pathname.endsWith("/new");
+  const isReadOnly = !isNew && loading;
+  const [formData, setFormData] = useState({
+    name: "",
+  });
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -52,7 +51,6 @@ export default function CategoryPage() {
         if (response.success && response.data) {
           setFormData({
             name: response.data.name || "",
-            description: response.data.description || "",
           });
         } else {
           showError(response.message || "Error al cargar la categoría");
@@ -63,7 +61,9 @@ export default function CategoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, isNew, executeLoad, showError]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isNew]);
 
   const handleSave = () => {
     if (!formData.name.trim()) {
@@ -78,13 +78,11 @@ export default function CategoryPage() {
         isNew
           ? createMaintenanceCategory({
               name: formData.name.trim(),
-              description: formData.description.trim(),
             })
           : updateMaintenanceCategory(id!, {
               name: formData.name.trim(),
-              description: formData.description.trim(),
             }),
-      `Categoría ${actionText}da exitosamente`,
+      `Categoría ${actionText}da exitosamente`
     );
   };
 
@@ -94,6 +92,7 @@ export default function CategoryPage() {
 
   const sections: FormSection[] = [
     {
+      type: "fields",
       title: "Información de la Categoría",
       layout: "vertical",
       fields: [
@@ -107,16 +106,6 @@ export default function CategoryPage() {
           placeholder: "Ej: Cambio de aceite",
           disabled: isReadOnly,
         },
-        {
-          type: "textarea",
-          key: "description",
-          label: "Descripción",
-          value: formData.description,
-          onChange: (value) => setFormData({ ...formData, description: value }),
-          placeholder: "Descripción opcional de la categoría...",
-          rows: 4,
-          disabled: isReadOnly,
-        },
       ],
     },
   ];
@@ -125,7 +114,7 @@ export default function CategoryPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/categories"),
+      onClick: () => goTo("/maintenance/categories"),
       disabled: saving,
     },
     ...(!isReadOnly
@@ -151,7 +140,6 @@ export default function CategoryPage() {
         title={isNew ? "Nueva Categoría" : "Editar Categoría"}
         sections={sections}
         buttons={buttons}
-        mode="compact"
       />
 
       <ConfirmDialog

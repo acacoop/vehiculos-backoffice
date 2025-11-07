@@ -3,7 +3,6 @@ import { Table } from "../../../components/Table/table";
 import type { TableColumn } from "../../../components/Table/table";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
-import "./BrandsPage.css";
 
 const columns: TableColumn<VehicleBrand>[] = [
   {
@@ -35,6 +34,7 @@ export default function BrandsPage() {
           enabled: true,
           placeholder: "Buscar marcas...",
         }}
+        width={1200}
       />
     </div>
   );

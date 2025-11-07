@@ -14,7 +14,6 @@ import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
-import "./BrandPage.css";
 import type { ApiFindOptions } from "../../../services/common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
@@ -101,12 +100,12 @@ export default function BrandPage() {
           : updateVehicleBrand(id!, {
               name: formData.name.trim(),
             }),
-      `Marca ${actionText}da exitosamente`,
+      `Marca ${actionText}da exitosamente`
     );
   };
 
   const getVehiclesByBrand = async (
-    findOptions?: ApiFindOptions<VehicleFilterParams>,
+    findOptions?: ApiFindOptions<VehicleFilterParams>
   ) => {
     const brandFilter: VehicleFilterParams = {
       ...findOptions?.filters,

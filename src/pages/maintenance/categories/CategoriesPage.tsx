@@ -10,11 +10,6 @@ const columns: TableColumn<Category>[] = [
     headerName: "Nombre",
     minWidth: 250,
   },
-  {
-    field: "description",
-    headerName: "Descripción",
-    minWidth: 300,
-  },
 ];
 
 export default function CategoriesPage() {
@@ -29,11 +24,11 @@ export default function CategoriesPage() {
           title: "Categorías de Mantenimiento",
           addButton: {
             text: "+ Nueva Categoría",
-            onClick: () => navigate("/categories/new"),
+            onClick: () => navigate("/maintenance/categories/new"),
           },
         }}
         actionColumn={{
-          route: "/categories",
+          route: "/maintenance/categories",
         }}
         search={{
           enabled: true,

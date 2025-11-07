@@ -46,58 +46,61 @@ export default function HomePage() {
   }, []);
 
   return (
-    <section className="home">
-      <div className="home-content">
-        <div className="home-header">
-          <h1>Bienvenido/a {displayName || "Usuario"} </h1>
-        </div>
-        <LoadingSpinner visible={loading} message="Cargando información..." />
-        <div className="bento-home-container">
-          <BentoHome
-            icon={IconUserBlue}
-            text="Gestión de Usuarios"
-            onClick={() => navigate("/users")}
-          />
-          <BentoHome
-            icon={IconCarBlue}
-            text="Gestión de Vehículos"
-            onClick={() => navigate("/vehicles")}
-          />
-          <BentoHome
-            icon={IconSettingsBlue}
-            text="Gestión de Asignaciones"
-            onClick={() => navigate("/assignments")}
-          />
-          <BentoHome
-            icon={IconMaintenanceBlue}
-            text="Gestión de Mantenimientos"
-            onClick={() => navigate("/maintenances")}
-          />
-          <BentoHome
-            icon={IconMetricsBlue}
-            text="Métricas"
-            onClick={() => navigate("/metrics")}
-          />
-          <BentoHome
-            icon={IconResponsible}
-            text="Responsable de Vehículo"
-            onClick={() => navigate("/vehicle-responsibles")}
-          />
-          <BentoHome
-            icon={IconBrandBlue}
-            text="Marcas y Modelos"
-            onClick={() => navigate("/models")}
-          />
-
-          <BentoHome
-            icon={IconArgentina}
-            text="DNRPA"
-            onClick={() =>
-              window.open("https://www.dnrpa.gov.ar/portal_dnrpa/", "_blank")
-            }
-          />
-        </div>
+    <div className="home-content">
+      <div className="home-header">
+        <h1>Bienvenido/a {displayName || "Usuario"} </h1>
       </div>
-    </section>
+      <LoadingSpinner visible={loading} message="Cargando información..." />
+      <div className="bento-home-container">
+        <BentoHome
+          icon={IconUserBlue}
+          text="Usuarios"
+          onClick={() => navigate("/users")}
+        />
+        <BentoHome
+          icon={IconCarBlue}
+          text="Vehículos"
+          onClick={() => navigate("/vehicles")}
+        />
+        <BentoHome
+          icon={IconSettingsBlue}
+          text="Asignaciones"
+          onClick={() => navigate("/assignments")}
+        />
+        <BentoHome
+          icon={IconMaintenanceBlue}
+          text="Mantenimientos"
+          onClick={() => navigate("/maintenances")}
+        />
+        <BentoHome
+          icon={IconMetricsBlue}
+          text="Métricas"
+          onClick={() => navigate("/metrics")}
+        />
+        <BentoHome
+          icon={IconResponsible}
+          text="Responsables"
+          onClick={() => navigate("/vehicle-responsibles")}
+        />
+        <BentoHome
+          icon={IconBrandBlue}
+          text="Marcas"
+          onClick={() => navigate("/vehicles/brands")}
+        />
+        <BentoHome
+          icon={IconBrandBlue}
+          text="Modelos"
+          onClick={() => navigate("/vehicles/models")}
+        />
+
+        <BentoHome
+          icon={IconArgentina}
+          text="DNRPA"
+          onClick={() =>
+            window.open("https://www.dnrpa.gov.ar/portal_dnrpa/", "_blank")
+          }
+        />
+      </div>
+    </div>
   );
 }
