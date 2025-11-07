@@ -26,7 +26,7 @@ export default function ModelsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="models-page">
+    <div className="container">
       <Table
         getRows={getVehicleModels}
         columns={columns}
@@ -44,6 +44,7 @@ export default function ModelsPage() {
           enabled: true,
           placeholder: "Buscar modelos...",
         }}
+        width={1200}
       />
     </div>
   );

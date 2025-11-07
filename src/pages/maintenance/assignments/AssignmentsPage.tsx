@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import type { MaintenanceAssignment } from "../../../types/maintenanceAsignment";
 import { getMaintenanceAssignments } from "../../../services/maintenanceAssignments";
-import "./AssignmentsPage.css";
 
 const columns: TableColumn<MaintenanceAssignment>[] = [
   {
@@ -44,7 +43,7 @@ export default function AssignmentsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="assignments-page">
+    <div className="container">
       <Table
         getRows={getMaintenanceAssignments}
         columns={columns}
@@ -62,6 +61,7 @@ export default function AssignmentsPage() {
           enabled: true,
           placeholder: "Buscar asignaciones...",
         }}
+        width={1200}
       />
     </div>
   );

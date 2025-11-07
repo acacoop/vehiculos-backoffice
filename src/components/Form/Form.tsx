@@ -1,5 +1,6 @@
 import React from "react";
 import "./Form.css";
+import { CancelButton, DeleteButton, ConfirmButton } from "../Buttons/Buttons";
 
 // ============ BASE FIELD INTERFACE ============
 interface BaseField {
@@ -285,19 +286,6 @@ const Form: React.FC<FormProps> = ({
       : "section-fields-vertical";
   };
 
-  const getButtonClass = (variant?: string) => {
-    switch (variant) {
-      case "primary":
-        return "btn-primary";
-      case "secondary":
-        return "btn-secondary";
-      case "danger":
-        return "btn-danger";
-      default:
-        return "btn-primary";
-    }
-  };
-
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSubmit) {
@@ -339,17 +327,27 @@ const Form: React.FC<FormProps> = ({
 
         {buttons.length > 0 && (
           <div className="form-actions">
-            {buttons.map((button, index) => (
-              <button
-                key={index}
-                type={button.type || "button"}
-                className={`form-btn ${getButtonClass(button.variant)}`}
-                onClick={button.onClick}
-                disabled={button.disabled || button.loading}
-              >
-                {button.loading ? "Procesando..." : button.text}
-              </button>
-            ))}
+            {buttons.map((button, index) => {
+              const buttonProps = {
+                key: index,
+                text: button.text,
+                onClick: button.onClick,
+                disabled: button.disabled,
+                loading: button.loading,
+                type: button.type || ("button" as const),
+              };
+
+              // Usar el componente apropiado según la variante
+              switch (button.variant) {
+                case "secondary":
+                  return <CancelButton {...buttonProps} />;
+                case "danger":
+                  return <DeleteButton {...buttonProps} />;
+                case "primary":
+                default:
+                  return <ConfirmButton {...buttonProps} />;
+              }
+            })}
           </div>
         )}
       </form>

@@ -135,7 +135,7 @@ export default function CategoryPage() {
   ];
 
   return (
-    <div className="category-page">
+    <div className="container">
       <Form
         title={isNew ? "Nueva Categoría" : "Editar Categoría"}
         sections={sections}

@@ -14,7 +14,7 @@ export default function VehiclesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="vehicles-page">
+    <div className="container">
       <Table
         getRows={getVehicles}
         columns={columns}

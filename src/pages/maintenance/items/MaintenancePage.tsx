@@ -132,7 +132,7 @@ export default function MaintenancePage() {
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             }),
-      `Mantenimiento ${actionText}do exitosamente`,
+      `Mantenimiento ${actionText}do exitosamente`
     );
   };
 
@@ -263,7 +263,7 @@ export default function MaintenancePage() {
   ];
 
   return (
-    <div className="maintenance-page">
+    <div className="container">
       <Form
         title={isNew ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
         sections={sections}

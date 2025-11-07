@@ -15,6 +15,11 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
 import type { ApiFindOptions } from "../../../services/common";
+import type {
+  VehicleModel,
+  VehicleModelFilterParams,
+} from "../../../types/vehicleModel";
+import { getVehicleModels } from "../../../services/vehicleModels";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -32,9 +37,17 @@ const vehicleColumns: TableColumn<Vehicle>[] = [
     headerName: "Año",
     minWidth: 80,
   },
+];
+
+const modelColumns: TableColumn<VehicleModel>[] = [
   {
-    field: "chassisNumber",
-    headerName: "Chasis",
+    field: "name",
+    headerName: "Nombre",
+    minWidth: 150,
+  },
+  {
+    field: "vehicleType",
+    headerName: "Tipo de Vehículo",
     minWidth: 150,
   },
 ];
@@ -104,17 +117,6 @@ export default function BrandPage() {
     );
   };
 
-  const getVehiclesByBrand = async (
-    findOptions?: ApiFindOptions<VehicleFilterParams>
-  ) => {
-    const brandFilter: VehicleFilterParams = {
-      ...findOptions?.filters,
-      brandId: id!,
-    };
-
-    return getVehicles({ ...findOptions, filters: brandFilter });
-  };
-
   if (loading) {
     return <LoadingSpinner message="Cargando marca..." />;
   }
@@ -160,7 +162,7 @@ export default function BrandPage() {
   ];
 
   return (
-    <div className="brand-page">
+    <div className="container">
       <Form
         title={isNew ? "Nueva Marca" : "Editar Marca"}
         sections={sections}
@@ -168,9 +170,41 @@ export default function BrandPage() {
       />
 
       {!isNew && id && (
-        <div className="brand-vehicles-section">
+        <>
           <Table
-            getRows={getVehiclesByBrand}
+            getRows={(findOptions?: ApiFindOptions<VehicleModelFilterParams>) =>
+              getVehicleModels({
+                ...findOptions,
+                filters: {
+                  ...findOptions?.filters,
+                  brandId: id,
+                },
+              })
+            }
+            columns={modelColumns}
+            header={{
+              title: "Modelos de esta Marca",
+              addButton: {
+                text: "+ Nuevo Modelo",
+                onClick: () => goTo(`/vehicles/models/new?brandId=${id}`),
+              },
+            }}
+            search={{
+              enabled: true,
+              placeholder: "Buscar modelos...",
+            }}
+          />
+
+          <Table
+            getRows={(findOptions?: ApiFindOptions<VehicleFilterParams>) =>
+              getVehicles({
+                ...findOptions,
+                filters: {
+                  ...findOptions?.filters,
+                  brandId: id,
+                },
+              })
+            }
             columns={vehicleColumns}
             header={{
               title: "Vehículos de esta Marca",
@@ -180,7 +214,7 @@ export default function BrandPage() {
               placeholder: "Buscar vehículos...",
             }}
           />
-        </div>
+        </>
       )}
 
       <ConfirmDialog

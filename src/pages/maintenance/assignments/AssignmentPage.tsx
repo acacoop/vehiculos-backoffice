@@ -17,7 +17,6 @@ import {
 import type { Vehicle } from "../../../types/vehicle";
 import type { Maintenance } from "../../../types/maintenance";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
-import "./AssignmentPage.css";
 
 export default function AssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -118,7 +117,7 @@ export default function AssignmentPage() {
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             }),
-      `Asignación ${actionText}da exitosamente`,
+      `Asignación ${actionText}da exitosamente`
     );
   };
 
@@ -230,7 +229,7 @@ export default function AssignmentPage() {
   ];
 
   return (
-    <div className="assignment-page">
+    <div className="container">
       <Form
         title={
           isNew

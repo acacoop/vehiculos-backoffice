@@ -412,7 +412,7 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div>
+    <div className="container">
       <div>
         <Form
           title="Detalle del Vehículo"

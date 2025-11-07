@@ -36,7 +36,7 @@ export default function MaintenancesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="maintenances-page">
+    <div className="container">
       <Table
         getRows={getMaintenances}
         columns={columns}
@@ -54,6 +54,7 @@ export default function MaintenancesPage() {
           enabled: true,
           placeholder: "Buscar mantenimientos...",
         }}
+        width={1200}
       />
     </div>
   );

@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import { getMaintenanceCategories } from "../../../services/categories";
 import type { Category } from "../../../types/category";
-import "./CategoriesPage.css";
 
 const columns: TableColumn<Category>[] = [
   {
@@ -16,7 +15,7 @@ export default function CategoriesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="categories-page">
+    <div className="container">
       <Table
         getRows={getMaintenanceCategories}
         columns={columns}
@@ -34,6 +33,7 @@ export default function CategoriesPage() {
           enabled: true,
           placeholder: "Buscar categorías...",
         }}
+        width={1200}
       />
     </div>
   );

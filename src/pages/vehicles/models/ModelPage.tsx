@@ -155,7 +155,7 @@ export default function ModelPage() {
   ];
 
   return (
-    <div className="model-page">
+    <div className="container">
       <Form
         title={isNew ? "Nuevo Modelo" : "Editar Modelo"}
         sections={sections}

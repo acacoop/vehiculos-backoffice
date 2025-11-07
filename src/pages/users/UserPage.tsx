@@ -168,13 +168,7 @@ export default function UserPage() {
   ];
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "50px",
-      }}
-    >
+    <div className="container">
       <Form title="Detalle del Usuario" sections={userInfoSections} />
 
       <StatusToggle
