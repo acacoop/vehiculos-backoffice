@@ -22,7 +22,7 @@ import {
 } from "../../common";
 
 function createGridColumn<T extends GridValidRowModel>(
-  column: TableColumn<T>,
+  column: TableColumn<T>
 ): GridColDef<T> {
   const baseColumn: GridColDef<T> = {
     field: column.field,
@@ -141,7 +141,7 @@ interface TableSearch {
 
 interface TableProps<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
@@ -156,7 +156,7 @@ interface TableProps<
 
 export function Table<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 >({
   getRows,
   columns,
@@ -199,7 +199,7 @@ export function Table<
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue,
+        current === trimmedValue ? current : trimmedValue
       );
     }, 400);
 
@@ -221,6 +221,7 @@ export function Table<
         });
 
         if (response.success) {
+          console.log("Fetched rows:", response.data);
           setRows(response.data || []);
           setRowCount(response.pagination?.total || response.data?.length || 0);
         } else {
@@ -234,7 +235,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled],
+    [getRows, search?.enabled]
   );
 
   useEffect(() => {
@@ -246,7 +247,7 @@ export function Table<
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      search?.enabled ? debouncedSearch : undefined,
+      search?.enabled ? debouncedSearch : undefined
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -262,10 +263,10 @@ export function Table<
       setPaginationModel((prev) =>
         prev.page === model.page && prev.pageSize === model.pageSize
           ? prev
-          : model,
+          : model
       );
     },
-    [],
+    []
   );
 
   const handleFilterModelChange = useCallback(
@@ -283,7 +284,7 @@ export function Table<
         setPaginationModel({ ...paginationModel, page: 0 });
       }
     },
-    [search?.enabled, searchTerm, paginationModel],
+    [search?.enabled, searchTerm, paginationModel]
   );
 
   // Build final columns with action column if needed

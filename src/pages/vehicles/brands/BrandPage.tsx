@@ -13,8 +13,9 @@ import { getVehicles } from "../../../services/vehicles";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import type { Vehicle } from "../../../types/vehicle";
+import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
 import "./BrandPage.css";
+import type { ApiFindOptions } from "../../../services/common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -100,24 +101,19 @@ export default function BrandPage() {
           : updateVehicleBrand(id!, {
               name: formData.name.trim(),
             }),
-      `Marca ${actionText}da exitosamente`,
+      `Marca ${actionText}da exitosamente`
     );
   };
 
-  const getVehiclesByBrand = async (filters?: {
-    filters?: { brandId?: string };
-  }) => {
-    if (isNew || !id) return getVehicles({ findOptions: filters });
+  const getVehiclesByBrand = async (
+    findOptions?: ApiFindOptions<VehicleFilterParams>
+  ) => {
+    const brandFilter: VehicleFilterParams = {
+      ...findOptions?.filters,
+      brandId: id!,
+    };
 
-    return getVehicles({
-      findOptions: {
-        ...filters,
-        filters: {
-          ...filters?.filters,
-          brandId: id,
-        },
-      },
-    });
+    return getVehicles({ ...findOptions, filters: brandFilter });
   };
 
   if (loading) {

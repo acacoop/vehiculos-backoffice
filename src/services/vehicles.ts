@@ -12,11 +12,9 @@ import {
   type ApiFindOptions,
 } from "./common";
 
-export async function getVehicles({
-  findOptions,
-}: {
-  findOptions?: ApiFindOptions<VehicleFilterParams>;
-}): Promise<ServiceResponse<Vehicle[]>> {
+export async function getVehicles(
+  findOptions?: ApiFindOptions<VehicleFilterParams>
+): Promise<ServiceResponse<Vehicle[]>> {
   return await apiFindItems({
     uri: "vehicles",
     findOptions,
@@ -25,7 +23,7 @@ export async function getVehicles({
 }
 
 export async function getVehicleById(
-  id: string,
+  id: string
 ): Promise<ServiceResponse<Vehicle>> {
   return await apiFindItemById({
     uri: "vehicles",
@@ -36,7 +34,7 @@ export async function getVehicleById(
 
 export async function updateVehicle(
   id: string,
-  payload: Partial<VehicleInput>,
+  payload: Partial<VehicleInput>
 ): Promise<ServiceResponse<Vehicle>> {
   return await apiUpdateItem({
     uri: "vehicles",
@@ -47,7 +45,7 @@ export async function updateVehicle(
 }
 
 export async function createVehicle(
-  payload: VehicleInput,
+  payload: VehicleInput
 ): Promise<ServiceResponse<Vehicle>> {
   return await apiCreateItem({
     uri: "vehicles",

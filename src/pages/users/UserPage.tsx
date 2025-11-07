@@ -168,10 +168,6 @@ export default function UserPage() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <div style={{ marginBottom: "2rem" }}>
-        <button onClick={() => navigate("/users")}>← Volver</button>
-      </div>
-
       <div
         style={{
           maxWidth: "900px",

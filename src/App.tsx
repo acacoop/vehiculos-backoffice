@@ -46,6 +46,8 @@ import AssignmentPage from "./pages/maintenance/assignments/AssignmentPage";
 import { useMsal } from "@azure/msal-react";
 import { getActiveAccount } from "./common/auth";
 import { UserPage, UsersPage } from "./pages/users";
+import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
+import VehiclePage from "./pages/vehicles/items/VehiclePage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -144,6 +146,10 @@ function App() {
           {/* <Route path="/edit-vehicle-responsibles" element={<EditVehicleResponsibles />} /> */}
           {/* <Route path="/edit-vehicle-responsibles/:id" element={<EditVehicleResponsibles />} /> */}
           {/* <Route path="/models" element={<Models />} /> */}
+
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles/new" element={<VehiclePage />} />
+          <Route path="/vehicles/:id" element={<VehiclePage />} />
 
           {/* MIGRADAS - Vehicle Brands */}
           <Route path="/vehicles/brands" element={<BrandsPage />} />

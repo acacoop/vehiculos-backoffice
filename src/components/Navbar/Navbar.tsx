@@ -153,6 +153,16 @@ function Navbar() {
                 Usuarios
               </Link>
             </li>
+            <li>
+              <Link to="/vehicles" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconCar}
+                  alt="Icono vehículo"
+                />
+                Vehículos
+              </Link>
+            </li>
             <li className="navbar-separator" role="separator">
               <span />
             </li>
