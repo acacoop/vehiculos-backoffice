@@ -118,9 +118,7 @@ export function EntitySearch<T>({
       <div className="entity-search-selected-grid">
         {displayFields.map((field, index) => (
           <div key={index} className="entity-search-selected-field">
-            <span className="entity-search-selected-label">
-              {field.label}:
-            </span>
+            <span className="entity-search-selected-label">{field.label}:</span>
             <span className="entity-search-selected-value">
               {getNestedValue(item, String(field.path))}
             </span>
