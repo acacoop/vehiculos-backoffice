@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../components/Table/table";
-import { getMaintenanceCategories } from "../../services/categories";
-import type { Category } from "../../types/category";
+import { Table, type TableColumn } from "../../../components/Table/table";
+import { getMaintenanceCategories } from "../../../services/categories";
+import type { Category } from "../../../types/category";
 import "./CategoriesPage.css";
 
 const columns: TableColumn<Category>[] = [

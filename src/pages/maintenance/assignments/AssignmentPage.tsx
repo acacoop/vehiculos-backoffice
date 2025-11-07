@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Form } from "../../../components/Form";
-import type { FormSection, FormButton } from "../../../components/Form";
+import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   createMaintenanceAssignment,
+  getMaintenanceAssignmentById,
   updateMaintenanceAssignment,
 } from "../../../services/maintenanceAssignments";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import {
+  VehicleEntitySearch,
+  MaintenanceEntitySearch,
+} from "../../../components/EntitySearch/EntitySearch";
+import type { Vehicle } from "../../../types/vehicle";
+import type { Maintenance } from "../../../types/maintenance";
+import type { FormSection, FormButton } from "../../../components/Form/Form";
 import "./AssignmentPage.css";
 
 export default function AssignmentPage() {
@@ -17,9 +24,9 @@ export default function AssignmentPage() {
   const isNew = id === "new";
   const isReadOnly = !isNew && !id;
 
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
   const [formData, setFormData] = useState({
-    vehicleId: "",
-    maintenanceId: "",
     kilometersFrequency: 0,
     daysFrequency: 0,
     observations: "",
@@ -48,18 +55,15 @@ export default function AssignmentPage() {
 
     (async () => {
       await executeLoad(async () => {
-        const response = await getAllMaintenanceAssignments({
-          pagination: { limit: 1, offset: 0 },
-          search: id,
-        });
+        const response = await getMaintenanceAssignmentById(id);
 
         if (cancelled) return;
 
-        if (response.success && response.data && response.data.length > 0) {
-          const assignment = response.data[0];
+        if (response.success && response.data) {
+          const assignment = response.data;
+          setVehicle(assignment.vehicle || null);
+          setMaintenance(assignment.maintenance || null);
           setFormData({
-            vehicleId: assignment.vehicle?.id?.toString() || "",
-            maintenanceId: assignment.maintenance?.id?.toString() || "",
             kilometersFrequency: assignment.kilometersFrequency || 0,
             daysFrequency: assignment.daysFrequency || 0,
             observations: assignment.observations || "",
@@ -77,12 +81,12 @@ export default function AssignmentPage() {
   }, [id, isNew, executeLoad, showError]);
 
   const handleSave = () => {
-    if (!formData.vehicleId.trim()) {
+    if (!vehicle) {
       showError("El vehículo es obligatorio");
       return;
     }
 
-    if (!formData.maintenanceId.trim()) {
+    if (!maintenance) {
       showError("El mantenimiento es obligatorio");
       return;
     }
@@ -101,8 +105,8 @@ export default function AssignmentPage() {
       () =>
         isNew
           ? createMaintenanceAssignment({
-              vehicleId: formData.vehicleId.trim(),
-              maintenanceId: formData.maintenanceId.trim(),
+              vehicleId: vehicle.id!.toString(),
+              maintenanceId: maintenance.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
@@ -124,30 +128,39 @@ export default function AssignmentPage() {
 
   const sections: FormSection[] = [
     {
-      title: "Información de la Asignación",
+      title: "Vehículo y Mantenimiento",
       layout: "vertical",
       fields: [
         {
-          type: "text",
-          key: "vehicleId",
-          label: "ID del Vehículo",
-          value: formData.vehicleId,
-          onChange: (value) => setFormData({ ...formData, vehicleId: value }),
-          required: true,
-          placeholder: "Ingrese el ID del vehículo",
+          type: "custom",
+          key: "vehicle",
+          label: "Vehículo",
+          render: () => (
+            <VehicleEntitySearch
+              vehicle={vehicle}
+              onVehicleChange={setVehicle}
+            />
+          ),
           disabled: isReadOnly || !isNew,
         },
         {
-          type: "text",
-          key: "maintenanceId",
-          label: "ID del Mantenimiento",
-          value: formData.maintenanceId,
-          onChange: (value) =>
-            setFormData({ ...formData, maintenanceId: value }),
-          required: true,
-          placeholder: "Ingrese el ID del mantenimiento",
+          type: "custom",
+          key: "maintenance",
+          label: "Mantenimiento",
+          render: () => (
+            <MaintenanceEntitySearch
+              maintenance={maintenance}
+              onMaintenanceChange={setMaintenance}
+            />
+          ),
           disabled: isReadOnly || !isNew,
         },
+      ],
+    },
+    {
+      title: "Frecuencias",
+      layout: "horizontal",
+      fields: [
         {
           type: "number",
           key: "kilometersFrequency",
@@ -173,6 +186,12 @@ export default function AssignmentPage() {
           min: 0,
           disabled: isReadOnly,
         },
+      ],
+    },
+    {
+      title: "Información Adicional",
+      layout: "vertical",
+      fields: [
         {
           type: "textarea",
           key: "observations",

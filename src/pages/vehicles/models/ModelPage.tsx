@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Form from "../../components/Form/Form";
-import type { FormSection, FormButton } from "../../components/Form/Form";
-import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import Form from "../../../components/Form/Form";
+import type { FormSection, FormButton } from "../../../components/Form/Form";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getVehicleModelById,
   createVehicleModel,
   updateVehicleModel,
-} from "../../services/vehicleModels";
-import { getVehicleBrands } from "../../services/vehicleBrands";
-import { usePageState } from "../../hooks";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import type { VehicleBrand } from "../../types/vehicleBrand";
+} from "../../../services/vehicleModels";
+import { getVehicleBrands } from "../../../services/vehicleBrands";
+import { usePageState } from "../../../hooks";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import type { VehicleBrand } from "../../../types/vehicleBrand";
 import "./ModelPage.css";
 
 export default function ModelPage() {

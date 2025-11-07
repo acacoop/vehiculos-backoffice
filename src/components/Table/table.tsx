@@ -5,6 +5,7 @@ import {
   type GridValidRowModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
+import { Chip } from "@mui/material";
 import { esES } from "@mui/x-data-grid/locales";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,12 +13,18 @@ import type { ApiFindOptions } from "../../services/common";
 import type { FilterParams, ServiceResponse } from "../../types/common";
 import { PencilIcon } from "./icons";
 import "./table.css";
-import { getNestedString } from "../../common/utils";
+import {
+  getNestedString,
+  formatDate,
+  formatDateTime,
+  formatEndDate,
+  formatRelativeDate,
+} from "../../common";
 
 function createGridColumn<T extends GridValidRowModel>(
   column: TableColumn<T>,
 ): GridColDef<T> {
-  return {
+  const baseColumn: GridColDef<T> = {
     field: column.field,
     headerName: column.headerName,
     width: column.width,
@@ -26,21 +33,89 @@ function createGridColumn<T extends GridValidRowModel>(
     disableColumnMenu: true,
     disableReorder: true,
     sortable: false,
-    valueGetter: (params: { row: T }) => {
-      const rawValue = getNestedString(params.row, column.field);
-      return column.transform
-        ? column.transform(rawValue, params.row)
-        : rawValue;
-    },
   };
+
+  // Handle different column types
+  switch (column.type) {
+    case "boolean":
+      return {
+        ...baseColumn,
+        renderCell: (params: GridRenderCellParams<T>) => {
+          const rawValue = getNestedString(params.row, column.field);
+          const boolValue =
+            rawValue === "true" || rawValue === "1" || rawValue === "True";
+          const transformedValue = column.transform
+            ? column.transform(rawValue, params.row)
+            : boolValue
+            ? "Activo"
+            : "Inactivo";
+
+          return (
+            <Chip
+              label={transformedValue}
+              color={boolValue ? "success" : "default"}
+              size="small"
+              sx={{ color: "#fff", fontWeight: 600 }}
+            />
+          );
+        },
+      };
+
+    case "date":
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return formatDate(rawValue);
+        },
+      };
+
+    case "datetime":
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return formatDateTime(rawValue);
+        },
+      };
+
+    case "enddate":
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return formatEndDate(rawValue);
+        },
+      };
+
+    case "relativedate":
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return formatRelativeDate(rawValue);
+        },
+      };
+
+    default:
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return column.transform ? column.transform(rawValue, row) : rawValue;
+        },
+      };
+  }
 }
 
+// ============ SIMPLIFIED COLUMN INTERFACE ============
 export interface TableColumn<T extends GridValidRowModel> {
-  field: string; // Can be dot-separated path like "model.name"
+  field: string;
   headerName: string;
   width?: number;
   minWidth?: number;
   flex?: number;
+  type?: "text" | "boolean" | "date" | "datetime" | "enddate" | "relativedate";
   transform?: (value: string, row: T) => string;
 }
 
@@ -89,7 +164,7 @@ export function Table<
   actionColumn,
   search,
   maxWidth = "1200px",
-  maxHeight = "800px",
+  maxHeight = "600px",
 }: TableProps<TFilters, T>) {
   const navigate = useNavigate();
 
@@ -245,6 +320,8 @@ export function Table<
     return [...baseColumns, actionCol];
   }, [columns, actionColumn, navigate]);
 
+  const hasRows = rows.length > 0;
+
   return (
     <div className="table-main-container" style={{ maxWidth }}>
       {header && (
@@ -264,15 +341,20 @@ export function Table<
         style={{
           borderRadius: 20,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          overflow: "auto",
           width: "100%",
           maxWidth: "1400px",
-          maxHeight,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          ...(hasRows && maxHeight
+            ? { height: maxHeight, maxHeight, minHeight: "360px" }
+            : { minHeight: "240px" }),
         }}
       >
         <DataGrid
           rows={rows}
           columns={finalColumns}
+          getRowId={(row) => row.id}
           pagination
           paginationMode="server"
           filterMode="server"
@@ -286,14 +368,16 @@ export function Table<
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
-          showToolbar
           slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 400 },
-            },
+            toolbar: search?.enabled
+              ? {
+                  showQuickFilter: true,
+                  quickFilterProps: { debounceMs: 400 },
+                }
+              : undefined,
           }}
           localeText={localeText}
+          style={{ flex: hasRows ? 1 : undefined }}
           sx={{
             backgroundColor: "#f2f2f2",
             "& .MuiDataGrid-row:nth-of-type(even)": {
@@ -303,9 +387,11 @@ export function Table<
               backgroundColor: "#ffffff",
             },
             borderRadius: 5,
-            height: "calc(100% - 60px)",
-            minHeight: "400px",
+            ...(hasRows && { height: "100%" }),
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            "& .MuiDataGrid-virtualScroller": {
+              overflowY: "auto",
+            },
             ...(actionColumn?.pinned && {
               "& .MuiDataGrid-cell[data-field='actions']": {
                 position: "sticky",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./Home.css";
+import "./HomePage.css";
 import BentoHome from "../../components/BentoHome/BentoHome";
 import IconUserBlue from "../../assets/icons/user_blue.svg";
 import IconCarBlue from "../../assets/icons/car_blue.svg";
@@ -8,14 +8,14 @@ import IconMaintenanceBlue from "../../assets/icons/maintenance_blue.svg";
 import IconMetricsBlue from "../../assets/icons/metrics_blue.svg";
 import IconArgentina from "../../assets/icons/escudo-de-la-rep-argentina.svg";
 import IconBrandBlue from "../../assets/icons/vehicle_brand_blue.svg";
-import { LoadingSpinner } from "../../components";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import IconResponsible from "../../assets/icons/assignment_blue.svg";
 import { isAuthenticated } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
 
-export default function Home() {
+export default function HomePage() {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);

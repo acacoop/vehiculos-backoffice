@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Table } from "../../components/Table/table";
-import type { TableColumn } from "../../components/Table/table";
-import { getVehicleModels } from "../../services/vehicleModels";
-import type { VehicleModel } from "../../types/vehicleModel";
+import { Table } from "../../../components/Table/table";
+import type { TableColumn } from "../../../components/Table/table";
+import { getVehicleModels } from "../../../services/vehicleModels";
+import type { VehicleModel } from "../../../types/vehicleModel";
 import "./ModelsPage.css";
 
 const columns: TableColumn<VehicleModel>[] = [

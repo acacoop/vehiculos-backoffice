@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Form } from "../../components/Form";
-import type { FormSection, FormButton } from "../../components/Form";
-import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getMaintenanceCategoriesById,
   createMaintenanceCategory,
   updateMaintenanceCategory,
-} from "../../services/categories";
-import { usePageState } from "../../hooks";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../components/NotificationToast/NotificationToast";
+} from "../../../services/categories";
+import { usePageState } from "../../../hooks";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import "./CategoryPage.css";
+import { Form } from "../../../components/Form";
+import type { FormSection, FormButton } from "../../../components/Form";
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();

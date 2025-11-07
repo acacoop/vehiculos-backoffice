@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Form from "../../components/Form/Form";
-import type { FormSection, FormButton } from "../../components/Form/Form";
-import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
-import { Table, type TableColumn } from "../../components/Table/table";
+import Form from "../../../components/Form/Form";
+import type { FormSection, FormButton } from "../../../components/Form/Form";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import { Table, type TableColumn } from "../../../components/Table/table";
 import {
   getVehicleBrandById,
   createVehicleBrand,
   updateVehicleBrand,
-} from "../../services/vehicleBrands";
-import { getVehicles } from "../../services/vehicles";
-import { usePageState } from "../../hooks";
-import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import type { Vehicle } from "../../types/vehicle";
+} from "../../../services/vehicleBrands";
+import { getVehicles } from "../../../services/vehicles";
+import { usePageState } from "../../../hooks";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import type { Vehicle } from "../../../types/vehicle";
 import "./BrandPage.css";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [

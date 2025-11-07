@@ -1,12 +1,12 @@
-import "./LogIn.css";
+import "./LoginPage.css";
 import Logo from "../../assets/brand/logo_azul.webp";
 import Microsoft from "../../assets/icons/microsoft.svg";
 import { login, isAuthenticated } from "../../common/auth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoadingSpinner } from "../../components";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
-export default function LogIn() {
+export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 

@@ -76,7 +76,7 @@ export default function EditMaintenance() {
 
   // Function to get vehicles assigned to this maintenance
   const getVehiclesData = async (
-    pagination: PaginationParams
+    pagination: PaginationParams,
   ): Promise<ServiceResponse<any[]>> => {
     if (!maintenanceId || isCreateMode) {
       return {
@@ -89,7 +89,7 @@ export default function EditMaintenance() {
     try {
       const response = await getVehiclesByMaintenanceId(
         maintenanceId,
-        pagination
+        pagination,
       );
 
       if (!response.success) {
@@ -141,7 +141,7 @@ export default function EditMaintenance() {
     try {
       const response = await getMaintenanceCategories(
         { search: "" },
-        { page: 1, limit: 100 }
+        { page: 1, limit: 100 },
       );
       if (response.success && response.data) {
         setAllCategories(response.data);
@@ -166,7 +166,7 @@ export default function EditMaintenance() {
         if (maintenance.categoryName && allCategories.length > 0) {
           const category = allCategories.find(
             (c) =>
-              c.name.toLowerCase() === maintenance.categoryName!.toLowerCase()
+              c.name.toLowerCase() === maintenance.categoryName!.toLowerCase(),
           );
           if (category) {
             categorySearch.selectCategory(category);
@@ -178,7 +178,7 @@ export default function EditMaintenance() {
     } catch (err) {
       showError(
         "Error al cargar el mantenimiento: " +
-          (err instanceof Error ? err.message : String(err))
+          (err instanceof Error ? err.message : String(err)),
       );
     } finally {
       setLoading(false);
@@ -198,7 +198,7 @@ export default function EditMaintenance() {
 
   // Generic operation handler
   const performOperation = async (
-    operation: "create" | "update" | "delete"
+    operation: "create" | "update" | "delete",
   ) => {
     const validationError = operation !== "delete" ? validateForm() : null;
     if (validationError) {
@@ -260,7 +260,7 @@ export default function EditMaintenance() {
             setTimeout(() => navigate("/maintenances"), 1500);
           } else {
             showError(
-              response?.message || `Error al ${actionText} el mantenimiento`
+              response?.message || `Error al ${actionText} el mantenimiento`,
             );
           }
         } catch (err) {
@@ -268,7 +268,7 @@ export default function EditMaintenance() {
         } finally {
           setSaving(false);
         }
-      }
+      },
     );
   };
 
@@ -471,12 +471,12 @@ export default function EditMaintenance() {
 
                   if (assignmentId) {
                     navigate(
-                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=maintenance`
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/${assignmentId}?from=maintenance`,
                     );
                   } else {
                     // Fallback if assignmentId is not available
                     navigate(
-                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/auto?from=maintenance`
+                      `/edit-maintenance-assignment/${vehicleId}/${maintenanceId}/auto?from=maintenance`,
                     );
                   }
                 }}

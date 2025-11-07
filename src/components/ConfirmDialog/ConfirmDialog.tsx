@@ -5,7 +5,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { COLORS } from "../../common/colors";
-import { ConfirmButton, CancelButton } from "../index";
+import { CancelButton, ConfirmButton } from "../Buttons/Buttons";
 
 type Props = {
   open: boolean;

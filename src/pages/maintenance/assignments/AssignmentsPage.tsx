@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Table, type TableColumn } from "../../../components/Table/table";
-import { getAllMaintenanceAssignments } from "../../../services/maintenanceAssignments";
 import type { MaintenanceAssignment } from "../../../types/maintenanceAsignment";
+import { getMaintenanceAssignments } from "../../../services/maintenanceAssignments";
 import "./AssignmentsPage.css";
 
 const columns: TableColumn<MaintenanceAssignment>[] = [
@@ -46,7 +46,7 @@ export default function AssignmentsPage() {
   return (
     <div className="assignments-page">
       <Table
-        getRows={getAllMaintenanceAssignments}
+        getRows={getMaintenanceAssignments}
         columns={columns}
         header={{
           title: "Asignaciones de Mantenimiento",

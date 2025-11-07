@@ -6,10 +6,8 @@ import logo from "../../assets/brand/logo_blanco.webp";
 import IconDashboard from "../../assets/icons/dashboard.svg";
 import IconCar from "../../assets/icons/car.svg";
 import IconUser from "../../assets/icons/user.svg";
-import IconMetrics from "../../assets/icons/metrics.svg";
 import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
-import IconResponsible from "../../assets/icons/assignment.svg";
 import IconNavbar from "../../assets/icons/navbar.svg";
 import IconBrand from "../../assets/icons/vehicle_brand.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
@@ -136,7 +134,7 @@ function Navbar() {
           </div>
           <ul>
             <li>
-              <Link to="/" onClick={() => setOpen(false)}>
+              <Link to="/home" onClick={() => setOpen(false)}>
                 <img
                   className="icon-navbar"
                   src={IconDashboard}
@@ -155,21 +153,34 @@ function Navbar() {
                 Usuarios
               </Link>
             </li>
-            <li>
-              <Link to="/vehicles" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconCar}
-                  alt="Icono Vehículo"
-                />
-                Vehículos
-              </Link>
-            </li>
             <li className="navbar-separator" role="separator">
               <span />
             </li>
             <li>
-              <Link to="/assignments" onClick={() => setOpen(false)}>
+              <Link to="/maintenance/categories" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconMaintenance}
+                  alt="Icono categorías"
+                />
+                Categorías
+              </Link>
+            </li>
+            <li>
+              <Link to="/maintenance/items" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconMaintenance}
+                  alt="Icono mantenimientos"
+                />
+                Mantenimientos
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/maintenance/assignments"
+                onClick={() => setOpen(false)}
+              >
                 <img
                   className="icon-navbar"
                   src={IconPermissions}
@@ -178,47 +189,27 @@ function Navbar() {
                 Asignaciones
               </Link>
             </li>
-            <li>
-              <Link to="/maintenances" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconMaintenance}
-                  alt="Icono Mantenimiento"
-                />
-                Mantenimientos
-              </Link>
-            </li>
-            <li>
-              <Link to="/vehicle-responsibles" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconResponsible}
-                  alt="Icono Responsable"
-                />
-                Responsables
-              </Link>
-            </li>
-            <li>
-              <Link to="/models" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconBrand}
-                  alt="Icono Marca"
-                />
-                Marcas y Modelos
-              </Link>
-            </li>
             <li className="navbar-separator" role="separator">
               <span />
             </li>
             <li>
-              <Link to="/metrics" onClick={() => setOpen(false)}>
+              <Link to="/vehicles/brands" onClick={() => setOpen(false)}>
                 <img
                   className="icon-navbar"
-                  src={IconMetrics}
-                  alt="Icono Metricas"
+                  src={IconBrand}
+                  alt="Icono marcas"
                 />
-                Métricas
+                Marcas
+              </Link>
+            </li>
+            <li>
+              <Link to="/vehicles/models" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconCar}
+                  alt="Icono modelos"
+                />
+                Modelos
               </Link>
             </li>
 
