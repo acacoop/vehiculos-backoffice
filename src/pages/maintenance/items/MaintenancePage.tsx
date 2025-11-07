@@ -14,7 +14,6 @@ import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Category } from "../../../types/category";
-import "./MaintenancePage.css";
 import {
   Form,
   type FormButton,
@@ -24,7 +23,7 @@ import {
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const isNew = id === "new";
+  const isNew = location.pathname.endsWith("/new");
   const isReadOnly = !isNew && !id;
 
   const [formData, setFormData] = useState({
@@ -154,7 +153,7 @@ export default function MaintenancePage() {
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             }),
-      `Mantenimiento ${actionText}do exitosamente`
+      `Mantenimiento ${actionText}do exitosamente`,
     );
   };
 

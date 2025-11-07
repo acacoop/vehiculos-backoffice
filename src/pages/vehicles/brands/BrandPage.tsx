@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -55,7 +55,8 @@ const modelColumns: TableColumn<VehicleModel>[] = [
 export default function BrandPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNew = id === "new";
+  const location = useLocation();
+  const isNew = location.pathname.endsWith("/new");
 
   const [formData, setFormData] = useState({
     name: "",

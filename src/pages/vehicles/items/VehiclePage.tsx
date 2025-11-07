@@ -51,7 +51,7 @@ export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const isNew = id === "new";
+  const isNew = location.pathname.endsWith("/new");
 
   const [brand, setBrand] = useState<VehicleBrand | null>(null);
   const [model, setModel] = useState<VehicleModel | null>(null);
@@ -434,13 +434,11 @@ export default function VehiclesPage() {
 
   return (
     <div className="container">
-      <div>
-        <Form
-          title="Detalle del Vehículo"
-          sections={vehicleInfoSections}
-          buttons={buttons}
-        />
-      </div>
+      <Form
+        title="Detalle del Vehículo"
+        sections={vehicleInfoSections}
+        buttons={buttons}
+      />
 
       {!isNew && id && (
         <>

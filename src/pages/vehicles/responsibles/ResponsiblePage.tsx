@@ -27,7 +27,7 @@ import type { User } from "../../../types/user";
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const isNew = id === "new";
+  const isNew = location.pathname.endsWith("/new");
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -67,11 +67,20 @@ export default function ResponsiblePage() {
     const searchParams = new URLSearchParams(location.search);
     const vehicleId = searchParams.get("vehicleId");
 
+    console.log("Loading vehicle from query param:", {
+      isNew,
+      locationSearch: location.search,
+      vehicleId,
+    });
+
     if (vehicleId) {
       executeLoad(async () => {
         const response = await getVehicleById(vehicleId);
+        console.log("Vehicle response:", response);
         if (response.success && response.data) {
           setVehicle(response.data);
+        } else {
+          console.error("Failed to load vehicle:", response.message);
         }
       });
     }
@@ -85,11 +94,20 @@ export default function ResponsiblePage() {
     const searchParams = new URLSearchParams(location.search);
     const userId = searchParams.get("userId");
 
+    console.log("Loading user from query param:", {
+      isNew,
+      locationSearch: location.search,
+      userId,
+    });
+
     if (userId) {
       executeLoad(async () => {
         const response = await getUserById(userId);
+        console.log("User response:", response);
         if (response.success && response.data) {
           setUser(response.data);
+        } else {
+          console.error("Failed to load user:", response.message);
         }
       });
     }

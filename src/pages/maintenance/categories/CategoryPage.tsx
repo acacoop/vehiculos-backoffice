@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import {
@@ -56,8 +56,8 @@ export default function CategoryPage() {
   } = usePageState({ redirectOnSuccess: "/maintenance/categories" });
 
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isNew = location.pathname.endsWith("/new");
   const isReadOnly = !isNew && loading;

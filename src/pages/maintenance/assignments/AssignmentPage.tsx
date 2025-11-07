@@ -23,7 +23,7 @@ import type { FormSection, FormButton } from "../../../components/Form/Form";
 export default function AssignmentPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const isNew = id === "new";
+  const isNew = location.pathname.endsWith("/new");
   const isReadOnly = !isNew && !id;
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);

@@ -18,7 +18,7 @@ import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/Entit
 export default function ModelPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const isNew = id === "new";
+  const isNew = location.pathname.endsWith("/new");
 
   const [formData, setFormData] = useState({
     name: "",
