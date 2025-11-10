@@ -216,8 +216,8 @@ export default function UserPage() {
         header={{
           title: "Reservas de Vehículos",
           addButton: {
-            text: "Nueva Reserva",
-            onClick: () => navigate(`/reservations/create?userId=${id}`),
+            text: "+ Nueva Reserva",
+            onClick: () => navigate(`/reservations/new?userId=${id}`),
           },
         }}
         actionColumn={{

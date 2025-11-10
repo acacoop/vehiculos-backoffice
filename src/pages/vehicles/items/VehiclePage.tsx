@@ -548,7 +548,16 @@ export default function VehiclesPage() {
               })
             }
             columns={reservationColumns}
-            header={{ title: "Reservas" }}
+            header={{
+              title: "Reservas",
+              addButton: {
+                text: "+ Nueva Reserva",
+                onClick: () => navigate(`/reservations/new?vehicleId=${id}`),
+              },
+            }}
+            actionColumn={{
+              route: "/reservations",
+            }}
             search={{ enabled: true, placeholder: "Buscar reservas..." }}
           />
         </>

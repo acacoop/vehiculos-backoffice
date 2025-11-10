@@ -15,6 +15,7 @@ import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import IconLogout from "../../assets/icons/logout.svg";
+import IconAssignment from "../../assets/icons/assignment.svg";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -230,6 +231,16 @@ function Navbar() {
                   alt="Icono responsables"
                 />
                 Responsables
+              </Link>
+            </li>
+            <li>
+              <Link to="/reservations" onClick={() => setOpen(false)}>
+                <img
+                  className="icon-navbar"
+                  src={IconAssignment}
+                  alt="Icono reservas"
+                />
+                Reservas
               </Link>
             </li>
 

@@ -83,6 +83,11 @@ export default function HomePage() {
           onClick={() => navigate("/vehicles/responsibles")}
         />
         <BentoHome
+          icon={IconResponsible}
+          text="Reservas"
+          onClick={() => navigate("/reservations")}
+        />
+        <BentoHome
           icon={IconBrandBlue}
           text="Marcas"
           onClick={() => navigate("/vehicles/brands")}

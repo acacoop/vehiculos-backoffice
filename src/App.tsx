@@ -32,6 +32,7 @@ import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
 import VehiclePage from "./pages/vehicles/items/VehiclePage";
 import ResponsiblesPage from "./pages/vehicles/responsibles/ResponsiblesPage";
 import ResponsiblePage from "./pages/vehicles/responsibles/ResponsiblePage";
+import { ReservationsPage, ReservationPage } from "./pages/reservations";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -141,6 +142,11 @@ function App() {
             path="/vehicles/responsibles/:id"
             element={<ResponsiblePage />}
           />
+
+          {/* MIGRADAS - Reservations */}
+          <Route path="/reservations" element={<ReservationsPage />} />
+          <Route path="/reservations/new" element={<ReservationPage />} />
+          <Route path="/reservations/:id" element={<ReservationPage />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
