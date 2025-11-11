@@ -1,18 +1,27 @@
-export { httpService, ApiException } from './httpService';
-export { API_CONFIG, DEFAULT_HEADERS, HTTP_METHODS, METHODS_WITH_BODY } from './constants';
-export { 
-  camelToKebabCase, 
-  kebabToCamelCase, 
-  transformObjectKeys, 
-  transformParamsToKebabCase,
-  buildQueryParams
-} from './utils';
-export type { 
-  RequestConfig, 
-  ApiError, 
-  PaginationParams,
-  Pagination,
-  BackendResponse,
+// Object manipulation utilities
+export { getNestedValue, getNestedString } from "./utils";
+
+// Date formatting utilities
+export {
+  isActive,
+  formatDate,
+  formatDateTime,
+  formatEndDate,
+  formatRelativeDate,
+} from "./date";
+
+// Colors and styling constants
+export { COLORS } from "./colors";
+
+// Authentication utilities
+export * from "./auth";
+
+// Application constants
+export * from "./constants";
+
+// Type definitions (for backward compatibility with old app/ files)
+export type {
   ServiceResponse,
-  PaginationData
-} from '../types/common';
+  PaginationParams,
+  FilterParams,
+} from "../types/common";

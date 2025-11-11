@@ -1,201 +1,77 @@
+import type { ServiceResponse } from "../types/common";
 import type {
   MaintenanceRecord,
-  MaintenanceRecordCreateDto,
-  MaintenanceRecordsListResponse,
+  MaintenanceRecordFilterParams,
+  MaintenanceRecordInput,
 } from "../types/maintenanceRecord";
-import { getAccessToken } from "../common/auth";
-import { API_CONFIG, type ServiceResponse } from "../common";
+import {
+  apiCreateItem,
+  apiFindItemById,
+  apiFindItems,
+  apiUpdateItem,
+  apiDeleteItem,
+  type ApiFindOptions,
+} from "./common";
 
-async function buildAuthHeaders(includeJson = false) {
-  const headers: Record<string, string> = {};
-  if (includeJson) headers["Content-Type"] = "application/json";
-  try {
-    const token = await getAccessToken();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  } catch (err) {
-    // ignore token errors
-  }
-  return headers;
+export async function getMaintenanceRecords(
+  findOptions?: ApiFindOptions<MaintenanceRecordFilterParams>,
+): Promise<ServiceResponse<MaintenanceRecord[]>> {
+  return await apiFindItems<MaintenanceRecord, MaintenanceRecordFilterParams>({
+    uri: "maintenance/records",
+    findOptions,
+    errorMessage: "Error al obtener registros de mantenimiento",
+  });
 }
 
-export const getMaintenanceRecordsByVehicle = async (
-  vehicleId: string
-): Promise<ServiceResponse<MaintenanceRecord[]>> => {
-  try {
-    const params = new URLSearchParams();
-    params.append("vehicleId", vehicleId);
+export async function getMaintenanceRecordById(
+  id: string,
+): Promise<ServiceResponse<MaintenanceRecord>> {
+  return await apiFindItemById<MaintenanceRecord>({
+    uri: "maintenance/records",
+    itemId: id,
+    errorMessage: "Error al obtener registro de mantenimiento",
+  });
+}
 
-    const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
-      {
-        headers: await buildAuthHeaders(false),
-      }
-    );
+export async function createMaintenanceRecord(
+  payload: MaintenanceRecordInput,
+): Promise<ServiceResponse<MaintenanceRecord>> {
+  return await apiCreateItem<MaintenanceRecord>({
+    uri: "maintenance/records",
+    payload,
+    errorMessage: "Error al crear registro de mantenimiento",
+  });
+}
 
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+export async function updateMaintenanceRecord(
+  id: string,
+  payload: Partial<MaintenanceRecordInput>,
+): Promise<ServiceResponse<MaintenanceRecord>> {
+  return await apiUpdateItem<MaintenanceRecord>({
+    uri: "maintenance/records",
+    itemId: id,
+    payload,
+    errorMessage: "Error al actualizar registro de mantenimiento",
+  });
+}
 
-    const raw = await resp.json().catch(() => ({}));
+export async function deleteMaintenanceRecord(
+  id: string,
+): Promise<ServiceResponse<MaintenanceRecord>> {
+  return await apiDeleteItem<MaintenanceRecord>({
+    uri: "maintenance/records",
+    itemId: id,
+    errorMessage: "Error al eliminar registro de mantenimiento",
+  });
+}
 
-    if (raw.status === "success") return { success: true, data: raw.data };
-    if (Array.isArray(raw)) return { success: true, data: raw };
-    return { success: true, data: raw.data || [] };
-  } catch (error) {
-    return { success: false, data: [], message: "Error al obtener registros" };
-  }
-};
-
-export const getMaintenanceRecordById = async (
-  id: string
-): Promise<ServiceResponse<MaintenanceRecord | null>> => {
-  try {
-    const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records/${id}`,
-      {
-        headers: await buildAuthHeaders(false),
-      }
-    );
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-    const raw = await resp.json().catch(() => ({}));
-
-    if (raw.status === "success") return { success: true, data: raw.data };
-    return { success: true, data: raw.data || raw };
-  } catch (error) {
-    return { success: false, data: null, message: "Error al obtener registro" };
-  }
-};
-
-export const getAllMaintenanceRecords = async (options?: {
-  page?: number;
-  limit?: number;
-  vehicleId?: string;
-  maintenanceId?: string;
-}): Promise<ServiceResponse<MaintenanceRecordsListResponse>> => {
-  try {
-    const params = new URLSearchParams();
-    if (options?.page) params.append("page", String(options.page));
-    if (options?.limit) params.append("limit", String(options.limit));
-    if (options?.vehicleId) params.append("vehicleId", options.vehicleId);
-    if (options?.maintenanceId)
-      params.append("maintenanceId", options.maintenanceId);
-
-    const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
-      {
-        headers: await buildAuthHeaders(false),
-      }
-    );
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-    const raw = await resp.json();
-
-    if (raw.status === "success") {
-      return {
-        success: true,
-        data: { items: raw.data || [], total: raw.pagination?.total || 0 },
-      };
-    }
-
-    return {
-      success: true,
-      data: { items: raw.data || [], total: raw.total || 0 },
-    };
-  } catch (error) {
-    return {
-      success: false,
-      data: { items: [], total: 0 },
-      message: "Error al obtener registros",
-    };
-  }
-};
-
-export const addMaintenanceRecord = async (
-  payload: MaintenanceRecordCreateDto
-): Promise<ServiceResponse<MaintenanceRecord | null>> => {
-  try {
-    const resp = await fetch(`${API_CONFIG.BASE_URL}/maintenance/records`, {
-      method: "POST",
-      headers: await buildAuthHeaders(true),
-      body: JSON.stringify(payload),
-    });
-
-    const raw = await resp.json().catch(() => ({}));
-
-    if (!resp.ok) {
-      return {
-        success: false,
-        data: null,
-        message: raw.message || `Error ${resp.status}`,
-      };
-    }
-
-    return { success: true, data: raw.data || raw };
-  } catch (error) {
-    return { success: false, data: null, message: "Error al crear registro" };
-  }
-};
-
-export const getMaintenanceRecordsByAssignedMaintenanceId = async (
-  assignedMaintenanceId: string
-): Promise<ServiceResponse<MaintenanceRecord[]>> => {
-  try {
-    const params = new URLSearchParams();
-    params.append("assignedMaintenanceId", assignedMaintenanceId);
-
-    const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
-      {
-        headers: await buildAuthHeaders(false),
-      }
-    );
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-    const raw = await resp.json();
-    if (raw.status === "success") return { success: true, data: raw.data };
-    if (Array.isArray(raw)) return { success: true, data: raw };
-    return { success: true, data: raw.data || [] };
-  } catch (error) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener registros por asignacion",
-    };
-  }
-};
-
-export const getMaintenanceRecordsByVehicleAndMaintenance = async (
+export async function getMaintenanceRecordsByVehicle(
   vehicleId: string,
-  assignedMaintenanceId: string
-): Promise<ServiceResponse<MaintenanceRecord[]>> => {
-  try {
-    const params = new URLSearchParams();
-    params.append("vehicleId", vehicleId);
-    params.append("assignedMaintenanceId", assignedMaintenanceId);
-
-    const resp = await fetch(
-      `${API_CONFIG.BASE_URL}/maintenance/records?${params.toString()}`,
-      {
-        headers: await buildAuthHeaders(false),
-      }
-    );
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-    const raw = await resp.json().catch(() => ({}));
-
-    if (raw.status === "success") return { success: true, data: raw.data };
-    if (Array.isArray(raw)) return { success: true, data: raw };
-    return { success: true, data: raw.data || [] };
-  } catch (error) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener registros por vehículo y mantenimiento",
-    };
-  }
-};
-
-export default {};
+  findOptions?: ApiFindOptions<MaintenanceRecordFilterParams>,
+): Promise<ServiceResponse<MaintenanceRecord[]>> {
+  return await apiFindItems<MaintenanceRecord, MaintenanceRecordFilterParams>({
+    uri: `maintenance/records/vehicle/${vehicleId}`,
+    findOptions,
+    errorMessage: "Error al obtener registros de mantenimiento por vehículo",
+  });
+}

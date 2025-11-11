@@ -8,44 +8,77 @@ import {
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import "./App.css";
-import Home from "./app/Home/Home";
-import Users from "./app/Users/Users";
-import UserEdit from "./app/UserEdit/UserEdit";
-import EditAssignment from "./app/EditAssignment/EditAssignment";
-import VehicleEditRegistration from "./app/VehicleEditRegistration/VehicleEditRegistration";
-import Vehicles from "./app/Vehicles/Vehicles";
-import Metrics from "./app/Metrics/Metrics";
-import Assignaments from "./app/Assignment/Assignment";
-import ReservationEdit from "./app/ReservationEdit/ReservationEdit";
-import MaintenancePage from "./app/Maintenances/Maintenances";
-import EditCategory from "./app/EditCategory/EditCategory";
-import EditMaintenance from "./app/EditMaintenance/EditMaintenance";
-import MaintenanceAssignment from "./app/MaintenanceAssignment/MaintenanceAssignment";
-import MaintenanceRecordRegisterEdit from "./app/MaintenanceRecordRegisterEdit/MaintenanceRecordRegisterEdit";
-import VehicleResponsibles from "./app/VehicleResponsibles/VehicleResponsibles";
-import EditVehicleResponsibles from "./app/EditVehicleResponsibles/EditVehicleResponsibles";
-import KilometersEdit from "./app/KilometersEdit/KilometersEdit";
-import LogIn from "./app/LogIn/LogIn";
-import Models from "./app/Models/Models";
-import ModelsEdit from "./app/ModelsEdit/ModelsEdit";
+
+import { LoginPage } from "./pages/auth";
+import { HomePage } from "./pages/home";
+import MetricsPage from "./pages/metrics/MetricsPage";
+
+import MaintenanceCategoriesPage from "./pages/maintenance/categories/CategoriesPage";
+import MaintenanceCategoryPage from "./pages/maintenance/categories/CategoryPage";
+import MaintenanceItemPage from "./pages/maintenance/items/MaintenancePage";
+import MaintenanceItemsPage from "./pages/maintenance/items/MaintenancesPage";
+import BrandsPage from "./pages/vehicles/brands/BrandsPage";
+import BrandPage from "./pages/vehicles/brands/BrandPage";
+import ModelsPage from "./pages/vehicles/models/ModelsPage";
+import ModelPage from "./pages/vehicles/models/ModelPage";
+import AssignedMaintenancesPage from "./pages/maintenance/assignments/AssignedMaintenancePage";
+import AssignmentPage from "./pages/maintenance/assignments/AssignedMaintenancesPage";
+import VehiclesAssignmentsPage from "./pages/vehicles/assignments/AssignmentsPage";
+import MaintenanceRecordsPage from "./pages/maintenance/records/MaintenanceRecordsPage";
+import MaintenanceRecordPage from "./pages/maintenance/records/MaintenanceRecordPage";
 
 import { useMsal } from "@azure/msal-react";
-import { getActiveAccount } from "./common/auth";
+import { ensureActiveAccount } from "./common/auth";
+import { useEffect, useState } from "react";
+import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
+import VehiclePage from "./pages/vehicles/items/VehiclePage";
+import ResponsiblesPage from "./pages/vehicles/responsibles/ResponsiblesPage";
+import ResponsiblePage from "./pages/vehicles/responsibles/ResponsiblePage";
+import ReservationPage from "./pages/reservations/ReservationPage";
+import ReservationsPage from "./pages/reservations/ReservationsPage";
+import UserPage from "./pages/users/UserPage";
+import UsersPage from "./pages/users/UsersPage";
+import VehicleAssignmentPage from "./pages/vehicles/assignments/AssignmentPage";
+import KilometersLogsPage from "./pages/vehicles/kilometersLogs/KilometersLogsPage";
+import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
-  const isAuthenticated = !!getActiveAccount();
-  if (inProgress !== "none") {
-    return null; // optionally a spinner
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (inProgress !== "none") {
+        return; // Esperar a que termine el proceso de MSAL
+      }
+
+      const account = await ensureActiveAccount();
+      setIsAuth(!!account);
+      setIsChecking(false);
+    };
+
+    void checkAuth();
+  }, [inProgress]);
+
+  // Mostrar spinner mientras se verifica la autenticación
+  if (inProgress !== "none" || isChecking) {
+    return null; // o un spinner
   }
-  if (!isAuthenticated) {
+
+  if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
+
   return (
     <>
       <Navbar />
-      <Outlet />
-      <Footer />
+      <main className="app-content">
+        <div className="app-content-inner">
+          <Outlet />
+        </div>
+        <Footer />
+      </main>
     </>
   );
 }
@@ -54,85 +87,116 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LogIn />} />
+        <Route path="/login" element={<LoginPage />} />
 
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<Home />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/user/edit/:id" element={<UserEdit />} />
-          <Route path="/assignment/create" element={<EditAssignment />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/metrics" element={<MetricsPage />} />
+
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/users/:id" element={<UserPage />} />
+
           <Route
-            path="/assignment/create/:vehicleId"
-            element={<EditAssignment />}
+            path="/vehicles/assignments"
+            element={<VehiclesAssignmentsPage />}
           />
           <Route
-            path="/assignment/edit/:assignmentId"
-            element={<EditAssignment />}
-          />
-          <Route path="/reservation/create" element={<ReservationEdit />} />
-          <Route path="/reservation/edit/:id" element={<ReservationEdit />} />
-          <Route path="/metrics" element={<Metrics />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route
-            path="/vehicle/edit/:id"
-            element={<VehicleEditRegistration />}
-          />
-          <Route path="/vehicle/create" element={<VehicleEditRegistration />} />
-          <Route path="/assignments" element={<Assignaments />} />
-          <Route path="/maintenances" element={<MaintenancePage />} />
-          <Route path="/category/create" element={<EditCategory />} />
-          <Route path="/category/edit/:id" element={<EditCategory />} />
-          <Route path="/maintenance/create" element={<EditMaintenance />} />
-          <Route
-            path="/maintenance/edit/:maintenanceId"
-            element={<EditMaintenance />}
+            path="/vehicles/assignments/new"
+            element={<VehicleAssignmentPage />}
           />
           <Route
-            path="/maintenance-assignment/:maintenanceId"
-            element={<MaintenanceAssignment />}
+            path="/vehicles/assignments/:assignmentId"
+            element={<VehicleAssignmentPage />}
+          />
+
+          <Route
+            path="/maintenance/categories"
+            element={<MaintenanceCategoriesPage />}
           />
           <Route
-            path="/vehicle-maintenance-assignment/:vehicleId"
-            element={<MaintenanceAssignment />}
+            path="/maintenance/categories/new"
+            element={<MaintenanceCategoryPage />}
           />
           <Route
-            path="/edit-maintenance-assignment/:vehicleId/:maintenanceId/:assignmentId"
-            element={<MaintenanceAssignment />}
+            path="/maintenance/categories/:id"
+            element={<MaintenanceCategoryPage />}
+          />
+
+          <Route path="/maintenance/items" element={<MaintenanceItemsPage />} />
+          <Route
+            path="/maintenance/items/new"
+            element={<MaintenanceItemPage />}
           />
           <Route
-            path="/maintenance-record-register-edit/:vehicleId/:maintenanceId/:assignedMaintenanceId"
-            element={<MaintenanceRecordRegisterEdit />}
+            path="/maintenance/items/:id"
+            element={<MaintenanceItemPage />}
+          />
+
+          <Route
+            path="/maintenance/assignments"
+            element={<AssignedMaintenancesPage />}
           />
           <Route
-            path="/maintenance-record-register-edit/:vehicleId"
-            element={<MaintenanceRecordRegisterEdit />}
+            path="/maintenance/assignments/new"
+            element={<AssignmentPage />}
           />
           <Route
-            path="/maintenance/possible/edit/:maintenanceId"
-            element={<EditMaintenance />}
+            path="/maintenance/assignments/:id"
+            element={<AssignmentPage />}
+          />
+
+          <Route
+            path="/maintenance/records"
+            element={<MaintenanceRecordsPage />}
           />
           <Route
-            path="/kilometers/create/:vehicleId"
-            element={<KilometersEdit />}
+            path="/maintenance/records/new"
+            element={<MaintenanceRecordPage />}
           />
           <Route
-            path="/vehicle-responsibles"
-            element={<VehicleResponsibles />}
+            path="/maintenance/records/:id"
+            element={<MaintenanceRecordPage />}
+          />
+
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles/new" element={<VehiclePage />} />
+          <Route path="/vehicles/:id" element={<VehiclePage />} />
+
+          <Route path="/vehicles/brands" element={<BrandsPage />} />
+          <Route path="/vehicles/brands/new" element={<BrandPage />} />
+          <Route path="/vehicles/brands/:id" element={<BrandPage />} />
+
+          <Route path="/vehicles/models" element={<ModelsPage />} />
+          <Route path="/vehicles/models/new" element={<ModelPage />} />
+          <Route path="/vehicles/models/:id" element={<ModelPage />} />
+
+          <Route path="/vehicles/responsibles" element={<ResponsiblesPage />} />
+          <Route
+            path="/vehicles/responsibles/new"
+            element={<ResponsiblePage />}
           />
           <Route
-            path="/edit-vehicle-responsibles"
-            element={<EditVehicleResponsibles />}
+            path="/vehicles/responsibles/:id"
+            element={<ResponsiblePage />}
+          />
+
+          <Route
+            path="/vehicles/kilometersLogs"
+            element={<KilometersLogsPage />}
           />
           <Route
-            path="/edit-vehicle-responsibles/:id"
-            element={<EditVehicleResponsibles />}
+            path="/vehicles/kilometersLogs/new"
+            element={<KilometersLogPage />}
           />
-          <Route path="/models" element={<Models />} />
-          <Route path="/vehicle-brand/create" element={<ModelsEdit />} />
-          <Route path="/vehicle-brand/edit/:id" element={<ModelsEdit />} />
-          <Route path="/vehicle-model/create" element={<ModelsEdit />} />
-          <Route path="/vehicle-model/edit/:id" element={<ModelsEdit />} />
+          <Route
+            path="/vehicles/kilometersLogs/:id"
+            element={<KilometersLogPage />}
+          />
+
+          <Route path="/reservations" element={<ReservationsPage />} />
+          <Route path="/reservations/new" element={<ReservationPage />} />
+          <Route path="/reservations/:id" element={<ReservationPage />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

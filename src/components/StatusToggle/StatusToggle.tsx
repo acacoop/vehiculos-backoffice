@@ -2,13 +2,10 @@ import { useState } from "react";
 import { COLORS } from "../../common/colors";
 import { updateUserStatus } from "../../services/users";
 import { useConfirmDialog, useNotification } from "../../hooks";
-import {
-  ConfirmDialog,
-  NotificationToast,
-  ConfirmButton,
-  DeleteButton,
-} from "../";
 import "./StatusToggle.css";
+import { DeleteButton, ConfirmButton } from "../Buttons/Buttons";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../NotificationToast/NotificationToast";
 
 type EntityType = "user" | "vehicle";
 
@@ -86,7 +83,7 @@ export default function StatusToggle({
             response.message ||
               `Error al actualizar el estado del ${
                 entityType === "user" ? "usuario" : "vehículo"
-              }`
+              }`,
           );
         }
       } else {
@@ -104,7 +101,7 @@ export default function StatusToggle({
       showError(
         `Error al actualizar el estado del ${
           entityType === "user" ? "usuario" : "vehículo"
-        }`
+        }`,
       );
     } finally {
       setIsLoading(false);

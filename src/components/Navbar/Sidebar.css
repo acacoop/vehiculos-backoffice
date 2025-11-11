@@ -1,0 +1,236 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 300px;
+  height: 100vh;
+  background: #232d85;
+  color: #fff;
+  transition: left 0.3s;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.sidebar-logo {
+  display: flex;
+}
+
+.sidebar-logo img {
+  height: 40px;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.75rem;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-close:hover {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Estilos personalizados para el scrollbar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-sections {
+  flex: 1;
+  gap: 36px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-section-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-section-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.sidebar-section-header:hover .sidebar-section-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-section-header:hover .sidebar-section-arrow {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-section-arrow {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+  transform: rotate(-90deg);
+}
+
+.sidebar-section-arrow.expanded {
+  transform: rotate(0deg);
+}
+
+.section-items-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.25s ease-out;
+}
+
+.section-items-wrapper.expanded {
+  grid-template-rows: 1fr;
+}
+
+.section-items {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-items-wrapper.expanded .section-items {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+  text-align: left;
+}
+
+.sidebar-logout-btn:hover {
+  color: #ff9800;
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.sidebar-logout-btn:hover img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
+}
+
+.icon-sidebar {
+  width: 25px;
+  height: 25px;
+  transition: filter 0.2s;
+  border-radius: 5px;
+}
+
+.sidebar-section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  transition: color 0.2s ease;
+}
+
+.sidebar-section-bar {
+  height: 2px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  list-style: none;
+}
+
+.section-items a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.section-items .nav-item a:hover {
+  color: #ff9800;
+}
+
+.section-items a:hover img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
+}
+
+.section-items .nav-item.active a {
+  color: #ff9800;
+}
+
+.section-items .nav-item.active a img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
+}

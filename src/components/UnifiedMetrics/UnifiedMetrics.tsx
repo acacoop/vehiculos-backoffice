@@ -76,7 +76,6 @@ export default function UnifiedMetrics({
         if (response.success) {
           setMetrics(response.data);
         }
-      } catch (error) {
       } finally {
         setLoading(false);
         // notify parent that this block finished loading

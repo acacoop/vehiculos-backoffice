@@ -1,181 +1,80 @@
-import type { User, UserFilterParams } from "../types/user";
+import type { ServiceResponse } from "../types/common";
+import type { User, UserFilterParams, UserInput } from "../types/user";
 import {
-  httpService,
-  buildQueryParams,
-  type BackendResponse,
-  type ServiceResponse,
-  type PaginationParams,
-} from "../common";
-import { ResponseStatus } from "../types/common";
-
-export async function getAllUsers(
-  params?: UserFilterParams & {
-    includeInactive?: boolean;
-  }
-): Promise<ServiceResponse<User[]>> {
-  try {
-    const allParams = {
-      ...params,
-      limit: 10000,
-    };
-    const queryParams = buildQueryParams(allParams);
-    const response: BackendResponse<User[]> = await httpService.get({
-      uri: `/users?${queryParams.toString()}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener usuarios",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener usuarios",
-      error: error as never,
-    };
-  }
-}
+  apiFindItems,
+  apiFindItemById,
+  apiCreateItem,
+  apiUpdateItem,
+  apiDeleteItem,
+  generalApiCall,
+  type ApiFindOptions,
+} from "./common";
 
 export async function getUsers(
-  params?: UserFilterParams & {
-    includeInactive?: boolean;
-  },
-  pagination?: PaginationParams
+  findOptions?: ApiFindOptions<UserFilterParams>,
 ): Promise<ServiceResponse<User[]>> {
-  try {
-    const queryParams = buildQueryParams(params, pagination);
-    const response: BackendResponse<User[]> = await httpService.get({
-      uri: `/users?${queryParams.toString()}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: [],
-        message: response.message || "Error al obtener usuarios",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      pagination: response.pagination
-        ? {
-            page: response.pagination.page,
-            pageSize: response.pagination.limit,
-            total: response.pagination.total,
-            pages: response.pagination.pages,
-          }
-        : undefined,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: [],
-      message: "Error al obtener usuarios",
-      error: error as never,
-    };
-  }
+  return await apiFindItems({
+    uri: "users",
+    findOptions,
+    paramsConfig: [{ field: "active", transform: (value) => String(value) }],
+    errorMessage: "Error al obtener usuarios",
+  });
 }
 
 export async function getUserById(id: string): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.get({
-      uri: `/users/${id}`,
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message: response.message || "Error al obtener usuario",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al obtener usuario",
-      error: error as never,
-    };
-  }
+  return await apiFindItemById({
+    uri: "users",
+    itemId: id,
+    errorMessage: "Error al obtener usuario",
+  });
 }
 
 export async function updateUserStatus(
   id: string,
-  active: boolean
+  active: boolean,
 ): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.patch({
-      uri: `/users/${id}`,
-      body: { active },
-    });
-
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message:
-          response.message || "Error al actualizar el estado del usuario",
-      };
-    }
-
-    return {
-      success: true,
-      data: response.data,
-      message: "Estado del usuario actualizado exitosamente",
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al actualizar el estado del usuario",
-      error: error as never,
-    };
-  }
+  const endpoint = active ? "activate" : "deactivate";
+  return await generalApiCall({
+    uri: `users/${id}/${endpoint}`,
+    method: "POST",
+    errorMessage: `Error al ${active ? "activar" : "desactivar"} usuario`,
+  });
 }
 
-/**
- * Obtiene el usuario actual (/me)
- */
 export async function getMe(): Promise<ServiceResponse<User>> {
-  try {
-    const response: BackendResponse<User> = await httpService.get({
-      uri: "/me",
-    });
+  return await generalApiCall({
+    uri: "me",
+    method: "GET",
+    errorMessage: "Error al obtener el usuario actual",
+  });
+}
 
-    if (response.status === ResponseStatus.ERROR) {
-      return {
-        success: false,
-        data: {} as User,
-        message: response.message || "Error al obtener el usuario actual",
-      };
-    }
+export async function createUser(
+  payload: Partial<UserInput>,
+): Promise<ServiceResponse<User>> {
+  return await apiCreateItem<User>({
+    uri: "users",
+    payload,
+    errorMessage: "Error al crear usuario",
+  });
+}
 
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      data: {} as User,
-      message: "Error al obtener el usuario actual",
-      error: error as never,
-    };
-  }
+export async function updateUser(
+  id: string,
+  payload: Partial<UserInput>,
+): Promise<ServiceResponse<User>> {
+  return await apiUpdateItem<User>({
+    uri: "users",
+    itemId: id,
+    payload,
+    errorMessage: "Error al actualizar usuario",
+  });
+}
+
+export async function deleteUser(id: string): Promise<ServiceResponse<User>> {
+  return await apiDeleteItem<User>({
+    uri: "users",
+    itemId: id,
+    errorMessage: "Error al eliminar usuario",
+  });
 }

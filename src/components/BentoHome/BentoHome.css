@@ -49,13 +49,13 @@
 
 @media screen and (min-width: 1300px) {
   .bento-home {
-    width: 250px;
-    height: 250px;
+    width: 220px;
+    height: 220px;
   }
 
   .bento-home-icon {
     width: 40px;
-    height: 40px;
+    height: 90px;
   }
   .bento-home-text {
     font-size: x-large;
