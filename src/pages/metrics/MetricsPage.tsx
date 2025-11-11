@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import UnifiedMetrics from "../../components/UnifiedMetrics/UnifiedMetrics";
-import { LoadingSpinner } from "../../components";
-import "./Metrics.css";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import "./MetricsPage.css";
 
 const METRICS_COUNT = 7; // number of UnifiedMetrics instances on this page
 
-export default function Metrics() {
+export default function MetricsPage() {
   const [loadedCount, setLoadedCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -19,7 +19,7 @@ export default function Metrics() {
   }, [loadedCount]);
 
   return (
-    <div className="metrics-container">
+    <div className="container">
       <h1 className="title">Métricas</h1>
       {/* Keep spinner mounted to allow CSS fade-out when `loading` becomes false */}
       <LoadingSpinner message="Cargando métricas..." visible={loading} />

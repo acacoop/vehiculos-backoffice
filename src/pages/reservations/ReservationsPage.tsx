@@ -40,7 +40,7 @@ export default function ReservationsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="reservations-page">
+    <div className="container">
       <Table
         getRows={getReservations}
         columns={columns}

@@ -11,6 +11,7 @@ import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
 import IconBrand from "../../assets/icons/vehicle_brand.svg";
 import IconAssignment from "../../assets/icons/assignment.svg";
+import IconMetrics from "../../assets/icons/metrics.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
@@ -50,6 +51,11 @@ function Navbar() {
           label: "Reservas",
           to: "/reservations",
         },
+        {
+          icon: IconCar,
+          label: "Registros de Kilometraje",
+          to: "/vehicles/kilometersLogs",
+        },
       ],
     },
     {
@@ -83,6 +89,10 @@ function Navbar() {
         { icon: IconBrand, label: "Marcas", to: "/vehicles/brands" },
         { icon: IconCar, label: "Modelos", to: "/vehicles/models" },
       ],
+    },
+    {
+      title: "Informes",
+      items: [{ icon: IconMetrics, label: "Métricas", to: "/metrics" }],
     },
   ];
 

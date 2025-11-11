@@ -9,11 +9,10 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import "./App.css";
 
-// MIGRADAS - Auth, Home & Users
 import { LoginPage } from "./pages/auth";
 import { HomePage } from "./pages/home";
+import MetricsPage from "./pages/metrics/MetricsPage";
 
-// MIGRADAS
 import MaintenanceCategoriesPage from "./pages/maintenance/categories/CategoriesPage";
 import MaintenanceCategoryPage from "./pages/maintenance/categories/CategoryPage";
 import MaintenanceItemPage from "./pages/maintenance/items/MaintenancePage";
@@ -39,6 +38,8 @@ import ReservationsPage from "./pages/reservations/ReservationsPage";
 import UserPage from "./pages/users/UserPage";
 import UsersPage from "./pages/users/UsersPage";
 import VehicleAssignmentPage from "./pages/vehicles/assignments/AssignmentPage";
+import KilometersLogsPage from "./pages/vehicles/kilometersLogs/KilometersLogsPage";
+import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -71,6 +72,7 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomePage />} />
+          <Route path="/metrics" element={<MetricsPage />} />
 
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:id" element={<UserPage />} />
@@ -157,6 +159,19 @@ function App() {
           <Route
             path="/vehicles/responsibles/:id"
             element={<ResponsiblePage />}
+          />
+
+          <Route
+            path="/vehicles/kilometersLogs"
+            element={<KilometersLogsPage />}
+          />
+          <Route
+            path="/vehicles/kilometersLogs/new"
+            element={<KilometersLogPage />}
+          />
+          <Route
+            path="/vehicles/kilometersLogs/:id"
+            element={<KilometersLogPage />}
           />
 
           <Route path="/reservations" element={<ReservationsPage />} />

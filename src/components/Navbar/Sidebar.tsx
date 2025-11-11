@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logoIniciales from "../../assets/brand/aca_iniciales.png";
 import IconLogout from "../../assets/icons/logout.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
@@ -25,8 +25,27 @@ export default function Sidebar({
   sections,
 }: SidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Determinar qué sección debe estar expandida por defecto
+  const getSectionToExpand = () => {
+    const currentPath = location.pathname;
+
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const hasActiveItem = section.items.some(
+        (item) => currentPath === item.to,
+      );
+      if (hasActiveItem) {
+        console.log("Expanding section:", section.title);
+        return i;
+      }
+    }
+
+    return 0; // Por defecto la primera sección
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -88,6 +107,7 @@ export default function Sidebar({
                 title={section.title}
                 onNavigate={onClose}
                 items={section.items}
+                defaultExpanded={index === getSectionToExpand()}
               />
             ))}
           </div>

@@ -26,7 +26,7 @@ import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
 import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
-import { getVehicleKilometersLogs } from "../../../services/kilometers";
+import { getVehicleKilometersLogsByVehicle } from "../../../services/kilometers";
 import type {
   KilometersFilterParams,
   VehicleKilometersLog,
@@ -493,10 +493,20 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(findOptions: ApiFindOptions<KilometersFilterParams>) =>
-              getVehicleKilometersLogs(id, findOptions)
+              getVehicleKilometersLogsByVehicle(id, findOptions)
             }
             columns={kilometersColumns}
-            header={{ title: "Historial de Kilometraje" }}
+            header={{
+              title: "Historial de Kilometraje",
+              addButton: {
+                text: "+ Nuevo Registro",
+                onClick: () =>
+                  navigate(`/vehicles/kilometersLogs/new?vehicleId=${id}`),
+              },
+            }}
+            actionColumn={{
+              route: "/vehicles/kilometersLogs",
+            }}
             search={{ enabled: true, placeholder: "Buscar registros..." }}
           />
 
@@ -540,7 +550,17 @@ export default function VehiclesPage() {
               })
             }
             columns={maintenanceRecordColumns}
-            header={{ title: "Registro de Mantenimientos" }}
+            header={{
+              title: "Registro de Mantenimientos",
+              addButton: {
+                text: "+ Nuevo Registro",
+                onClick: () =>
+                  navigate(`/maintenance/records/new?vehicleId=${id}`),
+              },
+            }}
+            actionColumn={{
+              route: "/maintenance/records",
+            }}
             search={{ enabled: true, placeholder: "Buscar registros..." }}
           />
 

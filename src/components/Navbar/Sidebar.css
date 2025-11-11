@@ -55,6 +55,27 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 24px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Estilos personalizados para el scrollbar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .sidebar-sections {
@@ -70,10 +91,66 @@
   gap: 12px;
 }
 
+.sidebar-section-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.sidebar-section-header:hover .sidebar-section-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-section-header:hover .sidebar-section-arrow {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-section-arrow {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+  transform: rotate(-90deg);
+}
+
+.sidebar-section-arrow.expanded {
+  transform: rotate(0deg);
+}
+
+.section-items-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.25s ease-out;
+}
+
+.section-items-wrapper.expanded {
+  grid-template-rows: 1fr;
+}
+
 .section-items {
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.section-items-wrapper.expanded .section-items {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .sidebar-overlay {
@@ -120,11 +197,12 @@
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  transition: color 0.2s ease;
 }
 
 .sidebar-section-bar {
   height: 2px;
-  width: calc(100% - 64px);
+  width: 100%;
   background: rgba(255, 255, 255, 0.15);
   list-style: none;
 }
