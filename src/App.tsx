@@ -28,7 +28,8 @@ import MaintenanceRecordsPage from "./pages/maintenance/records/MaintenanceRecor
 import MaintenanceRecordPage from "./pages/maintenance/records/MaintenanceRecordPage";
 
 import { useMsal } from "@azure/msal-react";
-import { getActiveAccount } from "./common/auth";
+import { ensureActiveAccount } from "./common/auth";
+import { useEffect, useState } from "react";
 import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
 import VehiclePage from "./pages/vehicles/items/VehiclePage";
 import ResponsiblesPage from "./pages/vehicles/responsibles/ResponsiblesPage";
@@ -43,13 +44,32 @@ import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
-  const isAuthenticated = !!getActiveAccount();
-  if (inProgress !== "none") {
-    return null; // optionally a spinner
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (inProgress !== "none") {
+        return; // Esperar a que termine el proceso de MSAL
+      }
+
+      const account = await ensureActiveAccount();
+      setIsAuth(!!account);
+      setIsChecking(false);
+    };
+
+    void checkAuth();
+  }, [inProgress]);
+
+  // Mostrar spinner mientras se verifica la autenticación
+  if (inProgress !== "none" || isChecking) {
+    return null; // o un spinner
   }
-  if (!isAuthenticated) {
+
+  if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
+
   return (
     <>
       <Navbar />

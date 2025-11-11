@@ -226,6 +226,26 @@ export async function generalApiCall<T>({
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    // Manejar error de autenticación (token inválido/expirado)
+    if (response.status === 401) {
+      console.error("Token inválido o expirado, redirigiendo al login");
+      // Redirigir al login
+      window.location.href = "/login";
+      return {
+        success: false,
+        message: "Sesión expirada. Por favor, inicie sesión nuevamente.",
+      };
+    }
+
+    // Manejar error de autorización (sin permisos) - NO redirigir
+    if (response.status === 403) {
+      console.warn("Sin permisos para realizar esta acción");
+      return {
+        success: false,
+        message: "No tenés permisos para realizar esta acción.",
+      };
+    }
+
     if (!response.ok) {
       let parsedErrorMessage = errorMessage;
       let apiError: ApiError | undefined;
@@ -258,7 +278,8 @@ export async function generalApiCall<T>({
     const pagination = mapPaginationResponse(parsedResponse.pagination);
 
     return { success: true, data: transformedData, pagination };
-  } catch {
+  } catch (error) {
+    console.error("Error en la petición:", error);
     return {
       success: false,
       message: errorMessage,

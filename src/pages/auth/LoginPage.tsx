@@ -1,7 +1,7 @@
 import "./LoginPage.css";
 import Logo from "../../assets/brand/logo_azul.webp";
 import Microsoft from "../../assets/icons/microsoft.svg";
-import { login, isAuthenticated } from "../../common/auth";
+import { login, isAuthenticated, ensureActiveAccount } from "../../common/auth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
@@ -9,18 +9,29 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate("/home", { replace: true });
-    }
+    const checkAuthentication = async () => {
+      // Verificar si hay una cuenta activa válida
+      const account = await ensureActiveAccount();
+      if (account && isAuthenticated()) {
+        navigate("/home", { replace: true });
+      }
+      setCheckingAuth(false);
+    };
+
+    void checkAuthentication();
   }, [navigate]);
 
   const handleLogin = async () => {
     setIsLoading(true);
     try {
       await login();
-      navigate("/home", { replace: true });
+      // Solo navegar si el login fue exitoso
+      if (isAuthenticated()) {
+        navigate("/home", { replace: true });
+      }
     } catch (error) {
       console.error("Error during login:", error);
     } finally {
@@ -28,8 +39,12 @@ export default function LoginPage() {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner message="Iniciando sesión..." />;
+  if (checkingAuth || isLoading) {
+    return (
+      <LoadingSpinner
+        message={checkingAuth ? "Verificando sesión..." : "Iniciando sesión..."}
+      />
+    );
   }
 
   return (
