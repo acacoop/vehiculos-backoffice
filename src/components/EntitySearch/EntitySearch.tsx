@@ -381,7 +381,7 @@ interface CategoryEntitySearchProps {
   onCategoryChange: (category: Category | null) => void;
 }
 
-export function CategoryEntitySearch({
+export function MaintenanceCategoryEntitySearch({
   category,
   onCategoryChange,
 }: CategoryEntitySearchProps) {
@@ -392,10 +392,7 @@ export function CategoryEntitySearch({
       entity={category}
       onEntityChange={onCategoryChange}
       searchFunction={searchCategories}
-      displayFields={[
-        { path: "name", label: "Nombre" },
-        { path: "description", label: "Descripción" },
-      ]}
+      displayFields={[{ path: "name", label: "Nombre" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar categoría..."
       title="Datos de la Categoría"

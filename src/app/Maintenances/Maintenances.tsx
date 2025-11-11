@@ -95,7 +95,7 @@ export default function MaintenancePage() {
         headerTitle="Categorías de Mantenimiento"
         showAddButton={true}
         addButtonText="+ Nueva Categoría"
-        onAddButtonClick={() => navigate("/category/create")}
+        onAddButtonClick={() => navigate("/category/new")}
         maxWidth="900px"
       />
 
@@ -112,7 +112,7 @@ export default function MaintenancePage() {
           headerTitle="Mantenimientos Posibles"
           showAddButton={true}
           addButtonText="+ Nuevo Mantenimiento"
-          onAddButtonClick={() => navigate("/maintenance/create")}
+          onAddButtonClick={() => navigate("/maintenance/new")}
           maxWidth="900px"
           maxHeight="600px"
         />

@@ -192,7 +192,7 @@ export default function UserPage() {
           title: "Vehículos Asignados",
           addButton: {
             text: "Agregar Vehículo",
-            onClick: () => navigate(`/assignments/create?userId=${id}`),
+            onClick: () => navigate(`/vehicles/assignments/new?userId=${id}`),
           },
         }}
         actionColumn={{

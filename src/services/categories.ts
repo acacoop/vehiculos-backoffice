@@ -14,7 +14,7 @@ import type {
 import type { ServiceResponse } from "../types/common";
 
 export async function getMaintenanceCategories(
-  findOptions?: ApiFindOptions<CategoryFilterParams>
+  findOptions?: ApiFindOptions<CategoryFilterParams>,
 ): Promise<ServiceResponse<Category[]>> {
   return await apiFindItems<Category, CategoryFilterParams>({
     uri: "maintenance/categories",
@@ -23,8 +23,8 @@ export async function getMaintenanceCategories(
   });
 }
 
-export async function getMaintenanceCategoriesById(
-  id: string
+export async function getMaintenanceCategoryById(
+  id: string,
 ): Promise<ServiceResponse<Category>> {
   return await apiFindItemById<Category>({
     uri: "maintenance/categories",
@@ -34,7 +34,7 @@ export async function getMaintenanceCategoriesById(
 }
 
 export async function createMaintenanceCategory(
-  payload: CategoryInput
+  payload: CategoryInput,
 ): Promise<ServiceResponse<Category>> {
   return await apiCreateItem<Category>({
     uri: "maintenance/categories",
@@ -45,7 +45,7 @@ export async function createMaintenanceCategory(
 
 export async function updateMaintenanceCategory(
   id: string,
-  payload: CategoryInput
+  payload: CategoryInput,
 ): Promise<ServiceResponse<Category>> {
   return await apiUpdateItem<Category>({
     uri: "maintenance/categories",
@@ -56,7 +56,7 @@ export async function updateMaintenanceCategory(
 }
 
 export async function deleteMaintenanceCategory(
-  id: string
+  id: string,
 ): Promise<ServiceResponse<void>> {
   return await apiDeleteItem({
     uri: "maintenance/categories",

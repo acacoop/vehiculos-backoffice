@@ -453,7 +453,14 @@ export default function VehiclesPage() {
               })
             }
             columns={assignmentColumns}
-            header={{ title: "Asignaciones" }}
+            header={{
+              title: "Asignaciones",
+              addButton: {
+                text: "+ Agregar Asignación",
+                onClick: () =>
+                  navigate(`/vehicles/assignments/new?vehicleId=${id}`),
+              },
+            }}
             search={{ enabled: true, placeholder: "Buscar asignaciones..." }}
           />
 

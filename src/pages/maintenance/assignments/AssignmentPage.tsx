@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
@@ -19,6 +19,10 @@ import {
 import type { Vehicle } from "../../../types/vehicle";
 import type { Maintenance } from "../../../types/maintenance";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
+import { Table } from "../../../components/Table/table";
+import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
+import type { MaintenanceRecordFilterParams } from "../../../types/maintenanceRecord";
+import type { ApiFindOptions } from "../../../services/common";
 
 export default function AssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +53,7 @@ export default function AssignmentPage() {
     handleDialogCancel,
     closeNotification,
   } = usePageState({ redirectOnSuccess: "/maintenance/assignments" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -156,7 +161,7 @@ export default function AssignmentPage() {
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             }),
-      `Asignación ${actionText}da exitosamente`
+      `Asignación ${actionText}da exitosamente`,
     );
   };
 
@@ -292,6 +297,53 @@ export default function AssignmentPage() {
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
+
+      {!isNew && (
+        <Table
+          getRows={(
+            findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
+          ) =>
+            getMaintenanceRecords({
+              ...findOptions,
+              filters: {
+                ...findOptions?.filters,
+                assignedMaintenanceId: id,
+              },
+            })
+          }
+          columns={[
+            {
+              field: "date",
+              headerName: "Fecha",
+              minWidth: 150,
+              type: "date",
+            },
+            {
+              field: "kilometers",
+              headerName: "Kilómetros",
+              minWidth: 150,
+              transform: (v: unknown) => (v ? `${v} km` : "N/A"),
+            },
+            {
+              field: "notes",
+              headerName: "Observaciones",
+              minWidth: 300,
+              transform: (v: unknown) => (v ? String(v) : "Sin observaciones"),
+            },
+          ]}
+          header={{
+            title: "Registros de Mantenimiento",
+            addButton: {
+              text: "+ Nuevo Registro",
+              onClick: () =>
+                navigate(
+                  `/maintenance/records/new?assignedMaintenanceId=${id}`,
+                ),
+            },
+          }}
+          search={{ enabled: true, placeholder: "Buscar registros..." }}
+        />
+      )}
     </div>
   );
 }

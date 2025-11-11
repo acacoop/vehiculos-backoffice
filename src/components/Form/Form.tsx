@@ -335,7 +335,6 @@ const Form: React.FC<FormProps> = ({
           <div className="form-actions">
             {buttons.map((button, index) => {
               const buttonProps = {
-                key: index,
                 text: button.text,
                 onClick: button.onClick,
                 disabled: button.disabled,
@@ -346,12 +345,12 @@ const Form: React.FC<FormProps> = ({
               // Usar el componente apropiado según la variante
               switch (button.variant) {
                 case "secondary":
-                  return <CancelButton {...buttonProps} />;
+                  return <CancelButton {...buttonProps} key={index} />;
                 case "danger":
-                  return <DeleteButton {...buttonProps} />;
+                  return <DeleteButton {...buttonProps} key={index} />;
                 case "primary":
                 default:
-                  return <ConfirmButton {...buttonProps} />;
+                  return <ConfirmButton {...buttonProps} key={index} />;
               }
             })}
           </div>

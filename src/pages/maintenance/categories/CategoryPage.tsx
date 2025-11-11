@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import {
-  getMaintenanceCategoriesById,
+  getMaintenanceCategoryById,
   createMaintenanceCategory,
   updateMaintenanceCategory,
 } from "../../../services/categories";
@@ -72,7 +72,7 @@ export default function CategoryPage() {
 
     (async () => {
       await executeLoad(async () => {
-        const response = await getMaintenanceCategoriesById(id);
+        const response = await getMaintenanceCategoryById(id);
 
         if (cancelled) return;
 

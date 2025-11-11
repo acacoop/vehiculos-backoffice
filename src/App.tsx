@@ -22,17 +22,23 @@ import BrandsPage from "./pages/vehicles/brands/BrandsPage";
 import BrandPage from "./pages/vehicles/brands/BrandPage";
 import ModelsPage from "./pages/vehicles/models/ModelsPage";
 import ModelPage from "./pages/vehicles/models/ModelPage";
-import AssignmentsPage from "./pages/maintenance/assignments/AssignmentsPage";
+import MaintenanceAssignmentsPage from "./pages/maintenance/assignments/AssignmentsPage";
 import AssignmentPage from "./pages/maintenance/assignments/AssignmentPage";
+import VehiclesAssignmentsPage from "./pages/vehicles/assignments/AssignmentsPage";
+import MaintenanceRecordsPage from "./pages/maintenance/records/MaintenanceRecordsPage";
+import MaintenanceRecordPage from "./pages/maintenance/records/MaintenanceRecordPage";
 
 import { useMsal } from "@azure/msal-react";
 import { getActiveAccount } from "./common/auth";
-import { UserPage, UsersPage } from "./pages/users";
 import VehiclesPage from "./pages/vehicles/items/VehiclesPage";
 import VehiclePage from "./pages/vehicles/items/VehiclePage";
 import ResponsiblesPage from "./pages/vehicles/responsibles/ResponsiblesPage";
 import ResponsiblePage from "./pages/vehicles/responsibles/ResponsiblePage";
-import { ReservationsPage, ReservationPage } from "./pages/reservations";
+import ReservationPage from "./pages/reservations/ReservationPage";
+import ReservationsPage from "./pages/reservations/ReservationsPage";
+import UserPage from "./pages/users/UserPage";
+import UsersPage from "./pages/users/UsersPage";
+import VehicleAssignmentPage from "./pages/vehicles/assignments/AssignmentPage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -65,21 +71,23 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomePage />} />
+
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:id" element={<UserPage />} />
-          {/* <Route path="/user/edit/:id" element={<UserEdit />} /> */}
 
-          {/* NO MIGRADAS - Comentadas temporalmente */}
-          {/* <Route path="/assignment/create" element={<EditAssignment />} /> */}
-          {/* <Route path="/assignment/create/:vehicleId" element={<EditAssignment />} /> */}
-          {/* <Route path="/assignment/edit/:assignmentId" element={<EditAssignment />} /> */}
-          {/* <Route path="/reservation/create" element={<ReservationEdit />} /> */}
-          {/* <Route path="/reservation/edit/:id" element={<ReservationEdit />} /> */}
-          {/* <Route path="/metrics" element={<Metrics />} /> */}
-          {/* <Route path="/assignments" element={<Assignaments />} /> */}
-          {/* <Route path="/maintenances" element={<MaintenancePage />} /> */}
+          <Route
+            path="/vehicles/assignments"
+            element={<VehiclesAssignmentsPage />}
+          />
+          <Route
+            path="/vehicles/assignments/new"
+            element={<VehicleAssignmentPage />}
+          />
+          <Route
+            path="/vehicles/assignments/:assignmentId"
+            element={<VehicleAssignmentPage />}
+          />
 
-          {/* MIGRADAS - Maintenance Categories */}
           <Route
             path="/maintenance/categories"
             element={<MaintenanceCategoriesPage />}
@@ -93,7 +101,6 @@ function App() {
             element={<MaintenanceCategoryPage />}
           />
 
-          {/* MIGRADAS - Maintenance Items */}
           <Route path="/maintenance/items" element={<MaintenanceItemsPage />} />
           <Route
             path="/maintenance/items/new"
@@ -104,10 +111,9 @@ function App() {
             element={<MaintenanceItemPage />}
           />
 
-          {/* MIGRADAS - Maintenance Assignments */}
           <Route
             path="/maintenance/assignments"
-            element={<AssignmentsPage />}
+            element={<MaintenanceAssignmentsPage />}
           />
           <Route
             path="/maintenance/assignments/new"
@@ -118,21 +124,31 @@ function App() {
             element={<AssignmentPage />}
           />
 
+          <Route
+            path="/maintenance/records"
+            element={<MaintenanceRecordsPage />}
+          />
+          <Route
+            path="/maintenance/records/new"
+            element={<MaintenanceRecordPage />}
+          />
+          <Route
+            path="/maintenance/records/:id"
+            element={<MaintenanceRecordPage />}
+          />
+
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/new" element={<VehiclePage />} />
           <Route path="/vehicles/:id" element={<VehiclePage />} />
 
-          {/* MIGRADAS - Vehicle Brands */}
           <Route path="/vehicles/brands" element={<BrandsPage />} />
           <Route path="/vehicles/brands/new" element={<BrandPage />} />
           <Route path="/vehicles/brands/:id" element={<BrandPage />} />
 
-          {/* MIGRADAS - Vehicle Models */}
           <Route path="/vehicles/models" element={<ModelsPage />} />
           <Route path="/vehicles/models/new" element={<ModelPage />} />
           <Route path="/vehicles/models/:id" element={<ModelPage />} />
 
-          {/* MIGRADAS - Vehicle Responsibles */}
           <Route path="/vehicles/responsibles" element={<ResponsiblesPage />} />
           <Route
             path="/vehicles/responsibles/new"
@@ -143,7 +159,6 @@ function App() {
             element={<ResponsiblePage />}
           />
 
-          {/* MIGRADAS - Reservations */}
           <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/reservations/new" element={<ReservationPage />} />
           <Route path="/reservations/:id" element={<ReservationPage />} />

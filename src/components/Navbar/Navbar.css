@@ -113,25 +113,26 @@
 
 .navbar-sidebar ul {
   list-style: none;
-  padding: 32px 0;
+  padding: 16px 0;
   margin: 0;
   overflow-y: auto;
   flex: 1;
 }
 
 .navbar-sidebar li {
-  margin: 16px 0;
-  padding-left: 32px;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar-sidebar a {
   color: #fff;
   text-decoration: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   gap: 12px;
   transition: color 0.2s;
+  padding: 10px 32px;
 }
 
 .navbar-sidebar a:hover {
@@ -142,7 +143,7 @@
   transition: filter 0.2s;
 }
 
-.navbar-sidebar li:hover img {
+.navbar-sidebar a:hover img {
   filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
     hue-rotate(0deg) brightness(101%) contrast(104%);
 }
@@ -193,6 +194,73 @@
 
   width: 90%;
   background: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-section-title {
+  padding-left: 40px;
+  margin-top: 20px;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.navbar-section-bar {
+  height: 2px;
+  width: calc(100% - 64px);
+  margin-left: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  margin-bottom: 12px;
+  list-style: none;
+}
+
+.navbar-section {
+  padding: 0;
+  margin: 0 0 20px 0;
+  list-style: none;
+}
+
+.navbar-section .section-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-section .nav-item {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navbar-section .nav-item a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 40px;
+  transition: color 0.2s;
+}
+
+.navbar-section .nav-item a:hover {
+  color: #ff9800;
+}
+
+.navbar-section .nav-item a:hover img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
+}
+
+.navbar-section .nav-item.active a {
+  color: #ff9800;
+}
+
+.navbar-section .nav-item.active a img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(81%) saturate(2091%)
+    hue-rotate(0deg) brightness(101%) contrast(104%);
 }
 
 .navbar-overlay {

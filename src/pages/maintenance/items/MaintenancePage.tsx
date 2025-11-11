@@ -6,10 +6,7 @@ import {
   createMaintenance,
   updateMaintenance,
 } from "../../../services/maintenances";
-import {
-  getMaintenanceCategories,
-  getMaintenanceCategoriesById,
-} from "../../../services/categories";
+import { getMaintenanceCategoryById } from "../../../services/categories";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -19,6 +16,7 @@ import {
   type FormButton,
   type FormSection,
 } from "../../../components/Form";
+import { MaintenanceCategoryEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
@@ -28,14 +26,12 @@ export default function MaintenancePage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    categoryId: "",
     kilometersFrequency: undefined as number | undefined,
     daysFrequency: undefined as number | undefined,
     observations: "",
     instructions: "",
   });
-
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [category, setCategory] = useState<Category | null>(null);
 
   const {
     loading,
@@ -53,18 +49,6 @@ export default function MaintenancePage() {
   } = usePageState({ redirectOnSuccess: "/maintenance/items" });
 
   useEffect(() => {
-    // Load categories for the dropdown
-    const loadCategories = async () => {
-      const response = await getMaintenanceCategories();
-      if (response.success && response.data) {
-        setCategories(response.data);
-      }
-    };
-
-    loadCategories();
-  }, []);
-
-  useEffect(() => {
     if (isNew || !id) return;
 
     let cancelled = false;
@@ -78,7 +62,6 @@ export default function MaintenancePage() {
         if (response.success && response.data) {
           setFormData({
             name: response.data.name || "",
-            categoryId: response.data.category?.id || "",
             kilometersFrequency: response.data.kilometersFrequency,
             daysFrequency: response.data.daysFrequency,
             observations: response.data.observations || "",
@@ -104,9 +87,9 @@ export default function MaintenancePage() {
 
     if (categoryId) {
       executeLoad(async () => {
-        const response = await getMaintenanceCategoriesById(categoryId);
+        const response = await getMaintenanceCategoryById(categoryId);
         if (response.success && response.data) {
-          setFormData((prev) => ({ ...prev, categoryId: response.data!.id }));
+          setCategory(response.data);
         }
       });
     }
@@ -119,7 +102,7 @@ export default function MaintenancePage() {
       return;
     }
 
-    if (!formData.categoryId) {
+    if (!category) {
       showError("Debe seleccionar una categoría");
       return;
     }
@@ -139,7 +122,7 @@ export default function MaintenancePage() {
         isNew
           ? createMaintenance({
               name: formData.name.trim(),
-              categoryId: formData.categoryId,
+              categoryId: category.id,
               kilometersFrequency: formData.kilometersFrequency,
               daysFrequency: formData.daysFrequency,
               observations: formData.observations.trim() || undefined,
@@ -147,7 +130,7 @@ export default function MaintenancePage() {
             })
           : updateMaintenance(id!, {
               name: formData.name.trim(),
-              categoryId: formData.categoryId,
+              categoryId: category.id,
               kilometersFrequency: formData.kilometersFrequency,
               daysFrequency: formData.daysFrequency,
               observations: formData.observations.trim() || undefined,
@@ -160,11 +143,6 @@ export default function MaintenancePage() {
   if (loading) {
     return <LoadingSpinner message="Cargando mantenimiento..." />;
   }
-
-  const categoryOptions = categories.map((cat) => ({
-    value: cat.id,
-    label: cat.name,
-  }));
 
   const sections: FormSection[] = [
     {
@@ -183,18 +161,16 @@ export default function MaintenancePage() {
           placeholder: "Ej: Cambio de aceite de motor",
           disabled: isReadOnly,
         },
-        {
-          type: "select",
-          key: "categoryId",
-          label: "Categoría",
-          value: formData.categoryId,
-          onChange: (value: string) =>
-            setFormData({ ...formData, categoryId: value }),
-          options: categoryOptions,
-          required: true,
-          disabled: isReadOnly,
-        },
       ],
+    },
+    {
+      type: "entity",
+      render: (
+        <MaintenanceCategoryEntitySearch
+          category={category}
+          onCategoryChange={setCategory}
+        />
+      ),
     },
     {
       type: "fields",
