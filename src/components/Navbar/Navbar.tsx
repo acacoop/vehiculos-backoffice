@@ -1,46 +1,100 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
-import logoIniciales from "../../assets/brand/aca_iniciales.png";
 import logo from "../../assets/brand/logo_blanco.webp";
+import IconNavbar from "../../assets/icons/navbar.svg";
+import IconLogout from "../../assets/icons/logout.svg";
 import IconDashboard from "../../assets/icons/dashboard.svg";
 import IconCar from "../../assets/icons/car.svg";
 import IconUser from "../../assets/icons/user.svg";
-import IconMetrics from "../../assets/icons/metrics.svg";
 import IconPermissions from "../../assets/icons/security.svg";
 import IconMaintenance from "../../assets/icons/maintenance.svg";
-import IconResponsible from "../../assets/icons/assignment.svg";
-import IconNavbar from "../../assets/icons/navbar.svg";
 import IconBrand from "../../assets/icons/vehicle_brand.svg";
+import IconAssignment from "../../assets/icons/assignment.svg";
+import IconMetrics from "../../assets/icons/metrics.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
-import IconLogout from "../../assets/icons/logout.svg";
+import Sidebar, { type SidebarSectionData } from "./Sidebar";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string>("");
   const [askLogout, setAskLogout] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!sidebarRef.current) return;
-      if (!sidebarRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open]);
+  const sidebarSections: SidebarSectionData[] = [
+    {
+      title: "General",
+      items: [
+        { icon: IconDashboard, label: "Dashboard", to: "/home" },
+        { icon: IconUser, label: "Usuarios", to: "/users" },
+        { icon: IconCar, label: "Vehículos", to: "/vehicles" },
+      ],
+    },
+    {
+      title: "Vehículos",
+      items: [
+        {
+          icon: IconAssignment,
+          label: "Asignaciones",
+          to: "/vehicles/assignments",
+        },
+        {
+          icon: IconPermissions,
+          label: "Responsables",
+          to: "/vehicles/responsibles",
+        },
+        {
+          icon: IconAssignment,
+          label: "Reservas",
+          to: "/reservations",
+        },
+        {
+          icon: IconCar,
+          label: "Registros de Kilometraje",
+          to: "/vehicles/kilometersLogs",
+        },
+      ],
+    },
+    {
+      title: "Mantenimientos",
+      items: [
+        {
+          icon: IconMaintenance,
+          label: "Categorías",
+          to: "/maintenance/categories",
+        },
+        {
+          icon: IconMaintenance,
+          label: "Mantenimientos",
+          to: "/maintenance/items",
+        },
+        {
+          icon: IconPermissions,
+          label: "Asignaciones",
+          to: "/maintenance/assignments",
+        },
+        {
+          icon: IconMaintenance,
+          label: "Registros",
+          to: "/maintenance/records",
+        },
+      ],
+    },
+    {
+      title: "Catálogos",
+      items: [
+        { icon: IconBrand, label: "Marcas", to: "/vehicles/brands" },
+        { icon: IconCar, label: "Modelos", to: "/vehicles/models" },
+      ],
+    },
+    {
+      title: "Informes",
+      items: [{ icon: IconMetrics, label: "Métricas", to: "/metrics" }],
+    },
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -104,120 +158,14 @@ function Navbar() {
             </>
           )}
         </div>
-        <aside
-          ref={sidebarRef}
-          className={`navbar-sidebar${open ? " open" : ""}`}
-        >
-          <div className="navbar-sidebar-header">
-            <div className="navbar-sidebar-logo">
-              <img src={logoIniciales} alt="ACA Logo" />
-            </div>
-            <button
-              type="button"
-              className="navbar-sidebar-close"
-              aria-label="Cerrar menú"
-              onClick={() => setOpen(false)}
-            >
-              ×
-            </button>
-          </div>
-          <ul>
-            <li>
-              <Link to="/" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconDashboard}
-                  alt="Icono tablero"
-                />
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link to="/users" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconUser}
-                  alt="Icono usuario"
-                />
-                Usuarios
-              </Link>
-            </li>
-            <li>
-              <Link to="/vehicles" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconCar}
-                  alt="Icono Vehículo"
-                />
-                Vehículos
-              </Link>
-            </li>
-            <li className="navbar-separator" role="separator">
-              <span />
-            </li>
-            <li>
-              <Link to="/assignments" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconPermissions}
-                  alt="Icono asignaciones"
-                />
-                Asignaciones
-              </Link>
-            </li>
-            <li>
-              <Link to="/maintenances" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconMaintenance}
-                  alt="Icono Mantenimiento"
-                />
-                Mantenimientos
-              </Link>
-            </li>
-            <li>
-              <Link to="/vehicle-responsibles" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconResponsible}
-                  alt="Icono Responsable"
-                />
-                Responsables
-              </Link>
-            </li>
-            <li>
-              <Link to="/models" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconBrand}
-                  alt="Icono Marca"
-                />
-                Marcas y Modelos
-              </Link>
-            </li>
-            <li className="navbar-separator" role="separator">
-              <span />
-            </li>
-            <li>
-              <Link to="/metrics" onClick={() => setOpen(false)}>
-                <img
-                  className="icon-navbar"
-                  src={IconMetrics}
-                  alt="Icono Metricas"
-                />
-                Métricas
-              </Link>
-            </li>
-          </ul>
-        </aside>
       </nav>
-      {open && (
-        <div
-          className="navbar-overlay"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+
+      <Sidebar
+        open={open}
+        onClose={() => setOpen(false)}
+        onLogout={() => setAskLogout(false)}
+        sections={sidebarSections}
+      />
     </>
   );
 }

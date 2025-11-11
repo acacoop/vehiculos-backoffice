@@ -5,8 +5,8 @@ export enum ResponseStatus {
 
 // Configuración de paginación
 export interface PaginationParams {
-  page?: number;
-  limit?: number;
+  limit: number;
+  offset: number;
 }
 
 // Respuesta paginada del backend (según OpenAPI)
@@ -29,9 +29,9 @@ export interface ApiError {
 // Configuración para requests
 export interface RequestConfig {
   uri: string;
-  queryParams?: Record<string, any>;
+  queryParams?: Record<string, string | number | boolean>;
   pagination?: PaginationParams;
-  body?: any;
+  body?: Record<string, unknown>;
   headers?: Record<string, string>;
 }
 
@@ -43,19 +43,22 @@ export interface PaginationData {
   pages: number;
 }
 
-// Respuesta unificada del backend (según OpenAPI)
-export interface BackendResponse<T> {
-  status: ResponseStatus;
-  message?: string;
-  data: T;
-  pagination?: Pagination;
+// Tipo base para filtros de cualquier entidad
+export interface FilterParams {
+  [key: string]: string | number | boolean | undefined | null;
 }
 
-// Respuesta de servicios con paginación para el frontend
-export interface ServiceResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  pagination?: PaginationData;
-  error?: ApiError;
-}
+export type OkServiceResponse<T> = {
+  readonly success: true;
+  readonly data: T;
+  readonly message?: string;
+  readonly pagination?: PaginationData;
+};
+
+export type ErrorServiceResponse = {
+  readonly success: false;
+  readonly message: string;
+  readonly error?: ApiError;
+};
+
+export type ServiceResponse<T> = OkServiceResponse<T> | ErrorServiceResponse;

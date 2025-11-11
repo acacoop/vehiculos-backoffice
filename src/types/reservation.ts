@@ -1,70 +1,25 @@
+import type { FilterParams } from "./common";
+import type { User } from "./user";
+import type { Vehicle } from "./vehicle";
+
 export interface Reservation {
-  id: string; // UUID format
+  id: string;
+  vehicle: Vehicle;
+  user: User;
+  startDate: string;
+  endDate: string;
+}
+
+export interface ReservationInput {
   vehicleId: string;
   userId: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
+  startDate: string;
+  endDate: string;
 }
 
-// Reserva con información del vehículo incluida
-export interface ReservationWithVehicle extends Reservation {
-  vehicle?: {
-    id: string;
-    licensePlate: string;
-    brand: string;
-    model: string;
-    year: number;
-  };
-}
-
-// Reserva con información del usuario incluida
-export interface ReservationWithUser extends Reservation {
-  user?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    cuit: number;
-    email: string;
-  };
-}
-
-// Reserva con información completa del usuario y vehículo
-export interface ReservationWithDetails extends Reservation {
-  user?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    cuit: number;
-    email: string;
-    active?: boolean;
-  };
-  vehicle?: {
-    id: string;
-    licensePlate: string;
-    brand: string;
-    model: string;
-    year: number;
-    imgUrl?: string;
-  };
-}
-
-// Parámetros para filtrar reservas (camelCase para uso interno)
-export interface ReservationFilterParams {
+export interface ReservationFilterParams extends FilterParams {
   vehicleId?: string;
   userId?: string;
   startDate?: string;
   endDate?: string;
-}
-
-// Respuesta específica para reservas
-export interface ReservationsApiResponse {
-  status: "success" | "error";
-  message: string;
-  data: Reservation[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
 }
