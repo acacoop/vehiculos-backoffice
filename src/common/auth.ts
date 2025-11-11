@@ -159,31 +159,20 @@ export async function login(): Promise<void> {
 }
 
 export async function appLogout(): Promise<void> {
-  const account = msalInstance.getActiveAccount();
-  if (!account) {
-    // Si no hay cuenta activa, solo limpiar todo
-    const accounts = msalInstance.getAllAccounts();
-    for (const acc of accounts) {
-      await msalInstance.clearCache({ account: acc });
-    }
-    msalInstance.setActiveAccount(null);
-    return;
+  // Solo limpiar la sesión local de la app sin hacer logout de Microsoft
+  const accounts = msalInstance.getAllAccounts();
+
+  // Limpiar cache de todas las cuentas
+  for (const acc of accounts) {
+    await msalInstance.clearCache({ account: acc });
   }
 
-  try {
-    // Hacer logout completo de Entra
-    await msalInstance.logoutPopup({
-      account,
-      postLogoutRedirectUri: window.location.origin + "/login",
-    });
-  } catch (error) {
-    console.error("Error en logout popup, usando redirect:", error);
-    // Si falla el popup, usar redirect
-    await msalInstance.logoutRedirect({
-      account,
-      postLogoutRedirectUri: window.location.origin + "/login",
-    });
-  }
+  // Limpiar cuenta activa
+  msalInstance.setActiveAccount(null);
+
+  console.log(
+    "Sesión cerrada localmente (sin afectar otras sesiones de Microsoft)",
+  );
 }
 
 export function isAuthenticated(): boolean {
