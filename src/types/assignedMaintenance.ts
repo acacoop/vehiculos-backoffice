@@ -2,7 +2,7 @@ import type { FilterParams } from "./common";
 import type { Maintenance } from "./maintenance";
 import type { Vehicle } from "./vehicle";
 
-export interface MaintenanceAssignment {
+export interface AssignedMaintenance {
   id: string;
   maintenance: Maintenance;
   vehicle: Vehicle;
@@ -12,7 +12,7 @@ export interface MaintenanceAssignment {
   instructions?: string;
 }
 
-export interface MaintenanceAssignmentInput {
+export interface AssignedMaintenanceInput {
   maintenanceId: string;
   vehicleId: string;
   kilometersFrequency?: number;
@@ -21,7 +21,7 @@ export interface MaintenanceAssignmentInput {
   instructions?: string;
 }
 
-export interface MaintenanceAssignmentFilterParams extends FilterParams {
+export interface AssignedMaintenanceFilterParams extends FilterParams {
   maintenanceId?: string;
   vehicleId?: string;
 }

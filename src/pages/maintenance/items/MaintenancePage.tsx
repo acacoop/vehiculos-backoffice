@@ -67,6 +67,7 @@ export default function MaintenancePage() {
             observations: response.data.observations || "",
             instructions: response.data.instructions || "",
           });
+          setCategory(response.data.category || null);
         } else {
           showError(response.message || "Error al cargar el mantenimiento");
         }
@@ -76,7 +77,8 @@ export default function MaintenancePage() {
     return () => {
       cancelled = true;
     };
-  }, [id, isNew, executeLoad, showError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isNew]);
 
   // Load category from query parameter
   useEffect(() => {
@@ -167,8 +169,8 @@ export default function MaintenancePage() {
       type: "entity",
       render: (
         <MaintenanceCategoryEntitySearch
-          category={category}
-          onCategoryChange={setCategory}
+          entity={category}
+          onEntityChange={setCategory}
         />
       ),
     },

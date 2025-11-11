@@ -11,19 +11,9 @@ export default function MaintenanceRecordsPage() {
 
   const columns: TableColumn<MaintenanceRecord>[] = [
     {
-      field: "assignedMaintenance.maintenance.category.name",
-      headerName: "Categoría",
-      minWidth: 200,
-    },
-    {
-      field: "assignedMaintenance.maintenance.name",
-      headerName: "Mantenimiento",
-      minWidth: 220,
-    },
-    {
       field: "assignedMaintenance.vehicle.licensePlate",
       headerName: "Vehículo",
-      minWidth: 140,
+      minWidth: 180,
       transform: (value, row) => {
         const vehicle = row.assignedMaintenance?.vehicle;
         if (vehicle) {
@@ -34,6 +24,23 @@ export default function MaintenanceRecordsPage() {
           return label || value || "N/A";
         }
         return value || "N/A";
+      },
+    },
+    {
+      field: "assignedMaintenance.maintenance.name",
+      headerName: "Mantenimiento",
+      minWidth: 180,
+    },
+    {
+      field: "user",
+      headerName: "Usuario",
+      minWidth: 180,
+      transform: (_value, row) => {
+        const user = row.user;
+        if (user) {
+          return `${user.firstName} ${user.lastName}`.trim();
+        }
+        return "N/A";
       },
     },
     {

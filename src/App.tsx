@@ -22,8 +22,8 @@ import BrandsPage from "./pages/vehicles/brands/BrandsPage";
 import BrandPage from "./pages/vehicles/brands/BrandPage";
 import ModelsPage from "./pages/vehicles/models/ModelsPage";
 import ModelPage from "./pages/vehicles/models/ModelPage";
-import MaintenanceAssignmentsPage from "./pages/maintenance/assignments/AssignmentsPage";
-import AssignmentPage from "./pages/maintenance/assignments/AssignmentPage";
+import AssignedMaintenancesPage from "./pages/maintenance/assignments/AssignedMaintenancePage";
+import AssignmentPage from "./pages/maintenance/assignments/AssignedMaintenancesPage";
 import VehiclesAssignmentsPage from "./pages/vehicles/assignments/AssignmentsPage";
 import MaintenanceRecordsPage from "./pages/maintenance/records/MaintenanceRecordsPage";
 import MaintenanceRecordPage from "./pages/maintenance/records/MaintenanceRecordPage";
@@ -113,7 +113,7 @@ function App() {
 
           <Route
             path="/maintenance/assignments"
-            element={<MaintenanceAssignmentsPage />}
+            element={<AssignedMaintenancesPage />}
           />
           <Route
             path="/maintenance/assignments/new"

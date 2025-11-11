@@ -1,9 +1,9 @@
 import type { ServiceResponse } from "../types/common";
 import type {
-  MaintenanceAssignment,
-  MaintenanceAssignmentInput,
-  MaintenanceAssignmentFilterParams,
-} from "../types/maintenanceAsignment";
+  AssignedMaintenance,
+  AssignedMaintenanceInput,
+  AssignedMaintenanceFilterParams,
+} from "../types/assignedMaintenance";
 import {
   apiFindItemById,
   apiFindItems,
@@ -14,12 +14,12 @@ import {
   type ApiFindOptions,
 } from "./common";
 
-export async function getMaintenanceAssignments(
-  findOptions?: ApiFindOptions<MaintenanceAssignmentFilterParams>,
-): Promise<ServiceResponse<MaintenanceAssignment[]>> {
+export async function getAssignedMaintenances(
+  findOptions?: ApiFindOptions<AssignedMaintenanceFilterParams>,
+): Promise<ServiceResponse<AssignedMaintenance[]>> {
   return await apiFindItems<
-    MaintenanceAssignment,
-    MaintenanceAssignmentFilterParams
+    AssignedMaintenance,
+    AssignedMaintenanceFilterParams
   >({
     uri: "maintenance/assignments",
     findOptions,
@@ -27,31 +27,31 @@ export async function getMaintenanceAssignments(
   });
 }
 
-export async function getMaintenanceAssignmentById(
+export async function getAssignedMaintenanceById(
   id: string,
-): Promise<ServiceResponse<MaintenanceAssignment>> {
-  return await apiFindItemById<MaintenanceAssignment>({
+): Promise<ServiceResponse<AssignedMaintenance>> {
+  return await apiFindItemById<AssignedMaintenance>({
     uri: "maintenance/assignments",
     itemId: id,
     errorMessage: "Error al obtener asignación de mantenimiento",
   });
 }
 
-export async function createMaintenanceAssignment(
-  payload: MaintenanceAssignmentInput,
-): Promise<ServiceResponse<MaintenanceAssignment>> {
-  return await apiCreateItem<MaintenanceAssignment>({
+export async function createAssignedMaintenance(
+  payload: AssignedMaintenanceInput,
+): Promise<ServiceResponse<AssignedMaintenance>> {
+  return await apiCreateItem<AssignedMaintenance>({
     uri: "maintenance/assignments",
     payload,
     errorMessage: "Error al crear asignación de mantenimiento",
   });
 }
 
-export async function updateMaintenanceAssignment(
+export async function updateAssignedMaintenance(
   id: string,
-  payload: Partial<MaintenanceAssignmentInput>,
-): Promise<ServiceResponse<MaintenanceAssignment>> {
-  return await apiUpdateItem<MaintenanceAssignment>({
+  payload: Partial<AssignedMaintenanceInput>,
+): Promise<ServiceResponse<AssignedMaintenance>> {
+  return await apiUpdateItem<AssignedMaintenance>({
     uri: "maintenance/assignments",
     itemId: id,
     payload,
@@ -59,10 +59,10 @@ export async function updateMaintenanceAssignment(
   });
 }
 
-export async function deleteMaintenanceAssignment(
+export async function deleteAssignedMaintenance(
   id: string,
-): Promise<ServiceResponse<MaintenanceAssignment>> {
-  return await apiDeleteItem<MaintenanceAssignment>({
+): Promise<ServiceResponse<AssignedMaintenance>> {
+  return await apiDeleteItem<AssignedMaintenance>({
     uri: "maintenance/assignments",
     itemId: id,
     errorMessage: "Error al eliminar asignación de mantenimiento",
@@ -72,7 +72,7 @@ export async function deleteMaintenanceAssignment(
 // Special function for getting assignments for a specific vehicle
 export async function getVehicleMaintenances(
   vehicleId: string,
-): Promise<ServiceResponse<MaintenanceAssignment[]>> {
+): Promise<ServiceResponse<AssignedMaintenance[]>> {
   return await generalApiCall({
     uri: `vehicles/${vehicleId}/maintenances`,
     method: "GET",

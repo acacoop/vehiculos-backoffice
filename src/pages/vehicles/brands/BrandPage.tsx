@@ -220,6 +220,9 @@ export default function BrandPage() {
             header={{
               title: "Vehículos de esta Marca",
             }}
+            actionColumn={{
+              route: "/vehicles",
+            }}
             search={{
               enabled: true,
               placeholder: "Buscar vehículos...",

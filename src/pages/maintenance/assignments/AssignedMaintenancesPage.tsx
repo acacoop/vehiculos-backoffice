@@ -3,10 +3,11 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
-  createMaintenanceAssignment,
-  getMaintenanceAssignmentById,
-  updateMaintenanceAssignment,
-} from "../../../services/maintenanceAssignments";
+  createAssignedMaintenance,
+  getAssignedMaintenanceById,
+  updateAssignedMaintenance,
+  deleteAssignedMaintenance,
+} from "../../../services/assignedMaintenances";
 import { getVehicleById } from "../../../services/vehicles";
 import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
@@ -62,7 +63,7 @@ export default function AssignmentPage() {
 
     (async () => {
       await executeLoad(async () => {
-        const response = await getMaintenanceAssignmentById(id);
+        const response = await getAssignedMaintenanceById(id);
 
         if (cancelled) return;
 
@@ -85,7 +86,8 @@ export default function AssignmentPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, isNew, executeLoad, showError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isNew]);
 
   // Load vehicle from query parameter
   useEffect(() => {
@@ -123,6 +125,19 @@ export default function AssignmentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, location.search]);
 
+  // Load frecuencies when maintenance changes
+  useEffect(() => {
+    if (!maintenance) return;
+
+    setFormData((prevData) => ({
+      ...prevData,
+      kilometersFrequency: maintenance.kilometersFrequency || 0,
+      daysFrequency: maintenance.daysFrequency || 0,
+      instructions: maintenance.instructions || "",
+      observations: maintenance.observations || "",
+    }));
+  }, [maintenance]);
+
   const handleSave = () => {
     if (!vehicle) {
       showError("El vehículo es obligatorio");
@@ -147,7 +162,7 @@ export default function AssignmentPage() {
       `¿Está seguro que desea ${actionText} esta asignación?`,
       () =>
         isNew
-          ? createMaintenanceAssignment({
+          ? createAssignedMaintenance({
               vehicleId: vehicle.id!.toString(),
               maintenanceId: maintenance.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
@@ -155,13 +170,21 @@ export default function AssignmentPage() {
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             })
-          : updateMaintenanceAssignment(id!, {
+          : updateAssignedMaintenance(id!, {
               kilometersFrequency: kmFreq > 0 ? kmFreq : 0,
               daysFrequency: daysFreq > 0 ? daysFreq : 0,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
             }),
       `Asignación ${actionText}da exitosamente`,
+    );
+  };
+
+  const handleDelete = async () => {
+    executeSave(
+      "Borrar esta asignación también eliminará todos sus registros de mantenimiento asociados. ¿Está seguro que desea continuar?",
+      () => deleteAssignedMaintenance(id!),
+      "Asignación eliminada exitosamente",
     );
   };
 
@@ -173,21 +196,26 @@ export default function AssignmentPage() {
     {
       type: "entity",
       render: (
-        <VehicleEntitySearch vehicle={vehicle} onVehicleChange={setVehicle} />
+        <VehicleEntitySearch
+          entity={vehicle}
+          onEntityChange={setVehicle}
+          disabled={!isNew}
+        />
       ),
     },
     {
       type: "entity",
       render: (
         <MaintenanceEntitySearch
-          maintenance={maintenance}
-          onMaintenanceChange={setMaintenance}
+          entity={maintenance}
+          onEntityChange={setMaintenance}
+          disabled={!isNew}
         />
       ),
     },
     {
       type: "fields",
-      title: "Frecuencias",
+      title: "Frecuencias (Debe especificar al menos una)",
       layout: "horizontal",
       fields: [
         {
@@ -255,6 +283,17 @@ export default function AssignmentPage() {
       onClick: () => goTo("/maintenance/assignments"),
       disabled: saving,
     },
+    ...(!isNew
+      ? [
+          {
+            text: saving ? "Eliminando..." : "Eliminar Asignación",
+            variant: "danger" as const,
+            onClick: handleDelete,
+            disabled: saving,
+            loading: saving,
+          },
+        ]
+      : []),
     ...(!isReadOnly
       ? [
           {

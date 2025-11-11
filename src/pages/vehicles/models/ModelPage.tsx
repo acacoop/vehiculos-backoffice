@@ -76,6 +76,7 @@ export default function ModelPage() {
           name: response.data.name || "",
           vehicleType: response.data.vehicleType || "",
         });
+        setBrand(response.data.brand || null);
       } else {
         showError(response.message || "Error al cargar el modelo");
       }
@@ -123,7 +124,7 @@ export default function ModelPage() {
     {
       type: "entity",
       render: (
-        <VehicleBrandEntitySearch brand={brand} onBrandChange={setBrand} />
+        <VehicleBrandEntitySearch entity={brand} onEntityChange={setBrand} />
       ),
     },
     {

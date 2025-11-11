@@ -248,12 +248,22 @@ export default function ReservationPage() {
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: <UserEntitySearch user={user} onUserChange={setUser} />,
+      render: (
+        <UserEntitySearch
+          entity={user}
+          onEntityChange={setUser}
+          disabled={!isNew}
+        />
+      ),
     },
     {
       type: "entity",
       render: (
-        <VehicleEntitySearch vehicle={vehicle} onVehicleChange={setVehicle} />
+        <VehicleEntitySearch
+          entity={vehicle}
+          onEntityChange={setVehicle}
+          disabled={!isNew}
+        />
       ),
     },
     {

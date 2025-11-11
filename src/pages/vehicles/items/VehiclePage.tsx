@@ -24,7 +24,7 @@ import type { AssignmentFilterParams } from "../../../types/assignment";
 import type { ApiFindOptions } from "../../../services/common";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
-import { getMaintenanceAssignments } from "../../../services/maintenanceAssignments";
+import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
 import { getVehicleKilometersLogs } from "../../../services/kilometers";
 import type {
@@ -33,9 +33,9 @@ import type {
 } from "../../../types/kilometer";
 import { getReservations } from "../../../services/reservations";
 import type {
-  MaintenanceAssignment,
-  MaintenanceAssignmentFilterParams,
-} from "../../../types/maintenanceAsignment";
+  AssignedMaintenance,
+  AssignedMaintenanceFilterParams,
+} from "../../../types/assignedMaintenance";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,
@@ -202,7 +202,7 @@ export default function VehiclesPage() {
     },
   ];
 
-  const maintenanceColumns: TableColumn<MaintenanceAssignment>[] = [
+  const maintenanceColumns: TableColumn<AssignedMaintenance>[] = [
     {
       field: "maintenance.category.name",
       headerName: "Categoría Mantenimiento",
@@ -365,7 +365,7 @@ export default function VehiclesPage() {
     {
       type: "entity",
       render: (
-        <VehicleModelEntitySearch model={model} onModelChange={setModel} />
+        <VehicleModelEntitySearch entity={model} onEntityChange={setModel} />
       ),
     },
     {
@@ -502,9 +502,9 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<MaintenanceAssignmentFilterParams>,
+              findOptions: ApiFindOptions<AssignedMaintenanceFilterParams>,
             ) =>
-              getMaintenanceAssignments({
+              getAssignedMaintenances({
                 ...findOptions,
                 filters: {
                   ...findOptions.filters,

@@ -12,14 +12,14 @@ import type { FormSection } from "../../components";
 import { getMe } from "../../services/users";
 import { getVehicleById } from "../../services/vehicles";
 import {
-  getMaintenanceAssignmentById,
+  getAssignedMaintenanceById,
   getVehicleMaintenances,
-} from "../../services/maintenanceAssignments";
+} from "../../services/assignedMaintenances";
 import { createMaintenanceRecord } from "../../services/maintenanceRecords";
 import { useMaintenanceSearch } from "../../hooks";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
-import type { MaintenanceAssignment } from "../../types/maintenanceAsignment";
+import type { AssignedMaintenance } from "../../types/assignedMaintenance";
 import "./MaintenanceRecordRegisterEdit.css";
 
 export default function MaintenanceRecordRegisterEdit() {
@@ -33,7 +33,7 @@ export default function MaintenanceRecordRegisterEdit() {
   // Estado para datos pre-cargados
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [maintenance, setMaintenance] = useState<MaintenanceAssignment | null>(
+  const [maintenance, setMaintenance] = useState<AssignedMaintenance | null>(
     null,
   );
 
@@ -107,7 +107,7 @@ export default function MaintenanceRecordRegisterEdit() {
         }
 
         if (maintenanceId) {
-          const maintenanceResponse = await getMaintenanceAssignmentById(
+          const maintenanceResponse = await getAssignedMaintenanceById(
             maintenanceId,
           );
           if (maintenanceResponse.success) {
@@ -286,7 +286,7 @@ export default function MaintenanceRecordRegisterEdit() {
               onSearchChange: maintenanceSearch.searchMaintenances,
               availableMaintenances: maintenanceSearch.availableMaintenances,
               showDropdown: maintenanceSearch.showDropdown,
-              onMaintenanceSelect: (maintenance: MaintenanceAssignment) => {
+              onMaintenanceSelect: (maintenance: AssignedMaintenance) => {
                 maintenanceSearch.selectMaintenance(maintenance);
               },
               onDropdownToggle: maintenanceSearch.setShowDropdown,

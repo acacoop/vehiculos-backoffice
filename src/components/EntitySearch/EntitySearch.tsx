@@ -14,6 +14,8 @@ import { getMaintenanceCategories } from "../../services/categories";
 import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
 import "./EntitySearch.css";
+import type { AssignedMaintenance } from "../../types/assignedMaintenance";
+import { getAssignedMaintenances } from "../../services/assignedMaintenances";
 
 interface DisplayField<T> {
   path: keyof T | string;
@@ -28,11 +30,12 @@ interface EntitySearchProps<T> {
   dropdownRender: (item: T) => string;
 
   placeholder?: string;
-  title: string; // Ahora es obligatorio
+  title: string;
   changeButtonText?: string;
 
   minChars?: number;
   debounceMs?: number;
+  disabled?: boolean;
 }
 
 export function EntitySearch<T>({
@@ -48,11 +51,14 @@ export function EntitySearch<T>({
 
   minChars = 1,
   debounceMs = 300,
+  disabled = false,
 }: EntitySearchProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<T[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const debounceTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -87,11 +93,34 @@ export function EntitySearch<T>({
     };
   }, [searchTerm, searchFunction, minChars, debounceMs]);
 
+  useEffect(() => {
+    // Reset or clamp selected index when results change
+    if (results.length === 0) {
+      setSelectedIndex(-1);
+    } else if (selectedIndex < 0) {
+      setSelectedIndex(0);
+    } else if (selectedIndex >= results.length) {
+      setSelectedIndex(results.length - 1);
+    }
+  }, [results, selectedIndex]);
+
+  useEffect(() => {
+    if (!showDropdown) return;
+    if (selectedIndex < 0) return;
+
+    const el = itemRefs.current[selectedIndex];
+    if (el && typeof el.scrollIntoView === "function") {
+      // Use nearest so the container scrolls minimally to show the item
+      el.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex, showDropdown]);
+
   const handleSelect = (item: T) => {
     onEntityChange(item);
     setSearchTerm("");
     setShowDropdown(false);
     setResults([]);
+    setSelectedIndex(-1);
   };
 
   const handleClear = () => {
@@ -132,7 +161,7 @@ export function EntitySearch<T>({
     <div className="entity-search">
       <div className="entity-search-header">
         <h3 className="entity-search-title">{title}</h3>
-        {entity && (
+        {entity && !disabled && (
           <button
             type="button"
             className="entity-search-change-button"
@@ -154,19 +183,80 @@ export function EntitySearch<T>({
               searchTerm.length >= minChars && setShowDropdown(true)
             }
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+            onKeyDown={(e) => {
+              if (
+                !showDropdown &&
+                results.length > 0 &&
+                (e.key === "ArrowDown" || e.key === "ArrowUp")
+              ) {
+                setShowDropdown(true);
+              }
+
+              switch (e.key) {
+                case "ArrowDown":
+                  e.preventDefault();
+                  setSelectedIndex((prev) => {
+                    const next =
+                      prev < 0 ? 0 : Math.min(prev + 1, results.length - 1);
+                    return next;
+                  });
+                  break;
+                case "ArrowUp":
+                  e.preventDefault();
+                  setSelectedIndex((prev) => Math.max(prev - 1, 0));
+                  break;
+                case "Enter":
+                  if (
+                    showDropdown &&
+                    selectedIndex >= 0 &&
+                    selectedIndex < results.length
+                  ) {
+                    e.preventDefault();
+                    handleSelect(results[selectedIndex]);
+                  }
+                  break;
+                case "Escape":
+                  setShowDropdown(false);
+                  setSelectedIndex(-1);
+                  break;
+                default:
+                  break;
+              }
+            }}
             placeholder={placeholder}
             className="entity-search-input"
+            aria-haspopup="listbox"
+            aria-expanded={showDropdown}
+            aria-controls="entity-search-dropdown"
+            disabled={disabled}
           />
           {isLoading && (
             <div className="entity-search-loading">Buscando...</div>
           )}
           {showDropdown && results.length > 0 && (
-            <div className="entity-search-dropdown">
+            <div
+              id="entity-search-dropdown"
+              className="entity-search-dropdown"
+              role="listbox"
+            >
               {results.map((item, index) => (
                 <div
                   key={index}
-                  className="entity-search-dropdown-item"
+                  ref={(el) => {
+                    itemRefs.current[index] = el;
+                  }}
+                  id={`entity-search-item-${index}`}
+                  role="option"
+                  aria-selected={selectedIndex === index}
+                  className={`entity-search-dropdown-item ${
+                    selectedIndex === index ? "selected" : ""
+                  }`}
+                  onMouseDown={(e) => {
+                    // prevent blur before click handler runs
+                    e.preventDefault();
+                  }}
                   onClick={() => handleSelect(item)}
+                  onMouseEnter={() => setSelectedIndex(index)}
                 >
                   {dropdownRender(item)}
                 </div>
@@ -234,6 +324,18 @@ async function searchCategories(term: string): Promise<Category[]> {
 async function searchMaintenances(term: string): Promise<Maintenance[]> {
   const response = await getMaintenances({
     search: term,
+    pagination: { offset: 0, limit: 5 },
+  });
+  return response.success ? response.data : [];
+}
+
+async function searchAssignedMaintenances(
+  term: string,
+  vehicleId: string,
+): Promise<AssignedMaintenance[]> {
+  const response = await getAssignedMaintenances({
+    search: term,
+    filters: { vehicleId },
     pagination: { offset: 0, limit: 10 },
   });
   return response.success ? response.data : [];
@@ -251,15 +353,17 @@ async function searchAssignments(term: string): Promise<Assignment[]> {
 // Wrapper Components
 // =============================================================================
 
-interface VehicleEntitySearchProps {
-  vehicle: Vehicle | null;
-  onVehicleChange: (vehicle: Vehicle | null) => void;
+interface EntitySearchWrapperProps<T> {
+  entity: T | null;
+  onEntityChange: (entity: T | null) => void;
+  disabled?: boolean;
 }
 
 export function VehicleEntitySearch({
-  vehicle,
-  onVehicleChange,
-}: VehicleEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<Vehicle>) {
   const dropdownRender = (vehicle: Vehicle) => {
     const brand = vehicle.model?.brand?.name || "";
     const model = vehicle.model?.name || "";
@@ -268,8 +372,8 @@ export function VehicleEntitySearch({
 
   return (
     <EntitySearch<Vehicle>
-      entity={vehicle}
-      onEntityChange={onVehicleChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchVehicles}
       displayFields={[
         { path: "model.brand.name", label: "Marca" },
@@ -281,27 +385,24 @@ export function VehicleEntitySearch({
       placeholder="Buscar vehículo..."
       title="Datos del Vehículo"
       changeButtonText="Cambiar vehículo"
+      disabled={disabled}
     />
   );
 }
 
-interface UserEntitySearchProps {
-  user: User | null;
-  onUserChange: (user: User | null) => void;
-}
-
 export function UserEntitySearch({
-  user,
-  onUserChange,
-}: UserEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<User>) {
   const dropdownRender = (user: User) => {
     return `${user.firstName} ${user.lastName} - ${user.email}`;
   };
 
   return (
     <EntitySearch<User>
-      entity={user}
-      onEntityChange={onUserChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchUsers}
       displayFields={[
         { path: "firstName", label: "Nombre" },
@@ -313,19 +414,16 @@ export function UserEntitySearch({
       placeholder="Buscar usuario..."
       title="Datos del Usuario"
       changeButtonText="Cambiar usuario"
+      disabled={disabled}
     />
   );
 }
 
-interface VehicleModelEntitySearchProps {
-  model: VehicleModel | null;
-  onModelChange: (model: VehicleModel | null) => void;
-}
-
 export function VehicleModelEntitySearch({
-  model,
-  onModelChange,
-}: VehicleModelEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<VehicleModel>) {
   const searchFunction = (term: string) => searchVehicleModels(term);
 
   const dropdownRender = (model: VehicleModel) => {
@@ -335,8 +433,8 @@ export function VehicleModelEntitySearch({
 
   return (
     <EntitySearch<VehicleModel>
-      entity={model}
-      onEntityChange={onModelChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchFunction}
       displayFields={[
         { path: "brand.name", label: "Marca" },
@@ -347,97 +445,135 @@ export function VehicleModelEntitySearch({
       placeholder="Buscar modelo..."
       title="Datos del Modelo"
       changeButtonText="Cambiar modelo"
+      disabled={disabled}
     />
   );
 }
 
-interface VehicleBrandEntitySearchProps {
-  brand: VehicleBrand | null;
-  onBrandChange: (brand: VehicleBrand | null) => void;
-}
-
 export function VehicleBrandEntitySearch({
-  brand,
-  onBrandChange,
-}: VehicleBrandEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<VehicleBrand>) {
   const dropdownRender = (brand: VehicleBrand) => brand.name;
 
   return (
     <EntitySearch<VehicleBrand>
-      entity={brand}
-      onEntityChange={onBrandChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchVehicleBrands}
       displayFields={[{ path: "name", label: "Marca" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar marca..."
       title="Datos de la Marca"
       changeButtonText="Cambiar marca"
+      disabled={disabled}
     />
   );
 }
 
-interface CategoryEntitySearchProps {
-  category: Category | null;
-  onCategoryChange: (category: Category | null) => void;
-}
-
 export function MaintenanceCategoryEntitySearch({
-  category,
-  onCategoryChange,
-}: CategoryEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<Category>) {
   const dropdownRender = (category: Category) => category.name;
 
   return (
     <EntitySearch<Category>
-      entity={category}
-      onEntityChange={onCategoryChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchCategories}
       displayFields={[{ path: "name", label: "Nombre" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar categoría..."
       title="Datos de la Categoría"
       changeButtonText="Cambiar categoría"
+      disabled={disabled}
     />
   );
 }
 
-interface MaintenanceEntitySearchProps {
-  maintenance: Maintenance | null;
-  onMaintenanceChange: (maintenance: Maintenance | null) => void;
-}
-
 export function MaintenanceEntitySearch({
-  maintenance,
-  onMaintenanceChange,
-}: MaintenanceEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<Maintenance>) {
   const dropdownRender = (maintenance: Maintenance) => maintenance.name;
 
   return (
     <EntitySearch<Maintenance>
-      entity={maintenance}
-      onEntityChange={onMaintenanceChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchMaintenances}
       displayFields={[
         { path: "name", label: "Nombre" },
-        { path: "description", label: "Descripción" },
+        { path: "category.name", label: "Categoría" },
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar mantenimiento..."
       title="Datos del Mantenimiento"
       changeButtonText="Cambiar mantenimiento"
+      disabled={disabled}
     />
   );
 }
 
-interface AssignmentEntitySearchProps {
-  assignment: Assignment | null;
-  onAssignmentChange: (assignment: Assignment | null) => void;
+interface AssignedMaintenanceEntitySearchProps
+  extends EntitySearchWrapperProps<AssignedMaintenance> {
+  vehicleId: string;
+}
+
+export function AssignedMaintenanceEntitySearch({
+  entity,
+  onEntityChange,
+  vehicleId,
+  disabled = false,
+}: AssignedMaintenanceEntitySearchProps) {
+  const dropdownRender = (assignment: AssignedMaintenance) => {
+    const maintenanceName = assignment.maintenance?.name || "";
+    return `${maintenanceName}`;
+  };
+
+  return (
+    <EntitySearch<AssignedMaintenance>
+      entity={entity}
+      onEntityChange={onEntityChange}
+      searchFunction={(term: string) =>
+        searchAssignedMaintenances(term, vehicleId)
+      }
+      displayFields={[
+        { path: "maintenance.name", label: "Mantenimiento" },
+        { path: "maintenance.category.name", label: "Categoría" },
+
+        ...(entity &&
+        entity.maintenance &&
+        entity.maintenance.kilometersFrequency
+          ? [
+              {
+                path: "maintenance.kilometersFrequency",
+                label: "Frecuencia (Km)",
+              },
+            ]
+          : []),
+        ...(entity && entity.maintenance && entity.maintenance.daysFrequency
+          ? [{ path: "maintenance.daysFrequency", label: "Frecuencia (Días)" }]
+          : []),
+      ]}
+      dropdownRender={dropdownRender}
+      placeholder="Buscar un matenimiento asignado al vehículo..."
+      title="Datos de la Asignación de Mantenimiento"
+      changeButtonText="Cambiar asignación de mantenimiento"
+      disabled={disabled}
+    />
+  );
 }
 
 export function AssignmentEntitySearch({
-  assignment,
-  onAssignmentChange,
-}: AssignmentEntitySearchProps) {
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<Assignment>) {
   const dropdownRender = (assignment: Assignment) => {
     const userName = assignment.user
       ? `${assignment.user.firstName} ${assignment.user.lastName}`
@@ -448,8 +584,8 @@ export function AssignmentEntitySearch({
 
   return (
     <EntitySearch<Assignment>
-      entity={assignment}
-      onEntityChange={onAssignmentChange}
+      entity={entity}
+      onEntityChange={onEntityChange}
       searchFunction={searchAssignments}
       displayFields={[
         { path: "user.firstName", label: "Usuario" },
@@ -461,6 +597,7 @@ export function AssignmentEntitySearch({
       placeholder="Buscar asignación..."
       title="Datos de la Asignación"
       changeButtonText="Cambiar asignación"
+      disabled={disabled}
     />
   );
 }

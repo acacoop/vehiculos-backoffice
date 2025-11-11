@@ -149,7 +149,6 @@ interface TableHeader {
 interface TableActionColumn<T extends GridValidRowModel> {
   route: string;
   width?: number;
-  pinned?: boolean;
   customRender?: (params: GridRenderCellParams<T>) => React.ReactNode;
 }
 
@@ -414,24 +413,6 @@ export function Table<
             "& .MuiDataGrid-virtualScroller": {
               overflowY: "auto",
             },
-            ...(actionColumn?.pinned && {
-              "& .MuiDataGrid-cell[data-field='actions']": {
-                position: "sticky",
-                right: 0,
-                backgroundColor: "#ffffff",
-                zIndex: 1,
-              },
-              "& .MuiDataGrid-columnHeader[data-field='actions']": {
-                position: "sticky",
-                right: 0,
-                backgroundColor: "#ffffff",
-                zIndex: 2,
-              },
-              "& .MuiDataGrid-row:nth-of-type(even) .MuiDataGrid-cell[data-field='actions']":
-                {
-                  backgroundColor: "#f2f2f2",
-                },
-            }),
           }}
         />
       </div>
