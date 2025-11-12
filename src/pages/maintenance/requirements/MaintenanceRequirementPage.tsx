@@ -56,7 +56,7 @@ export default function MaintenanceRequirementPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/assignments" });
+  } = usePageState({ redirectOnSuccess: "/maintenance/requirements" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export default function MaintenanceRequirementPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
-      `¿Está seguro que desea ${actionText} esta asignación?`,
+      `¿Está seguro que desea ${actionText} este requerimiento de mantenimiento?`,
       () =>
         isNew
           ? createMaintenanceRequirement({
@@ -175,28 +175,24 @@ export default function MaintenanceRequirementPage() {
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
-              startDate: new Date(
-                formData.startDate + "T00:00:00.000Z",
-              ).toISOString(),
+              startDate: formData.startDate,
               endDate:
                 formData.isIndefinite || !formData.endDate
                   ? null
-                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
+                  : formData.endDate,
             })
           : updateMaintenanceRequirement(id!, {
               kilometersFrequency: kmFreq > 0 ? kmFreq : 0,
               daysFrequency: daysFreq > 0 ? daysFreq : 0,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
-              startDate: new Date(
-                formData.startDate + "T00:00:00.000Z",
-              ).toISOString(),
+              startDate: formData.startDate,
               endDate:
                 formData.isIndefinite || !formData.endDate
                   ? null
-                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
+                  : formData.endDate,
             }),
-      `Asignación ${actionText}da exitosamente`,
+      `Requerimiento ${actionText}do exitosamente`,
     );
   };
 
@@ -333,13 +329,13 @@ export default function MaintenanceRequirementPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/maintenance/assignments"),
+      onClick: () => goTo("/maintenance/requirements"),
       disabled: saving,
     },
     ...(!isNew
       ? [
           {
-            text: saving ? "Eliminando..." : "Eliminar Asignación",
+            text: saving ? "Eliminando..." : "Eliminar Requerimiento",
             variant: "danger" as const,
             onClick: handleDelete,
             disabled: saving,
@@ -353,8 +349,8 @@ export default function MaintenanceRequirementPage() {
             text: saving
               ? "Guardando..."
               : isNew
-              ? "Crear Asignación"
-              : "Actualizar Asignación",
+              ? "Crear Requerimiento"
+              : "Actualizar Requerimiento",
             variant: "primary" as const,
             onClick: handleSave,
             disabled: saving,
@@ -369,8 +365,8 @@ export default function MaintenanceRequirementPage() {
       <Form
         title={
           isNew
-            ? "Nueva Asignación de Mantenimiento"
-            : "Editar Asignación de Mantenimiento"
+            ? "Nuevo Requerimiento de Mantenimiento"
+            : "Editar Requerimiento de Mantenimiento"
         }
         sections={sections}
         buttons={buttons}

@@ -20,9 +20,9 @@ export async function getMaintenanceRequirements(
     MaintenanceRequirement,
     MaintenanceRequirementFilterParams
   >({
-    uri: "maintenance/assignments",
+    uri: "maintenance/requirements",
     findOptions,
-    errorMessage: "Error al obtener asignaciones de mantenimiento",
+    errorMessage: "Error al obtener requerimientos de mantenimiento",
   });
 }
 
@@ -30,9 +30,9 @@ export async function getMaintenanceRequirementById(
   id: string,
 ): Promise<ServiceResponse<MaintenanceRequirement>> {
   return await apiFindItemById<MaintenanceRequirement>({
-    uri: "maintenance/assignments",
+    uri: "maintenance/requirements",
     itemId: id,
-    errorMessage: "Error al obtener asignación de mantenimiento",
+    errorMessage: "Error al obtener requerimiento de mantenimiento",
   });
 }
 
@@ -40,9 +40,9 @@ export async function createMaintenanceRequirement(
   payload: MaintenanceRequirementInput,
 ): Promise<ServiceResponse<MaintenanceRequirement>> {
   return await apiCreateItem<MaintenanceRequirement>({
-    uri: "maintenance/assignments",
+    uri: "maintenance/requirements",
     payload,
-    errorMessage: "Error al crear asignación de mantenimiento",
+    errorMessage: "Error al crear requerimiento de mantenimiento",
   });
 }
 
@@ -51,10 +51,10 @@ export async function updateMaintenanceRequirement(
   payload: Partial<MaintenanceRequirementInput>,
 ): Promise<ServiceResponse<MaintenanceRequirement>> {
   return await apiUpdateItem<MaintenanceRequirement>({
-    uri: "maintenance/assignments",
+    uri: "maintenance/requirements",
     itemId: id,
     payload,
-    errorMessage: "Error al actualizar asignación de mantenimiento",
+    errorMessage: "Error al actualizar requerimiento de mantenimiento",
   });
 }
 
@@ -62,8 +62,8 @@ export async function deleteMaintenanceRequirement(
   id: string,
 ): Promise<ServiceResponse<MaintenanceRequirement>> {
   return await apiDeleteItem<MaintenanceRequirement>({
-    uri: "maintenance/assignments",
+    uri: "maintenance/requirements",
     itemId: id,
-    errorMessage: "Error al eliminar asignación de mantenimiento",
+    errorMessage: "Error al eliminar requerimiento de mantenimiento",
   });
 }

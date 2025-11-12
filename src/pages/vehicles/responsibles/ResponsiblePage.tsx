@@ -175,24 +175,20 @@ export default function ResponsiblePage() {
           ? createVehicleResponsible({
               userId: user!.id,
               vehicleId: vehicle!.id,
-              startDate: new Date(
-                formData.startDate + "T00:00:00.000Z",
-              ).toISOString(),
+              startDate: formData.startDate,
               endDate:
                 formData.isIndefinite || !formData.endDate
                   ? null
-                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
+                  : formData.endDate,
             })
           : updateVehicleResponsible(id!, {
               userId: user!.id,
               vehicleId: vehicle!.id,
-              startDate: new Date(
-                formData.startDate + "T00:00:00.000Z",
-              ).toISOString(),
+              startDate: formData.startDate,
               endDate:
                 formData.isIndefinite || !formData.endDate
                   ? null
-                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
+                  : formData.endDate,
             }),
       `Responsable ${actionText}do con éxito`,
     );

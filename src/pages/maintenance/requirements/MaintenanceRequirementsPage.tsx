@@ -48,18 +48,18 @@ export default function MaintenanceRequirementsPage() {
         getRows={getMaintenanceRequirements}
         columns={columns}
         header={{
-          title: "Asignaciones de Mantenimiento",
+          title: "Requerimientos de Mantenimiento",
           addButton: {
-            text: "+ Nueva Asignación",
-            onClick: () => navigate("/maintenance/assignments/new"),
+            text: "+ Nuevo Requerimiento",
+            onClick: () => navigate("/maintenance/requirements/new"),
           },
         }}
         actionColumn={{
-          route: "/maintenance/assignments",
+          route: "/maintenance/requirements",
         }}
         search={{
           enabled: true,
-          placeholder: "Buscar asignaciones...",
+          placeholder: "Buscar requerimientos...",
         }}
         width={1200}
       />
