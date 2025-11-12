@@ -204,12 +204,12 @@ export function EntitySearch<T>({
                   setSelectedIndex((prev) => Math.max(prev - 1, 0));
                   break;
                 case "Enter":
+                  e.preventDefault(); // Always prevent default to avoid form submission
                   if (
                     showDropdown &&
                     selectedIndex >= 0 &&
                     selectedIndex < results.length
                   ) {
-                    e.preventDefault();
                     handleSelect(results[selectedIndex]);
                   }
                   break;
