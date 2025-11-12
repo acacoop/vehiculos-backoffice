@@ -58,7 +58,7 @@ export default function ReservationsPage() {
           enabled: true,
           placeholder: "Buscar reservas...",
         }}
-        width={1400}
+        width={1200}
       />
     </div>
   );
