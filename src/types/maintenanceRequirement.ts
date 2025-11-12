@@ -1,11 +1,11 @@
 import type { FilterParams } from "./common";
 import type { Maintenance } from "./maintenance";
-import type { Vehicle } from "./vehicle";
+import type { VehicleModel } from "./vehicleModel";
 
 export interface MaintenanceRequirement {
   id: string;
   maintenance: Maintenance;
-  vehicle: Vehicle;
+  model: VehicleModel;
   kilometersFrequency?: number;
   daysFrequency?: number;
   observations?: string;
@@ -16,7 +16,7 @@ export interface MaintenanceRequirement {
 
 export interface MaintenanceRequirementInput {
   maintenanceId: string;
-  vehicleId: string;
+  modelId: string;
   kilometersFrequency?: number;
   daysFrequency?: number;
   observations?: string;
@@ -27,5 +27,5 @@ export interface MaintenanceRequirementInput {
 
 export interface MaintenanceRequirementFilterParams extends FilterParams {
   maintenanceId?: string;
-  vehicleId?: string;
+  modelId?: string;
 }

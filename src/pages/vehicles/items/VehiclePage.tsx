@@ -25,7 +25,7 @@ import type { ApiFindOptions } from "../../../services/common";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
-import { getVehicleKilometersLogsByVehicle } from "../../../services/kilometers";
+import { getVehicleKilometersLogs } from "../../../services/kilometers";
 import type {
   KilometersFilterParams,
   VehicleKilometersLog,
@@ -41,11 +41,7 @@ import type {
 } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
 import type { VehicleResponsibleFilterParams } from "../../../types/vehicleResponsible";
-import type {
-  MaintenanceRequirement,
-  MaintenanceRequirementFilterParams,
-} from "../../../types/maintenanceRequirement";
-import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
+import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -199,37 +195,6 @@ export default function VehiclesPage() {
       headerName: "Fecha Hasta",
       minWidth: 130,
       type: "enddate",
-    },
-  ];
-
-  const maintenanceColumns: TableColumn<MaintenanceRequirement>[] = [
-    {
-      field: "maintenance.category.name",
-      headerName: "Categoría Mantenimiento",
-      minWidth: 250,
-    },
-    {
-      field: "maintenance.name",
-      headerName: "Nombre de Mantenimiento",
-      minWidth: 300,
-    },
-    {
-      field: "daysFrequency",
-      headerName: "Frecuencia (Días)",
-      minWidth: 150,
-      transform: (value, row) => {
-        const days = Number(value) || row.maintenance.daysFrequency;
-        return days && days > 0 ? `${days} días` : "N/A";
-      },
-    },
-    {
-      field: "kilometersFrequency",
-      headerName: "Frecuencia (KM)",
-      minWidth: 150,
-      transform: (value, row) => {
-        const km = Number(value) || row.maintenance.kilometersFrequency;
-        return km && km > 0 ? `${km} km` : "N/A";
-      },
     },
   ];
 
@@ -395,20 +360,32 @@ export default function VehiclesPage() {
           label: "Número de Motor",
         },
         {
-          type: "text",
+          type: "select",
           value: formData.transmission,
           onChange: (value: string) =>
             setFormData({ ...formData, transmission: value }),
           key: "transmission",
           label: "Transmisión",
+          required: false,
+          placeholder: "Seleccione una transmisión",
+          options: TRANSMISSION_TYPES.map((type) => ({
+            value: type,
+            label: type,
+          })),
         },
         {
-          type: "text",
+          type: "select",
           value: formData.fuelType,
           onChange: (value: string) =>
             setFormData({ ...formData, fuelType: value }),
           key: "fuelType",
           label: "Tipo de Combustible",
+          required: false,
+          placeholder: "Seleccione un tipo de combustible",
+          options: FUEL_TYPES.map((type) => ({
+            value: type,
+            label: type,
+          })),
         },
       ],
     },
@@ -499,7 +476,13 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(findOptions: ApiFindOptions<KilometersFilterParams>) =>
-              getVehicleKilometersLogsByVehicle(id, findOptions)
+              getVehicleKilometersLogs({
+                ...findOptions,
+                filters: {
+                  ...findOptions.filters,
+                  vehicleId: id,
+                },
+              })
             }
             columns={kilometersColumns}
             header={{
@@ -514,33 +497,6 @@ export default function VehiclesPage() {
               route: "/vehicles/kilometersLogs",
             }}
             search={{ enabled: true, placeholder: "Buscar registros..." }}
-          />
-
-          <Table
-            getRows={(
-              findOptions: ApiFindOptions<MaintenanceRequirementFilterParams>,
-            ) =>
-              getMaintenanceRequirements({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={maintenanceColumns}
-            header={{
-              title: "Mantenimientos Requeridos",
-              addButton: {
-                text: "+ Asignar Mantenimiento",
-                onClick: () =>
-                  navigate(`/maintenance/requirements/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/maintenance/requirements",
-            }}
-            search={{ enabled: true, placeholder: "Buscar mantenimientos..." }}
           />
 
           <Table

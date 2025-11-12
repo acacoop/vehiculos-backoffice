@@ -5,8 +5,13 @@ import { getMaintenanceRequirements } from "../../../services/maintenaceRequirem
 
 const columns: TableColumn<MaintenanceRequirement>[] = [
   {
-    field: "vehicle.licensePlate",
-    headerName: "Vehículo",
+    field: "model.name",
+    headerName: "Modelo",
+    minWidth: 200,
+  },
+  {
+    field: "model.brand.name",
+    headerName: "Marca",
     minWidth: 150,
   },
   {

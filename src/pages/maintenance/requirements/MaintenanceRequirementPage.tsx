@@ -1,23 +1,19 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { getVehicleById } from "../../../services/vehicles";
+import { getVehicleModelById } from "../../../services/vehicleModels";
 import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import {
-  VehicleEntitySearch,
+  VehicleModelEntitySearch,
   MaintenanceEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
-import type { Vehicle } from "../../../types/vehicle";
+import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Maintenance } from "../../../types/maintenance";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
-import { Table } from "../../../components/Table/table";
-import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
-import type { MaintenanceRecordFilterParams } from "../../../types/maintenanceRecord";
-import type { ApiFindOptions } from "../../../services/common";
 import {
   createMaintenanceRequirement,
   deleteMaintenanceRequirement,
@@ -31,7 +27,7 @@ export default function MaintenanceRequirementPage() {
   const isNew = location.pathname.endsWith("/new");
   const isReadOnly = !isNew && !id;
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [model, setModel] = useState<VehicleModel | null>(null);
   const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
   const [formData, setFormData] = useState({
     kilometersFrequency: 0,
@@ -41,6 +37,8 @@ export default function MaintenanceRequirementPage() {
     startDate: new Date().toISOString().split("T")[0],
     endDate: "",
     isIndefinite: true,
+    useKilometers: false,
+    useDays: false,
   });
 
   const {
@@ -57,7 +55,6 @@ export default function MaintenanceRequirementPage() {
     handleDialogCancel,
     closeNotification,
   } = usePageState({ redirectOnSuccess: "/maintenance/requirements" });
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -72,7 +69,7 @@ export default function MaintenanceRequirementPage() {
 
         if (response.success && response.data) {
           const assignment = response.data;
-          setVehicle(assignment.vehicle || null);
+          setModel(assignment.model || null);
           setMaintenance(assignment.maintenance || null);
           setFormData({
             kilometersFrequency: assignment.kilometersFrequency || 0,
@@ -82,6 +79,10 @@ export default function MaintenanceRequirementPage() {
             startDate: assignment.startDate || "",
             endDate: assignment.endDate || "",
             isIndefinite: !assignment.endDate,
+            useKilometers:
+              !!assignment.kilometersFrequency &&
+              assignment.kilometersFrequency > 0,
+            useDays: !!assignment.daysFrequency && assignment.daysFrequency > 0,
           });
         } else {
           showError(response.message || "Error al cargar la asignación");
@@ -95,18 +96,18 @@ export default function MaintenanceRequirementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // Load vehicle from query parameter
+  // Load model from query parameter
   useEffect(() => {
     if (!isNew) return;
 
     const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
+    const modelId = searchParams.get("modelId");
 
-    if (vehicleId) {
+    if (modelId) {
       executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
+        const response = await getVehicleModelById(modelId);
         if (response.success && response.data) {
-          setVehicle(response.data);
+          setModel(response.data);
         }
       });
     }
@@ -135,18 +136,24 @@ export default function MaintenanceRequirementPage() {
   useEffect(() => {
     if (!isNew) return;
 
+    const hasKm =
+      maintenance?.kilometersFrequency && maintenance.kilometersFrequency > 0;
+    const hasDays = maintenance?.daysFrequency && maintenance.daysFrequency > 0;
+
     setFormData((prevData) => ({
       ...prevData,
       kilometersFrequency: maintenance?.kilometersFrequency || 0,
       daysFrequency: maintenance?.daysFrequency || 0,
       instructions: maintenance?.instructions || "",
       observations: maintenance?.observations || "",
+      useKilometers: !!hasKm,
+      useDays: !!hasDays,
     }));
   }, [maintenance, isNew]);
 
   const handleSave = () => {
-    if (!vehicle) {
-      showError("El vehículo es obligatorio");
+    if (!model) {
+      showError("El modelo es obligatorio");
       return;
     }
 
@@ -155,11 +162,13 @@ export default function MaintenanceRequirementPage() {
       return;
     }
 
-    const kmFreq = formData.kilometersFrequency;
-    const daysFreq = formData.daysFrequency;
+    const kmFreq = formData.useKilometers ? formData.kilometersFrequency : 0;
+    const daysFreq = formData.useDays ? formData.daysFrequency : 0;
 
     if (kmFreq <= 0 && daysFreq <= 0) {
-      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
+      showError(
+        "Debe especificar al menos una frecuencia válida (kilómetros > 0 o días > 0)",
+      );
       return;
     }
 
@@ -169,7 +178,7 @@ export default function MaintenanceRequirementPage() {
       () =>
         isNew
           ? createMaintenanceRequirement({
-              vehicleId: vehicle.id!.toString(),
+              modelId: model.id!.toString(),
               maintenanceId: maintenance.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
@@ -182,8 +191,8 @@ export default function MaintenanceRequirementPage() {
                   : formData.endDate,
             })
           : updateMaintenanceRequirement(id!, {
-              kilometersFrequency: kmFreq > 0 ? kmFreq : 0,
-              daysFrequency: daysFreq > 0 ? daysFreq : 0,
+              kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
+              daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
               startDate: formData.startDate,
@@ -212,9 +221,9 @@ export default function MaintenanceRequirementPage() {
     {
       type: "entity",
       render: (
-        <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
+        <VehicleModelEntitySearch
+          entity={model}
+          onEntityChange={setModel}
           disabled={!isNew}
         />
       ),
@@ -232,8 +241,17 @@ export default function MaintenanceRequirementPage() {
     {
       type: "fields",
       title: "Frecuencias (Debe especificar al menos una)",
-      layout: "horizontal",
+      layout: "vertical",
       fields: [
+        {
+          type: "checkbox",
+          value: formData.useKilometers,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, useKilometers: value }),
+          key: "useKilometers",
+          label: "Especificar frecuencia por kilómetros",
+          disabled: isReadOnly,
+        },
         {
           type: "number",
           key: "kilometersFrequency",
@@ -245,7 +263,17 @@ export default function MaintenanceRequirementPage() {
               kilometersFrequency: Number(value) || 0,
             }),
           placeholder: "Ingrese frecuencia en kilómetros",
-          min: 0,
+          min: 1,
+          disabled: isReadOnly,
+          show: formData.useKilometers,
+        },
+        {
+          type: "checkbox",
+          value: formData.useDays,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, useDays: value }),
+          key: "useDays",
+          label: "Especificar frecuencia por días",
           disabled: isReadOnly,
         },
         {
@@ -256,8 +284,9 @@ export default function MaintenanceRequirementPage() {
           onChange: (value) =>
             setFormData({ ...formData, daysFrequency: Number(value) || 0 }),
           placeholder: "Ingrese frecuencia en días",
-          min: 0,
+          min: 1,
           disabled: isReadOnly,
+          show: formData.useDays,
         },
       ],
     },
@@ -385,54 +414,6 @@ export default function MaintenanceRequirementPage() {
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-
-      {!isNew && maintenance && vehicle && (
-        <Table
-          getRows={(
-            findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
-          ) =>
-            getMaintenanceRecords({
-              ...findOptions,
-              filters: {
-                ...findOptions?.filters,
-                maintenanceId: maintenance?.id!.toString(),
-                vehicleId: vehicle?.id!.toString(),
-              },
-            })
-          }
-          columns={[
-            {
-              field: "date",
-              headerName: "Fecha",
-              minWidth: 150,
-              type: "date",
-            },
-            {
-              field: "kilometers",
-              headerName: "Kilómetros",
-              minWidth: 150,
-              transform: (v: unknown) => (v ? `${v} km` : "N/A"),
-            },
-            {
-              field: "notes",
-              headerName: "Observaciones",
-              minWidth: 300,
-              transform: (v: unknown) => (v ? String(v) : "Sin observaciones"),
-            },
-          ]}
-          header={{
-            title: "Registros de Mantenimiento",
-            addButton: {
-              text: "+ Nuevo Registro",
-              onClick: () =>
-                navigate(
-                  `/maintenance/records/new?maintenanceId=${maintenance?.id}&vehicleId=${vehicle?.id}`,
-                ),
-            },
-          }}
-          search={{ enabled: true, placeholder: "Buscar registros..." }}
-        />
-      )}
     </div>
   );
 }

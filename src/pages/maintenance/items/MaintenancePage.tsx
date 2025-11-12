@@ -109,14 +109,6 @@ export default function MaintenancePage() {
       return;
     }
 
-    const kilometersFreq = formData.kilometersFrequency;
-    const daysFreq = formData.daysFrequency;
-
-    if (!kilometersFreq && !daysFreq) {
-      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
-      return;
-    }
-
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
       `¿Está seguro que desea ${actionText} este mantenimiento?`,
