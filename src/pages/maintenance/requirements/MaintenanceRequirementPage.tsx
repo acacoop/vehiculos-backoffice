@@ -2,12 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import {
-  createAssignedMaintenance,
-  getAssignedMaintenanceById,
-  updateAssignedMaintenance,
-  deleteAssignedMaintenance,
-} from "../../../services/assignedMaintenances";
 import { getVehicleById } from "../../../services/vehicles";
 import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
@@ -24,8 +18,14 @@ import { Table } from "../../../components/Table/table";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
 import type { MaintenanceRecordFilterParams } from "../../../types/maintenanceRecord";
 import type { ApiFindOptions } from "../../../services/common";
+import {
+  createMaintenanceRequirement,
+  deleteMaintenanceRequirement,
+  getMaintenanceRequirementById,
+  updateMaintenanceRequirement,
+} from "../../../services/maintenaceRequirements";
 
-export default function AssignmentPage() {
+export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
@@ -38,6 +38,9 @@ export default function AssignmentPage() {
     daysFrequency: 0,
     observations: "",
     instructions: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: "",
+    isIndefinite: true,
   });
 
   const {
@@ -63,7 +66,7 @@ export default function AssignmentPage() {
 
     (async () => {
       await executeLoad(async () => {
-        const response = await getAssignedMaintenanceById(id);
+        const response = await getMaintenanceRequirementById(id);
 
         if (cancelled) return;
 
@@ -76,6 +79,9 @@ export default function AssignmentPage() {
             daysFrequency: assignment.daysFrequency || 0,
             observations: assignment.observations || "",
             instructions: assignment.instructions || "",
+            startDate: assignment.startDate || "",
+            endDate: assignment.endDate || "",
+            isIndefinite: !assignment.endDate,
           });
         } else {
           showError(response.message || "Error al cargar la asignación");
@@ -162,19 +168,33 @@ export default function AssignmentPage() {
       `¿Está seguro que desea ${actionText} esta asignación?`,
       () =>
         isNew
-          ? createAssignedMaintenance({
+          ? createMaintenanceRequirement({
               vehicleId: vehicle.id!.toString(),
               maintenanceId: maintenance.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
+              startDate: new Date(
+                formData.startDate + "T00:00:00.000Z",
+              ).toISOString(),
+              endDate:
+                formData.isIndefinite || !formData.endDate
+                  ? null
+                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
             })
-          : updateAssignedMaintenance(id!, {
+          : updateMaintenanceRequirement(id!, {
               kilometersFrequency: kmFreq > 0 ? kmFreq : 0,
               daysFrequency: daysFreq > 0 ? daysFreq : 0,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
+              startDate: new Date(
+                formData.startDate + "T00:00:00.000Z",
+              ).toISOString(),
+              endDate:
+                formData.isIndefinite || !formData.endDate
+                  ? null
+                  : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
             }),
       `Asignación ${actionText}da exitosamente`,
     );
@@ -183,7 +203,7 @@ export default function AssignmentPage() {
   const handleDelete = async () => {
     executeSave(
       "Borrar esta asignación también eliminará todos sus registros de mantenimiento asociados. ¿Está seguro que desea continuar?",
-      () => deleteAssignedMaintenance(id!),
+      () => deleteMaintenanceRequirement(id!),
       "Asignación eliminada exitosamente",
     );
   };
@@ -242,6 +262,39 @@ export default function AssignmentPage() {
           placeholder: "Ingrese frecuencia en días",
           min: 0,
           disabled: isReadOnly,
+        },
+      ],
+    },
+    {
+      type: "fields",
+      title: "Período",
+      fields: [
+        {
+          type: "date",
+          value: formData.startDate,
+          onChange: (value: string) =>
+            setFormData({ ...formData, startDate: value }),
+          key: "startDate",
+          label: "Fecha Desde",
+          required: true,
+        },
+        {
+          type: "checkbox",
+          value: formData.isIndefinite,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, isIndefinite: value }),
+          key: "isIndefinite",
+          label: "Asignación indefinida (sin fecha de fin)",
+        },
+        {
+          type: "date",
+          value: formData.endDate,
+          onChange: (value: string) =>
+            setFormData({ ...formData, endDate: value }),
+          key: "endDate",
+          label: "Fecha Hasta",
+          show: !formData.isIndefinite,
+          min: formData.startDate,
         },
       ],
     },
@@ -346,7 +399,8 @@ export default function AssignmentPage() {
               ...findOptions,
               filters: {
                 ...findOptions?.filters,
-                assignedMaintenanceId: id,
+                maintenanceId: maintenance?.id!.toString(),
+                vehicleId: vehicle?.id!.toString(),
               },
             })
           }
@@ -376,7 +430,7 @@ export default function AssignmentPage() {
               text: "+ Nuevo Registro",
               onClick: () =>
                 navigate(
-                  `/maintenance/records/new?assignedMaintenanceId=${id}`,
+                  `/maintenance/records/new?maintenanceId=${maintenance?.id}&vehicleId=${vehicle?.id}`,
                 ),
             },
           }}

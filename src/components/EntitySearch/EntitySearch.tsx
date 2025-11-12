@@ -14,8 +14,6 @@ import { getMaintenanceCategories } from "../../services/categories";
 import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
 import "./EntitySearch.css";
-import type { AssignedMaintenance } from "../../types/assignedMaintenance";
-import { getAssignedMaintenances } from "../../services/assignedMaintenances";
 
 interface DisplayField<T> {
   path: keyof T | string;
@@ -329,18 +327,6 @@ async function searchMaintenances(term: string): Promise<Maintenance[]> {
   return response.success ? response.data : [];
 }
 
-async function searchAssignedMaintenances(
-  term: string,
-  vehicleId: string,
-): Promise<AssignedMaintenance[]> {
-  const response = await getAssignedMaintenances({
-    search: term,
-    filters: { vehicleId },
-    pagination: { offset: 0, limit: 10 },
-  });
-  return response.success ? response.data : [];
-}
-
 async function searchAssignments(term: string): Promise<Assignment[]> {
   const response = await getAssignments({
     search: term,
@@ -514,56 +500,6 @@ export function MaintenanceEntitySearch({
       placeholder="Buscar mantenimiento..."
       title="Datos del Mantenimiento"
       changeButtonText="Cambiar mantenimiento"
-      disabled={disabled}
-    />
-  );
-}
-
-interface AssignedMaintenanceEntitySearchProps
-  extends EntitySearchWrapperProps<AssignedMaintenance> {
-  vehicleId: string;
-}
-
-export function AssignedMaintenanceEntitySearch({
-  entity,
-  onEntityChange,
-  vehicleId,
-  disabled = false,
-}: AssignedMaintenanceEntitySearchProps) {
-  const dropdownRender = (assignment: AssignedMaintenance) => {
-    const maintenanceName = assignment.maintenance?.name || "";
-    return `${maintenanceName}`;
-  };
-
-  return (
-    <EntitySearch<AssignedMaintenance>
-      entity={entity}
-      onEntityChange={onEntityChange}
-      searchFunction={(term: string) =>
-        searchAssignedMaintenances(term, vehicleId)
-      }
-      displayFields={[
-        { path: "maintenance.name", label: "Mantenimiento" },
-        { path: "maintenance.category.name", label: "Categoría" },
-
-        ...(entity &&
-        entity.maintenance &&
-        entity.maintenance.kilometersFrequency
-          ? [
-              {
-                path: "maintenance.kilometersFrequency",
-                label: "Frecuencia (Km)",
-              },
-            ]
-          : []),
-        ...(entity && entity.maintenance && entity.maintenance.daysFrequency
-          ? [{ path: "maintenance.daysFrequency", label: "Frecuencia (Días)" }]
-          : []),
-      ]}
-      dropdownRender={dropdownRender}
-      placeholder="Buscar un matenimiento asignado al vehículo..."
-      title="Datos de la Asignación de Mantenimiento"
-      changeButtonText="Cambiar asignación de mantenimiento"
       disabled={disabled}
     />
   );

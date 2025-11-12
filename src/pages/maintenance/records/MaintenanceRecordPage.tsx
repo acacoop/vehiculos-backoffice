@@ -9,14 +9,13 @@ import {
   type FormButton,
 } from "../../../components/Form";
 import {
-  AssignedMaintenanceEntitySearch,
+  MaintenanceEntitySearch,
   UserEntitySearch,
   VehicleEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
 import { usePageState } from "../../../hooks";
 import { getUserById } from "../../../services/users";
 import { getVehicleById } from "../../../services/vehicles";
-import { getAssignedMaintenanceById } from "../../../services/assignedMaintenances";
 import {
   createMaintenanceRecord,
   getMaintenanceRecordById,
@@ -25,7 +24,8 @@ import {
 } from "../../../services/maintenanceRecords";
 import type { User } from "../../../types/user";
 import type { Vehicle } from "../../../types/vehicle";
-import type { AssignedMaintenance } from "../../../types/assignedMaintenance";
+import type { Maintenance } from "../../../types/maintenance";
+import { getMaintenanceById } from "../../../services/maintenances";
 
 export default function MaintenanceRecordRegisterPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,8 +34,7 @@ export default function MaintenanceRecordRegisterPage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [assignedMaintenance, setAssignedMaintenance] =
-    useState<AssignedMaintenance | null>(null);
+  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
 
   const [formData, setFormData] = useState({
     date: "",
@@ -83,21 +82,18 @@ export default function MaintenanceRecordRegisterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, location.search]);
 
-  // Load assignedMaintenance from query parameter
+  // Load maintenance from query parameter
   useEffect(() => {
     if (!isNew) return;
 
     const searchParams = new URLSearchParams(location.search);
-    const assignedMaintenanceId = searchParams.get("assignedMaintenanceId");
+    const maintenanceId = searchParams.get("maintenanceId");
 
-    if (assignedMaintenanceId) {
+    if (maintenanceId) {
       executeLoad(async () => {
-        const response = await getAssignedMaintenanceById(
-          assignedMaintenanceId,
-        );
+        const response = await getMaintenanceById(maintenanceId);
         if (response.success && response.data) {
-          setAssignedMaintenance(response.data);
-          setVehicle(response.data.vehicle);
+          setMaintenance(response.data);
         }
       });
     }
@@ -122,13 +118,6 @@ export default function MaintenanceRecordRegisterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, location.search]);
 
-  // Clear assignedMaintenance when vehicle changes
-  useEffect(() => {
-    if (vehicle) return;
-
-    setAssignedMaintenance(null);
-  }, [vehicle]);
-
   const loadRecord = async (recordId: string) => {
     await executeLoad(async () => {
       const response = await getMaintenanceRecordById(recordId);
@@ -148,9 +137,9 @@ export default function MaintenanceRecordRegisterPage() {
           setUser(record.user);
         }
 
-        if (record.assignedMaintenance) {
-          setVehicle(record.assignedMaintenance.vehicle);
-          setAssignedMaintenance(record.assignedMaintenance);
+        if (record.maintenance) {
+          setVehicle(record.vehicle);
+          setMaintenance(record.maintenance);
         }
       } else {
         showError(response.message || "Error al cargar el registro");
@@ -167,7 +156,7 @@ export default function MaintenanceRecordRegisterPage() {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (!assignedMaintenance) {
+    if (!maintenance) {
       showError("Debe seleccionar un mantenimiento");
       return false;
     }
@@ -189,7 +178,8 @@ export default function MaintenanceRecordRegisterPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const payload = {
-      assignedMaintenanceId: assignedMaintenance!.id,
+      maintenanceId: maintenance!.id,
+      vehicleId: vehicle!.id,
       userId: user!.id,
       date: new Date(formData.date).toISOString(),
       kilometers: formData.kilometers,
@@ -240,10 +230,9 @@ export default function MaintenanceRecordRegisterPage() {
     {
       type: "entity",
       render: (
-        <AssignedMaintenanceEntitySearch
-          entity={assignedMaintenance}
-          onEntityChange={setAssignedMaintenance}
-          vehicleId={vehicle ? vehicle.id : ""}
+        <MaintenanceEntitySearch
+          entity={maintenance}
+          onEntityChange={setMaintenance}
           disabled={!vehicle || !isNew}
         />
       ),

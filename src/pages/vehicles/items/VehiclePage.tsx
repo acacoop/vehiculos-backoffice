@@ -24,7 +24,6 @@ import type { AssignmentFilterParams } from "../../../types/assignment";
 import type { ApiFindOptions } from "../../../services/common";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
-import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
 import { getVehicleKilometersLogsByVehicle } from "../../../services/kilometers";
 import type {
@@ -32,10 +31,6 @@ import type {
   VehicleKilometersLog,
 } from "../../../types/kilometer";
 import { getReservations } from "../../../services/reservations";
-import type {
-  AssignedMaintenance,
-  AssignedMaintenanceFilterParams,
-} from "../../../types/assignedMaintenance";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,
@@ -46,6 +41,11 @@ import type {
 } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
 import type { VehicleResponsibleFilterParams } from "../../../types/vehicleResponsible";
+import type {
+  MaintenanceRequirement,
+  MaintenanceRequirementFilterParams,
+} from "../../../types/maintenanceRequirement";
+import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -202,7 +202,7 @@ export default function VehiclesPage() {
     },
   ];
 
-  const maintenanceColumns: TableColumn<AssignedMaintenance>[] = [
+  const maintenanceColumns: TableColumn<MaintenanceRequirement>[] = [
     {
       field: "maintenance.category.name",
       headerName: "Categoría Mantenimiento",
@@ -234,6 +234,12 @@ export default function VehiclesPage() {
   ];
 
   const maintenanceRecordColumns: TableColumn<MaintenanceRecord>[] = [
+    {
+      field: "maintenance.name",
+      headerName: "Mantenimiento",
+      minWidth: 200,
+      type: "text",
+    },
     {
       field: "date",
       headerName: "Fecha",
@@ -512,9 +518,9 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<AssignedMaintenanceFilterParams>,
+              findOptions: ApiFindOptions<MaintenanceRequirementFilterParams>,
             ) =>
-              getAssignedMaintenances({
+              getMaintenanceRequirements({
                 ...findOptions,
                 filters: {
                   ...findOptions.filters,
@@ -524,15 +530,15 @@ export default function VehiclesPage() {
             }
             columns={maintenanceColumns}
             header={{
-              title: "Mantenimientos Programados",
+              title: "Mantenimientos Requeridos",
               addButton: {
                 text: "+ Asignar Mantenimiento",
                 onClick: () =>
-                  navigate(`/maintenance/assignments/new?vehicleId=${id}`),
+                  navigate(`/maintenance/requirements/new?vehicleId=${id}`),
               },
             }}
             actionColumn={{
-              route: "/maintenance/assignments",
+              route: "/maintenance/requirements",
             }}
             search={{ enabled: true, placeholder: "Buscar mantenimientos..." }}
           />

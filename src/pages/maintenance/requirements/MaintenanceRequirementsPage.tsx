@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Table, type TableColumn } from "../../../components/Table/table";
-import type { AssignedMaintenance } from "../../../types/assignedMaintenance";
-import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
+import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
+import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 
-const columns: TableColumn<AssignedMaintenance>[] = [
+const columns: TableColumn<MaintenanceRequirement>[] = [
   {
     field: "vehicle.licensePlate",
     headerName: "Vehículo",
@@ -39,13 +39,13 @@ const columns: TableColumn<AssignedMaintenance>[] = [
   },
 ];
 
-export default function AssignmentsPage() {
+export default function MaintenanceRequirementsPage() {
   const navigate = useNavigate();
 
   return (
     <div className="container">
       <Table
-        getRows={getAssignedMaintenances}
+        getRows={getMaintenanceRequirements}
         columns={columns}
         header={{
           title: "Asignaciones de Mantenimiento",

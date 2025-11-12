@@ -73,8 +73,8 @@ function Navbar() {
         },
         {
           icon: IconPermissions,
-          label: "Asignaciones",
-          to: "/maintenance/assignments",
+          label: "Requerimientos",
+          to: "/maintenance/requirements",
         },
         {
           icon: IconMaintenance,
