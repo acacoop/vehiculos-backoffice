@@ -133,16 +133,16 @@ export default function MaintenanceRequirementPage() {
 
   // Load frecuencies when maintenance changes
   useEffect(() => {
-    if (!maintenance) return;
+    if (!isNew) return;
 
     setFormData((prevData) => ({
       ...prevData,
-      kilometersFrequency: maintenance.kilometersFrequency || 0,
-      daysFrequency: maintenance.daysFrequency || 0,
-      instructions: maintenance.instructions || "",
-      observations: maintenance.observations || "",
+      kilometersFrequency: maintenance?.kilometersFrequency || 0,
+      daysFrequency: maintenance?.daysFrequency || 0,
+      instructions: maintenance?.instructions || "",
+      observations: maintenance?.observations || "",
     }));
-  }, [maintenance]);
+  }, [maintenance, isNew]);
 
   const handleSave = () => {
     if (!vehicle) {
@@ -198,14 +198,14 @@ export default function MaintenanceRequirementPage() {
 
   const handleDelete = async () => {
     executeSave(
-      "Borrar esta asignación también eliminará todos sus registros de mantenimiento asociados. ¿Está seguro que desea continuar?",
+      "¿Está seguro que desea eliminar este requerimiento de mantenimiento?",
       () => deleteMaintenanceRequirement(id!),
-      "Asignación eliminada exitosamente",
+      "Requerimiento eliminado exitosamente",
     );
   };
 
   if (loading) {
-    return <LoadingSpinner message="Cargando asignación..." />;
+    return <LoadingSpinner message="Cargando requerimiento..." />;
   }
 
   const sections: FormSection[] = [
@@ -386,7 +386,7 @@ export default function MaintenanceRequirementPage() {
         onClose={closeNotification}
       />
 
-      {!isNew && (
+      {!isNew && maintenance && vehicle && (
         <Table
           getRows={(
             findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
