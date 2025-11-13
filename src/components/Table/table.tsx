@@ -370,7 +370,7 @@ export function Table<
           overflow: "hidden",
           ...(hasRows && maxHeight
             ? { height: maxHeight, maxHeight, minHeight: minHeight || "360px" }
-            : { height: "500px", minHeight: minHeight || "500px" }),
+            : { height: minHeight || "500px", minHeight: minHeight || "500px" }),
         }}
       >
         <DataGrid
