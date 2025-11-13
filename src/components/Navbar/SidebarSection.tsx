@@ -62,7 +62,7 @@ export default function SidebarSection({
                 className={`nav-item ${isActive(it.to) ? "active" : ""}`}
               >
                 <Link to={it.to} onClick={onNavigate}>
-                  <IconComponent className="icon-sidebar" size={20} />
+                  <IconComponent className="icon-sidebar" size={25} />
                   {it.label}
                 </Link>
               </div>
