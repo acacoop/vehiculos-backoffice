@@ -32,8 +32,8 @@ export default function VehiclesPage() {
           enabled: true,
           placeholder: "Buscar Vehiculos...",
         }}
-        maxHeight="800px"
-        width={1200}
+        maxHeight="600px"
+        width="1200px"
       />
     </div>
   );

@@ -22,7 +22,7 @@ import {
 } from "../../common";
 
 function createGridColumn<T extends GridValidRowModel>(
-  column: TableColumn<T>,
+  column: TableColumn<T>
 ): GridColDef<T> {
   const baseColumn: GridColDef<T> = {
     field: column.field,
@@ -132,6 +132,7 @@ export interface TableColumn<T extends GridValidRowModel> {
   headerName: string;
   width?: number;
   minWidth?: number;
+  minHeight?: number;
   flex?: number;
   type?: "text" | "boolean" | "date" | "datetime" | "enddate" | "relativedate";
   transform?: (value: string, row: T) => string;
@@ -159,7 +160,7 @@ interface TableSearch {
 
 interface TableProps<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
@@ -171,11 +172,12 @@ interface TableProps<
   width?: number | string;
   maxWidth?: string;
   maxHeight?: string;
+  minHeight?: string;
 }
 
 export function Table<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 >({
   getRows,
   columns,
@@ -185,6 +187,7 @@ export function Table<
   width,
   maxWidth = "1200px",
   maxHeight = "600px",
+  minHeight,
 }: TableProps<TFilters, T>) {
   const navigate = useNavigate();
 
@@ -219,7 +222,7 @@ export function Table<
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue,
+        current === trimmedValue ? current : trimmedValue
       );
     }, 400);
 
@@ -254,7 +257,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled],
+    [getRows, search?.enabled]
   );
 
   useEffect(() => {
@@ -266,7 +269,7 @@ export function Table<
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      search?.enabled ? debouncedSearch : undefined,
+      search?.enabled ? debouncedSearch : undefined
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -282,10 +285,10 @@ export function Table<
       setPaginationModel((prev) =>
         prev.page === model.page && prev.pageSize === model.pageSize
           ? prev
-          : model,
+          : model
       );
     },
-    [],
+    []
   );
 
   const handleFilterModelChange = useCallback(
@@ -303,7 +306,7 @@ export function Table<
         setPaginationModel({ ...paginationModel, page: 0 });
       }
     },
-    [search?.enabled, searchTerm, paginationModel],
+    [search?.enabled, searchTerm, paginationModel]
   );
 
   // Build final columns with action column if needed
@@ -367,8 +370,8 @@ export function Table<
           flexDirection: "column",
           overflow: "hidden",
           ...(hasRows && maxHeight
-            ? { height: maxHeight, maxHeight, minHeight: "360px" }
-            : { minHeight: "240px" }),
+            ? { height: maxHeight, maxHeight, minHeight: minHeight || "360px" }
+            : { height: "500px", minHeight: minHeight || "500px" }),
         }}
       >
         <DataGrid

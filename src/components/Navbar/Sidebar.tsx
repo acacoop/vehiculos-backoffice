@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logoIniciales from "../../assets/brand/aca_iniciales.png";
-import IconLogout from "../../assets/icons/logout.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import SidebarSection, { type NavItem } from "./SidebarSection";
 import "./Sidebar.css";
+import { LogOut } from "lucide-react";
 
 export type SidebarSectionData = {
   title: string;
@@ -36,7 +36,7 @@ export default function Sidebar({
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
       const hasActiveItem = section.items.some(
-        (item) => currentPath === item.to,
+        (item) => currentPath === item.to
       );
       if (hasActiveItem) {
         console.log("Expanding section:", section.title);
@@ -117,11 +117,7 @@ export default function Sidebar({
                 className="sidebar-logout-btn"
                 onClick={handleLogoutClick}
               >
-                <img
-                  className="icon-sidebar"
-                  src={IconLogout}
-                  alt="Cerrar sesión"
-                />
+                <LogOut size={20} style={{ marginRight: "8px" }} />
                 Cerrar sesión
               </button>
             </div>

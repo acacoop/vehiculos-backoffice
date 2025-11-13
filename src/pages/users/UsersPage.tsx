@@ -48,8 +48,8 @@ export default function UsersPage() {
         enabled: true,
         placeholder: "Buscar por nombre, apellido, email o CUIT",
       }}
-      maxHeight="800px"
-      width={1200}
+      maxHeight="600px"
+      width="1200px"
     />
   );
 }
