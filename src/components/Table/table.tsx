@@ -132,7 +132,6 @@ export interface TableColumn<T extends GridValidRowModel> {
   headerName: string;
   width?: number;
   minWidth?: number;
-  minHeight?: number;
   flex?: number;
   type?: "text" | "boolean" | "date" | "datetime" | "enddate" | "relativedate";
   transform?: (value: string, row: T) => string;
