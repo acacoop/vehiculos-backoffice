@@ -132,7 +132,7 @@ function Navbar() {
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setOpen(!open)}
         >
-          <Menu className="navbar-menu-icon" />
+          <Menu className="navbar-menu-icon" size={30} />
         </button>
         <div className="navbar-logo">
           <img src={logo} alt="ACA Logo" />
