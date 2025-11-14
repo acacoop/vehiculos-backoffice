@@ -53,7 +53,7 @@ function createGridColumn<T extends GridValidRowModel>(
           return (
             <Chip
               label={transformedValue}
-              color={boolValue ? "success" : "default"}
+              color={boolValue ? "success" : "error"}
               size="small"
               sx={{ color: "#fff", fontWeight: 600 }}
             />
@@ -370,7 +370,10 @@ export function Table<
           overflow: "hidden",
           ...(hasRows && maxHeight
             ? { height: maxHeight, maxHeight, minHeight: minHeight || "360px" }
-            : { height: minHeight || "500px", minHeight: minHeight || "500px" }),
+            : {
+                height: minHeight || "500px",
+                minHeight: minHeight || "500px",
+              }),
         }}
       >
         <DataGrid
