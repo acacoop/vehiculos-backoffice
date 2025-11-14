@@ -14,3 +14,10 @@
   max-width: 900px;
   gap: 20px;
 }
+
+.title {
+  font-size: 34px;
+  font-weight: 700;
+  color: #282d86;
+  margin-bottom: 20px;
+}

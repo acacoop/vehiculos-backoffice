@@ -416,3 +416,97 @@
 .form-field .entity-search .entity-search-input {
   width: 100%;
 }
+
+/* ============================================
+   SWITCH FIELD
+   ============================================ */
+
+.switch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.switch-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #d32f2f;
+  transition: color 0.3s ease;
+}
+
+.status-text.active {
+  color: #2e7d32;
+}
+
+/* Switch Toggle Styles */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .switch-slider {
+  background-color: #2e7d32;
+}
+
+.switch input:checked + .switch-slider:before {
+  transform: translateX(24px);
+}
+
+.switch input:disabled + .switch-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switch input:focus + .switch-slider {
+  box-shadow: 0 0 1px #2e7d32;
+}

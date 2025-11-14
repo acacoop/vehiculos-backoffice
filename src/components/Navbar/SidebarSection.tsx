@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   to: string;
 };
@@ -53,17 +54,20 @@ export default function SidebarSection({
       <div className="sidebar-section-bar" aria-hidden />
       <div className={`section-items-wrapper ${isExpanded ? "expanded" : ""}`}>
         <div className="section-items">
-          {items.map((it) => (
-            <div
-              key={it.to}
-              className={`nav-item ${isActive(it.to) ? "active" : ""}`}
-            >
-              <Link to={it.to} onClick={onNavigate}>
-                <img className="icon-sidebar" src={it.icon} alt={it.label} />
-                {it.label}
-              </Link>
-            </div>
-          ))}
+          {items.map((it) => {
+            const IconComponent = it.icon;
+            return (
+              <div
+                key={it.to}
+                className={`nav-item ${isActive(it.to) ? "active" : ""}`}
+              >
+                <Link to={it.to} onClick={onNavigate}>
+                  <IconComponent className="icon-sidebar" size={25} />
+                  {it.label}
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
