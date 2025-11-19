@@ -59,7 +59,7 @@ export default function HomePage() {
         <BentoButton
           icon={ClipboardList}
           text="Asignaciones"
-          onClick={() => navigate("/assignments")}
+          onClick={() => navigate("/vehicles/assignments")}
         />
         <BentoButton
           icon={Gauge}
