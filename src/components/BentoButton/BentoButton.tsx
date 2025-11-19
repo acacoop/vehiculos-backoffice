@@ -1,7 +1,7 @@
-import "./BentoHome.css";
+import "./BentoButton.css";
 import type { LucideIcon } from "lucide-react";
 
-interface BentoHomeProps {
+interface BentoButtonProps {
   icon?: LucideIcon;
   customIcon?: string;
   text: string;
@@ -9,13 +9,13 @@ interface BentoHomeProps {
   onClick?: () => void;
 }
 
-export default function BentoHome({
+export default function BentoButton({
   icon: Icon,
   customIcon,
   text,
   selected = false,
   onClick,
-}: BentoHomeProps) {
+}: BentoButtonProps) {
   return (
     <button
       className={`bento-home${selected ? " selected" : ""}`}

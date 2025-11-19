@@ -1,17 +1,7 @@
 import { useEffect, useState } from "react";
 import "./HomePage.css";
-import BentoHome from "../../components/BentoHome/BentoHome";
-import {
-  Users,
-  Car,
-  ClipboardList,
-  Wrench,
-  Gauge,
-  ShieldCheck,
-  CalendarCheck,
-  Tags,
-  CarFront,
-} from "lucide-react";
+import BentoButton from "../../components/BentoButton/BentoButton";
+import { Users, Car, ClipboardList, Gauge } from "lucide-react";
 import IconArgentina from "../../assets/icons/escudo-de-la-rep-argentina.svg";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
@@ -56,53 +46,27 @@ export default function HomePage() {
       </div>
       <LoadingSpinner visible={loading} message="Cargando información..." />
       <div className="bento-home-container">
-        <BentoHome
+        <BentoButton
           icon={Users}
           text="Usuarios"
           onClick={() => navigate("/users")}
         />
-        <BentoHome
+        <BentoButton
           icon={Car}
           text="Vehículos"
           onClick={() => navigate("/vehicles")}
         />
-        <BentoHome
+        <BentoButton
           icon={ClipboardList}
           text="Asignaciones"
           onClick={() => navigate("/assignments")}
         />
-        <BentoHome
-          icon={Wrench}
-          text="Mantenimientos"
-          onClick={() => navigate("/maintenances")}
-        />
-        <BentoHome
+        <BentoButton
           icon={Gauge}
           text="Métricas"
           onClick={() => navigate("/metrics")}
         />
-        <BentoHome
-          icon={ShieldCheck}
-          text="Responsables"
-          onClick={() => navigate("/vehicles/responsibles")}
-        />
-        <BentoHome
-          icon={CalendarCheck}
-          text="Reservas"
-          onClick={() => navigate("/reservations")}
-        />
-        <BentoHome
-          icon={Tags}
-          text="Marcas"
-          onClick={() => navigate("/vehicles/brands")}
-        />
-        <BentoHome
-          icon={CarFront}
-          text="Modelos"
-          onClick={() => navigate("/vehicles/models")}
-        />
-
-        <BentoHome
+        <BentoButton
           customIcon={IconArgentina}
           text="DNRPA"
           onClick={() =>

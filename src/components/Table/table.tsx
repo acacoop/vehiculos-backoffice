@@ -11,18 +11,19 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ApiFindOptions } from "../../services/common";
 import type { FilterParams, ServiceResponse } from "../../types/common";
-import { PencilIcon } from "./icons";
-import "./table.css";
 import {
   getNestedString,
   formatDate,
   formatDateTime,
   formatEndDate,
   formatRelativeDate,
+  COLORS,
 } from "../../common";
+import "./table.css";
+import { ArrowRight } from "lucide-react";
 
 function createGridColumn<T extends GridValidRowModel>(
-  column: TableColumn<T>
+  column: TableColumn<T>,
 ): GridColDef<T> {
   const baseColumn: GridColDef<T> = {
     field: column.field,
@@ -159,7 +160,7 @@ interface TableSearch {
 
 interface TableProps<
   TFilters extends FilterParams,
-  T extends GridValidRowModel
+  T extends GridValidRowModel,
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
@@ -176,7 +177,7 @@ interface TableProps<
 
 export function Table<
   TFilters extends FilterParams,
-  T extends GridValidRowModel
+  T extends GridValidRowModel,
 >({
   getRows,
   columns,
@@ -221,7 +222,7 @@ export function Table<
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue
+        current === trimmedValue ? current : trimmedValue,
       );
     }, 400);
 
@@ -256,7 +257,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled]
+    [getRows, search?.enabled],
   );
 
   useEffect(() => {
@@ -268,7 +269,7 @@ export function Table<
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      search?.enabled ? debouncedSearch : undefined
+      search?.enabled ? debouncedSearch : undefined,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -284,10 +285,10 @@ export function Table<
       setPaginationModel((prev) =>
         prev.page === model.page && prev.pageSize === model.pageSize
           ? prev
-          : model
+          : model,
       );
     },
-    []
+    [],
   );
 
   const handleFilterModelChange = useCallback(
@@ -305,7 +306,7 @@ export function Table<
         setPaginationModel({ ...paginationModel, page: 0 });
       }
     },
-    [search?.enabled, searchTerm, paginationModel]
+    [search?.enabled, searchTerm, paginationModel],
   );
 
   // Build final columns with action column if needed
@@ -331,10 +332,16 @@ export function Table<
           actionColumn.customRender(params)
         ) : (
           <span
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+              justifyContent: "center",
+            }}
             onClick={() => navigate(`${actionColumn.route}/${params.row.id}`)}
           >
-            <PencilIcon />
+            <ArrowRight size={20} color={COLORS.primary} />
           </span>
         ),
     };
