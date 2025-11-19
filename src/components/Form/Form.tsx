@@ -11,6 +11,7 @@ interface BaseField {
   required?: boolean;
   className?: string;
   show?: boolean;
+  span?: number;
 }
 
 // ============ SPECIFIC FIELD TYPES ============
@@ -145,11 +146,16 @@ const Form: React.FC<FormProps> = ({
     }
 
     const baseClassName = `form-field ${field.className || ""}`;
+    const spanStyle = field.span ? { gridColumn: `span ${field.span}` } : {};
 
     // ========== DISPLAY FIELD ==========
     if (field.type === "display") {
       return (
-        <div key={field.key} className={`${baseClassName} display-field`}>
+        <div
+          key={field.key}
+          className={`${baseClassName} display-field`}
+          style={spanStyle}
+        >
           <label className="form-label">{field.label}</label>
           <div className="display-value">{field.value}</div>
         </div>
@@ -159,7 +165,11 @@ const Form: React.FC<FormProps> = ({
     // ========== CHECKBOX ==========
     if (field.type === "checkbox") {
       return (
-        <div key={field.key} className={`${baseClassName} checkbox-field`}>
+        <div
+          key={field.key}
+          className={`${baseClassName} checkbox-field`}
+          style={spanStyle}
+        >
           <div className="checkbox-group">
             <input
               type="checkbox"
@@ -180,7 +190,7 @@ const Form: React.FC<FormProps> = ({
     // ========== SELECT ==========
     if (field.type === "select") {
       return (
-        <div key={field.key} className={baseClassName}>
+        <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
             {field.label}{" "}
             {field.required && <span className="required">*</span>}
@@ -211,7 +221,7 @@ const Form: React.FC<FormProps> = ({
     // ========== TEXTAREA ==========
     if (field.type === "textarea") {
       return (
-        <div key={field.key} className={baseClassName}>
+        <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
             {field.label}{" "}
             {field.required && <span className="required">*</span>}
@@ -233,7 +243,7 @@ const Form: React.FC<FormProps> = ({
     // ========== NUMBER INPUT ==========
     if (field.type === "number") {
       return (
-        <div key={field.key} className={baseClassName}>
+        <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
             {field.label}{" "}
             {field.required && <span className="required">*</span>}
@@ -257,7 +267,7 @@ const Form: React.FC<FormProps> = ({
     // ========== DATE INPUT ==========
     if (field.type === "date") {
       return (
-        <div key={field.key} className={baseClassName}>
+        <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
             {field.label}{" "}
             {field.required && <span className="required">*</span>}
@@ -280,7 +290,7 @@ const Form: React.FC<FormProps> = ({
     // ========== TEXT/EMAIL INPUT ==========
     if (field.type === "text" || field.type === "email") {
       return (
-        <div key={field.key} className={baseClassName}>
+        <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
             {field.label}{" "}
             {field.required && <span className="required">*</span>}
@@ -305,7 +315,11 @@ const Form: React.FC<FormProps> = ({
       const inactiveText = field.inactiveText || "Inactivo";
 
       return (
-        <div key={field.key} className={`${baseClassName} switch-field`}>
+        <div
+          key={field.key}
+          className={`${baseClassName} switch-field`}
+          style={spanStyle}
+        >
           <label className="form-label">{field.label}</label>
           <div className="switch-container">
             <div className="switch-status">

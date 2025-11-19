@@ -32,3 +32,11 @@ export const FUEL_TYPES = [
   "Eléctrico",
   "Flex",
 ] as const;
+
+// Etiquetas de trimestres
+export const QUARTER_LABELS: Record<number, string> = {
+  1: "Q1",
+  2: "Q2",
+  3: "Q3",
+  4: "Q4",
+} as const;

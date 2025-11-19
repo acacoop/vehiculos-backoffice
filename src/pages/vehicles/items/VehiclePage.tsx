@@ -40,8 +40,14 @@ import type {
   ReservationFilterParams,
 } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
+import { QUARTER_LABELS } from "../../../common";
 import type { VehicleResponsibleFilterParams } from "../../../types/vehicleResponsible";
 import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
+import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
+import type {
+  MaintenanceChecklist,
+  MaintenanceChecklistFilterParams,
+} from "../../../types/maintenanceChecklist";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -302,6 +308,70 @@ export default function VehiclesPage() {
     },
   ];
 
+  const checklistColumns: TableColumn<MaintenanceChecklist>[] = [
+    {
+      field: "year",
+      headerName: "Período",
+      minWidth: 100,
+      transform: (value, row) => {
+        return `${value} ${QUARTER_LABELS[Number(row.quarter)] || row.quarter}`;
+      },
+    },
+    {
+      field: "filledBy",
+      headerName: "Completado por",
+      minWidth: 180,
+      transform: (_value, row) => {
+        const user = row.filledBy;
+        if (user) {
+          return `${user.firstName} ${user.lastName}`;
+        }
+        return "No completado";
+      },
+    },
+    {
+      field: "filledAt",
+      headerName: "Fecha",
+      minWidth: 140,
+      type: "date",
+      transform: (value) => value || "No completado",
+    },
+    {
+      field: "hasFailedItems",
+      headerName: "Estado",
+      minWidth: 180,
+      transform: (value, row) => {
+        if (row.filledAt) {
+          if (value) {
+            const passed = Number(row.passedCount);
+            const total = Number(row.itemCount);
+            return `Con fallos (${passed}/${total})`;
+          }
+          return "Aprobado";
+        }
+        // Check if late
+        const currentDate = new Date();
+        const intendedDate = new Date(row.intendedDeliveryDate);
+        if (currentDate > intendedDate) {
+          return "Tardía";
+        }
+        return "Pendiente";
+      },
+      color: (value, row) => {
+        if (row.filledAt) {
+          return value ? COLORS.error : COLORS.success;
+        }
+        // Check if late
+        const currentDate = new Date();
+        const intendedDate = new Date(row.intendedDeliveryDate);
+        if (currentDate > intendedDate) {
+          return COLORS.error;
+        }
+        return COLORS.warning;
+      },
+    },
+  ];
+
   const vehicleInfoSections: FormSection[] = [
     {
       type: "fields",
@@ -545,6 +615,29 @@ export default function VehiclesPage() {
               route: "/reservations",
             }}
             search={{ enabled: true, placeholder: "Buscar reservas..." }}
+            minHeight="500px"
+          />
+
+          <Table
+            getRows={(
+              findOptions: ApiFindOptions<MaintenanceChecklistFilterParams>,
+            ) =>
+              getMaintenanceChecklists({
+                ...findOptions,
+                filters: {
+                  ...findOptions.filters,
+                  vehicleId: id,
+                },
+              })
+            }
+            columns={checklistColumns}
+            header={{
+              title: "Checklists de Mantenimiento",
+            }}
+            actionColumn={{
+              route: "/maintenance/checklists",
+            }}
+            search={{ enabled: true, placeholder: "Buscar checklists..." }}
             minHeight="500px"
           />
         </>

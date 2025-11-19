@@ -6,6 +6,7 @@ import type { VehicleBrand } from "../../types/vehicleBrand";
 import type { VehicleModel } from "../../types/vehicleModel";
 import type { Category } from "../../types/category";
 import type { Assignment } from "../../types/assignment";
+import type { MaintenanceChecklist } from "../../types/maintenanceChecklist";
 import { getVehicles } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
 import { getVehicleModels } from "../../services/vehicleModels";
@@ -13,6 +14,8 @@ import { getVehicleBrands } from "../../services/vehicleBrands";
 import { getMaintenanceCategories } from "../../services/categories";
 import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
+import { getMaintenanceChecklists } from "../../services/maintenanceChecklists";
+import { QUARTER_LABELS } from "../../common";
 import "./EntitySearch.css";
 
 interface DisplayField<T> {
@@ -335,6 +338,16 @@ async function searchAssignments(term: string): Promise<Assignment[]> {
   return response.success ? response.data : [];
 }
 
+async function searchMaintenanceChecklists(
+  term: string,
+): Promise<MaintenanceChecklist[]> {
+  const response = await getMaintenanceChecklists({
+    search: term,
+    pagination: { offset: 0, limit: 10 },
+  });
+  return response.success ? response.data : [];
+}
+
 // =============================================================================
 // Wrapper Components
 // =============================================================================
@@ -533,6 +546,44 @@ export function AssignmentEntitySearch({
       placeholder="Buscar asignación..."
       title="Datos de la Asignación"
       changeButtonText="Cambiar asignación"
+      disabled={disabled}
+    />
+  );
+}
+
+export function MaintenanceChecklistEntitySearch({
+  entity,
+  onEntityChange,
+  disabled = false,
+}: EntitySearchWrapperProps<MaintenanceChecklist>) {
+  const dropdownRender = (checklist: MaintenanceChecklist) => {
+    const vehicle = checklist.vehicle;
+    const vehicleInfo = vehicle
+      ? `${vehicle.model?.brand?.name || ""} ${vehicle.model?.name || ""} - ${
+          vehicle.licensePlate
+        }`.trim()
+      : "";
+    const period = `${checklist.year} ${
+      QUARTER_LABELS[checklist.quarter] || checklist.quarter
+    }`;
+    return `${vehicleInfo} - ${period}`;
+  };
+
+  return (
+    <EntitySearch<MaintenanceChecklist>
+      entity={entity}
+      onEntityChange={onEntityChange}
+      searchFunction={searchMaintenanceChecklists}
+      displayFields={[
+        { path: "vehicle.licensePlate", label: "Vehículo" },
+        { path: "year", label: "Año" },
+        { path: "quarter", label: "Trimestre" },
+        { path: "intendedDeliveryDate", label: "Fecha Entrega" },
+      ]}
+      dropdownRender={dropdownRender}
+      placeholder="Buscar checklist..."
+      title="Datos del Checklist"
+      changeButtonText="Cambiar checklist"
       disabled={disabled}
     />
   );
