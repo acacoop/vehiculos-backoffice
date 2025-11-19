@@ -155,12 +155,12 @@ export default function MaintenanceChecklistPage() {
     {
       field: "title",
       headerName: "Descripción",
-      minWidth: 200,
+      flex: 2,
     },
     {
       field: "passed",
       headerName: "Estado",
-      minWidth: 100,
+      flex: 1,
       transform: (value: string | boolean) => {
         const passed = Boolean(value);
         if (passed) return "Aprobado";
@@ -189,7 +189,7 @@ export default function MaintenanceChecklistPage() {
     {
       field: "observations",
       headerName: "Observaciones",
-      minWidth: 300,
+      flex: 2,
     },
   ];
 

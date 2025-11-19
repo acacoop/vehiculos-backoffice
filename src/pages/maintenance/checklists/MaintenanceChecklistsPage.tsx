@@ -15,7 +15,7 @@ export default function MaintenanceChecklistsPage() {
     {
       field: "vehicle.licensePlate",
       headerName: "Vehículo",
-      minWidth: 180,
+      flex: 2,
       transform: (value, row) => {
         const vehicle = row.vehicle;
         if (vehicle) {
@@ -31,7 +31,7 @@ export default function MaintenanceChecklistsPage() {
     {
       field: "year",
       headerName: "Período",
-      minWidth: 120,
+      flex: 1,
       transform: (value, row) => {
         return `${value} ${QUARTER_LABELS[Number(row.quarter)] || row.quarter}`;
       },
@@ -39,7 +39,7 @@ export default function MaintenanceChecklistsPage() {
     {
       field: "filledBy",
       headerName: "Completado por",
-      minWidth: 180,
+      flex: 1,
       transform: (_value, row) => {
         const user = row.filledBy;
         if (user) {
@@ -51,14 +51,14 @@ export default function MaintenanceChecklistsPage() {
     {
       field: "filledAt",
       headerName: "Fecha",
-      minWidth: 140,
+      flex: 1,
       type: "date",
       transform: (value) => value || "No completado",
     },
     {
       field: "hasFailedItems",
       headerName: "Estado",
-      minWidth: 180,
+      flex: 1,
       transform: (_value, row) => {
         const { label } = getChecklistStatus(row);
         return label;
@@ -92,6 +92,7 @@ export default function MaintenanceChecklistsPage() {
             onClick: () => navigate("/maintenance/checklists/new"),
           },
         }}
+        width={1200}
       />
     </div>
   );
