@@ -156,26 +156,20 @@ export default function VehiclesPage() {
 
     executeSave(
       `¿Está seguro que desea ${actionText} este vehículo?`,
-      () =>
-        isNew
-          ? createVehicle({
-              licensePlate: formData.licensePlate,
-              modelId: model!.id,
-              year: formData.year,
-              chassisNumber: formData.chassisNumber || undefined,
-              engineNumber: formData.engineNumber || undefined,
-              transmission: formData.transmission || undefined,
-            })
-          : updateVehicle(id!, {
-              licensePlate: formData.licensePlate,
-              modelId: model!.id,
-              year: formData.year,
-              chassisNumber: formData.chassisNumber || undefined,
-              engineNumber: formData.engineNumber || undefined,
-              transmission: formData.transmission || undefined,
-              fuelType: formData.fuelType || undefined,
-            }),
-      `Vehículo ${actionText}do con éxito`
+      () => {
+        const payload = {
+          licensePlate: formData.licensePlate,
+          modelId: model!.id,
+          year: formData.year,
+          chassisNumber: formData.chassisNumber || undefined,
+          engineNumber: formData.engineNumber || undefined,
+          transmission: formData.transmission || undefined,
+          fuelType: formData.fuelType || undefined,
+        };
+
+        return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
+      },
+      `Vehículo ${actionText}do con éxito`,
     );
   };
 
@@ -395,15 +389,15 @@ export default function VehiclesPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/vehicles/brands"),
+      onClick: () => goTo("/vehicles"),
       disabled: saving,
     },
     {
       text: saving
         ? "Guardando..."
         : isNew
-        ? "Crear Marca"
-        : "Actualizar Marca",
+        ? "Registrar Vehículo"
+        : "Actualizar Vehículo",
       variant: "primary" as const,
       onClick: handleSave,
       disabled: saving,
@@ -450,7 +444,7 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>
+              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>,
             ) =>
               getVehicleResponsibles({
                 ...findOptions,
@@ -503,7 +497,7 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>
+              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
             ) =>
               getMaintenanceRecords({
                 ...findOptions,
