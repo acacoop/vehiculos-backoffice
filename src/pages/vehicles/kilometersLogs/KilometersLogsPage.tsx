@@ -66,6 +66,7 @@ export default function KilometersLogsPage() {
         }}
         actionColumn={{ route: "/vehicles/kilometersLogs", width: 90 }}
         search={{ enabled: true, placeholder: "Buscar registros..." }}
+        width={1200}
       />
     </div>
   );

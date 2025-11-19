@@ -175,7 +175,7 @@ export default function VehiclesPage() {
               transmission: formData.transmission || undefined,
               fuelType: formData.fuelType || undefined,
             }),
-      `Vehículo ${actionText}do con éxito`,
+      `Vehículo ${actionText}do con éxito`
     );
   };
 
@@ -445,11 +445,12 @@ export default function VehiclesPage() {
               },
             }}
             search={{ enabled: true, placeholder: "Buscar asignaciones..." }}
+            minHeight="500px"
           />
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>,
+              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>
             ) =>
               getVehicleResponsibles({
                 ...findOptions,
@@ -472,6 +473,7 @@ export default function VehiclesPage() {
               route: "/vehicles/responsibles",
             }}
             search={{ enabled: true, placeholder: "Buscar responsables..." }}
+            minHeight="500px"
           />
 
           <Table
@@ -501,7 +503,7 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
+              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>
             ) =>
               getMaintenanceRecords({
                 ...findOptions,
@@ -524,6 +526,7 @@ export default function VehiclesPage() {
               route: "/maintenance/records",
             }}
             search={{ enabled: true, placeholder: "Buscar registros..." }}
+            minHeight="500px"
           />
 
           <Table
@@ -548,6 +551,7 @@ export default function VehiclesPage() {
               route: "/reservations",
             }}
             search={{ enabled: true, placeholder: "Buscar reservas..." }}
+            minHeight="500px"
           />
         </>
       )}

@@ -31,20 +31,35 @@
 }
 
 .bento-home-icon {
-  width: 30px;
-  height: 30px;
-  transition: filter 0.2s;
+  width: 40px;
+  height: 40px;
+  transition: 0.3s ease-in-out;
+}
+
+/* Estilos para iconos de Lucide */
+.bento-home-lucide-icon {
+  color: #282d86;
+}
+
+.bento-home:hover .bento-home-lucide-icon,
+.bento-home.selected .bento-home-lucide-icon {
+  color: #fff;
+}
+
+/* Estilos para iconos personalizados (imágenes) */
+.bento-home-custom-icon {
+  object-fit: contain;
+}
+
+.bento-home:hover .bento-home-custom-icon,
+.bento-home.selected .bento-home-custom-icon {
+  filter: brightness(0) invert(1);
 }
 
 .bento-home-text {
   text-align: center;
   font-size: large;
   font-weight: 600;
-}
-
-.bento-home:hover .bento-home-icon,
-.bento-home.selected .bento-home-icon {
-  filter: brightness(0) invert(1);
 }
 
 @media screen and (min-width: 1300px) {
@@ -54,9 +69,10 @@
   }
 
   .bento-home-icon {
-    width: 40px;
-    height: 90px;
+    width: 50px;
+    height: 50px;
   }
+
   .bento-home-text {
     font-size: x-large;
     font-weight: 600;
