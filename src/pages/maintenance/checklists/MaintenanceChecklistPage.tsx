@@ -262,8 +262,16 @@ export default function MaintenanceChecklistPage() {
           required: true,
           span: 2,
         },
-        ...(!isNew
-          ? [
+      ],
+    },
+    ...(!isNew
+      ? [
+          {
+            title: "Estado del Checklist",
+            type: "fields" as const,
+            layout: "grid" as const,
+            columns: 2,
+            fields: [
               {
                 type: "display" as const,
                 value: checklist!.filledBy
@@ -280,10 +288,10 @@ export default function MaintenanceChecklistPage() {
                 key: "filledAt",
                 label: "Fecha de Completado",
               },
-            ]
-          : []),
-      ],
-    },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const buttons: FormButton[] = [
