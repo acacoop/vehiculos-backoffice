@@ -11,15 +11,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ApiFindOptions } from "../../services/common";
 import type { FilterParams, ServiceResponse } from "../../types/common";
-import { PencilIcon } from "./icons";
-import "./table.css";
 import {
   getNestedString,
   formatDate,
   formatDateTime,
   formatEndDate,
   formatRelativeDate,
+  COLORS,
 } from "../../common";
+import "./table.css";
+import { ArrowRight } from "lucide-react";
 
 function createGridColumn<T extends GridValidRowModel>(
   column: TableColumn<T>,
@@ -53,7 +54,7 @@ function createGridColumn<T extends GridValidRowModel>(
           return (
             <Chip
               label={transformedValue}
-              color={boolValue ? "success" : "default"}
+              color={boolValue ? "success" : "error"}
               size="small"
               sx={{ color: "#fff", fontWeight: 600 }}
             />
@@ -171,6 +172,7 @@ interface TableProps<
   width?: number | string;
   maxWidth?: string;
   maxHeight?: string;
+  minHeight?: string;
 }
 
 export function Table<
@@ -185,6 +187,7 @@ export function Table<
   width,
   maxWidth = "1200px",
   maxHeight = "600px",
+  minHeight,
 }: TableProps<TFilters, T>) {
   const navigate = useNavigate();
 
@@ -329,10 +332,16 @@ export function Table<
           actionColumn.customRender(params)
         ) : (
           <span
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+              justifyContent: "center",
+            }}
             onClick={() => navigate(`${actionColumn.route}/${params.row.id}`)}
           >
-            <PencilIcon />
+            <ArrowRight size={20} color={COLORS.primary} />
           </span>
         ),
     };
@@ -367,8 +376,11 @@ export function Table<
           flexDirection: "column",
           overflow: "hidden",
           ...(hasRows && maxHeight
-            ? { height: maxHeight, maxHeight, minHeight: "360px" }
-            : { minHeight: "240px" }),
+            ? { height: maxHeight, maxHeight, minHeight: minHeight || "360px" }
+            : {
+                height: minHeight || "500px",
+                minHeight: minHeight || "500px",
+              }),
         }}
       >
         <DataGrid

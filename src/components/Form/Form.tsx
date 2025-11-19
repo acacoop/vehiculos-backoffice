@@ -59,6 +59,14 @@ export interface CheckboxField extends BaseField {
   onChange: (value: boolean) => void;
 }
 
+export interface SwitchField extends BaseField {
+  type: "switch";
+  value: boolean;
+  onChange: (value: boolean) => void;
+  activeText?: string;
+  inactiveText?: string;
+}
+
 export interface DisplayField extends BaseField {
   type: "display";
   value: string | number | React.ReactNode;
@@ -72,6 +80,7 @@ export type FormField =
   | TextAreaField
   | SelectField
   | CheckboxField
+  | SwitchField
   | DisplayField;
 
 // ============ SECTION CONFIGURATION ============
@@ -275,6 +284,34 @@ const Form: React.FC<FormProps> = ({
             disabled={field.disabled}
             required={field.required}
           />
+        </div>
+      );
+    }
+
+    // ========== SWITCH INPUT ==========
+    if (field.type === "switch") {
+      const activeText = field.activeText || "Activo";
+      const inactiveText = field.inactiveText || "Inactivo";
+
+      return (
+        <div key={field.key} className={`${baseClassName} switch-field`}>
+          <label className="form-label">{field.label}</label>
+          <div className="switch-container">
+            <div className="switch-status">
+              <span className={`status-text ${field.value ? "active" : ""}`}>
+                {field.value ? activeText : inactiveText}
+              </span>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={field.value}
+                onChange={(e) => field.onChange(e.target.checked)}
+                disabled={field.disabled}
+              />
+              <span className="switch-slider"></span>
+            </label>
+          </div>
         </div>
       );
     }
