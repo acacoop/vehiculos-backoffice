@@ -32,6 +32,8 @@ export default function MaintenancePage() {
     instructions: "",
   });
   const [category, setCategory] = useState<Category | null>(null);
+  const [useKilometers, setUseKilometers] = useState(false);
+  const [useDays, setUseDays] = useState(false);
 
   const {
     loading,
@@ -68,6 +70,15 @@ export default function MaintenancePage() {
             instructions: response.data.instructions || "",
           });
           setCategory(response.data.category || null);
+          // Initialize checkboxes based on existing frequency values
+          setUseKilometers(
+            response.data.kilometersFrequency !== undefined &&
+              response.data.kilometersFrequency > 0,
+          );
+          setUseDays(
+            response.data.daysFrequency !== undefined &&
+              response.data.daysFrequency > 0,
+          );
         } else {
           showError(response.message || "Error al cargar el mantenimiento");
         }
@@ -106,14 +117,6 @@ export default function MaintenancePage() {
 
     if (!category) {
       showError("Debe seleccionar una categoría");
-      return;
-    }
-
-    const kilometersFreq = formData.kilometersFrequency;
-    const daysFreq = formData.daysFrequency;
-
-    if (!kilometersFreq && !daysFreq) {
-      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
       return;
     }
 
@@ -180,6 +183,19 @@ export default function MaintenancePage() {
       layout: "horizontal",
       fields: [
         {
+          type: "checkbox",
+          key: "useKilometers",
+          label: "Usar frecuencia en kilómetros",
+          value: useKilometers,
+          onChange: (value: boolean) => {
+            setUseKilometers(value);
+            if (!value) {
+              setFormData({ ...formData, kilometersFrequency: undefined });
+            }
+          },
+          disabled: isReadOnly,
+        },
+        {
           type: "number",
           key: "kilometersFrequency",
           label: "Kilómetros",
@@ -192,6 +208,20 @@ export default function MaintenancePage() {
           placeholder: "Frecuencia en kilómetros",
           min: 1,
           disabled: isReadOnly,
+          show: useKilometers,
+        },
+        {
+          type: "checkbox",
+          key: "useDays",
+          label: "Usar frecuencia en días",
+          value: useDays,
+          onChange: (value: boolean) => {
+            setUseDays(value);
+            if (!value) {
+              setFormData({ ...formData, daysFrequency: undefined });
+            }
+          },
+          disabled: isReadOnly,
         },
         {
           type: "number",
@@ -203,6 +233,7 @@ export default function MaintenancePage() {
           placeholder: "Frecuencia en días",
           min: 1,
           disabled: isReadOnly,
+          show: useDays,
         },
       ],
     },

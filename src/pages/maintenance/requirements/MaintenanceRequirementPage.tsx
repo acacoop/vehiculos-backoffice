@@ -1,43 +1,44 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import {
-  createAssignedMaintenance,
-  getAssignedMaintenanceById,
-  updateAssignedMaintenance,
-  deleteAssignedMaintenance,
-} from "../../../services/assignedMaintenances";
-import { getVehicleById } from "../../../services/vehicles";
+import { getVehicleModelById } from "../../../services/vehicleModels";
 import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import {
-  VehicleEntitySearch,
+  VehicleModelEntitySearch,
   MaintenanceEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
-import type { Vehicle } from "../../../types/vehicle";
+import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Maintenance } from "../../../types/maintenance";
 import type { FormSection, FormButton } from "../../../components/Form/Form";
-import { Table } from "../../../components/Table/table";
-import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
-import type { MaintenanceRecordFilterParams } from "../../../types/maintenanceRecord";
-import type { ApiFindOptions } from "../../../services/common";
+import {
+  createMaintenanceRequirement,
+  deleteMaintenanceRequirement,
+  getMaintenanceRequirementById,
+  updateMaintenanceRequirement,
+} from "../../../services/maintenaceRequirements";
 
-export default function AssignmentPage() {
+export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
   const isReadOnly = !isNew && !id;
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [model, setModel] = useState<VehicleModel | null>(null);
   const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
   const [formData, setFormData] = useState({
     kilometersFrequency: 0,
     daysFrequency: 0,
     observations: "",
     instructions: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: "",
+    isIndefinite: true,
+    useKilometers: false,
+    useDays: false,
   });
 
   const {
@@ -53,8 +54,7 @@ export default function AssignmentPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/assignments" });
-  const navigate = useNavigate();
+  } = usePageState({ redirectOnSuccess: "/maintenance/requirements" });
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -63,19 +63,26 @@ export default function AssignmentPage() {
 
     (async () => {
       await executeLoad(async () => {
-        const response = await getAssignedMaintenanceById(id);
+        const response = await getMaintenanceRequirementById(id);
 
         if (cancelled) return;
 
         if (response.success && response.data) {
           const assignment = response.data;
-          setVehicle(assignment.vehicle || null);
+          setModel(assignment.model || null);
           setMaintenance(assignment.maintenance || null);
           setFormData({
             kilometersFrequency: assignment.kilometersFrequency || 0,
             daysFrequency: assignment.daysFrequency || 0,
             observations: assignment.observations || "",
             instructions: assignment.instructions || "",
+            startDate: assignment.startDate || "",
+            endDate: assignment.endDate || "",
+            isIndefinite: !assignment.endDate,
+            useKilometers:
+              !!assignment.kilometersFrequency &&
+              assignment.kilometersFrequency > 0,
+            useDays: !!assignment.daysFrequency && assignment.daysFrequency > 0,
           });
         } else {
           showError(response.message || "Error al cargar la asignación");
@@ -89,18 +96,18 @@ export default function AssignmentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // Load vehicle from query parameter
+  // Load model from query parameter
   useEffect(() => {
     if (!isNew) return;
 
     const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
+    const modelId = searchParams.get("modelId");
 
-    if (vehicleId) {
+    if (modelId) {
       executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
+        const response = await getVehicleModelById(modelId);
         if (response.success && response.data) {
-          setVehicle(response.data);
+          setModel(response.data);
         }
       });
     }
@@ -127,20 +134,26 @@ export default function AssignmentPage() {
 
   // Load frecuencies when maintenance changes
   useEffect(() => {
-    if (!maintenance) return;
+    if (!isNew) return;
+
+    const hasKm =
+      maintenance?.kilometersFrequency && maintenance.kilometersFrequency > 0;
+    const hasDays = maintenance?.daysFrequency && maintenance.daysFrequency > 0;
 
     setFormData((prevData) => ({
       ...prevData,
-      kilometersFrequency: maintenance.kilometersFrequency || 0,
-      daysFrequency: maintenance.daysFrequency || 0,
-      instructions: maintenance.instructions || "",
-      observations: maintenance.observations || "",
+      kilometersFrequency: maintenance?.kilometersFrequency || 0,
+      daysFrequency: maintenance?.daysFrequency || 0,
+      instructions: maintenance?.instructions || "",
+      observations: maintenance?.observations || "",
+      useKilometers: !!hasKm,
+      useDays: !!hasDays,
     }));
-  }, [maintenance]);
+  }, [maintenance, isNew]);
 
   const handleSave = () => {
-    if (!vehicle) {
-      showError("El vehículo es obligatorio");
+    if (!model) {
+      showError("El modelo es obligatorio");
       return;
     }
 
@@ -149,56 +162,68 @@ export default function AssignmentPage() {
       return;
     }
 
-    const kmFreq = formData.kilometersFrequency;
-    const daysFreq = formData.daysFrequency;
+    const kmFreq = formData.useKilometers ? formData.kilometersFrequency : 0;
+    const daysFreq = formData.useDays ? formData.daysFrequency : 0;
 
     if (kmFreq <= 0 && daysFreq <= 0) {
-      showError("Debe especificar al menos una frecuencia (kilómetros o días)");
+      showError(
+        "Debe especificar al menos una frecuencia válida (kilómetros > 0 o días > 0)",
+      );
       return;
     }
 
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
-      `¿Está seguro que desea ${actionText} esta asignación?`,
+      `¿Está seguro que desea ${actionText} este requerimiento de mantenimiento?`,
       () =>
         isNew
-          ? createAssignedMaintenance({
-              vehicleId: vehicle.id!.toString(),
+          ? createMaintenanceRequirement({
+              modelId: model.id!.toString(),
               maintenanceId: maintenance.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
+              startDate: formData.startDate,
+              endDate:
+                formData.isIndefinite || !formData.endDate
+                  ? null
+                  : formData.endDate,
             })
-          : updateAssignedMaintenance(id!, {
-              kilometersFrequency: kmFreq > 0 ? kmFreq : 0,
-              daysFrequency: daysFreq > 0 ? daysFreq : 0,
+          : updateMaintenanceRequirement(id!, {
+              kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
+              daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
+              startDate: formData.startDate,
+              endDate:
+                formData.isIndefinite || !formData.endDate
+                  ? null
+                  : formData.endDate,
             }),
-      `Asignación ${actionText}da exitosamente`,
+      `Requerimiento ${actionText}do exitosamente`,
     );
   };
 
   const handleDelete = async () => {
     executeSave(
-      "Borrar esta asignación también eliminará todos sus registros de mantenimiento asociados. ¿Está seguro que desea continuar?",
-      () => deleteAssignedMaintenance(id!),
-      "Asignación eliminada exitosamente",
+      "¿Está seguro que desea eliminar este requerimiento de mantenimiento?",
+      () => deleteMaintenanceRequirement(id!),
+      "Requerimiento eliminado exitosamente",
     );
   };
 
   if (loading) {
-    return <LoadingSpinner message="Cargando asignación..." />;
+    return <LoadingSpinner message="Cargando requerimiento..." />;
   }
 
   const sections: FormSection[] = [
     {
       type: "entity",
       render: (
-        <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
+        <VehicleModelEntitySearch
+          entity={model}
+          onEntityChange={setModel}
           disabled={!isNew}
         />
       ),
@@ -216,8 +241,17 @@ export default function AssignmentPage() {
     {
       type: "fields",
       title: "Frecuencias (Debe especificar al menos una)",
-      layout: "horizontal",
+      layout: "vertical",
       fields: [
+        {
+          type: "checkbox",
+          value: formData.useKilometers,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, useKilometers: value }),
+          key: "useKilometers",
+          label: "Especificar frecuencia por kilómetros",
+          disabled: isReadOnly,
+        },
         {
           type: "number",
           key: "kilometersFrequency",
@@ -229,7 +263,17 @@ export default function AssignmentPage() {
               kilometersFrequency: Number(value) || 0,
             }),
           placeholder: "Ingrese frecuencia en kilómetros",
-          min: 0,
+          min: 1,
+          disabled: isReadOnly,
+          show: formData.useKilometers,
+        },
+        {
+          type: "checkbox",
+          value: formData.useDays,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, useDays: value }),
+          key: "useDays",
+          label: "Especificar frecuencia por días",
           disabled: isReadOnly,
         },
         {
@@ -240,8 +284,42 @@ export default function AssignmentPage() {
           onChange: (value) =>
             setFormData({ ...formData, daysFrequency: Number(value) || 0 }),
           placeholder: "Ingrese frecuencia en días",
-          min: 0,
+          min: 1,
           disabled: isReadOnly,
+          show: formData.useDays,
+        },
+      ],
+    },
+    {
+      type: "fields",
+      title: "Período",
+      fields: [
+        {
+          type: "date",
+          value: formData.startDate,
+          onChange: (value: string) =>
+            setFormData({ ...formData, startDate: value }),
+          key: "startDate",
+          label: "Fecha Desde",
+          required: true,
+        },
+        {
+          type: "checkbox",
+          value: formData.isIndefinite,
+          onChange: (value: boolean) =>
+            setFormData({ ...formData, isIndefinite: value }),
+          key: "isIndefinite",
+          label: "Asignación indefinida (sin fecha de fin)",
+        },
+        {
+          type: "date",
+          value: formData.endDate,
+          onChange: (value: string) =>
+            setFormData({ ...formData, endDate: value }),
+          key: "endDate",
+          label: "Fecha Hasta",
+          show: !formData.isIndefinite,
+          min: formData.startDate,
         },
       ],
     },
@@ -280,13 +358,13 @@ export default function AssignmentPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/maintenance/assignments"),
+      onClick: () => goTo("/maintenance/requirements"),
       disabled: saving,
     },
     ...(!isNew
       ? [
           {
-            text: saving ? "Eliminando..." : "Eliminar Asignación",
+            text: saving ? "Eliminando..." : "Eliminar Requerimiento",
             variant: "danger" as const,
             onClick: handleDelete,
             disabled: saving,
@@ -300,8 +378,8 @@ export default function AssignmentPage() {
             text: saving
               ? "Guardando..."
               : isNew
-              ? "Crear Asignación"
-              : "Actualizar Asignación",
+              ? "Crear Requerimiento"
+              : "Actualizar Requerimiento",
             variant: "primary" as const,
             onClick: handleSave,
             disabled: saving,
@@ -316,8 +394,8 @@ export default function AssignmentPage() {
       <Form
         title={
           isNew
-            ? "Nueva Asignación de Mantenimiento"
-            : "Editar Asignación de Mantenimiento"
+            ? "Nuevo Requerimiento de Mantenimiento"
+            : "Editar Requerimiento de Mantenimiento"
         }
         sections={sections}
         buttons={buttons}
@@ -336,53 +414,6 @@ export default function AssignmentPage() {
         isOpen={notification.isOpen}
         onClose={closeNotification}
       />
-
-      {!isNew && (
-        <Table
-          getRows={(
-            findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
-          ) =>
-            getMaintenanceRecords({
-              ...findOptions,
-              filters: {
-                ...findOptions?.filters,
-                assignedMaintenanceId: id,
-              },
-            })
-          }
-          columns={[
-            {
-              field: "date",
-              headerName: "Fecha",
-              minWidth: 150,
-              type: "date",
-            },
-            {
-              field: "kilometers",
-              headerName: "Kilómetros",
-              minWidth: 150,
-              transform: (v: unknown) => (v ? `${v} km` : "N/A"),
-            },
-            {
-              field: "notes",
-              headerName: "Observaciones",
-              minWidth: 300,
-              transform: (v: unknown) => (v ? String(v) : "Sin observaciones"),
-            },
-          ]}
-          header={{
-            title: "Registros de Mantenimiento",
-            addButton: {
-              text: "+ Nuevo Registro",
-              onClick: () =>
-                navigate(
-                  `/maintenance/records/new?assignedMaintenanceId=${id}`,
-                ),
-            },
-          }}
-          search={{ enabled: true, placeholder: "Buscar registros..." }}
-        />
-      )}
     </div>
   );
 }

@@ -24,18 +24,13 @@ import type { AssignmentFilterParams } from "../../../types/assignment";
 import type { ApiFindOptions } from "../../../services/common";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
-import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
-import { getVehicleKilometersLogsByVehicle } from "../../../services/kilometers";
+import { getVehicleKilometersLogs } from "../../../services/kilometers";
 import type {
   KilometersFilterParams,
   VehicleKilometersLog,
 } from "../../../types/kilometer";
 import { getReservations } from "../../../services/reservations";
-import type {
-  AssignedMaintenance,
-  AssignedMaintenanceFilterParams,
-} from "../../../types/assignedMaintenance";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,
@@ -46,6 +41,7 @@ import type {
 } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
 import type { VehicleResponsibleFilterParams } from "../../../types/vehicleResponsible";
+import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -160,26 +156,20 @@ export default function VehiclesPage() {
 
     executeSave(
       `¿Está seguro que desea ${actionText} este vehículo?`,
-      () =>
-        isNew
-          ? createVehicle({
-              licensePlate: formData.licensePlate,
-              modelId: model!.id,
-              year: formData.year,
-              chassisNumber: formData.chassisNumber || undefined,
-              engineNumber: formData.engineNumber || undefined,
-              transmission: formData.transmission || undefined,
-            })
-          : updateVehicle(id!, {
-              licensePlate: formData.licensePlate,
-              modelId: model!.id,
-              year: formData.year,
-              chassisNumber: formData.chassisNumber || undefined,
-              engineNumber: formData.engineNumber || undefined,
-              transmission: formData.transmission || undefined,
-              fuelType: formData.fuelType || undefined,
-            }),
-      `Vehículo ${actionText}do con éxito`
+      () => {
+        const payload = {
+          licensePlate: formData.licensePlate,
+          modelId: model!.id,
+          year: formData.year,
+          chassisNumber: formData.chassisNumber || undefined,
+          engineNumber: formData.engineNumber || undefined,
+          transmission: formData.transmission || undefined,
+          fuelType: formData.fuelType || undefined,
+        };
+
+        return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
+      },
+      `Vehículo ${actionText}do con éxito`,
     );
   };
 
@@ -202,38 +192,13 @@ export default function VehiclesPage() {
     },
   ];
 
-  const maintenanceColumns: TableColumn<AssignedMaintenance>[] = [
-    {
-      field: "maintenance.category.name",
-      headerName: "Categoría Mantenimiento",
-      minWidth: 250,
-    },
+  const maintenanceRecordColumns: TableColumn<MaintenanceRecord>[] = [
     {
       field: "maintenance.name",
-      headerName: "Nombre de Mantenimiento",
-      minWidth: 300,
+      headerName: "Mantenimiento",
+      minWidth: 200,
+      type: "text",
     },
-    {
-      field: "daysFrequency",
-      headerName: "Frecuencia (Días)",
-      minWidth: 150,
-      transform: (value, row) => {
-        const days = Number(value) || row.maintenance.daysFrequency;
-        return days && days > 0 ? `${days} días` : "N/A";
-      },
-    },
-    {
-      field: "kilometersFrequency",
-      headerName: "Frecuencia (KM)",
-      minWidth: 150,
-      transform: (value, row) => {
-        const km = Number(value) || row.maintenance.kilometersFrequency;
-        return km && km > 0 ? `${km} km` : "N/A";
-      },
-    },
-  ];
-
-  const maintenanceRecordColumns: TableColumn<MaintenanceRecord>[] = [
     {
       field: "date",
       headerName: "Fecha",
@@ -389,20 +354,32 @@ export default function VehiclesPage() {
           label: "Número de Motor",
         },
         {
-          type: "text",
+          type: "select",
           value: formData.transmission,
           onChange: (value: string) =>
             setFormData({ ...formData, transmission: value }),
           key: "transmission",
           label: "Transmisión",
+          required: false,
+          placeholder: "Seleccione una transmisión",
+          options: TRANSMISSION_TYPES.map((type) => ({
+            value: type,
+            label: type,
+          })),
         },
         {
-          type: "text",
+          type: "select",
           value: formData.fuelType,
           onChange: (value: string) =>
             setFormData({ ...formData, fuelType: value }),
           key: "fuelType",
           label: "Tipo de Combustible",
+          required: false,
+          placeholder: "Seleccione un tipo de combustible",
+          options: FUEL_TYPES.map((type) => ({
+            value: type,
+            label: type,
+          })),
         },
       ],
     },
@@ -412,15 +389,15 @@ export default function VehiclesPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/vehicles/brands"),
+      onClick: () => goTo("/vehicles"),
       disabled: saving,
     },
     {
       text: saving
         ? "Guardando..."
         : isNew
-        ? "Crear Marca"
-        : "Actualizar Marca",
+        ? "Registrar Vehículo"
+        : "Actualizar Vehículo",
       variant: "primary" as const,
       onClick: handleSave,
       disabled: saving,
@@ -467,7 +444,7 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>
+              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>,
             ) =>
               getVehicleResponsibles({
                 ...findOptions,
@@ -495,7 +472,13 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(findOptions: ApiFindOptions<KilometersFilterParams>) =>
-              getVehicleKilometersLogsByVehicle(id, findOptions)
+              getVehicleKilometersLogs({
+                ...findOptions,
+                filters: {
+                  ...findOptions.filters,
+                  vehicleId: id,
+                },
+              })
             }
             columns={kilometersColumns}
             header={{
@@ -510,40 +493,11 @@ export default function VehiclesPage() {
               route: "/vehicles/kilometersLogs",
             }}
             search={{ enabled: true, placeholder: "Buscar registros..." }}
-            minHeight="500px"
           />
 
           <Table
             getRows={(
-              findOptions: ApiFindOptions<AssignedMaintenanceFilterParams>
-            ) =>
-              getAssignedMaintenances({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={maintenanceColumns}
-            header={{
-              title: "Mantenimientos Programados",
-              addButton: {
-                text: "+ Asignar Mantenimiento",
-                onClick: () =>
-                  navigate(`/maintenance/assignments/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/maintenance/assignments",
-            }}
-            search={{ enabled: true, placeholder: "Buscar mantenimientos..." }}
-            minHeight="500px"
-          />
-
-          <Table
-            getRows={(
-              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>
+              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
             ) =>
               getMaintenanceRecords({
                 ...findOptions,

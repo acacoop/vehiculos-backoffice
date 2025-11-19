@@ -79,8 +79,8 @@ function Navbar() {
         },
         {
           icon: ClipboardList,
-          label: "Asignaciones",
-          to: "/maintenance/assignments",
+          label: "Requerimientos",
+          to: "/maintenance/requirements",
         },
         {
           icon: FileText,

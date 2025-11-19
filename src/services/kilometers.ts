@@ -71,27 +71,3 @@ export async function deleteVehicleKilometersLog(
     errorMessage: "Error al eliminar registro de kilometraje",
   });
 }
-
-// Legacy endpoints for backwards compatibility (for vehicle detail page)
-export async function getVehicleKilometersLogsByVehicle(
-  vehicleId: string,
-  findOptions?: ApiFindOptions<KilometersFilterParams>,
-): Promise<ServiceResponse<VehicleKilometersLog[]>> {
-  return await apiFindItems({
-    uri: `vehicles/${vehicleId}/kilometers`,
-    findOptions,
-    paramsConfig: [{ field: "startDate" }, { field: "endDate" }],
-    errorMessage: "Error al obtener historial de kilometraje",
-  });
-}
-
-export async function createKilometersLog(
-  vehicleId: string,
-  payload: VehicleKilometersLogInput,
-): Promise<ServiceResponse<VehicleKilometersLog>> {
-  return await apiCreateItem({
-    uri: `vehicles/${vehicleId}/kilometers`,
-    payload,
-    errorMessage: "Error al crear registro de kilometraje",
-  });
-}

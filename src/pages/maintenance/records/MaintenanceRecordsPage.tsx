@@ -11,11 +11,11 @@ export default function MaintenanceRecordsPage() {
 
   const columns: TableColumn<MaintenanceRecord>[] = [
     {
-      field: "assignedMaintenance.vehicle.licensePlate",
+      field: "vehicle.licensePlate",
       headerName: "Vehículo",
       minWidth: 180,
       transform: (value, row) => {
-        const vehicle = row.assignedMaintenance?.vehicle;
+        const vehicle = row.vehicle;
         if (vehicle) {
           const brand = vehicle.model?.brand?.name ?? "";
           const model = vehicle.model?.name ?? "";
@@ -27,7 +27,7 @@ export default function MaintenanceRecordsPage() {
       },
     },
     {
-      field: "assignedMaintenance.maintenance.name",
+      field: "maintenance.name",
       headerName: "Mantenimiento",
       minWidth: 180,
     },

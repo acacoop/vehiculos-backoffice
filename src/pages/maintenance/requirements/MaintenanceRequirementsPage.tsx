@@ -1,12 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { Table, type TableColumn } from "../../../components/Table/table";
-import type { AssignedMaintenance } from "../../../types/assignedMaintenance";
-import { getAssignedMaintenances } from "../../../services/assignedMaintenances";
+import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
+import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 
-const columns: TableColumn<AssignedMaintenance>[] = [
+const columns: TableColumn<MaintenanceRequirement>[] = [
   {
-    field: "vehicle.licensePlate",
-    headerName: "Vehículo",
+    field: "model.name",
+    headerName: "Modelo",
+    minWidth: 200,
+  },
+  {
+    field: "model.brand.name",
+    headerName: "Marca",
     minWidth: 150,
   },
   {
@@ -39,27 +44,27 @@ const columns: TableColumn<AssignedMaintenance>[] = [
   },
 ];
 
-export default function AssignmentsPage() {
+export default function MaintenanceRequirementsPage() {
   const navigate = useNavigate();
 
   return (
     <div className="container">
       <Table
-        getRows={getAssignedMaintenances}
+        getRows={getMaintenanceRequirements}
         columns={columns}
         header={{
-          title: "Asignaciones de Mantenimiento",
+          title: "Requerimientos de Mantenimiento",
           addButton: {
-            text: "+ Nueva Asignación",
-            onClick: () => navigate("/maintenance/assignments/new"),
+            text: "+ Nuevo Requerimiento",
+            onClick: () => navigate("/maintenance/requirements/new"),
           },
         }}
         actionColumn={{
-          route: "/maintenance/assignments",
+          route: "/maintenance/requirements",
         }}
         search={{
           enabled: true,
-          placeholder: "Buscar asignaciones...",
+          placeholder: "Buscar requerimientos...",
         }}
         width={1200}
       />
