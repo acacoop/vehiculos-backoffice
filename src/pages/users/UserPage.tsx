@@ -189,6 +189,12 @@ export default function UserPage() {
           activeText: "Usuario activo",
           inactiveText: "Usuario bloqueado",
           disabled: isUpdatingStatus,
+          confirmMessage: isActive
+            ? "¿Estás seguro de que quieres bloquear a este usuario? Perderá acceso al sistema."
+            : "¿Estás seguro de que quieres activar a este usuario? Recuperará acceso al sistema.",
+          confirmTitle: isActive ? "Bloquear Usuario" : "Activar Usuario",
+          confirmText: isActive ? "Bloquear" : "Activar",
+          cancelText: "Cancelar",
         },
       ],
     },

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Form.css";
 import { CancelButton, DeleteButton, ConfirmButton } from "../Buttons/Buttons";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 
 // ============ BASE FIELD INTERFACE ============
 interface BaseField {
@@ -65,6 +66,10 @@ export interface SwitchField extends BaseField {
   onChange: (value: boolean) => void;
   activeText?: string;
   inactiveText?: string;
+  confirmTitle?: string;
+  confirmMessage?: string;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export interface DisplayField extends BaseField {
@@ -127,6 +132,12 @@ const Form: React.FC<FormProps> = ({
   className = "",
   onSubmit,
 }) => {
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    field?: SwitchField;
+    newValue?: boolean;
+    onConfirm?: () => void;
+  }>({ open: false });
   const renderField = (field: FormField) => {
     // Skip hidden fields
     if (field.show === false) {
@@ -306,7 +317,22 @@ const Form: React.FC<FormProps> = ({
               <input
                 type="checkbox"
                 checked={field.value}
-                onChange={(e) => field.onChange(e.target.checked)}
+                onChange={(e) => {
+                  const newValue = e.target.checked;
+                  if (field.confirmMessage) {
+                    setConfirmDialog({
+                      open: true,
+                      field,
+                      newValue,
+                      onConfirm: () => {
+                        field.onChange(newValue);
+                        setConfirmDialog({ open: false });
+                      },
+                    });
+                  } else {
+                    field.onChange(newValue);
+                  }
+                }}
                 disabled={field.disabled}
               />
               <span className="switch-slider"></span>
@@ -393,6 +419,21 @@ const Form: React.FC<FormProps> = ({
           </div>
         )}
       </form>
+
+      {confirmDialog.field && (
+        <ConfirmDialog
+          open={confirmDialog.open}
+          title={confirmDialog.field.confirmTitle || "Confirmar acción"}
+          message={
+            confirmDialog.field.confirmMessage ||
+            "¿Estás seguro de que quieres cambiar este valor?"
+          }
+          onConfirm={confirmDialog.onConfirm || (() => {})}
+          onCancel={() => setConfirmDialog({ open: false })}
+          confirmText={confirmDialog.field.confirmText || "Confirmar"}
+          cancelText={confirmDialog.field.cancelText || "Cancelar"}
+        />
+      )}
     </div>
   );
 };
