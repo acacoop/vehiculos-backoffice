@@ -40,3 +40,14 @@ export const QUARTER_LABELS: Record<number, string> = {
   3: "Q3",
   4: "Q4",
 } as const;
+
+// Estados de checklist de mantenimiento
+export const CHECKLIST_STATUS = {
+  APPROVED: "Aprobado",
+  WITH_FAILURES: "Con fallos",
+  OVERDUE: "Vencido",
+  PENDING: "Pendiente",
+} as const;
+
+export type ChecklistStatus =
+  (typeof CHECKLIST_STATUS)[keyof typeof CHECKLIST_STATUS];

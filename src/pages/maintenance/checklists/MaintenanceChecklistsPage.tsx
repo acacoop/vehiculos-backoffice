@@ -5,8 +5,8 @@ import type {
   MaintenanceChecklistFilterParams,
 } from "../../../types/maintenanceChecklist";
 import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
-import { COLORS } from "../../../common/colors";
 import { QUARTER_LABELS } from "../../../common";
+import { getChecklistStatus } from "../../../common/utils";
 
 export default function MaintenanceChecklistsPage() {
   const navigate = useNavigate();
@@ -59,34 +59,13 @@ export default function MaintenanceChecklistsPage() {
       field: "hasFailedItems",
       headerName: "Estado",
       minWidth: 180,
-      transform: (value, row) => {
-        if (row.filledAt) {
-          if (value) {
-            const passed = Number(row.passedCount);
-            const total = Number(row.itemCount);
-            return `Con fallos (${passed}/${total})`;
-          }
-          return "Aprobado";
-        }
-        // Check if late
-        const currentDate = new Date();
-        const intendedDate = new Date(row.intendedDeliveryDate);
-        if (currentDate > intendedDate) {
-          return "Tardía";
-        }
-        return "Pendiente";
+      transform: (_value, row) => {
+        const { label } = getChecklistStatus(row);
+        return label;
       },
-      color: (value, row) => {
-        if (row.filledAt) {
-          return value ? COLORS.error : COLORS.success;
-        }
-        // Check if late
-        const currentDate = new Date();
-        const intendedDate = new Date(row.intendedDeliveryDate);
-        if (currentDate > intendedDate) {
-          return COLORS.error;
-        }
-        return COLORS.warning;
+      color: (_value, row) => {
+        const { color } = getChecklistStatus(row);
+        return color;
       },
     },
   ];

@@ -41,3 +41,51 @@ export function getNestedString(obj: unknown, path: string): string {
   const value = getNestedValue(obj, path);
   return value == null ? "" : String(value);
 }
+
+/**
+ * Calculate the status of a maintenance checklist
+ * @param checklist - The maintenance checklist to evaluate
+ * @returns Object with status label, detailed label (with counts if needed), and color
+ */
+import { CHECKLIST_STATUS } from "./constants";
+import { COLORS } from "./colors";
+import type { MaintenanceChecklist } from "../types/maintenanceChecklist";
+
+export function getChecklistStatus(checklist: MaintenanceChecklist) {
+  // If filled, check for failures
+  if (checklist.filledAt) {
+    const hasFailures = checklist.hasFailedItems;
+    if (hasFailures) {
+      const passed = Number(checklist.passedCount || 0);
+      const total = Number(checklist.itemCount || 0);
+      return {
+        status: CHECKLIST_STATUS.WITH_FAILURES,
+        label: `${CHECKLIST_STATUS.WITH_FAILURES} (${passed}/${total})`,
+        color: COLORS.error,
+      };
+    }
+    return {
+      status: CHECKLIST_STATUS.APPROVED,
+      label: CHECKLIST_STATUS.APPROVED,
+      color: COLORS.success,
+    };
+  }
+
+  // Not filled - check if overdue
+  const currentDate = new Date();
+  const intendedDate = new Date(checklist.intendedDeliveryDate);
+  if (currentDate > intendedDate) {
+    return {
+      status: CHECKLIST_STATUS.OVERDUE,
+      label: CHECKLIST_STATUS.OVERDUE,
+      color: COLORS.error,
+    };
+  }
+
+  // Pending
+  return {
+    status: CHECKLIST_STATUS.PENDING,
+    label: CHECKLIST_STATUS.PENDING,
+    color: COLORS.warning,
+  };
+}

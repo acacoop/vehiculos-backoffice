@@ -89,7 +89,8 @@ export default function MaintenanceChecklistPage() {
         });
       }
     });
-  }, [id, isNew, executeLoad]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isNew]);
 
   useEffect(() => {
     void loadData();
@@ -151,6 +152,11 @@ export default function MaintenanceChecklistPage() {
   }
 
   const itemColumns: TableColumn<MaintenanceChecklistItem>[] = [
+    {
+      field: "title",
+      headerName: "Descripción",
+      minWidth: 200,
+    },
     {
       field: "passed",
       headerName: "Estado",

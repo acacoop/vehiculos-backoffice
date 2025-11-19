@@ -26,6 +26,7 @@ export default function MaintenanceChecklistItemPage() {
   const [checklist, setChecklist] = useState<MaintenanceChecklist | null>(null);
 
   const [formData, setFormData] = useState({
+    title: "",
     passed: false,
     observations: "",
   });
@@ -53,6 +54,7 @@ export default function MaintenanceChecklistItemPage() {
       if (res.success && res.data) {
         setItem(res.data);
         setFormData({
+          title: res.data.title,
           passed: res.data.passed,
           observations: res.data.observations,
         });
@@ -78,6 +80,10 @@ export default function MaintenanceChecklistItemPage() {
       showError("Debe seleccionar un checklist");
       return false;
     }
+    if (!formData.title.trim()) {
+      showError("El título es obligatorio");
+      return false;
+    }
     if (!formData.observations.trim()) {
       showError("Las observaciones son obligatorias");
       return false;
@@ -90,6 +96,7 @@ export default function MaintenanceChecklistItemPage() {
 
     const payload = {
       maintenanceChecklistId: checklist.id,
+      title: formData.title,
       passed: formData.passed,
       observations: formData.observations,
     };
@@ -117,6 +124,15 @@ export default function MaintenanceChecklistItemPage() {
       type: "fields",
       layout: "vertical",
       fields: [
+        {
+          type: "text",
+          value: formData.title,
+          onChange: (value: string) =>
+            setFormData({ ...formData, title: value }),
+          key: "title",
+          label: "Descripción",
+          required: true,
+        },
         {
           type: "select",
           value: formData.passed.toString(),
