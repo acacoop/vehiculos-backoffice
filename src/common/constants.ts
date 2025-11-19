@@ -19,3 +19,16 @@ export const VEHICLE_TYPES = [
   "Van",
   "Wagon",
 ] as const;
+
+// Tipos de transmisión
+export const TRANSMISSION_TYPES = ["Manual", "Automática", "CVT"] as const;
+
+// Tipos de combustible
+export const FUEL_TYPES = [
+  "Nafta",
+  "Diésel",
+  "GNC",
+  "Híbrido",
+  "Eléctrico",
+  "Flex",
+] as const;

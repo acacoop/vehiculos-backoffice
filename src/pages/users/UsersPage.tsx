@@ -48,7 +48,7 @@ export default function UsersPage() {
         enabled: true,
         placeholder: "Buscar por nombre, apellido, email o CUIT",
       }}
-      maxHeight="900px"
+      width={1200}
     />
   );
 }

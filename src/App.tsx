@@ -21,8 +21,6 @@ import BrandsPage from "./pages/vehicles/brands/BrandsPage";
 import BrandPage from "./pages/vehicles/brands/BrandPage";
 import ModelsPage from "./pages/vehicles/models/ModelsPage";
 import ModelPage from "./pages/vehicles/models/ModelPage";
-import AssignedMaintenancesPage from "./pages/maintenance/assignments/AssignedMaintenancePage";
-import AssignmentPage from "./pages/maintenance/assignments/AssignedMaintenancesPage";
 import VehiclesAssignmentsPage from "./pages/vehicles/assignments/AssignmentsPage";
 import MaintenanceRecordsPage from "./pages/maintenance/records/MaintenanceRecordsPage";
 import MaintenanceRecordPage from "./pages/maintenance/records/MaintenanceRecordPage";
@@ -41,6 +39,8 @@ import UsersPage from "./pages/users/UsersPage";
 import VehicleAssignmentPage from "./pages/vehicles/assignments/AssignmentPage";
 import KilometersLogsPage from "./pages/vehicles/kilometersLogs/KilometersLogsPage";
 import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage";
+import MaintenanceRequirementPage from "./pages/maintenance/requirements/MaintenanceRequirementPage";
+import MaintenanceRequirementsPage from "./pages/maintenance/requirements/MaintenanceRequirementsPage";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -134,16 +134,16 @@ function App() {
           />
 
           <Route
-            path="/maintenance/assignments"
-            element={<AssignedMaintenancesPage />}
+            path="/maintenance/requirements"
+            element={<MaintenanceRequirementsPage />}
           />
           <Route
-            path="/maintenance/assignments/new"
-            element={<AssignmentPage />}
+            path="/maintenance/requirements/new"
+            element={<MaintenanceRequirementPage />}
           />
           <Route
-            path="/maintenance/assignments/:id"
-            element={<AssignmentPage />}
+            path="/maintenance/requirements/:id"
+            element={<MaintenanceRequirementPage />}
           />
 
           <Route

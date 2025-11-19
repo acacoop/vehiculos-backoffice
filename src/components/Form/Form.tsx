@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Form.css";
 import { CancelButton, DeleteButton, ConfirmButton } from "../Buttons/Buttons";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 
 // ============ BASE FIELD INTERFACE ============
 interface BaseField {
@@ -59,6 +60,18 @@ export interface CheckboxField extends BaseField {
   onChange: (value: boolean) => void;
 }
 
+export interface SwitchField extends BaseField {
+  type: "switch";
+  value: boolean;
+  onChange: (value: boolean) => void;
+  activeText?: string;
+  inactiveText?: string;
+  confirmTitle?: string;
+  confirmMessage?: string;
+  confirmText?: string;
+  cancelText?: string;
+}
+
 export interface DisplayField extends BaseField {
   type: "display";
   value: string | number | React.ReactNode;
@@ -72,6 +85,7 @@ export type FormField =
   | TextAreaField
   | SelectField
   | CheckboxField
+  | SwitchField
   | DisplayField;
 
 // ============ SECTION CONFIGURATION ============
@@ -118,6 +132,12 @@ const Form: React.FC<FormProps> = ({
   className = "",
   onSubmit,
 }) => {
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    field?: SwitchField;
+    newValue?: boolean;
+    onConfirm?: () => void;
+  }>({ open: false });
   const renderField = (field: FormField) => {
     // Skip hidden fields
     if (field.show === false) {
@@ -279,6 +299,49 @@ const Form: React.FC<FormProps> = ({
       );
     }
 
+    // ========== SWITCH INPUT ==========
+    if (field.type === "switch") {
+      const activeText = field.activeText || "Activo";
+      const inactiveText = field.inactiveText || "Inactivo";
+
+      return (
+        <div key={field.key} className={`${baseClassName} switch-field`}>
+          <label className="form-label">{field.label}</label>
+          <div className="switch-container">
+            <div className="switch-status">
+              <span className={`status-text ${field.value ? "active" : ""}`}>
+                {field.value ? activeText : inactiveText}
+              </span>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={field.value}
+                onChange={(e) => {
+                  const newValue = e.target.checked;
+                  if (field.confirmMessage) {
+                    setConfirmDialog({
+                      open: true,
+                      field,
+                      newValue,
+                      onConfirm: () => {
+                        field.onChange(newValue);
+                        setConfirmDialog({ open: false });
+                      },
+                    });
+                  } else {
+                    field.onChange(newValue);
+                  }
+                }}
+                disabled={field.disabled}
+              />
+              <span className="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -356,6 +419,21 @@ const Form: React.FC<FormProps> = ({
           </div>
         )}
       </form>
+
+      {confirmDialog.field && (
+        <ConfirmDialog
+          open={confirmDialog.open}
+          title={confirmDialog.field.confirmTitle || "Confirmar acción"}
+          message={
+            confirmDialog.field.confirmMessage ||
+            "¿Estás seguro de que quieres cambiar este valor?"
+          }
+          onConfirm={confirmDialog.onConfirm || (() => {})}
+          onCancel={() => setConfirmDialog({ open: false })}
+          confirmText={confirmDialog.field.confirmText || "Confirmar"}
+          cancelText={confirmDialog.field.cancelText || "Cancelar"}
+        />
+      )}
     </div>
   );
 };

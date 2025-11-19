@@ -2,21 +2,27 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../../assets/brand/logo_blanco.webp";
-import IconNavbar from "../../assets/icons/navbar.svg";
-import IconLogout from "../../assets/icons/logout.svg";
-import IconDashboard from "../../assets/icons/dashboard.svg";
-import IconCar from "../../assets/icons/car.svg";
-import IconUser from "../../assets/icons/user.svg";
-import IconPermissions from "../../assets/icons/security.svg";
-import IconMaintenance from "../../assets/icons/maintenance.svg";
-import IconBrand from "../../assets/icons/vehicle_brand.svg";
-import IconAssignment from "../../assets/icons/assignment.svg";
-import IconMetrics from "../../assets/icons/metrics.svg";
 import { isAuthenticated, appLogout } from "../../common/auth";
 import { getMe } from "../../services/users";
 import type { User } from "../../types/user";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import Sidebar, { type SidebarSectionData } from "./Sidebar";
+import {
+  LayoutDashboard,
+  Car,
+  ClipboardList,
+  ShieldCheck,
+  CalendarCheck,
+  Gauge,
+  Wrench,
+  Tags,
+  FileText,
+  CarFront,
+  User as UserIcon,
+  ChartBar,
+  Menu,
+  LogOut,
+} from "lucide-react";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -28,31 +34,31 @@ function Navbar() {
     {
       title: "General",
       items: [
-        { icon: IconDashboard, label: "Dashboard", to: "/home" },
-        { icon: IconUser, label: "Usuarios", to: "/users" },
-        { icon: IconCar, label: "Vehículos", to: "/vehicles" },
+        { icon: LayoutDashboard, label: "Dashboard", to: "/home" },
+        { icon: UserIcon, label: "Usuarios", to: "/users" },
+        { icon: Car, label: "Vehículos", to: "/vehicles" },
       ],
     },
     {
       title: "Vehículos",
       items: [
         {
-          icon: IconAssignment,
+          icon: ClipboardList,
           label: "Asignaciones",
           to: "/vehicles/assignments",
         },
         {
-          icon: IconPermissions,
+          icon: ShieldCheck,
           label: "Responsables",
           to: "/vehicles/responsibles",
         },
         {
-          icon: IconAssignment,
+          icon: CalendarCheck,
           label: "Reservas",
           to: "/reservations",
         },
         {
-          icon: IconCar,
+          icon: Gauge,
           label: "Registros de Kilometraje",
           to: "/vehicles/kilometersLogs",
         },
@@ -62,22 +68,22 @@ function Navbar() {
       title: "Mantenimientos",
       items: [
         {
-          icon: IconMaintenance,
+          icon: Tags,
           label: "Categorías",
           to: "/maintenance/categories",
         },
         {
-          icon: IconMaintenance,
+          icon: Wrench,
           label: "Mantenimientos",
           to: "/maintenance/items",
         },
         {
-          icon: IconPermissions,
-          label: "Asignaciones",
-          to: "/maintenance/assignments",
+          icon: ClipboardList,
+          label: "Requerimientos",
+          to: "/maintenance/requirements",
         },
         {
-          icon: IconMaintenance,
+          icon: FileText,
           label: "Registros",
           to: "/maintenance/records",
         },
@@ -86,13 +92,13 @@ function Navbar() {
     {
       title: "Catálogos",
       items: [
-        { icon: IconBrand, label: "Marcas", to: "/vehicles/brands" },
-        { icon: IconCar, label: "Modelos", to: "/vehicles/models" },
+        { icon: Tags, label: "Marcas", to: "/vehicles/brands" },
+        { icon: CarFront, label: "Modelos", to: "/vehicles/models" },
       ],
     },
     {
       title: "Informes",
-      items: [{ icon: IconMetrics, label: "Métricas", to: "/metrics" }],
+      items: [{ icon: ChartBar, label: "Métricas", to: "/metrics" }],
     },
   ];
 
@@ -126,7 +132,7 @@ function Navbar() {
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setOpen(!open)}
         >
-          <img className="navbar-menu-icon" src={IconNavbar} alt="Menu" />
+          <Menu className="navbar-menu-icon" size={30} />
         </button>
         <div className="navbar-logo">
           <img src={logo} alt="ACA Logo" />
@@ -140,7 +146,7 @@ function Navbar() {
                 title="Cerrar sesión"
                 onClick={() => setAskLogout(true)}
               >
-                <img className="icon-navbar" src={IconLogout} alt="Salir" />
+                <LogOut size={24} color="white" />
               </button>
               <ConfirmDialog
                 open={askLogout}

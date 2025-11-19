@@ -5,8 +5,7 @@ import { Table } from "../../components/Table/table";
 import type { TableColumn } from "../../components/Table/table";
 import Form from "../../components/Form/Form";
 import type { FormSection } from "../../components/Form/Form";
-import StatusToggle from "../../components/StatusToggle/StatusToggle";
-import { getUserById } from "../../services/users";
+import { getUserById, updateUserStatus } from "../../services/users";
 import { getAssignments } from "../../services/assignments";
 import { getReservations } from "../../services/reservations";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
@@ -28,6 +27,7 @@ export default function UserPage() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -130,16 +130,31 @@ export default function UserPage() {
     );
   }
 
-  const handleStatusToggle = (newState: boolean) => {
-    setUserData((prev) => (prev ? { ...prev, active: newState } : null));
+  const handleStatusToggle = async (newState: boolean) => {
+    if (!id) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await updateUserStatus(id, newState);
+      if (response.success) {
+        setUserData((prev) => (prev ? { ...prev, active: newState } : null));
+      } else {
+        console.error("Error al actualizar estado:", response.message);
+      }
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
+
+  const isActive = Boolean(userData.active);
 
   const userInfoSections: FormSection[] = [
     {
       type: "fields",
       title: "Información Personal",
-      layout: "grid",
-      columns: 2,
+      layout: "vertical",
       fields: [
         {
           key: "firstName",
@@ -165,6 +180,22 @@ export default function UserPage() {
           type: "display",
           value: userData.cuit,
         },
+        {
+          type: "switch",
+          key: "active",
+          label: "Estado del Usuario",
+          value: isActive,
+          onChange: handleStatusToggle,
+          activeText: "Usuario activo",
+          inactiveText: "Usuario bloqueado",
+          disabled: isUpdatingStatus,
+          confirmMessage: isActive
+            ? "¿Estás seguro de que quieres bloquear a este usuario? Perderá acceso al sistema."
+            : "¿Estás seguro de que quieres activar a este usuario? Recuperará acceso al sistema.",
+          confirmTitle: isActive ? "Bloquear Usuario" : "Activar Usuario",
+          confirmText: isActive ? "Bloquear" : "Activar",
+          cancelText: "Cancelar",
+        },
       ],
     },
   ];
@@ -172,13 +203,6 @@ export default function UserPage() {
   return (
     <div className="container">
       <Form title="Detalle del Usuario" sections={userInfoSections} />
-
-      <StatusToggle
-        entityId={id!}
-        entityType="user"
-        active={userData.active}
-        onToggle={handleStatusToggle}
-      />
 
       <Table<AssignmentFilterParams, Assignment>
         getRows={(options) =>
@@ -203,6 +227,7 @@ export default function UserPage() {
           enabled: true,
           placeholder: "Buscar asignaciones...",
         }}
+        minHeight="500px"
       />
 
       <Table<ReservationFilterParams, Reservation>
@@ -228,6 +253,7 @@ export default function UserPage() {
           enabled: true,
           placeholder: "Buscar reservas...",
         }}
+        minHeight="500px"
       />
 
       <Table<VehicleResponsibleFilterParams, Assignment>
@@ -253,6 +279,7 @@ export default function UserPage() {
           enabled: true,
           placeholder: "Buscar responsables...",
         }}
+        minHeight="500px"
       />
     </div>
   );
