@@ -153,6 +153,11 @@ export default function MaintenanceChecklistPage() {
 
   const itemColumns: TableColumn<MaintenanceChecklistItem>[] = [
     {
+      field: "category",
+      headerName: "Categoría",
+      flex: 1,
+    },
+    {
       field: "title",
       headerName: "Descripción",
       flex: 2,

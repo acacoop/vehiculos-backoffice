@@ -27,6 +27,7 @@ export default function MaintenanceChecklistItemPage() {
   const [checklist, setChecklist] = useState<MaintenanceChecklist | null>(null);
 
   const [formData, setFormData] = useState({
+    category: "",
     title: "",
     status: CHECKLIST_ITEM_STATUS.PENDING as keyof typeof CHECKLIST_ITEM_STATUS,
     observations: "",
@@ -55,6 +56,7 @@ export default function MaintenanceChecklistItemPage() {
       if (res.success && res.data) {
         setItem(res.data);
         setFormData({
+          category: res.data.category,
           title: res.data.title,
           status: res.data.status,
           observations: res.data.observations,
@@ -97,6 +99,7 @@ export default function MaintenanceChecklistItemPage() {
 
     const payload = {
       maintenanceChecklistId: checklist.id,
+      category: formData.category,
       title: formData.title,
       status: formData.status,
       observations: formData.observations,
@@ -125,6 +128,15 @@ export default function MaintenanceChecklistItemPage() {
       type: "fields",
       layout: "vertical",
       fields: [
+        {
+          type: "text",
+          value: formData.category,
+          onChange: (value: string) =>
+            setFormData({ ...formData, category: value }),
+          key: "category",
+          label: "Categoría",
+          required: true,
+        },
         {
           type: "text",
           value: formData.title,
