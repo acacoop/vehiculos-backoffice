@@ -47,17 +47,24 @@ export function getNestedString(obj: unknown, path: string): string {
  * @param checklist - The maintenance checklist to evaluate
  * @returns Object with status label, detailed label (with counts if needed), and color
  */
-import { CHECKLIST_STATUS } from "./constants";
+import { CHECKLIST_ITEM_STATUS, CHECKLIST_STATUS } from "./constants";
 import { COLORS } from "./colors";
 import type { MaintenanceChecklist } from "../types/maintenanceChecklist";
 
 export function getChecklistStatus(checklist: MaintenanceChecklist) {
   // If filled, check for failures
   if (checklist.filledAt) {
-    const hasFailures = checklist.hasFailedItems;
+    const approvedCount = checklist.items.filter(
+      (i) => CHECKLIST_ITEM_STATUS[i.status] === CHECKLIST_ITEM_STATUS.APPROVED
+    ).length;
+    const rejectedCount = checklist.items.filter(
+      (i) => CHECKLIST_ITEM_STATUS[i.status] === CHECKLIST_ITEM_STATUS.REJECTED
+    ).length;
+
+    const hasFailures = rejectedCount > 0;
     if (hasFailures) {
-      const passed = Number(checklist.passedCount || 0);
-      const total = Number(checklist.itemCount || 0);
+      const passed = approvedCount;
+      const total = checklist.items.length;
       return {
         status: CHECKLIST_STATUS.WITH_FAILURES,
         label: `${CHECKLIST_STATUS.WITH_FAILURES} (${passed}/${total})`,

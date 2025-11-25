@@ -3,7 +3,6 @@ import type {
   MaintenanceChecklist,
   MaintenanceChecklistFilterParams,
   MaintenanceChecklistInput,
-  MaintenanceChecklistFillPayload,
 } from "../types/maintenanceChecklist";
 
 import {
@@ -12,7 +11,6 @@ import {
   apiUpdateItem,
   apiDeleteItem,
   apiCreateItem,
-  generalApiCall,
   type ApiFindOptions,
 } from "./common";
 
@@ -68,17 +66,5 @@ export async function deleteMaintenanceChecklist(
     uri: "maintenance/checklists",
     itemId: id,
     errorMessage: "Error al eliminar checklist de mantenimiento",
-  });
-}
-
-export async function fillMaintenanceChecklist(
-  id: string,
-  payload: MaintenanceChecklistFillPayload,
-): Promise<ServiceResponse<MaintenanceChecklist>> {
-  return generalApiCall<MaintenanceChecklist>({
-    uri: `maintenance/checklists/${id}/fill`,
-    method: "POST",
-    errorMessage: "Error al completar checklist de mantenimiento",
-    body: payload,
   });
 }
