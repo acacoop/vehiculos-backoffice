@@ -49,5 +49,9 @@ export const CHECKLIST_STATUS = {
   PENDING: "Pendiente",
 } as const;
 
-export type ChecklistStatus =
-  (typeof CHECKLIST_STATUS)[keyof typeof CHECKLIST_STATUS];
+// Estados de item de checklist de mantenimiento
+export const CHECKLIST_ITEM_STATUS = {
+  PENDING: "Pendiente",
+  APPROVED: "Aprobado",
+  REJECTED: "Rechazado",
+} as const;

@@ -17,7 +17,7 @@ import { getVehicleById } from "../../../services/vehicles";
 import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
 import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
 import type { Vehicle } from "../../../types/vehicle";
-import { COLORS, QUARTER_LABELS } from "../../../common";
+import { COLORS, QUARTER_LABELS, CHECKLIST_ITEM_STATUS } from "../../../common";
 import { VehicleEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
@@ -158,32 +158,17 @@ export default function MaintenanceChecklistPage() {
       flex: 2,
     },
     {
-      field: "passed",
+      field: "status",
       headerName: "Estado",
       flex: 1,
-      transform: (value: string | boolean) => {
-        const passed = Boolean(value);
-        if (passed) return "Aprobado";
-        const currentDate = new Date();
-        const intendedDate = new Date(
-          isNew
-            ? formData.intendedDeliveryDate
-            : checklist!.intendedDeliveryDate,
-        );
-        if (currentDate > intendedDate) return "Retrasada";
-        return "Rechazado";
+      transform: (value: string) => {
+        const statusKey = value as keyof typeof CHECKLIST_ITEM_STATUS;
+        return CHECKLIST_ITEM_STATUS[statusKey] || value;
       },
-      color: (value: string | boolean) => {
-        const passed = Boolean(value);
-        if (passed) return COLORS.success;
-        const currentDate = new Date();
-        const intendedDate = new Date(
-          isNew
-            ? formData.intendedDeliveryDate
-            : checklist!.intendedDeliveryDate,
-        );
-        if (currentDate > intendedDate) return COLORS.warning;
-        return COLORS.error;
+      color: (value: string) => {
+        if (value === CHECKLIST_ITEM_STATUS.APPROVED) return COLORS.success;
+        if (value === CHECKLIST_ITEM_STATUS.REJECTED) return COLORS.error;
+        return COLORS.warning; // PENDING
       },
     },
     {

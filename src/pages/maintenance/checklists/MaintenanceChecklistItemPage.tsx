@@ -16,8 +16,9 @@ import {
 } from "../../../services/maintenanceChecklistItems";
 import { getMaintenanceChecklistById } from "../../../services/maintenanceChecklists";
 import { MaintenanceChecklistEntitySearch } from "../../../components/EntitySearch/EntitySearch";
-import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
 import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
+import { CHECKLIST_ITEM_STATUS } from "../../../common";
+import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
 
 export default function MaintenanceChecklistItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +28,7 @@ export default function MaintenanceChecklistItemPage() {
 
   const [formData, setFormData] = useState({
     title: "",
-    passed: false,
+    status: CHECKLIST_ITEM_STATUS.PENDING as keyof typeof CHECKLIST_ITEM_STATUS,
     observations: "",
   });
 
@@ -55,7 +56,7 @@ export default function MaintenanceChecklistItemPage() {
         setItem(res.data);
         setFormData({
           title: res.data.title,
-          passed: res.data.passed,
+          status: res.data.status,
           observations: res.data.observations,
         });
 
@@ -97,7 +98,7 @@ export default function MaintenanceChecklistItemPage() {
     const payload = {
       maintenanceChecklistId: checklist.id,
       title: formData.title,
-      passed: formData.passed,
+      status: formData.status,
       observations: formData.observations,
     };
 
@@ -135,16 +136,21 @@ export default function MaintenanceChecklistItemPage() {
         },
         {
           type: "select",
-          value: formData.passed.toString(),
+          value: formData.status,
           onChange: (value: string) =>
-            setFormData({ ...formData, passed: value === "true" }),
-          key: "passed",
+            setFormData({
+              ...formData,
+              status: value as keyof typeof CHECKLIST_ITEM_STATUS,
+            }),
+          key: "status",
           label: "Estado",
           required: true,
-          options: [
-            { value: "true", label: "Aprobado" },
-            { value: "false", label: "Rechazado" },
-          ],
+          options: Object.entries(CHECKLIST_ITEM_STATUS).map(
+            ([key, label]) => ({
+              value: key,
+              label,
+            }),
+          ),
         },
         {
           type: "textarea",

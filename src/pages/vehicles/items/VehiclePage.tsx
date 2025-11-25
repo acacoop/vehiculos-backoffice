@@ -343,9 +343,9 @@ export default function VehiclesPage() {
       transform: (value, row) => {
         if (row.filledAt) {
           if (value) {
-            const passed = Number(row.passedCount);
-            const total = Number(row.itemCount);
-            return `Con fallos (${passed}/${total})`;
+            const approved = Number(row.approvedCount || 0);
+            const total = Number(row.itemCount || 0);
+            return `Con fallos (${approved}/${total})`;
           }
           return "Aprobado";
         }

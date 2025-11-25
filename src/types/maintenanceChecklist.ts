@@ -14,7 +14,9 @@ export interface MaintenanceChecklist {
   filledBy: User | null;
   filledAt: string | null;
   itemCount?: number;
-  passedCount?: number;
+  approvedCount?: number;
+  rejectedCount?: number;
+  pendingCount?: number;
   hasFailedItems?: boolean;
 }
 
