@@ -87,6 +87,11 @@ function Navbar() {
           label: "Registros",
           to: "/maintenance/records",
         },
+        {
+          icon: ClipboardList,
+          label: "Checklists",
+          to: "/maintenance/checklists",
+        },
       ],
     },
     {

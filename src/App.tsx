@@ -39,8 +39,13 @@ import UsersPage from "./pages/users/UsersPage";
 import VehicleAssignmentPage from "./pages/vehicles/assignments/AssignmentPage";
 import KilometersLogsPage from "./pages/vehicles/kilometersLogs/KilometersLogsPage";
 import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage";
-import MaintenanceRequirementPage from "./pages/maintenance/requirements/MaintenanceRequirementPage";
 import MaintenanceRequirementsPage from "./pages/maintenance/requirements/MaintenanceRequirementsPage";
+import MaintenanceRequirementPage from "./pages/maintenance/requirements/MaintenanceRequirementPage";
+import {
+  MaintenanceChecklistsPage,
+  MaintenanceChecklistPage,
+  MaintenanceChecklistItemPage,
+} from "./pages/maintenance/checklists";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -157,6 +162,23 @@ function App() {
           <Route
             path="/maintenance/records/:id"
             element={<MaintenanceRecordPage />}
+          />
+
+          <Route
+            path="/maintenance/checklists"
+            element={<MaintenanceChecklistsPage />}
+          />
+          <Route
+            path="/maintenance/checklists/new"
+            element={<MaintenanceChecklistPage />}
+          />
+          <Route
+            path="/maintenance/checklists/:id"
+            element={<MaintenanceChecklistPage />}
+          />
+          <Route
+            path="/maintenance/checklists/items/:id"
+            element={<MaintenanceChecklistItemPage />}
           />
 
           <Route path="/vehicles" element={<VehiclesPage />} />

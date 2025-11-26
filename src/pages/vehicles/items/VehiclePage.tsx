@@ -20,28 +20,20 @@ import { Table, type TableColumn } from "../../../components/Table/table";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Assignment } from "../../../types/assignment";
-import type { AssignmentFilterParams } from "../../../types/assignment";
-import type { ApiFindOptions } from "../../../services/common";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
 import { getVehicleKilometersLogs } from "../../../services/kilometers";
-import type {
-  KilometersFilterParams,
-  VehicleKilometersLog,
-} from "../../../types/kilometer";
+import type { VehicleKilometersLog } from "../../../types/kilometer";
 import { getReservations } from "../../../services/reservations";
-import type {
-  MaintenanceRecord,
-  MaintenanceRecordFilterParams,
-} from "../../../types/maintenanceRecord";
-import type {
-  Reservation,
-  ReservationFilterParams,
-} from "../../../types/reservation";
+import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
+import type { Reservation } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
-import type { VehicleResponsibleFilterParams } from "../../../types/vehicleResponsible";
+import { QUARTER_LABELS } from "../../../common";
 import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
+import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
+import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
+import { getChecklistStatus } from "../../../common/utils";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -302,6 +294,49 @@ export default function VehiclesPage() {
     },
   ];
 
+  const checklistColumns: TableColumn<MaintenanceChecklist>[] = [
+    {
+      field: "year",
+      headerName: "Período",
+      minWidth: 100,
+      transform: (value, row) => {
+        return `${value} ${QUARTER_LABELS[Number(row.quarter)] || row.quarter}`;
+      },
+    },
+    {
+      field: "filledBy",
+      headerName: "Completado por",
+      minWidth: 180,
+      transform: (_value, row) => {
+        const user = row.filledBy;
+        if (user) {
+          return `${user.firstName} ${user.lastName}`;
+        }
+        return "No completado";
+      },
+    },
+    {
+      field: "filledAt",
+      headerName: "Fecha de completado",
+      minWidth: 140,
+      type: "date",
+      transform: (value) => value || "No completado",
+    },
+    {
+      field: "hasFailedItems",
+      headerName: "Estado",
+      minWidth: 180,
+      transform: (_value, row) => {
+        const { label } = getChecklistStatus(row);
+        return label;
+      },
+      color: (_value, row) => {
+        const { color } = getChecklistStatus(row);
+        return color;
+      },
+    },
+  ];
+
   const vehicleInfoSections: FormSection[] = [
     {
       type: "fields",
@@ -420,7 +455,7 @@ export default function VehiclesPage() {
       {!isNew && id && (
         <>
           <Table
-            getRows={(findOptions: ApiFindOptions<AssignmentFilterParams>) =>
+            getRows={(findOptions) =>
               getAssignments({
                 ...findOptions,
                 filters: {
@@ -443,9 +478,7 @@ export default function VehiclesPage() {
           />
 
           <Table
-            getRows={(
-              findOptions: ApiFindOptions<VehicleResponsibleFilterParams>,
-            ) =>
+            getRows={(findOptions) =>
               getVehicleResponsibles({
                 ...findOptions,
                 filters: {
@@ -471,7 +504,7 @@ export default function VehiclesPage() {
           />
 
           <Table
-            getRows={(findOptions: ApiFindOptions<KilometersFilterParams>) =>
+            getRows={(findOptions) =>
               getVehicleKilometersLogs({
                 ...findOptions,
                 filters: {
@@ -496,9 +529,7 @@ export default function VehiclesPage() {
           />
 
           <Table
-            getRows={(
-              findOptions: ApiFindOptions<MaintenanceRecordFilterParams>,
-            ) =>
+            getRows={(findOptions) =>
               getMaintenanceRecords({
                 ...findOptions,
                 filters: {
@@ -524,7 +555,7 @@ export default function VehiclesPage() {
           />
 
           <Table
-            getRows={(findOptions: ApiFindOptions<ReservationFilterParams>) =>
+            getRows={(findOptions) =>
               getReservations({
                 ...findOptions,
                 filters: {
@@ -545,6 +576,27 @@ export default function VehiclesPage() {
               route: "/reservations",
             }}
             search={{ enabled: true, placeholder: "Buscar reservas..." }}
+            minHeight="500px"
+          />
+
+          <Table
+            getRows={(findOptions) =>
+              getMaintenanceChecklists({
+                ...findOptions,
+                filters: {
+                  ...findOptions.filters,
+                  vehicleId: id,
+                },
+              })
+            }
+            columns={checklistColumns}
+            header={{
+              title: "Checklists de Mantenimiento",
+            }}
+            actionColumn={{
+              route: "/maintenance/checklists",
+            }}
+            search={{ enabled: true, placeholder: "Buscar checklists..." }}
             minHeight="500px"
           />
         </>
