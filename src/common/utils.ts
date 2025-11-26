@@ -54,23 +54,19 @@ import type { MaintenanceChecklist } from "../types/maintenanceChecklist";
 export function getChecklistStatus(checklist: MaintenanceChecklist) {
   // If filled, check for failures
   if (checklist.filledAt) {
-    const approvedCount = checklist.items.filter(
-      (i) => i.status === BACKEND_CHECKLIST_ITEM_STATUS.APROBADO,
-    ).length;
     const rejectedCount = checklist.items.filter(
       (i) => i.status === BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO,
     ).length;
 
-    const hasFailures = rejectedCount > 0;
-    if (hasFailures) {
-      const passed = approvedCount;
-      const total = checklist.items.length;
+    if (rejectedCount > 0) {
+      const totalItems = checklist.items.length;
       return {
         status: CHECKLIST_STATUS.WITH_FAILURES,
-        label: `${CHECKLIST_STATUS.WITH_FAILURES} (${passed}/${total})`,
+        label: `${CHECKLIST_STATUS.WITH_FAILURES} (${rejectedCount}/${totalItems})`,
         color: COLORS.error,
       };
     }
+
     return {
       status: CHECKLIST_STATUS.APPROVED,
       label: CHECKLIST_STATUS.APPROVED,
