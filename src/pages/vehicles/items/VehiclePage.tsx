@@ -317,7 +317,7 @@ export default function VehiclesPage() {
     },
     {
       field: "filledAt",
-      headerName: "Fecha",
+      headerName: "Fecha de completado",
       minWidth: 140,
       type: "date",
       transform: (value) => value || "No completado",

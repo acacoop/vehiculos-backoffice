@@ -5,7 +5,7 @@ import type {
   MaintenanceChecklistFilterParams,
 } from "../../../types/maintenanceChecklist";
 import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
-import { QUARTER_LABELS } from "../../../common";
+import { QUARTER_LABELS, formatDate } from "../../../common";
 import { getChecklistStatus } from "../../../common/utils";
 
 export default function MaintenanceChecklistsPage() {
@@ -50,10 +50,9 @@ export default function MaintenanceChecklistsPage() {
     },
     {
       field: "filledAt",
-      headerName: "Fecha",
+      headerName: "Fecha de completado",
       flex: 1,
-      type: "date",
-      transform: (value) => value || "No completado",
+      transform: (value) => (value ? formatDate(value) : "No completado"),
     },
     {
       field: "hasFailedItems",

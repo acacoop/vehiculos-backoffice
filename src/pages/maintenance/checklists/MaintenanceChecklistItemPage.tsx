@@ -51,7 +51,11 @@ export default function MaintenanceChecklistItemPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/checklists" });
+  } = usePageState({
+    redirectOnSuccess: checklist
+      ? `/maintenance/checklists/${checklist.id}`
+      : "/maintenance/checklists",
+  });
 
   const loadData = async () => {
     if (!id) return;
@@ -90,10 +94,6 @@ export default function MaintenanceChecklistItemPage() {
     }
     if (!formData.title.trim()) {
       showError("El título es obligatorio");
-      return false;
-    }
-    if (!formData.observations.trim()) {
-      showError("Las observaciones son obligatorias");
       return false;
     }
     return true;
@@ -187,7 +187,6 @@ export default function MaintenanceChecklistItemPage() {
             setFormData({ ...formData, observations: value }),
           key: "observations",
           label: "Observaciones",
-          required: true,
           rows: 4,
         },
       ],
@@ -198,7 +197,12 @@ export default function MaintenanceChecklistItemPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/maintenance/checklists"),
+      onClick: () =>
+        goTo(
+          checklist
+            ? `/maintenance/checklists/${checklist.id}`
+            : "/maintenance/checklists",
+        ),
       disabled: saving,
     },
     {

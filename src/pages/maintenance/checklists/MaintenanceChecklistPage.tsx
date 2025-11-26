@@ -19,7 +19,6 @@ import type { MaintenanceChecklistItem } from "../../../types/maintenanceCheckli
 import type { Vehicle } from "../../../types/vehicle";
 import {
   COLORS,
-  QUARTER_LABELS,
   BACKEND_TO_UI_STATUS,
   BACKEND_CHECKLIST_ITEM_STATUS,
 } from "../../../common";
@@ -196,13 +195,6 @@ export default function MaintenanceChecklistPage() {
     width: 100,
   };
 
-  const checklistVehicle = checklist?.vehicle || vehicle;
-  const vehicleLabel = checklistVehicle
-    ? `${checklistVehicle.model?.brand?.name ?? ""} ${
-        checklistVehicle.model?.name ?? ""
-      } - ${checklistVehicle.licensePlate ?? ""}`.trim()
-    : "N/A";
-
   const sections: FormSection[] = [
     {
       type: "entity",
@@ -284,7 +276,7 @@ export default function MaintenanceChecklistPage() {
                 type: "display" as const,
                 value: checklist!.filledAt || "No completado",
                 key: "filledAt",
-                label: "Fecha de Completado",
+                label: "Fecha de completado",
               },
             ],
           },
@@ -330,9 +322,7 @@ export default function MaintenanceChecklistPage() {
         title={
           isNew
             ? "Nuevo Checklist de Mantenimiento"
-            : `Checklist de Mantenimiento - ${vehicleLabel} ${formData.year} ${
-                QUARTER_LABELS[formData.quarter]
-              }`
+            : "Editar Checklist de Mantenimiento"
         }
         sections={sections}
         buttons={buttons}
