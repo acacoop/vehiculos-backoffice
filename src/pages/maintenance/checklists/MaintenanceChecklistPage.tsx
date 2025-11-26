@@ -17,7 +17,12 @@ import { getVehicleById } from "../../../services/vehicles";
 import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
 import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
 import type { Vehicle } from "../../../types/vehicle";
-import { COLORS, QUARTER_LABELS, CHECKLIST_ITEM_STATUS } from "../../../common";
+import {
+  COLORS,
+  QUARTER_LABELS,
+  BACKEND_TO_UI_STATUS,
+  BACKEND_CHECKLIST_ITEM_STATUS,
+} from "../../../common";
 import { VehicleEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
@@ -166,14 +171,17 @@ export default function MaintenanceChecklistPage() {
       field: "status",
       headerName: "Estado",
       flex: 1,
-      transform: (value: string) => {
-        const statusKey = value as keyof typeof CHECKLIST_ITEM_STATUS;
-        return CHECKLIST_ITEM_STATUS[statusKey] || value;
-      },
+      type: "map",
+      map: BACKEND_TO_UI_STATUS,
       color: (value: string) => {
-        if (value === CHECKLIST_ITEM_STATUS.APPROVED) return COLORS.success;
-        if (value === CHECKLIST_ITEM_STATUS.REJECTED) return COLORS.error;
-        return COLORS.warning; // PENDING
+        switch (value) {
+          case BACKEND_CHECKLIST_ITEM_STATUS.APROBADO:
+            return COLORS.success;
+          case BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO:
+            return COLORS.error;
+          default:
+            return COLORS.warning;
+        }
       },
     },
     {

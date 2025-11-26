@@ -1,23 +1,23 @@
-import type { CHECKLIST_ITEM_STATUS } from "../common";
 import type { FilterParams } from "./common";
+import type { BackendChecklistItemStatus } from "../common/constants";
 
 export interface MaintenanceChecklistItem {
   id: string;
   maintenanceChecklistId: string;
   category: string;
   title: string;
-  status: keyof typeof CHECKLIST_ITEM_STATUS;
+  status: BackendChecklistItemStatus;
   observations: string;
 }
 
 export interface MaintenanceChecklistItemInput {
   category: string;
   title: string;
-  status: keyof typeof CHECKLIST_ITEM_STATUS;
+  status: BackendChecklistItemStatus;
   observations: string;
 }
 
 export interface MaintenanceChecklistItemFilterParams extends FilterParams {
   maintenanceChecklistId?: string;
-  status?: keyof typeof CHECKLIST_ITEM_STATUS;
+  status?: BackendChecklistItemStatus;
 }

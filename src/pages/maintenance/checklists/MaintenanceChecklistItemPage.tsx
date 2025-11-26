@@ -17,7 +17,11 @@ import {
 import { getMaintenanceChecklistById } from "../../../services/maintenanceChecklists";
 import { MaintenanceChecklistEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
-import { CHECKLIST_ITEM_STATUS } from "../../../common";
+import {
+  BACKEND_CHECKLIST_ITEM_STATUS,
+  BACKEND_TO_UI_STATUS,
+  type BackendChecklistItemStatus,
+} from "../../../common";
 import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
 
 export default function MaintenanceChecklistItemPage() {
@@ -29,7 +33,8 @@ export default function MaintenanceChecklistItemPage() {
   const [formData, setFormData] = useState({
     category: "",
     title: "",
-    status: CHECKLIST_ITEM_STATUS.PENDING as keyof typeof CHECKLIST_ITEM_STATUS,
+    status:
+      BACKEND_CHECKLIST_ITEM_STATUS.PENDIENTE as BackendChecklistItemStatus,
     observations: "",
   });
 
@@ -129,6 +134,7 @@ export default function MaintenanceChecklistItemPage() {
         <MaintenanceChecklistEntitySearch
           entity={checklist}
           onEntityChange={(c: MaintenanceChecklist | null) => setChecklist(c)}
+          disabled={true}
         />
       ),
     },
@@ -161,15 +167,16 @@ export default function MaintenanceChecklistItemPage() {
           onChange: (value: string) =>
             setFormData({
               ...formData,
-              status: value as keyof typeof CHECKLIST_ITEM_STATUS,
+              status: value as BackendChecklistItemStatus,
             }),
           key: "status",
           label: "Estado",
           required: true,
-          options: Object.entries(CHECKLIST_ITEM_STATUS).map(
-            ([key, label]) => ({
-              value: key,
-              label,
+          options: Object.values(BACKEND_CHECKLIST_ITEM_STATUS).map(
+            (backendKey) => ({
+              value: backendKey,
+              label:
+                BACKEND_TO_UI_STATUS[backendKey as BackendChecklistItemStatus],
             }),
           ),
         },

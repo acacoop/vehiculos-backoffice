@@ -47,7 +47,7 @@ export function getNestedString(obj: unknown, path: string): string {
  * @param checklist - The maintenance checklist to evaluate
  * @returns Object with status label, detailed label (with counts if needed), and color
  */
-import { CHECKLIST_ITEM_STATUS, CHECKLIST_STATUS } from "./constants";
+import { CHECKLIST_STATUS, BACKEND_CHECKLIST_ITEM_STATUS } from "./constants";
 import { COLORS } from "./colors";
 import type { MaintenanceChecklist } from "../types/maintenanceChecklist";
 
@@ -55,10 +55,10 @@ export function getChecklistStatus(checklist: MaintenanceChecklist) {
   // If filled, check for failures
   if (checklist.filledAt) {
     const approvedCount = checklist.items.filter(
-      (i) => CHECKLIST_ITEM_STATUS[i.status] === CHECKLIST_ITEM_STATUS.APPROVED
+      (i) => i.status === BACKEND_CHECKLIST_ITEM_STATUS.APROBADO,
     ).length;
     const rejectedCount = checklist.items.filter(
-      (i) => CHECKLIST_ITEM_STATUS[i.status] === CHECKLIST_ITEM_STATUS.REJECTED
+      (i) => i.status === BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO,
     ).length;
 
     const hasFailures = rejectedCount > 0;

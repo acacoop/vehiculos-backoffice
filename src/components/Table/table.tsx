@@ -98,6 +98,36 @@ function createGridColumn<T extends GridValidRowModel>(
         },
       };
 
+    case "map":
+      if (!column.map) {
+        throw new Error(
+          `Column ${column.field} is type map but no map property provided`,
+        );
+      }
+      // If color function is provided, use renderCell to apply styling
+      if (column.color) {
+        return {
+          ...baseColumn,
+          renderCell: (params: GridRenderCellParams<T>) => {
+            const rawValue = getNestedString(params.row, column.field);
+            const displayValue =
+              column.map![rawValue as keyof typeof column.map] ?? rawValue;
+            const color = column.color!(rawValue, params.row);
+
+            return (
+              <span style={{ color, fontWeight: 600 }}>{displayValue}</span>
+            );
+          },
+        };
+      }
+      return {
+        ...baseColumn,
+        valueGetter: (_value, row) => {
+          const rawValue = getNestedString(row, column.field);
+          return column.map![rawValue as keyof typeof column.map] ?? rawValue;
+        },
+      };
+
     default:
       // If color function is provided, use renderCell to apply styling
       if (column.color) {
@@ -134,9 +164,17 @@ export interface TableColumn<T extends GridValidRowModel> {
   width?: number;
   minWidth?: number;
   flex?: number;
-  type?: "text" | "boolean" | "date" | "datetime" | "enddate" | "relativedate";
+  type?:
+    | "text"
+    | "boolean"
+    | "date"
+    | "datetime"
+    | "enddate"
+    | "relativedate"
+    | "map";
   transform?: (value: string, row: T) => string;
   color?: (value: string, row: T) => string;
+  map?: Record<string, string>; // For map type: provides backend->UI label mapping
 }
 
 interface TableHeader {
