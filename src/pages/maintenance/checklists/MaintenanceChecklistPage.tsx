@@ -334,9 +334,13 @@ export default function MaintenanceChecklistPage() {
         <div style={{ marginTop: "2rem" }}>
           <Table
             columns={itemColumns}
-            getRows={() =>
+            getRows={(findOptions) =>
               getMaintenanceChecklistItems({
-                filters: { maintenanceChecklistId: id },
+                ...findOptions,
+                filters: {
+                  ...findOptions.filters,
+                  maintenanceChecklistId: checklist.id,
+                },
               })
             }
             actionColumn={itemActionColumn}
