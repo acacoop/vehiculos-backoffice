@@ -124,6 +124,15 @@ export default function MaintenanceChecklistItemPage() {
 
   const sections: FormSection[] = [
     {
+      type: "entity",
+      render: (
+        <MaintenanceChecklistEntitySearch
+          entity={checklist}
+          onEntityChange={(c: MaintenanceChecklist | null) => setChecklist(c)}
+        />
+      ),
+    },
+    {
       title: "Información del Item",
       type: "fields",
       layout: "vertical",
@@ -206,10 +215,6 @@ export default function MaintenanceChecklistItemPage() {
 
   return (
     <div>
-      <MaintenanceChecklistEntitySearch
-        entity={checklist}
-        onEntityChange={setChecklist}
-      />
       <Form
         title="Editar Item del Checklist de Mantenimiento"
         sections={sections}
