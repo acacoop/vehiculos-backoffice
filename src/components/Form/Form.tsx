@@ -39,6 +39,15 @@ export interface DateField extends BaseField {
   max?: string;
 }
 
+export interface TimeField extends BaseField {
+  type: "time";
+  value: string;
+  onChange: (value: string) => void;
+  min?: string;
+  max?: string;
+  step?: number;
+}
+
 export interface TextAreaField extends BaseField {
   type: "textarea";
   value: string;
@@ -83,6 +92,7 @@ export type FormField =
   | TextField
   | NumberField
   | DateField
+  | TimeField
   | TextAreaField
   | SelectField
   | CheckboxField
@@ -279,6 +289,30 @@ const Form: React.FC<FormProps> = ({
             value={field.value}
             min={field.min}
             max={field.max}
+            onChange={(e) => field.onChange(e.target.value)}
+            disabled={field.disabled}
+            required={field.required}
+          />
+        </div>
+      );
+    }
+
+    // ========== TIME INPUT ==========
+    if (field.type === "time") {
+      return (
+        <div key={field.key} className={baseClassName}>
+          <label className="form-label" htmlFor={field.key}>
+            {field.label}{" "}
+            {field.required && <span className="required">*</span>}
+          </label>
+          <input
+            id={field.key}
+            type="time"
+            className="form-input"
+            value={field.value}
+            min={field.min}
+            max={field.max}
+            step={field.step}
             onChange={(e) => field.onChange(e.target.value)}
             disabled={field.disabled}
             required={field.required}

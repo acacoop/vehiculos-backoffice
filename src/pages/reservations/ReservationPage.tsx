@@ -10,7 +10,6 @@ import {
 } from "../../services/reservations";
 import { getVehicleById } from "../../services/vehicles";
 import { getUserById } from "../../services/users";
-import { getAssignments } from "../../services/assignments";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import {
   VehicleEntitySearch,
@@ -20,7 +19,12 @@ import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import type { Vehicle } from "../../types/vehicle";
 import type { User } from "../../types/user";
-import type { Assignment } from "../../types/assignment";
+import {
+  toInputDate,
+  toInputTime,
+  inputsToDate,
+  dateToISO,
+} from "../../common/date";
 
 export default function ReservationPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,10 +35,8 @@ export default function ReservationPage() {
   const [user, setUser] = useState<User | null>(null);
 
   const [formData, setFormData] = useState({
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
+    startDate: new Date(),
+    endDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
   });
 
   const {
@@ -102,20 +104,9 @@ export default function ReservationPage() {
       if (response.success && response.data) {
         const reservation = response.data;
 
-        const startDateTime = new Date(reservation.startDate);
-        const endDateTime = new Date(reservation.endDate);
-
         setFormData({
-          startDate: startDateTime.toISOString().split("T")[0],
-          endDate: endDateTime.toISOString().split("T")[0],
-          startTime: startDateTime.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          endTime: endDateTime.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          startDate: new Date(reservation.startDate),
+          endDate: new Date(reservation.endDate),
         });
 
         if (reservation.vehicle) {
@@ -139,71 +130,21 @@ export default function ReservationPage() {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (
-      !formData.startDate ||
-      !formData.endDate ||
-      !formData.startTime ||
-      !formData.endTime
-    ) {
+    if (!formData.startDate || !formData.endDate) {
       showError("Debe completar todas las fechas y horarios");
       return false;
     }
 
-    const startDateTime = new Date(
-      `${formData.startDate}T${formData.startTime}`,
-    );
-    const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
-
-    if (endDateTime <= startDateTime) {
+    if (formData.endDate <= formData.startDate) {
       showError("La fecha de fin debe ser posterior a la fecha de inicio");
-      return false;
-    }
-
-    const now = new Date();
-    if (startDateTime <= now) {
-      showError("La fecha de inicio debe ser futura");
       return false;
     }
 
     return true;
   };
 
-  const checkVehicleAssignment = async (): Promise<boolean> => {
-    try {
-      if (user && vehicle) {
-        const response = await getAssignments({
-          filters: { userId: user.id, vehicleId: vehicle.id },
-          pagination: { limit: 1000, offset: 0 },
-        });
-
-        if (response.success && response.data && response.data.length > 0) {
-          const hasActiveAssignment = response.data.some(
-            (assignment: Assignment) => {
-              if (!assignment.endDate) return true;
-              const endDate = new Date(assignment.endDate);
-              return endDate > new Date();
-            },
-          );
-          return hasActiveAssignment;
-        }
-        return false;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  };
-
   const handleSave = async () => {
     if (!validateForm()) return;
-
-    const hasActiveAssignment = await checkVehicleAssignment();
-    if (!hasActiveAssignment) {
-      showError(
-        "El usuario debe tener una asignación activa del vehículo para crear la reserva",
-      );
-      return;
-    }
 
     const actionText = isNew ? "crear" : "actualizar";
 
@@ -214,22 +155,14 @@ export default function ReservationPage() {
           ? createReservation({
               userId: user!.id,
               vehicleId: vehicle!.id,
-              startDate: new Date(
-                `${formData.startDate}T${formData.startTime}`,
-              ).toISOString(),
-              endDate: new Date(
-                `${formData.endDate}T${formData.endTime}`,
-              ).toISOString(),
+              startDate: dateToISO(formData.startDate),
+              endDate: dateToISO(formData.endDate),
             })
           : updateReservation(id!, {
               userId: user!.id,
               vehicleId: vehicle!.id,
-              startDate: new Date(
-                `${formData.startDate}T${formData.startTime}`,
-              ).toISOString(),
-              endDate: new Date(
-                `${formData.endDate}T${formData.endTime}`,
-              ).toISOString(),
+              startDate: dateToISO(formData.startDate),
+              endDate: dateToISO(formData.endDate),
             }),
       `Reserva ${actionText}da con éxito`,
     );
@@ -274,42 +207,59 @@ export default function ReservationPage() {
       fields: [
         {
           type: "date",
-          value: formData.startDate,
-          onChange: (value: string) =>
-            setFormData({ ...formData, startDate: value }),
+          value: toInputDate(formData.startDate),
+          onChange: (dateValue: string) => {
+            const timeStr = toInputTime(formData.startDate);
+            setFormData({
+              ...formData,
+              startDate: inputsToDate(dateValue, timeStr),
+            });
+          },
           key: "startDate",
           label: "Fecha Inicio",
           required: true,
-          min: new Date().toISOString().split("T")[0],
         },
         {
-          type: "text",
-          value: formData.startTime,
-          onChange: (value: string) =>
-            setFormData({ ...formData, startTime: value }),
+          type: "time",
+          value: toInputTime(formData.startDate),
+          onChange: (timeValue: string) => {
+            const dateStr = toInputDate(formData.startDate);
+            setFormData({
+              ...formData,
+              startDate: inputsToDate(dateStr, timeValue),
+            });
+          },
           key: "startTime",
           label: "Hora Inicio",
-          placeholder: "HH:MM",
           required: true,
         },
         {
           type: "date",
-          value: formData.endDate,
-          onChange: (value: string) =>
-            setFormData({ ...formData, endDate: value }),
+          value: toInputDate(formData.endDate),
+          onChange: (dateValue: string) => {
+            const timeStr = toInputTime(formData.endDate);
+            setFormData({
+              ...formData,
+              endDate: inputsToDate(dateValue, timeStr),
+            });
+          },
           key: "endDate",
           label: "Fecha Fin",
           required: true,
-          min: formData.startDate,
+          min: toInputDate(formData.startDate),
         },
         {
-          type: "text",
-          value: formData.endTime,
-          onChange: (value: string) =>
-            setFormData({ ...formData, endTime: value }),
+          type: "time",
+          value: toInputTime(formData.endDate),
+          onChange: (timeValue: string) => {
+            const dateStr = toInputDate(formData.endDate);
+            setFormData({
+              ...formData,
+              endDate: inputsToDate(dateStr, timeValue),
+            });
+          },
           key: "endTime",
           label: "Hora Fin",
-          placeholder: "HH:MM",
           required: true,
         },
       ],
