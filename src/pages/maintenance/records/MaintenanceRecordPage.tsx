@@ -26,6 +26,7 @@ import type { User } from "../../../types/user";
 import type { Vehicle } from "../../../types/vehicle";
 import type { Maintenance } from "../../../types/maintenance";
 import { getMaintenanceById } from "../../../services/maintenances";
+import { inputDateToISO, toInputDate } from "../../../common/date";
 
 export default function MaintenanceRecordRegisterPage() {
   const { id } = useParams<{ id: string }>();
