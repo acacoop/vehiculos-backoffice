@@ -7,6 +7,7 @@ import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 import {
   VehicleModelEntitySearch,
   MaintenanceEntitySearch,
@@ -34,8 +35,8 @@ export default function MaintenanceRequirementPage() {
     daysFrequency: 0,
     observations: "",
     instructions: "",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: "",
+    startDate: new Date(),
+    endDate: new Date(),
     isIndefinite: true,
     useKilometers: false,
     useDays: false,
@@ -76,8 +77,12 @@ export default function MaintenanceRequirementPage() {
             daysFrequency: assignment.daysFrequency || 0,
             observations: assignment.observations || "",
             instructions: assignment.instructions || "",
-            startDate: assignment.startDate || "",
-            endDate: assignment.endDate || "",
+            startDate: assignment.startDate
+              ? new Date(assignment.startDate)
+              : new Date(),
+            endDate: assignment.endDate
+              ? new Date(assignment.endDate)
+              : new Date(),
             isIndefinite: !assignment.endDate,
             useKilometers:
               !!assignment.kilometersFrequency &&
@@ -184,22 +189,20 @@ export default function MaintenanceRequirementPage() {
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              startDate: inputDateToISO(toInputDate(formData.startDate)),
+              endDate: formData.isIndefinite
+                ? null
+                : inputDateToISO(toInputDate(formData.endDate)),
             })
           : updateMaintenanceRequirement(id!, {
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
               observations: formData.observations.trim() || undefined,
               instructions: formData.instructions.trim() || undefined,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              startDate: inputDateToISO(toInputDate(formData.startDate)),
+              endDate: formData.isIndefinite
+                ? null
+                : inputDateToISO(toInputDate(formData.endDate)),
             }),
       `Requerimiento ${actionText}do exitosamente`,
     );
@@ -296,9 +299,9 @@ export default function MaintenanceRequirementPage() {
       fields: [
         {
           type: "date",
-          value: formData.startDate,
+          value: toInputDate(formData.startDate),
           onChange: (value: string) =>
-            setFormData({ ...formData, startDate: value }),
+            setFormData({ ...formData, startDate: new Date(value) }),
           key: "startDate",
           label: "Fecha Desde",
           required: true,
@@ -313,13 +316,13 @@ export default function MaintenanceRequirementPage() {
         },
         {
           type: "date",
-          value: formData.endDate,
+          value: toInputDate(formData.endDate),
           onChange: (value: string) =>
-            setFormData({ ...formData, endDate: value }),
+            setFormData({ ...formData, endDate: new Date(value) }),
           key: "endDate",
           label: "Fecha Hasta",
           show: !formData.isIndefinite,
-          min: formData.startDate,
+          min: toInputDate(formData.startDate),
         },
       ],
     },

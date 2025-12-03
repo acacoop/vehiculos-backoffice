@@ -37,7 +37,7 @@ export default function MaintenanceRecordRegisterPage() {
   const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
 
   const [formData, setFormData] = useState({
-    date: "",
+    date: new Date(),
     kilometers: 0,
     observations: "",
   });
@@ -125,10 +125,8 @@ export default function MaintenanceRecordRegisterPage() {
       if (response.success && response.data) {
         const record = response.data;
 
-        const recordDate = new Date(record.date);
-
         setFormData({
-          date: recordDate.toISOString().split("T")[0],
+          date: new Date(record.date),
           kilometers: record.kilometers,
           observations: record.notes || "",
         });
@@ -181,7 +179,7 @@ export default function MaintenanceRecordRegisterPage() {
       maintenanceId: maintenance!.id,
       vehicleId: vehicle!.id,
       userId: user!.id,
-      date: new Date(formData.date).toISOString(),
+      date: inputDateToISO(toInputDate(formData.date)),
       kilometers: formData.kilometers,
       notes: formData.observations,
     };
@@ -244,9 +242,9 @@ export default function MaintenanceRecordRegisterPage() {
       fields: [
         {
           type: "date",
-          value: formData.date,
+          value: toInputDate(formData.date),
           onChange: (value: string) =>
-            setFormData({ ...formData, date: value }),
+            setFormData({ ...formData, date: new Date(value) }),
           key: "date",
           label: "Fecha",
           required: true,

@@ -6,6 +6,7 @@ import {
 } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 import {
   createAssignment,
   getAssignmentById,
@@ -34,8 +35,8 @@ export default function VehicleAssignmentPage() {
   const [user, setUser] = useState<User | null>(null);
 
   const [formData, setFormData] = useState({
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: "",
+    startDate: new Date(),
+    endDate: new Date(),
     isIndefinite: true,
   });
 
@@ -93,10 +94,8 @@ export default function VehicleAssignmentPage() {
         setUser(a.user || null);
         setVehicle(a.vehicle || null);
         setFormData({
-          startDate: a.startDate
-            ? a.startDate.split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          endDate: a.endDate ? a.endDate.split("T")[0] : "",
+          startDate: a.startDate ? new Date(a.startDate) : new Date(),
+          endDate: a.endDate ? new Date(a.endDate) : new Date(),
           isIndefinite: !a.endDate,
         });
       } else {
@@ -135,21 +134,20 @@ export default function VehicleAssignmentPage() {
           const payload: AssignmentInput = {
             userId: user!.id,
             vehicleId: vehicle!.id,
-            startDate: formData.startDate,
-            endDate: formData.isIndefinite ? null : formData.endDate || null,
+            startDate: inputDateToISO(toInputDate(formData.startDate)),
+            endDate: formData.isIndefinite
+              ? null
+              : inputDateToISO(toInputDate(formData.endDate)),
             active: true,
           };
 
           return await createAssignment(payload);
         } else {
           const updateData: Partial<AssignmentInput> = {
-            startDate: new Date(
-              formData.startDate + "T00:00:00.000Z",
-            ).toISOString(),
-            endDate:
-              formData.isIndefinite || !formData.endDate
-                ? null
-                : new Date(formData.endDate + "T23:59:59.000Z").toISOString(),
+            startDate: inputDateToISO(toInputDate(formData.startDate)),
+            endDate: formData.isIndefinite
+              ? null
+              : inputDateToISO(toInputDate(formData.endDate)),
           };
 
           return await updateAssignment(assignmentId!, updateData);
@@ -197,9 +195,9 @@ export default function VehicleAssignmentPage() {
       fields: [
         {
           type: "date",
-          value: formData.startDate,
+          value: toInputDate(formData.startDate),
           onChange: (value: string) =>
-            setFormData({ ...formData, startDate: value }),
+            setFormData({ ...formData, startDate: new Date(value) }),
           key: "startDate",
           label: "Fecha Inicio",
           required: true,
@@ -214,13 +212,13 @@ export default function VehicleAssignmentPage() {
         },
         {
           type: "date",
-          value: formData.endDate,
+          value: toInputDate(formData.endDate),
           onChange: (value: string) =>
-            setFormData({ ...formData, endDate: value }),
+            setFormData({ ...formData, endDate: new Date(value) }),
           key: "endDate",
           label: "Fecha Fin",
           show: !formData.isIndefinite,
-          min: formData.startDate,
+          min: toInputDate(formData.startDate),
         },
       ],
     },

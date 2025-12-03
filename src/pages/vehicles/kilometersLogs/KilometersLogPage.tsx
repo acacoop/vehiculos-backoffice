@@ -23,6 +23,7 @@ import {
 } from "../../../services/kilometers";
 import type { User } from "../../../types/user";
 import type { Vehicle } from "../../../types/vehicle";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ export default function KilometersLogPage() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: new Date(),
     kilometers: 0,
   });
 
@@ -103,10 +104,8 @@ export default function KilometersLogPage() {
       if (response.success && response.data) {
         const log = response.data;
 
-        const logDate = new Date(log.date);
-
         setFormData({
-          date: logDate.toISOString().split("T")[0],
+          date: new Date(log.date),
           kilometers: log.kilometers,
         });
 
@@ -137,9 +136,8 @@ export default function KilometersLogPage() {
       return false;
     }
 
-    const selectedDate = new Date(formData.date);
     const today = new Date();
-    if (selectedDate > today) {
+    if (formData.date > today) {
       showError("La fecha de registro no puede ser futura");
       return false;
     }
@@ -160,7 +158,7 @@ export default function KilometersLogPage() {
     const payload = {
       vehicleId: vehicle!.id,
       userId: user!.id,
-      date: formData.date,
+      date: inputDateToISO(toInputDate(formData.date)),
       kilometers: formData.kilometers,
     };
 
@@ -212,9 +210,9 @@ export default function KilometersLogPage() {
       fields: [
         {
           type: "date",
-          value: formData.date,
+          value: toInputDate(formData.date),
           onChange: (value: string) =>
-            setFormData({ ...formData, date: value }),
+            setFormData({ ...formData, date: new Date(value) }),
           key: "date",
           label: "Fecha de Registro",
           required: true,
