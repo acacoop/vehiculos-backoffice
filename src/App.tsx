@@ -42,10 +42,10 @@ import KilometersLogPage from "./pages/vehicles/kilometersLogs/KilometersLogPage
 import MaintenanceRequirementsPage from "./pages/maintenance/requirements/MaintenanceRequirementsPage";
 import MaintenanceRequirementPage from "./pages/maintenance/requirements/MaintenanceRequirementPage";
 import {
-  MaintenanceChecklistsPage,
-  MaintenanceChecklistPage,
-  MaintenanceChecklistItemPage,
-} from "./pages/maintenance/checklists";
+  QuarterlyControlsPage,
+  QuarterlyControlPage,
+  QuarterlyControlItemPage,
+} from "./pages/quarterlyControls";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -165,20 +165,20 @@ function App() {
           />
 
           <Route
-            path="/maintenance/checklists"
-            element={<MaintenanceChecklistsPage />}
+            path="/quarterly-controls"
+            element={<QuarterlyControlsPage />}
           />
           <Route
-            path="/maintenance/checklists/new"
-            element={<MaintenanceChecklistPage />}
+            path="/quarterly-controls/new"
+            element={<QuarterlyControlPage />}
           />
           <Route
-            path="/maintenance/checklists/:id"
-            element={<MaintenanceChecklistPage />}
+            path="/quarterly-controls/:id"
+            element={<QuarterlyControlPage />}
           />
           <Route
-            path="/maintenance/checklists/items/:id"
-            element={<MaintenanceChecklistItemPage />}
+            path="/quarterly-controls/items/:id"
+            element={<QuarterlyControlItemPage />}
           />
 
           <Route path="/vehicles" element={<VehiclesPage />} />

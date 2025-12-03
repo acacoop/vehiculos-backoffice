@@ -89,8 +89,8 @@ function Navbar() {
         },
         {
           icon: ClipboardList,
-          label: "Checklists",
-          to: "/maintenance/checklists",
+          label: "Controles Trimestrales",
+          to: "/quarterly-controls",
         },
       ],
     },

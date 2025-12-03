@@ -41,38 +41,43 @@ export const QUARTER_LABELS: Record<number, string> = {
   4: "Q4",
 } as const;
 
-// Estados de checklist de mantenimiento
-export const CHECKLIST_STATUS = {
+// Estados de control trimestral
+export const QUARTERLY_CONTROL_STATUS = {
   PENDING: "Pendiente",
   APPROVED: "Aprobado",
   WITH_FAILURES: "Con fallos",
   OVERDUE: "Vencido",
 } as const;
 
-// Estados de item de checklist de mantenimiento
-export const CHECKLIST_ITEM_STATUS = {
+// Estados de item de control trimestral
+export const QUARTERLY_CONTROL_ITEM_STATUS = {
   PENDING: "Pendiente",
   APPROVED: "Aprobado",
   REJECTED: "Rechazado",
 } as const;
 
 // Backend enum values (to avoid magic strings)
-export const BACKEND_CHECKLIST_ITEM_STATUS = {
+export const BACKEND_QUARTERLY_CONTROL_ITEM_STATUS = {
   PENDIENTE: "PENDIENTE",
   APROBADO: "APROBADO",
   RECHAZADO: "RECHAZADO",
 } as const;
 
-export type BackendChecklistItemStatus =
-  (typeof BACKEND_CHECKLIST_ITEM_STATUS)[keyof typeof BACKEND_CHECKLIST_ITEM_STATUS];
+export type BackendQuarterlyControlItemStatus =
+  (typeof BACKEND_QUARTERLY_CONTROL_ITEM_STATUS)[keyof typeof BACKEND_QUARTERLY_CONTROL_ITEM_STATUS];
 
 // Mapping: backend key -> UI label
-export const BACKEND_TO_UI_STATUS: Record<BackendChecklistItemStatus, string> =
-  {
-    [BACKEND_CHECKLIST_ITEM_STATUS.PENDIENTE]: CHECKLIST_ITEM_STATUS.PENDING,
-    [BACKEND_CHECKLIST_ITEM_STATUS.APROBADO]: CHECKLIST_ITEM_STATUS.APPROVED,
-    [BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO]: CHECKLIST_ITEM_STATUS.REJECTED,
-  } as const;
+export const BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS: Record<
+  BackendQuarterlyControlItemStatus,
+  string
+> = {
+  [BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.PENDIENTE]:
+    QUARTERLY_CONTROL_ITEM_STATUS.PENDING,
+  [BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.APROBADO]:
+    QUARTERLY_CONTROL_ITEM_STATUS.APPROVED,
+  [BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.RECHAZADO]:
+    QUARTERLY_CONTROL_ITEM_STATUS.REJECTED,
+} as const;
 
 // User roles
 export const USER_ROLE_LABELS = {

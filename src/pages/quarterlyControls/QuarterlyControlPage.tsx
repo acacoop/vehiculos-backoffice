@@ -1,40 +1,36 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../components/Table/table";
+import { Form, type FormSection, type FormButton } from "../../components/Form";
+import { usePageState } from "../../hooks";
 import {
-  Form,
-  type FormSection,
-  type FormButton,
-} from "../../../components/Form";
-import { usePageState } from "../../../hooks";
-import {
-  getMaintenanceChecklistById,
-  createMaintenanceChecklist,
-  updateMaintenanceChecklist,
-  deleteMaintenanceChecklist,
-} from "../../../services/maintenanceChecklists";
-import { getVehicleById } from "../../../services/vehicles";
-import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
-import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
-import type { Vehicle } from "../../../types/vehicle";
+  getQuarterlyControlById,
+  createQuarterlyControl,
+  updateQuarterlyControl,
+  deleteQuarterlyControl,
+} from "../../services/quarterlyControls";
+import { getVehicleById } from "../../services/vehicles";
+import type { QuarterlyControl } from "../../types/quarterlyControl";
+import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
+import type { Vehicle } from "../../types/vehicle";
 import {
   COLORS,
-  BACKEND_TO_UI_STATUS,
-  BACKEND_CHECKLIST_ITEM_STATUS,
-} from "../../../common";
-import { VehicleEntitySearch } from "../../../components/EntitySearch/EntitySearch";
-import { LoadingSpinner } from "../../../components/LoadingSpinner";
-import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { getMaintenanceChecklistItems } from "../../../services/maintenanceChecklistItems";
+  BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS,
+  BACKEND_QUARTERLY_CONTROL_ITEM_STATUS,
+} from "../../common";
+import { VehicleEntitySearch } from "../../components/EntitySearch/EntitySearch";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import { getQuarterlyControlItems } from "../../services/quarterlyControlItems";
 
-export default function MaintenanceChecklistPage() {
+export default function QuarterlyControlPage() {
   const { id } = useParams<{ id: string }>();
 
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [checklist, setChecklist] = useState<MaintenanceChecklist | null>(null);
+  const [control, setControl] = useState<QuarterlyControl | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState({
     year: new Date().getFullYear(),
@@ -55,7 +51,7 @@ export default function MaintenanceChecklistPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/checklists" });
+  } = usePageState({ redirectOnSuccess: "/quarterly-controls" });
 
   // Load vehicle from query parameter
   useEffect(() => {
@@ -79,17 +75,17 @@ export default function MaintenanceChecklistPage() {
     if (!id || isNew) return;
 
     await executeLoad(async () => {
-      const checklistRes = await getMaintenanceChecklistById(id);
+      const controlRes = await getQuarterlyControlById(id);
 
-      if (checklistRes.success && checklistRes.data) {
-        setChecklist(checklistRes.data);
-        if (checklistRes.data.vehicle) {
-          setVehicle(checklistRes.data.vehicle);
+      if (controlRes.success && controlRes.data) {
+        setControl(controlRes.data);
+        if (controlRes.data.vehicle) {
+          setVehicle(controlRes.data.vehicle);
         }
         setFormData({
-          year: checklistRes.data.year,
-          quarter: checklistRes.data.quarter,
-          intendedDeliveryDate: checklistRes.data.intendedDeliveryDate,
+          year: controlRes.data.year,
+          quarter: controlRes.data.quarter,
+          intendedDeliveryDate: controlRes.data.intendedDeliveryDate,
         });
       }
     });
@@ -114,7 +110,7 @@ export default function MaintenanceChecklistPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     executeSave(
-      `¿Está seguro que desea ${actionText} este checklist?`,
+      `¿Está seguro que desea ${actionText} este control trimestral?`,
       () => {
         const payload = {
           vehicleId: vehicle.id,
@@ -124,10 +120,10 @@ export default function MaintenanceChecklistPage() {
         };
 
         return isNew
-          ? createMaintenanceChecklist(payload)
-          : updateMaintenanceChecklist(id!, payload);
+          ? createQuarterlyControl(payload)
+          : updateQuarterlyControl(id!, payload);
       },
-      `Checklist ${actionText}do exitosamente`,
+      `Control trimestral ${actionText}do exitosamente`,
     );
   };
 
@@ -135,9 +131,9 @@ export default function MaintenanceChecklistPage() {
     if (!id || isNew) return;
 
     executeSave(
-      "¿Está seguro que desea eliminar este checklist?",
-      () => deleteMaintenanceChecklist(id),
-      "Checklist eliminado exitosamente",
+      "¿Está seguro que desea eliminar este control trimestral?",
+      () => deleteQuarterlyControl(id),
+      "Control trimestral eliminado exitosamente",
     );
   };
 
@@ -145,17 +141,17 @@ export default function MaintenanceChecklistPage() {
     return <LoadingSpinner message="Cargando datos..." />;
   }
 
-  if (!isNew && !checklist) {
+  if (!isNew && !control) {
     return (
       <div>
         <div className="page-header">
-          <h1>Checklist no encontrado</h1>
+          <h1>Control trimestral no encontrado</h1>
         </div>
       </div>
     );
   }
 
-  const itemColumns: TableColumn<MaintenanceChecklistItem>[] = [
+  const itemColumns: TableColumn<QuarterlyControlItem>[] = [
     {
       field: "category",
       headerName: "Categoría",
@@ -171,12 +167,12 @@ export default function MaintenanceChecklistPage() {
       headerName: "Estado",
       flex: 1,
       type: "map",
-      map: BACKEND_TO_UI_STATUS,
+      map: BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS,
       color: (value: string) => {
         switch (value) {
-          case BACKEND_CHECKLIST_ITEM_STATUS.APROBADO:
+          case BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.APROBADO:
             return COLORS.success;
-          case BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO:
+          case BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.RECHAZADO:
             return COLORS.error;
           default:
             return COLORS.warning;
@@ -191,7 +187,7 @@ export default function MaintenanceChecklistPage() {
   ];
 
   const itemActionColumn = {
-    route: `/maintenance/checklists/items`,
+    route: `/quarterly-controls/items`,
     width: 100,
   };
 
@@ -207,7 +203,7 @@ export default function MaintenanceChecklistPage() {
       ),
     },
     {
-      title: "Información del Checklist",
+      title: "Información del Control Trimestral",
       type: "fields",
       layout: "grid",
       columns: 2,
@@ -257,16 +253,16 @@ export default function MaintenanceChecklistPage() {
     ...(!isNew
       ? [
           {
-            title: "Estado del Checklist",
+            title: "Estado del Control",
             type: "fields" as const,
             layout: "grid" as const,
             columns: 2,
             fields: [
               {
                 type: "display" as const,
-                value: checklist!.filledBy
-                  ? `${checklist!.filledBy.firstName} ${
-                      checklist!.filledBy.lastName
+                value: control!.filledBy
+                  ? `${control!.filledBy.firstName} ${
+                      control!.filledBy.lastName
                     }`
                   : "No completado",
                 key: "filledBy",
@@ -274,7 +270,7 @@ export default function MaintenanceChecklistPage() {
               },
               {
                 type: "display" as const,
-                value: checklist!.filledAt || "No completado",
+                value: control!.filledAt || "No completado",
                 key: "filledAt",
                 label: "Fecha de completado",
               },
@@ -288,7 +284,7 @@ export default function MaintenanceChecklistPage() {
     {
       text: "Cancelar",
       variant: "secondary",
-      onClick: () => goTo("/maintenance/checklists"),
+      onClick: () => goTo("/quarterly-controls"),
       disabled: saving,
     },
     ...(!isNew
@@ -307,7 +303,7 @@ export default function MaintenanceChecklistPage() {
           ? "Creando..."
           : "Guardando..."
         : isNew
-        ? "Crear Checklist"
+        ? "Crear Control"
         : "Guardar Cambios",
       variant: "primary" as const,
       onClick: handleSave,
@@ -319,31 +315,27 @@ export default function MaintenanceChecklistPage() {
   return (
     <div>
       <Form
-        title={
-          isNew
-            ? "Nuevo Checklist de Mantenimiento"
-            : "Editar Checklist de Mantenimiento"
-        }
+        title={isNew ? "Nuevo Control Trimestral" : "Editar Control Trimestral"}
         sections={sections}
         buttons={buttons}
       />
 
-      {!isNew && checklist && (
+      {!isNew && control && (
         <div style={{ marginTop: "2rem" }}>
           <Table
             columns={itemColumns}
             getRows={(findOptions) =>
-              getMaintenanceChecklistItems({
+              getQuarterlyControlItems({
                 ...findOptions,
                 filters: {
                   ...findOptions.filters,
-                  maintenanceChecklistId: checklist.id,
+                  quarterlyControlId: control.id,
                 },
               })
             }
             actionColumn={itemActionColumn}
             header={{
-              title: "Items del Checklist",
+              title: "Items del Control",
             }}
           />
         </div>
