@@ -31,9 +31,9 @@ import type { Reservation } from "../../../types/reservation";
 import { COLORS } from "../../../common/colors";
 import { QUARTER_LABELS } from "../../../common";
 import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
-import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
-import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
-import { getChecklistStatus } from "../../../common/utils";
+import { getQuarterlyControls } from "../../../services/quarterlyControls";
+import type { QuarterlyControl } from "../../../types/quarterlyControl";
+import { getQuarterlyControlStatus } from "../../../common/utils";
 
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
@@ -294,7 +294,7 @@ export default function VehiclesPage() {
     },
   ];
 
-  const checklistColumns: TableColumn<MaintenanceChecklist>[] = [
+  const quarterlyControlColumns: TableColumn<QuarterlyControl>[] = [
     {
       field: "year",
       headerName: "Período",
@@ -327,11 +327,11 @@ export default function VehiclesPage() {
       headerName: "Estado",
       minWidth: 180,
       transform: (_value, row) => {
-        const { label } = getChecklistStatus(row);
+        const { label } = getQuarterlyControlStatus(row);
         return label;
       },
       color: (_value, row) => {
-        const { color } = getChecklistStatus(row);
+        const { color } = getQuarterlyControlStatus(row);
         return color;
       },
     },
@@ -581,7 +581,7 @@ export default function VehiclesPage() {
 
           <Table
             getRows={(findOptions) =>
-              getMaintenanceChecklists({
+              getQuarterlyControls({
                 ...findOptions,
                 filters: {
                   ...findOptions.filters,
@@ -589,14 +589,14 @@ export default function VehiclesPage() {
                 },
               })
             }
-            columns={checklistColumns}
+            columns={quarterlyControlColumns}
             header={{
-              title: "Checklists de Mantenimiento",
+              title: "Controles Trimestrales",
             }}
             actionColumn={{
-              route: "/maintenance/checklists",
+              route: "/quarterly-controls",
             }}
-            search={{ enabled: true, placeholder: "Buscar checklists..." }}
+            search={{ enabled: true, placeholder: "Buscar controles..." }}
             minHeight="500px"
           />
         </>

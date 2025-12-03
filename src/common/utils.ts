@@ -43,52 +43,55 @@ export function getNestedString(obj: unknown, path: string): string {
 }
 
 /**
- * Calculate the status of a maintenance checklist
- * @param checklist - The maintenance checklist to evaluate
+ * Calculate the status of a quarterly control
+ * @param control - The quarterly control to evaluate
  * @returns Object with status label, detailed label (with counts if needed), and color
  */
-import { CHECKLIST_STATUS, BACKEND_CHECKLIST_ITEM_STATUS } from "./constants";
+import {
+  QUARTERLY_CONTROL_STATUS,
+  BACKEND_QUARTERLY_CONTROL_ITEM_STATUS,
+} from "./constants";
 import { COLORS } from "./colors";
-import type { MaintenanceChecklist } from "../types/maintenanceChecklist";
+import type { QuarterlyControl } from "../types/quarterlyControl";
 
-export function getChecklistStatus(checklist: MaintenanceChecklist) {
+export function getQuarterlyControlStatus(control: QuarterlyControl) {
   // If filled, check for failures
-  if (checklist.filledAt) {
-    const rejectedCount = checklist.items.filter(
-      (i) => i.status === BACKEND_CHECKLIST_ITEM_STATUS.RECHAZADO,
+  if (control.filledAt) {
+    const rejectedCount = control.items.filter(
+      (i) => i.status === BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.RECHAZADO,
     ).length;
 
     if (rejectedCount > 0) {
-      const totalItems = checklist.items.length;
+      const totalItems = control.items.length;
       return {
-        status: CHECKLIST_STATUS.WITH_FAILURES,
-        label: `${CHECKLIST_STATUS.WITH_FAILURES} (${rejectedCount}/${totalItems})`,
+        status: QUARTERLY_CONTROL_STATUS.WITH_FAILURES,
+        label: `${QUARTERLY_CONTROL_STATUS.WITH_FAILURES} (${rejectedCount}/${totalItems})`,
         color: COLORS.error,
       };
     }
 
     return {
-      status: CHECKLIST_STATUS.APPROVED,
-      label: CHECKLIST_STATUS.APPROVED,
+      status: QUARTERLY_CONTROL_STATUS.APPROVED,
+      label: QUARTERLY_CONTROL_STATUS.APPROVED,
       color: COLORS.success,
     };
   }
 
   // Not filled - check if overdue
   const currentDate = new Date();
-  const intendedDate = new Date(checklist.intendedDeliveryDate);
+  const intendedDate = new Date(control.intendedDeliveryDate);
   if (currentDate > intendedDate) {
     return {
-      status: CHECKLIST_STATUS.OVERDUE,
-      label: CHECKLIST_STATUS.OVERDUE,
+      status: QUARTERLY_CONTROL_STATUS.OVERDUE,
+      label: QUARTERLY_CONTROL_STATUS.OVERDUE,
       color: COLORS.error,
     };
   }
 
   // Pending
   return {
-    status: CHECKLIST_STATUS.PENDING,
-    label: CHECKLIST_STATUS.PENDING,
+    status: QUARTERLY_CONTROL_STATUS.PENDING,
+    label: QUARTERLY_CONTROL_STATUS.PENDING,
     color: COLORS.warning,
   };
 }

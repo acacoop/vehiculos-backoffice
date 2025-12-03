@@ -6,7 +6,7 @@ import type { VehicleBrand } from "../../types/vehicleBrand";
 import type { VehicleModel } from "../../types/vehicleModel";
 import type { Category } from "../../types/category";
 import type { Assignment } from "../../types/assignment";
-import type { MaintenanceChecklist } from "../../types/maintenanceChecklist";
+import type { QuarterlyControl } from "../../types/quarterlyControl";
 import { getVehicles } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
 import { getVehicleModels } from "../../services/vehicleModels";
@@ -14,7 +14,7 @@ import { getVehicleBrands } from "../../services/vehicleBrands";
 import { getMaintenanceCategories } from "../../services/categories";
 import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
-import { getMaintenanceChecklists } from "../../services/maintenanceChecklists";
+import { getQuarterlyControls } from "../../services/quarterlyControls";
 import { QUARTER_LABELS } from "../../common";
 import "./EntitySearch.css";
 
@@ -338,10 +338,10 @@ async function searchAssignments(term: string): Promise<Assignment[]> {
   return response.success ? response.data : [];
 }
 
-async function searchMaintenanceChecklists(
+async function searchQuarterlyControls(
   term: string,
-): Promise<MaintenanceChecklist[]> {
-  const response = await getMaintenanceChecklists({
+): Promise<QuarterlyControl[]> {
+  const response = await getQuarterlyControls({
     search: term,
     pagination: { offset: 0, limit: 10 },
   });
@@ -551,29 +551,29 @@ export function AssignmentEntitySearch({
   );
 }
 
-export function MaintenanceChecklistEntitySearch({
+export function QuarterlyControlEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
-}: EntitySearchWrapperProps<MaintenanceChecklist>) {
-  const dropdownRender = (checklist: MaintenanceChecklist) => {
-    const vehicle = checklist.vehicle;
+}: EntitySearchWrapperProps<QuarterlyControl>) {
+  const dropdownRender = (control: QuarterlyControl) => {
+    const vehicle = control.vehicle;
     const vehicleInfo = vehicle
       ? `${vehicle.model?.brand?.name || ""} ${vehicle.model?.name || ""} - ${
           vehicle.licensePlate
         }`.trim()
       : "";
-    const period = `${checklist.year} ${
-      QUARTER_LABELS[checklist.quarter] || checklist.quarter
+    const period = `${control.year} ${
+      QUARTER_LABELS[control.quarter] || control.quarter
     }`;
     return `${vehicleInfo} - ${period}`;
   };
 
   return (
-    <EntitySearch<MaintenanceChecklist>
+    <EntitySearch<QuarterlyControl>
       entity={entity}
       onEntityChange={onEntityChange}
-      searchFunction={searchMaintenanceChecklists}
+      searchFunction={searchQuarterlyControls}
       displayFields={[
         { path: "vehicle.licensePlate", label: "Vehículo" },
         { path: "year", label: "Año" },
@@ -581,9 +581,9 @@ export function MaintenanceChecklistEntitySearch({
         { path: "intendedDeliveryDate", label: "Fecha Entrega" },
       ]}
       dropdownRender={dropdownRender}
-      placeholder="Buscar checklist..."
-      title="Datos del Checklist"
-      changeButtonText="Cambiar checklist"
+      placeholder="Buscar control trimestral..."
+      title="Datos del Control Trimestral"
+      changeButtonText="Cambiar control"
       disabled={disabled}
     />
   );
