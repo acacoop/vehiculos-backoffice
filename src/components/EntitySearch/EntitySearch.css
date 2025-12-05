@@ -10,6 +10,12 @@
   margin-bottom: 20px;
 }
 
+.entity-search-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .entity-search-title {
   font-size: 20px;
   font-weight: 600;
@@ -41,6 +47,35 @@
 
 .entity-search-change-button:active {
   transform: translateY(0);
+}
+
+.entity-search-action-button {
+  background: #282d86;
+  color: white;
+  border: 1px solid #282d86;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.entity-search-action-button:hover {
+  background: white;
+  color: #282d86;
+  border-radius: 0px;
+}
+
+.entity-search-navigate-button {
+  background: #282d86;
+  border-color: #282d86;
+}
+
+.entity-search-navigate-button:hover {
+  background: white;
+  color: #282d86;
 }
 
 .entity-search-input-container {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import type { User } from "../../types/user";
 import type { Vehicle } from "../../types/vehicle";
 import type { Maintenance } from "../../types/maintenance";
@@ -18,12 +19,16 @@ import { getQuarterlyControls } from "../../services/quarterlyControls";
 import { QUARTER_LABELS } from "../../common";
 import "./EntitySearch.css";
 
+interface Identifiable {
+  id?: number | string;
+}
+
 interface DisplayField<T> {
   path: keyof T | string;
   label: string;
 }
 
-interface EntitySearchProps<T> {
+interface EntitySearchProps<T extends Identifiable> {
   entity: T | null;
   onEntityChange: (entity: T | null) => void;
   searchFunction: (term: string) => Promise<T[]>;
@@ -37,9 +42,16 @@ interface EntitySearchProps<T> {
   minChars?: number;
   debounceMs?: number;
   disabled?: boolean;
+
+  // Navigation options
+  route?: string;
+  enableCreate?: boolean;
+  enableNavigate?: boolean;
+  createButtonText?: string;
+  navigateButtonText?: string;
 }
 
-export function EntitySearch<T>({
+export function EntitySearch<T extends Identifiable>({
   entity,
   onEntityChange,
   searchFunction,
@@ -53,7 +65,14 @@ export function EntitySearch<T>({
   minChars = 1,
   debounceMs = 300,
   disabled = false,
+
+  route,
+  enableCreate = false,
+  enableNavigate = false,
+  createButtonText = "Crear nuevo",
+  navigateButtonText = "Ver detalle",
 }: EntitySearchProps<T>) {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<T[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -128,6 +147,18 @@ export function EntitySearch<T>({
     onEntityChange(null);
   };
 
+  const handleCreate = () => {
+    if (route) {
+      navigate(`${route}/new`);
+    }
+  };
+
+  const handleNavigate = () => {
+    if (route && entity?.id) {
+      navigate(`${route}/${entity.id}`);
+    }
+  };
+
   const getNestedValue = (obj: T, path: string): string => {
     const keys = path.split(".");
     let value: unknown = obj;
@@ -162,15 +193,35 @@ export function EntitySearch<T>({
     <div className="entity-search">
       <div className="entity-search-header">
         <h3 className="entity-search-title">{title}</h3>
-        {entity && !disabled && (
-          <button
-            type="button"
-            className="entity-search-change-button"
-            onClick={handleClear}
-          >
-            {changeButtonText}
-          </button>
-        )}
+        <div className="entity-search-header-actions">
+          {entity && !disabled && (
+            <button
+              type="button"
+              className="entity-search-change-button"
+              onClick={handleClear}
+            >
+              {changeButtonText}
+            </button>
+          )}
+          {!entity && enableCreate && route && (
+            <button
+              type="button"
+              className="entity-search-action-button entity-search-create-button"
+              onClick={handleCreate}
+            >
+              {createButtonText}
+            </button>
+          )}
+          {entity && enableNavigate && route && (
+            <button
+              type="button"
+              className="entity-search-action-button entity-search-navigate-button"
+              onClick={handleNavigate}
+            >
+              {navigateButtonText}
+            </button>
+          )}
+        </div>
       </div>
       {entity ? (
         renderSelectedEntity(entity)
@@ -356,12 +407,16 @@ interface EntitySearchWrapperProps<T> {
   entity: T | null;
   onEntityChange: (entity: T | null) => void;
   disabled?: boolean;
+  enableCreate?: boolean;
+  enableNavigate?: boolean;
 }
 
 export function VehicleEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<Vehicle>) {
   const dropdownRender = (vehicle: Vehicle) => {
     const brand = vehicle.model?.brand?.name || "";
@@ -385,6 +440,11 @@ export function VehicleEntitySearch({
       title="Datos del Vehículo"
       changeButtonText="Cambiar vehículo"
       disabled={disabled}
+      route="/vehicles"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear vehículo"
+      navigateButtonText="Ver vehículo"
     />
   );
 }
@@ -393,6 +453,8 @@ export function UserEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<User>) {
   const dropdownRender = (user: User) => {
     return `${user.firstName} ${user.lastName} - ${user.email}`;
@@ -414,6 +476,11 @@ export function UserEntitySearch({
       title="Datos del Usuario"
       changeButtonText="Cambiar usuario"
       disabled={disabled}
+      route="/users"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear usuario"
+      navigateButtonText="Ver usuario"
     />
   );
 }
@@ -422,6 +489,8 @@ export function VehicleModelEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<VehicleModel>) {
   const searchFunction = (term: string) => searchVehicleModels(term);
 
@@ -445,6 +514,11 @@ export function VehicleModelEntitySearch({
       title="Datos del Modelo"
       changeButtonText="Cambiar modelo"
       disabled={disabled}
+      route="/vehicles/models"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear modelo"
+      navigateButtonText="Ver modelo"
     />
   );
 }
@@ -453,6 +527,8 @@ export function VehicleBrandEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<VehicleBrand>) {
   const dropdownRender = (brand: VehicleBrand) => brand.name;
 
@@ -467,6 +543,11 @@ export function VehicleBrandEntitySearch({
       title="Datos de la Marca"
       changeButtonText="Cambiar marca"
       disabled={disabled}
+      route="/vehicles/brands"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear marca"
+      navigateButtonText="Ver marca"
     />
   );
 }
@@ -475,6 +556,8 @@ export function MaintenanceCategoryEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<Category>) {
   const dropdownRender = (category: Category) => category.name;
 
@@ -489,6 +572,11 @@ export function MaintenanceCategoryEntitySearch({
       title="Datos de la Categoría"
       changeButtonText="Cambiar categoría"
       disabled={disabled}
+      route="/maintenance/categories"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear categoría"
+      navigateButtonText="Ver categoría"
     />
   );
 }
@@ -497,6 +585,8 @@ export function MaintenanceEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<Maintenance>) {
   const dropdownRender = (maintenance: Maintenance) => maintenance.name;
 
@@ -514,6 +604,11 @@ export function MaintenanceEntitySearch({
       title="Datos del Mantenimiento"
       changeButtonText="Cambiar mantenimiento"
       disabled={disabled}
+      route="/maintenance/posibles"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear mantenimiento"
+      navigateButtonText="Ver mantenimiento"
     />
   );
 }
@@ -522,6 +617,8 @@ export function AssignmentEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<Assignment>) {
   const dropdownRender = (assignment: Assignment) => {
     const userName = assignment.user
@@ -547,6 +644,11 @@ export function AssignmentEntitySearch({
       title="Datos de la Asignación"
       changeButtonText="Cambiar asignación"
       disabled={disabled}
+      route="/vehicles/assignments"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear asignación"
+      navigateButtonText="Ver asignación"
     />
   );
 }
@@ -555,6 +657,8 @@ export function QuarterlyControlEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
+  enableCreate = true,
+  enableNavigate = true,
 }: EntitySearchWrapperProps<QuarterlyControl>) {
   const dropdownRender = (control: QuarterlyControl) => {
     const vehicle = control.vehicle;
@@ -585,6 +689,11 @@ export function QuarterlyControlEntitySearch({
       title="Datos del Control Trimestral"
       changeButtonText="Cambiar control"
       disabled={disabled}
+      route="/maintenance/checklists"
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
+      createButtonText="Crear checklist"
+      navigateButtonText="Ver checklist"
     />
   );
 }
