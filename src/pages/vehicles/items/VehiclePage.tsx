@@ -12,6 +12,7 @@ import { VehicleModelEntitySearch } from "../../../components/EntitySearch/Entit
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import { Table, type TableColumn } from "../../../components/Table/table";
+import { TableSelector } from "../../../components/TableSelector";
 import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Vehicle } from "../../../types/vehicle";
 import type { Assignment } from "../../../types/assignment";
@@ -29,6 +30,14 @@ import { TRANSMISSION_TYPES, FUEL_TYPES } from "../../../common/constants";
 import { getQuarterlyControls } from "../../../services/quarterlyControls";
 import type { QuarterlyControl } from "../../../types/quarterlyControl";
 import { getQuarterlyControlStatus } from "../../../common/utils";
+import {
+  Users,
+  UserCheck,
+  Gauge,
+  Wrench,
+  CalendarDays,
+  ClipboardCheck,
+} from "lucide-react";
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
@@ -437,153 +446,201 @@ export default function VehiclesPage() {
       />
 
       {!isNew && id && (
-        <>
-          <Table
-            getRows={(findOptions) =>
-              getAssignments({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={assignmentColumns}
-            header={{
-              title: "Asignaciones",
-              addButton: {
-                text: "+ Agregar Asignación",
-                onClick: () =>
-                  navigate(`/vehicles/assignments/new?vehicleId=${id}`),
-              },
-            }}
-            search={{ enabled: true, placeholder: "Buscar asignaciones..." }}
-            minHeight="500px"
-          />
-
-          <Table
-            getRows={(findOptions) =>
-              getVehicleResponsibles({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={assignmentColumns}
-            header={{
-              title: "Responsables",
-              addButton: {
-                text: "+ Agregar Responsable",
-                onClick: () =>
-                  navigate(`/vehicles/responsibles/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/vehicles/responsibles",
-            }}
-            search={{ enabled: true, placeholder: "Buscar responsables..." }}
-            minHeight="500px"
-          />
-
-          <Table
-            getRows={(findOptions) =>
-              getVehicleKilometersLogs({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={kilometersColumns}
-            header={{
-              title: "Historial de Kilometraje",
-              addButton: {
-                text: "+ Nuevo Registro",
-                onClick: () =>
-                  navigate(`/vehicles/kilometersLogs/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/vehicles/kilometersLogs",
-            }}
-            search={{ enabled: true, placeholder: "Buscar registros..." }}
-          />
-
-          <Table
-            getRows={(findOptions) =>
-              getMaintenanceRecords({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={maintenanceRecordColumns}
-            header={{
-              title: "Registro de Mantenimientos",
-              addButton: {
-                text: "+ Nuevo Registro",
-                onClick: () =>
-                  navigate(`/maintenance/records/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/maintenance/records",
-            }}
-            search={{ enabled: true, placeholder: "Buscar registros..." }}
-            minHeight="500px"
-          />
-
-          <Table
-            getRows={(findOptions) =>
-              getReservations({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={reservationColumns}
-            header={{
-              title: "Reservas",
-              addButton: {
-                text: "+ Nueva Reserva",
-                onClick: () => navigate(`/reservations/new?vehicleId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/reservations",
-            }}
-            search={{ enabled: true, placeholder: "Buscar reservas..." }}
-            minHeight="500px"
-          />
-
-          <Table
-            getRows={(findOptions) =>
-              getQuarterlyControls({
-                ...findOptions,
-                filters: {
-                  ...findOptions.filters,
-                  vehicleId: id,
-                },
-              })
-            }
-            columns={quarterlyControlColumns}
-            header={{
-              title: "Controles Trimestrales",
-            }}
-            actionColumn={{
-              route: "/quarterly-controls",
-            }}
-            search={{ enabled: true, placeholder: "Buscar controles..." }}
-            minHeight="500px"
-          />
-        </>
+        <TableSelector
+          tabs={[
+            {
+              id: "assignments",
+              label: "Asignaciones",
+              icon: Users,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getAssignments({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={assignmentColumns}
+                  header={{
+                    title: "Asignaciones",
+                    addButton: {
+                      text: "+ Agregar Asignación",
+                      onClick: () =>
+                        navigate(`/vehicles/assignments/new?vehicleId=${id}`),
+                    },
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar asignaciones...",
+                  }}
+                  minHeight="500px"
+                />
+              ),
+            },
+            {
+              id: "responsibles",
+              label: "Responsables",
+              icon: UserCheck,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getVehicleResponsibles({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={assignmentColumns}
+                  header={{
+                    title: "Responsables",
+                    addButton: {
+                      text: "+ Agregar Responsable",
+                      onClick: () =>
+                        navigate(`/vehicles/responsibles/new?vehicleId=${id}`),
+                    },
+                  }}
+                  actionColumn={{
+                    route: "/vehicles/responsibles",
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar responsables...",
+                  }}
+                  minHeight="500px"
+                />
+              ),
+            },
+            {
+              id: "kilometers",
+              label: "Kilometraje",
+              icon: Gauge,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getVehicleKilometersLogs({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={kilometersColumns}
+                  header={{
+                    title: "Historial de Kilometraje",
+                    addButton: {
+                      text: "+ Nuevo Registro",
+                      onClick: () =>
+                        navigate(
+                          `/vehicles/kilometersLogs/new?vehicleId=${id}`,
+                        ),
+                    },
+                  }}
+                  actionColumn={{
+                    route: "/vehicles/kilometersLogs",
+                  }}
+                  search={{ enabled: true, placeholder: "Buscar registros..." }}
+                />
+              ),
+            },
+            {
+              id: "maintenance",
+              label: "Mantenimientos",
+              icon: Wrench,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getMaintenanceRecords({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={maintenanceRecordColumns}
+                  header={{
+                    title: "Registro de Mantenimientos",
+                    addButton: {
+                      text: "+ Nuevo Registro",
+                      onClick: () =>
+                        navigate(`/maintenance/records/new?vehicleId=${id}`),
+                    },
+                  }}
+                  actionColumn={{
+                    route: "/maintenance/records",
+                  }}
+                  search={{ enabled: true, placeholder: "Buscar registros..." }}
+                  minHeight="500px"
+                />
+              ),
+            },
+            {
+              id: "reservations",
+              label: "Reservas",
+              icon: CalendarDays,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getReservations({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={reservationColumns}
+                  header={{
+                    title: "Reservas",
+                    addButton: {
+                      text: "+ Nueva Reserva",
+                      onClick: () =>
+                        navigate(`/reservations/new?vehicleId=${id}`),
+                    },
+                  }}
+                  actionColumn={{
+                    route: "/reservations",
+                  }}
+                  search={{ enabled: true, placeholder: "Buscar reservas..." }}
+                  minHeight="500px"
+                />
+              ),
+            },
+            {
+              id: "quarterlyControls",
+              label: "Controles Trimestrales",
+              icon: ClipboardCheck,
+              table: (
+                <Table
+                  getRows={(findOptions) =>
+                    getQuarterlyControls({
+                      ...findOptions,
+                      filters: {
+                        ...findOptions.filters,
+                        vehicleId: id,
+                      },
+                    })
+                  }
+                  columns={quarterlyControlColumns}
+                  header={{
+                    title: "Controles Trimestrales",
+                  }}
+                  actionColumn={{
+                    route: "/quarterly-controls",
+                  }}
+                  search={{ enabled: true, placeholder: "Buscar controles..." }}
+                  minHeight="500px"
+                />
+              ),
+            },
+          ]}
+        />
       )}
 
       <ConfirmDialog
