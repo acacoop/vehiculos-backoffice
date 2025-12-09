@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import { Form, type FormSection, type FormButton } from "../../components/Form";
+import { Form, type FormSection } from "../../components/Form";
 import { usePageState } from "../../hooks";
 import {
   getQuarterlyControlItemById,
@@ -37,6 +37,7 @@ export default function QuarterlyControlItemPage() {
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -44,6 +45,9 @@ export default function QuarterlyControlItemPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
@@ -51,6 +55,7 @@ export default function QuarterlyControlItemPage() {
     redirectOnSuccess: control
       ? `/quarterly-controls/${control.id}`
       : "/quarterly-controls",
+    startInViewMode: true,
   });
 
   const loadData = async () => {
@@ -60,12 +65,13 @@ export default function QuarterlyControlItemPage() {
       const res = await getQuarterlyControlItemById(id);
       if (res.success && res.data) {
         setItem(res.data);
-        setFormData({
+        const loadedFormData = {
           category: res.data.category,
           title: res.data.title,
           status: res.data.status,
           observations: res.data.observations,
-        });
+        };
+        setFormData(loadedFormData);
 
         // Fetch the associated control
         const controlRes = await getQuarterlyControlById(
@@ -74,6 +80,11 @@ export default function QuarterlyControlItemPage() {
         if (controlRes.success && controlRes.data) {
           setControl(controlRes.data);
         }
+
+        setOriginalData({
+          formData: loadedFormData,
+          control: controlRes.success ? controlRes.data : null,
+        });
       }
     });
   };
@@ -82,6 +93,21 @@ export default function QuarterlyControlItemPage() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const handleCancel = () => {
+    const original = cancelEdit<{
+      formData: typeof formData;
+      control: QuarterlyControl | null;
+    }>();
+    if (original) {
+      setFormData(original.formData);
+      setControl(original.control);
+    } else {
+      goTo(
+        control ? `/quarterly-controls/${control.id}` : "/quarterly-controls",
+      );
+    }
+  };
 
   const validateForm = () => {
     if (!control) {
@@ -126,7 +152,7 @@ export default function QuarterlyControlItemPage() {
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: () => (
         <QuarterlyControlEntitySearch
           entity={control}
           onEntityChange={(c: QuarterlyControl | null) => setControl(c)}
@@ -191,31 +217,6 @@ export default function QuarterlyControlItemPage() {
     },
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () =>
-        goTo(
-          control ? `/quarterly-controls/${control.id}` : "/quarterly-controls",
-        ),
-      disabled: saving,
-    },
-    {
-      text: "Eliminar",
-      variant: "danger",
-      onClick: handleDelete,
-      disabled: saving,
-    },
-    {
-      text: saving ? "Guardando..." : "Actualizar Item",
-      variant: "primary",
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   if (loading) {
     return <LoadingSpinner message="Cargando item..." />;
   }
@@ -225,7 +226,16 @@ export default function QuarterlyControlItemPage() {
       <Form
         title="Editar Item del Control Trimestral"
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew: false,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: handleDelete,
+          saving,
+          entityName: "Item",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

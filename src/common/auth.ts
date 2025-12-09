@@ -4,6 +4,7 @@ import {
   EventType,
   type AuthenticationResult,
 } from "@azure/msal-browser";
+import { clearPageStack } from "./navigationStack";
 
 const CLIENT_ID = import.meta.env.VITE_ENTRA_CLIENT_ID as string | undefined;
 const TENANT_ID = import.meta.env.VITE_ENTRA_TENANT_ID as string | undefined;
@@ -174,6 +175,8 @@ export async function appLogout(): Promise<void> {
   }
 
   msalInstance.setActiveAccount(null);
+
+  clearPageStack();
 }
 
 export function isAuthenticated(): boolean {

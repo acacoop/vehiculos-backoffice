@@ -6,38 +6,29 @@ import {
   createMaintenance,
   updateMaintenance,
 } from "../../../services/maintenances";
-import { getMaintenanceCategoryById } from "../../../services/categories";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import type { Category } from "../../../types/category";
-import {
-  Form,
-  type FormButton,
-  type FormSection,
-} from "../../../components/Form";
+import type { Maintenance } from "../../../types/maintenance";
+import { Form, type FormSection } from "../../../components/Form";
 import { MaintenanceCategoryEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
-  const isReadOnly = !isNew && !id;
 
-  const [formData, setFormData] = useState({
-    name: "",
-    kilometersFrequency: undefined as number | undefined,
-    daysFrequency: undefined as number | undefined,
-    observations: "",
-    instructions: "",
-  });
-  const [category, setCategory] = useState<Category | null>(null);
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<Maintenance>>({});
+
+  // UI-only checkbox states
   const [useKilometers, setUseKilometers] = useState(false);
   const [useDays, setUseDays] = useState(false);
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -45,13 +36,37 @@ export default function MaintenancePage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/items" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/maintenance/items",
+    startInViewMode: !isNew,
+    scope: "maintenance",
+  });
 
   useEffect(() => {
-    if (isNew || !id) return;
+    if (isNew) {
+      const savedFormData = getSavedFormData<{
+        formState: Partial<Maintenance>;
+        useKilometers: boolean;
+        useDays: boolean;
+      }>();
+
+      if (savedFormData) {
+        setFormState(savedFormData.formState);
+        setUseKilometers(savedFormData.useKilometers);
+        setUseDays(savedFormData.useDays);
+      }
+      return;
+    }
+
+    if (!id) return;
 
     let cancelled = false;
 
@@ -62,23 +77,21 @@ export default function MaintenancePage() {
         if (cancelled) return;
 
         if (response.success && response.data) {
-          setFormData({
-            name: response.data.name || "",
-            kilometersFrequency: response.data.kilometersFrequency,
-            daysFrequency: response.data.daysFrequency,
-            observations: response.data.observations || "",
-            instructions: response.data.instructions || "",
-          });
-          setCategory(response.data.category || null);
-          // Initialize checkboxes based on existing frequency values
-          setUseKilometers(
+          const hasKm =
             response.data.kilometersFrequency !== undefined &&
-              response.data.kilometersFrequency > 0,
-          );
-          setUseDays(
+            response.data.kilometersFrequency > 0;
+          const hasDays =
             response.data.daysFrequency !== undefined &&
-              response.data.daysFrequency > 0,
-          );
+            response.data.daysFrequency > 0;
+
+          setFormState(response.data);
+          setUseKilometers(hasKm);
+          setUseDays(hasDays);
+          setOriginalData({
+            formState: response.data,
+            useKilometers: hasKm,
+            useDays: hasDays,
+          });
         } else {
           showError(response.message || "Error al cargar el mantenimiento");
         }
@@ -91,31 +104,31 @@ export default function MaintenancePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // Load category from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const categoryId = searchParams.get("categoryId");
-
-    if (categoryId) {
-      executeLoad(async () => {
-        const response = await getMaintenanceCategoryById(categoryId);
-        if (response.success && response.data) {
-          setCategory(response.data);
-        }
-      });
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/maintenance/items");
+    } else {
+      const original = cancelEdit<{
+        formState: Partial<Maintenance>;
+        useKilometers: boolean;
+        useDays: boolean;
+      }>();
+      if (original) {
+        setFormState(original.formState);
+        setUseKilometers(original.useKilometers);
+        setUseDays(original.useDays);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
+  };
 
   const handleSave = () => {
-    if (!formData.name.trim()) {
+    if (!formState.name?.trim()) {
       showError("El nombre del mantenimiento es obligatorio");
       return;
     }
 
-    if (!category) {
+    if (!formState.category) {
       showError("Debe seleccionar una categoría");
       return;
     }
@@ -126,28 +139,34 @@ export default function MaintenancePage() {
       () =>
         isNew
           ? createMaintenance({
-              name: formData.name.trim(),
-              categoryId: category.id,
-              kilometersFrequency: formData.kilometersFrequency,
-              daysFrequency: formData.daysFrequency,
-              observations: formData.observations.trim() || undefined,
-              instructions: formData.instructions.trim() || undefined,
+              name: formState.name!.trim(),
+              categoryId: formState.category!.id,
+              kilometersFrequency: formState.kilometersFrequency,
+              daysFrequency: formState.daysFrequency,
+              observations: formState.observations?.trim() || undefined,
+              instructions: formState.instructions?.trim() || undefined,
             })
           : updateMaintenance(id!, {
-              name: formData.name.trim(),
-              categoryId: category.id,
-              kilometersFrequency: formData.kilometersFrequency,
-              daysFrequency: formData.daysFrequency,
-              observations: formData.observations.trim() || undefined,
-              instructions: formData.instructions.trim() || undefined,
+              name: formState.name!.trim(),
+              categoryId: formState.category!.id,
+              kilometersFrequency: formState.kilometersFrequency,
+              daysFrequency: formState.daysFrequency,
+              observations: formState.observations?.trim() || undefined,
+              instructions: formState.instructions?.trim() || undefined,
             }),
       `Mantenimiento ${actionText}do exitosamente`,
+      {
+        isCreate: isNew,
+        entityRoute: "/maintenance/posibles",
+      },
     );
   };
 
   if (loading) {
     return <LoadingSpinner message="Cargando mantenimiento..." />;
   }
+
+  const getFormData = () => ({ formState, useKilometers, useDays });
 
   const sections: FormSection[] = [
     {
@@ -159,28 +178,35 @@ export default function MaintenancePage() {
           type: "text",
           key: "name",
           label: "Nombre",
-          value: formData.name,
+          value: formState.name || "",
           onChange: (value: string) =>
-            setFormData({ ...formData, name: value }),
+            setFormState((prev) => ({ ...prev, name: value })),
           required: true,
           placeholder: "Ej: Cambio de aceite de motor",
-          disabled: isReadOnly,
         },
       ],
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <MaintenanceCategoryEntitySearch
-          entity={category}
-          onEntityChange={setCategory}
+          entity={formState.category || null}
+          onEntityChange={(category) =>
+            setFormState((prev) => ({
+              ...prev,
+              category: category || undefined,
+            }))
+          }
+          disabled={disabled}
+          contextScope="maintenance"
+          getFormData={getFormData}
         />
       ),
     },
     {
       type: "fields",
       title: "Frecuencia",
-      layout: "horizontal",
+      layout: "vertical",
       fields: [
         {
           type: "checkbox",
@@ -190,24 +216,25 @@ export default function MaintenancePage() {
           onChange: (value: boolean) => {
             setUseKilometers(value);
             if (!value) {
-              setFormData({ ...formData, kilometersFrequency: undefined });
+              setFormState((prev) => ({
+                ...prev,
+                kilometersFrequency: undefined,
+              }));
             }
           },
-          disabled: isReadOnly,
         },
         {
           type: "number",
           key: "kilometersFrequency",
           label: "Kilómetros",
-          value: formData.kilometersFrequency || 0,
+          value: formState.kilometersFrequency || 0,
           onChange: (value: number | undefined) =>
-            setFormData({
-              ...formData,
+            setFormState((prev) => ({
+              ...prev,
               kilometersFrequency: value || undefined,
-            }),
+            })),
           placeholder: "Frecuencia en kilómetros",
           min: 1,
-          disabled: isReadOnly,
           show: useKilometers,
         },
         {
@@ -218,21 +245,22 @@ export default function MaintenancePage() {
           onChange: (value: boolean) => {
             setUseDays(value);
             if (!value) {
-              setFormData({ ...formData, daysFrequency: undefined });
+              setFormState((prev) => ({ ...prev, daysFrequency: undefined }));
             }
           },
-          disabled: isReadOnly,
         },
         {
           type: "number",
           key: "daysFrequency",
           label: "Días",
-          value: formData.daysFrequency || 0,
+          value: formState.daysFrequency || 0,
           onChange: (value: number | undefined) =>
-            setFormData({ ...formData, daysFrequency: value || undefined }),
+            setFormState((prev) => ({
+              ...prev,
+              daysFrequency: value || undefined,
+            })),
           placeholder: "Frecuencia en días",
           min: 1,
-          disabled: isReadOnly,
           show: useDays,
         },
       ],
@@ -246,50 +274,24 @@ export default function MaintenancePage() {
           type: "textarea",
           key: "observations",
           label: "Observaciones",
-          value: formData.observations,
+          value: formState.observations || "",
           onChange: (value: string) =>
-            setFormData({ ...formData, observations: value }),
+            setFormState((prev) => ({ ...prev, observations: value })),
           placeholder: "Observaciones adicionales...",
           rows: 3,
-          disabled: isReadOnly,
         },
         {
           type: "textarea",
           key: "instructions",
           label: "Instrucciones",
-          value: formData.instructions,
+          value: formState.instructions || "",
           onChange: (value: string) =>
-            setFormData({ ...formData, instructions: value }),
+            setFormState((prev) => ({ ...prev, instructions: value })),
           placeholder: "Instrucciones para realizar el mantenimiento...",
           rows: 4,
-          disabled: isReadOnly,
         },
       ],
     },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/maintenance/items"),
-      disabled: saving,
-    },
-    ...(!isReadOnly
-      ? [
-          {
-            text: saving
-              ? "Guardando..."
-              : isNew
-              ? "Crear Mantenimiento"
-              : "Actualizar Mantenimiento",
-            variant: "primary" as const,
-            onClick: handleSave,
-            disabled: saving,
-            loading: saving,
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -297,7 +299,15 @@ export default function MaintenancePage() {
       <Form
         title={isNew ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          saving,
+          entityName: "Mantenimiento",
+        }}
       />
 
       <ConfirmDialog

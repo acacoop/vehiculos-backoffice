@@ -1,9 +1,5 @@
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import {
-  Form,
-  type FormButton,
-  type FormSection,
-} from "../../../components/Form";
+import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
 import {
@@ -11,14 +7,13 @@ import {
   getVehicleById,
   updateVehicle,
 } from "../../../services/vehicles";
-import { getVehicleModelById } from "../../../services/vehicleModels";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { VehicleModelEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import { Table, type TableColumn } from "../../../components/Table/table";
-import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { VehicleModel } from "../../../types/vehicleModel";
+import type { Vehicle } from "../../../types/vehicle";
 import type { Assignment } from "../../../types/assignment";
 import { getAssignments } from "../../../services/assignments";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
@@ -35,27 +30,22 @@ import { getQuarterlyControls } from "../../../services/quarterlyControls";
 import type { QuarterlyControl } from "../../../types/quarterlyControl";
 import { getQuarterlyControlStatus } from "../../../common/utils";
 
+const emptyVehicle: Partial<Vehicle> = {
+  year: new Date().getFullYear(),
+};
+
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const isNew = location.pathname.endsWith("/new");
 
-  const [brand, setBrand] = useState<VehicleBrand | null>(null);
-  const [model, setModel] = useState<VehicleModel | null>(null);
-
-  const [formData, setFormData] = useState({
-    licensePlate: "",
-    year: new Date().getFullYear(),
-    chassisNumber: "",
-    engineNumber: "",
-    transmission: "",
-    fuelType: "",
-  });
+  const [vehicle, setVehicle] = useState<Partial<Vehicle>>(emptyVehicle);
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -63,105 +53,104 @@ export default function VehiclesPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    cancelCreate,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles" });
+    getSavedFormData,
+  } = usePageState({
+    redirectOnSuccess: "/vehicles",
+    startInViewMode: !isNew,
+    scope: "vehicle",
+  });
 
   useEffect(() => {
-    if (!isNew && id) {
+    if (isNew) {
+      const savedFormData = getSavedFormData<Partial<Vehicle>>();
+
+      if (savedFormData) {
+        setVehicle(savedFormData);
+      }
+      return;
+    }
+
+    if (id) {
       loadVehicle(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  // Clear model when brand changes (unless loading a vehicle)
-  useEffect(() => {
-    if (brand && model && model.brand?.id !== brand.id) {
-      setModel(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand]);
-
-  // Load model from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const modelId = searchParams.get("modelId");
-
-    if (modelId) {
-      executeLoad(async () => {
-        const response = await getVehicleModelById(modelId);
-        if (response.success && response.data) {
-          setModel(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadVehicle = async (vehicleId: string) => {
     await executeLoad(async () => {
       const response = await getVehicleById(vehicleId);
 
       if (response.success && response.data) {
-        setFormData({
-          licensePlate: response.data.licensePlate || "",
-          year: response.data.year || new Date().getFullYear(),
-          chassisNumber: response.data.chassisNumber || "",
-          engineNumber: response.data.engineNumber || "",
-          transmission: response.data.transmission || "",
-          fuelType: response.data.fuelType || "",
-        });
-
-        // Set brand and model from the loaded vehicle
-        if (response.data.model) {
-          setModel(response.data.model);
-          if (response.data.model.brand) {
-            setBrand(response.data.model.brand);
-          }
-        }
+        setVehicle(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar el vehículo");
       }
     }, "Error al cargar el vehículo");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles");
+    } else {
+      const original = cancelEdit<Partial<Vehicle>>();
+      if (original) {
+        setVehicle(original);
+      }
+    }
+  };
+
+  const handleModelChange = (model: VehicleModel | null) => {
+    setVehicle({ ...vehicle, model: model || undefined });
+  };
+
   const handleSave = () => {
-    if (!formData.licensePlate) {
+    if (!vehicle.licensePlate) {
       showError("La patente es obligatoria");
       return;
     }
 
-    if (!model) {
+    if (!vehicle.model) {
       showError("El modelo es obligatorio");
       return;
     }
 
-    if (!formData.year) {
+    if (!vehicle.year) {
       showError("El año es obligatorio");
       return;
     }
 
     const actionText = isNew ? "crear" : "actualizar";
+    const statusText = isNew ? "creado" : "actualizado";
 
     executeSave(
       `¿Está seguro que desea ${actionText} este vehículo?`,
       () => {
         const payload = {
-          licensePlate: formData.licensePlate,
-          modelId: model!.id,
-          year: formData.year,
-          chassisNumber: formData.chassisNumber || undefined,
-          engineNumber: formData.engineNumber || undefined,
-          transmission: formData.transmission || undefined,
-          fuelType: formData.fuelType || undefined,
+          licensePlate: vehicle.licensePlate!,
+          modelId: vehicle.model!.id,
+          year: vehicle.year!,
+          chassisNumber: vehicle.chassisNumber || undefined,
+          engineNumber: vehicle.engineNumber || undefined,
+          transmission: vehicle.transmission || undefined,
+          fuelType: vehicle.fuelType || undefined,
         };
 
         return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
       },
-      `Vehículo ${actionText}do con éxito`,
+      `Vehículo ${statusText} con éxito`,
+      {
+        isCreate: isNew,
+        entityRoute: "/vehicles",
+      },
     );
   };
 
@@ -341,21 +330,21 @@ export default function VehiclesPage() {
     {
       type: "fields",
       title: "Información General",
+      layout: "grid",
       fields: [
         {
           type: "text",
-          value: formData.licensePlate,
+          value: vehicle.licensePlate,
           onChange: (value: string) =>
-            setFormData({ ...formData, licensePlate: value }),
+            setVehicle({ ...vehicle, licensePlate: value }),
           key: "licensePlate",
           label: "Patente",
           required: true,
         },
         {
           type: "number",
-          value: formData.year,
-          onChange: (value: number) =>
-            setFormData({ ...formData, year: value }),
+          value: vehicle.year,
+          onChange: (value: number) => setVehicle({ ...vehicle, year: value }),
           key: "year",
           label: "Año",
           required: true,
@@ -364,35 +353,42 @@ export default function VehiclesPage() {
     },
     {
       type: "entity",
-      render: (
-        <VehicleModelEntitySearch entity={model} onEntityChange={setModel} />
+      render: ({ disabled }) => (
+        <VehicleModelEntitySearch
+          entity={vehicle.model || null}
+          onEntityChange={handleModelChange}
+          disabled={disabled}
+          contextScope="vehicle"
+          getFormData={() => vehicle}
+        />
       ),
     },
     {
       type: "fields",
       title: "Ficha Técnica",
+      layout: "grid",
       fields: [
         {
           type: "text",
-          value: formData.chassisNumber,
+          value: vehicle.chassisNumber,
           onChange: (value: string) =>
-            setFormData({ ...formData, chassisNumber: value }),
+            setVehicle({ ...vehicle, chassisNumber: value }),
           key: "chassisNumber",
           label: "Número de Chasis",
         },
         {
           type: "text",
-          value: formData.engineNumber,
+          value: vehicle.engineNumber,
           onChange: (value: string) =>
-            setFormData({ ...formData, engineNumber: value }),
+            setVehicle({ ...vehicle, engineNumber: value }),
           key: "engineNumber",
           label: "Número de Motor",
         },
         {
           type: "select",
-          value: formData.transmission,
+          value: vehicle.transmission,
           onChange: (value: string) =>
-            setFormData({ ...formData, transmission: value }),
+            setVehicle({ ...vehicle, transmission: value }),
           key: "transmission",
           label: "Transmisión",
           required: false,
@@ -404,9 +400,9 @@ export default function VehiclesPage() {
         },
         {
           type: "select",
-          value: formData.fuelType,
+          value: vehicle.fuelType,
           onChange: (value: string) =>
-            setFormData({ ...formData, fuelType: value }),
+            setVehicle({ ...vehicle, fuelType: value }),
           key: "fuelType",
           label: "Tipo de Combustible",
           required: false,
@@ -420,26 +416,6 @@ export default function VehiclesPage() {
     },
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/vehicles"),
-      disabled: saving,
-    },
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Registrar Vehículo"
-        : "Actualizar Vehículo",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   if (loading) {
     return <LoadingSpinner message="Cargando vehículo..." />;
   }
@@ -449,7 +425,15 @@ export default function VehiclesPage() {
       <Form
         title="Detalle del Vehículo"
         sections={vehicleInfoSections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          saving,
+          entityName: "Vehículo",
+        }}
       />
 
       {!isNew && id && (

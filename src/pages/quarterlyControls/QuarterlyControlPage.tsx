@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { Table, type TableColumn } from "../../components/Table/table";
-import { Form, type FormSection, type FormButton } from "../../components/Form";
+import { Form, type FormSection } from "../../components/Form";
 import { usePageState } from "../../hooks";
 import {
   getQuarterlyControlById,
@@ -9,7 +9,6 @@ import {
   updateQuarterlyControl,
   deleteQuarterlyControl,
 } from "../../services/quarterlyControls";
-import { getVehicleById } from "../../services/vehicles";
 import type { QuarterlyControl } from "../../types/quarterlyControl";
 import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
 import type { Vehicle } from "../../types/vehicle";
@@ -41,6 +40,7 @@ export default function QuarterlyControlPage() {
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -48,28 +48,16 @@ export default function QuarterlyControlPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/quarterly-controls" });
-
-  // Load vehicle from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
-        if (response.success && response.data) {
-          setVehicle(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
+  } = usePageState({
+    redirectOnSuccess: "/quarterly-controls",
+    startInViewMode: !isNew,
+  });
 
   const loadData = useCallback(async () => {
     if (!id || isNew) return;
@@ -82,10 +70,15 @@ export default function QuarterlyControlPage() {
         if (controlRes.data.vehicle) {
           setVehicle(controlRes.data.vehicle);
         }
-        setFormData({
+        const loadedFormData = {
           year: controlRes.data.year,
           quarter: controlRes.data.quarter,
           intendedDeliveryDate: controlRes.data.intendedDeliveryDate,
+        };
+        setFormData(loadedFormData);
+        setOriginalData({
+          formData: loadedFormData,
+          vehicle: controlRes.data.vehicle || null,
         });
       }
     });
@@ -95,6 +88,21 @@ export default function QuarterlyControlPage() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  const handleCancel = () => {
+    if (isNew) {
+      goTo("/quarterly-controls");
+    } else {
+      const original = cancelEdit<{
+        formData: typeof formData;
+        vehicle: Vehicle | null;
+      }>();
+      if (original) {
+        setFormData(original.formData);
+        setVehicle(original.vehicle);
+      }
+    }
+  };
 
   const handleSave = () => {
     if (!vehicle) {
@@ -194,11 +202,11 @@ export default function QuarterlyControlPage() {
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
           entity={vehicle}
           onEntityChange={setVehicle}
-          disabled={!isNew}
+          disabled={disabled || !isNew}
         />
       ),
     },
@@ -280,44 +288,21 @@ export default function QuarterlyControlPage() {
       : []),
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/quarterly-controls"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Eliminar",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? isNew
-          ? "Creando..."
-          : "Guardando..."
-        : isNew
-        ? "Crear Control"
-        : "Guardar Cambios",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   return (
     <div>
       <Form
         title={isNew ? "Nuevo Control Trimestral" : "Editar Control Trimestral"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Control",
+        }}
       />
 
       {!isNew && control && (

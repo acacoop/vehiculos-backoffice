@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
-import type { FormSection, FormButton } from "../../../components/Form/Form";
+import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import {
@@ -19,6 +19,7 @@ import type {
   VehicleModel,
   VehicleModelFilterParams,
 } from "../../../types/vehicleModel";
+import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { ApiFindOptions } from "../../../services/common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
@@ -58,13 +59,14 @@ export default function BrandPage() {
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [formData, setFormData] = useState({
+  const [formState, setFormState] = useState<Partial<VehicleBrand>>({
     name: "",
   });
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -72,10 +74,18 @@ export default function BrandPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    cancelCreate,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles/brands" });
+  } = usePageState({
+    redirectOnSuccess: "/vehicles/brands",
+    startInViewMode: !isNew,
+    scope: "brand",
+  });
 
   useEffect(() => {
     if (!isNew && id) {
@@ -89,17 +99,28 @@ export default function BrandPage() {
       const response = await getVehicleBrandById(brandId);
 
       if (response.success && response.data) {
-        setFormData({
-          name: response.data.name || "",
-        });
+        setFormState(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar la marca");
       }
     }, "Error al cargar la marca");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles/brands");
+    } else {
+      const original = cancelEdit<Partial<VehicleBrand>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const handleSave = () => {
-    if (!formData.name.trim()) {
+    if (!formState.name?.trim()) {
       showError("El nombre de la marca es obligatorio");
       return;
     }
@@ -110,12 +131,16 @@ export default function BrandPage() {
       () =>
         isNew
           ? createVehicleBrand({
-              name: formData.name.trim(),
+              name: formState.name!.trim(),
             })
           : updateVehicleBrand(id!, {
-              name: formData.name.trim(),
+              name: formState.name!.trim(),
             }),
       `Marca ${actionText}da exitosamente`,
+      {
+        isCreate: isNew,
+        entityRoute: "/vehicles/brands",
+      },
     );
   };
 
@@ -155,8 +180,9 @@ export default function BrandPage() {
           type: "text",
           key: "name",
           label: "Nombre",
-          value: formData.name,
-          onChange: (value) => setFormData({ ...formData, name: value }),
+          value: formState.name || "",
+          onChange: (value) =>
+            setFormState((prev) => ({ ...prev, name: value })),
           required: true,
           placeholder: "Ej: Toyota",
           disabled: false,
@@ -165,32 +191,20 @@ export default function BrandPage() {
     },
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/vehicles/brands"),
-      disabled: saving,
-    },
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Marca"
-        : "Actualizar Marca",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   return (
     <div className="container">
       <Form
         title={isNew ? "Nueva Marca" : "Editar Marca"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          saving,
+          entityName: "Marca",
+        }}
       />
 
       {!isNew && id && (

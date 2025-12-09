@@ -8,6 +8,7 @@ import type { VehicleModel } from "../../types/vehicleModel";
 import type { Category } from "../../types/category";
 import type { Assignment } from "../../types/assignment";
 import type { QuarterlyControl } from "../../types/quarterlyControl";
+import type { Identifiable } from "../../types/common";
 import { getVehicles } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
 import { getVehicleModels } from "../../services/vehicleModels";
@@ -17,11 +18,11 @@ import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
 import { getQuarterlyControls } from "../../services/quarterlyControls";
 import { QUARTER_LABELS } from "../../common";
+import {
+  pushPageContext,
+  consumeCreatedEntity,
+} from "../../common/navigationStack";
 import "./EntitySearch.css";
-
-interface Identifiable {
-  id?: number | string;
-}
 
 interface DisplayField<T> {
   path: keyof T | string;
@@ -49,6 +50,13 @@ interface EntitySearchProps<T extends Identifiable> {
   enableNavigate?: boolean;
   createButtonText?: string;
   navigateButtonText?: string;
+  onCreateClick?: () => void; // Custom handler for create button - if provided, overrides default navigation
+  /** Function to get current form data - will be saved to page stack when navigating to create */
+  getFormData?: () => unknown;
+  /** Scope/Entity type of the current page (for navigation stack safety) */
+  contextScope?: string;
+  /** Entity type identifier - used to auto-consume created entities from returnData */
+  entityType?: string;
 }
 
 export function EntitySearch<T extends Identifiable>({
@@ -71,6 +79,10 @@ export function EntitySearch<T extends Identifiable>({
   enableNavigate = false,
   createButtonText = "Crear nuevo",
   navigateButtonText = "Ver detalle",
+  onCreateClick,
+  getFormData,
+  contextScope,
+  entityType,
 }: EntitySearchProps<T>) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,6 +92,18 @@ export function EntitySearch<T extends Identifiable>({
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const debounceTimer = useRef<number | undefined>(undefined);
+  const hasConsumedRef = useRef(false);
+
+  // Auto-consume created entity from returnData if entityType matches
+  useEffect(() => {
+    if (!entityType || entity || hasConsumedRef.current) return;
+
+    const createdEntity = consumeCreatedEntity<T>(entityType);
+    if (createdEntity) {
+      hasConsumedRef.current = true;
+      onEntityChange(createdEntity);
+    }
+  }, [entityType, entity, onEntityChange]);
 
   useEffect(() => {
     if (searchTerm.length < minChars) {
@@ -148,7 +172,17 @@ export function EntitySearch<T extends Identifiable>({
   };
 
   const handleCreate = () => {
+    if (onCreateClick) {
+      onCreateClick();
+      return;
+    }
+
     if (route) {
+      // Get current form data if available
+      const formData = getFormData ? getFormData() : {};
+
+      // Push current context to page stack with form data
+      pushPageContext(window.location.pathname, formData, contextScope);
       navigate(`${route}/new`);
     }
   };
@@ -409,13 +443,18 @@ interface EntitySearchWrapperProps<T> {
   disabled?: boolean;
   enableCreate?: boolean;
   enableNavigate?: boolean;
+  onCreateClick?: () => void;
+  /** Function to get current form data - will be saved to page stack when navigating to create */
+  getFormData?: () => unknown;
+  /** Scope/Entity type of the current page (for navigation stack safety) */
+  contextScope?: string;
 }
 
 export function VehicleEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
-  enableCreate = true,
+  enableCreate = false,
   enableNavigate = true,
 }: EntitySearchWrapperProps<Vehicle>) {
   const dropdownRender = (vehicle: Vehicle) => {
@@ -445,6 +484,7 @@ export function VehicleEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear vehículo"
       navigateButtonText="Ver vehículo"
+      entityType="vehicle"
     />
   );
 }
@@ -453,8 +493,10 @@ export function UserEntitySearch({
   entity,
   onEntityChange,
   disabled = false,
-  enableCreate = true,
+  enableCreate = false,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<User>) {
   const dropdownRender = (user: User) => {
     return `${user.firstName} ${user.lastName} - ${user.email}`;
@@ -481,6 +523,9 @@ export function UserEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear usuario"
       navigateButtonText="Ver usuario"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="user"
     />
   );
 }
@@ -491,9 +536,9 @@ export function VehicleModelEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<VehicleModel>) {
-  const searchFunction = (term: string) => searchVehicleModels(term);
-
   const dropdownRender = (model: VehicleModel) => {
     const brand = model.brand?.name || "";
     return `${brand} - ${model.name}`;
@@ -503,7 +548,7 @@ export function VehicleModelEntitySearch({
     <EntitySearch<VehicleModel>
       entity={entity}
       onEntityChange={onEntityChange}
-      searchFunction={searchFunction}
+      searchFunction={searchVehicleModels}
       displayFields={[
         { path: "brand.name", label: "Marca" },
         { path: "name", label: "Modelo" },
@@ -519,6 +564,9 @@ export function VehicleModelEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear modelo"
       navigateButtonText="Ver modelo"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="model"
     />
   );
 }
@@ -529,6 +577,8 @@ export function VehicleBrandEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<VehicleBrand>) {
   const dropdownRender = (brand: VehicleBrand) => brand.name;
 
@@ -548,6 +598,9 @@ export function VehicleBrandEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear marca"
       navigateButtonText="Ver marca"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="brand"
     />
   );
 }
@@ -558,6 +611,8 @@ export function MaintenanceCategoryEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<Category>) {
   const dropdownRender = (category: Category) => category.name;
 
@@ -577,6 +632,9 @@ export function MaintenanceCategoryEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear categoría"
       navigateButtonText="Ver categoría"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="category"
     />
   );
 }
@@ -587,6 +645,8 @@ export function MaintenanceEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<Maintenance>) {
   const dropdownRender = (maintenance: Maintenance) => maintenance.name;
 
@@ -609,6 +669,9 @@ export function MaintenanceEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear mantenimiento"
       navigateButtonText="Ver mantenimiento"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="maintenance"
     />
   );
 }
@@ -619,6 +682,8 @@ export function AssignmentEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<Assignment>) {
   const dropdownRender = (assignment: Assignment) => {
     const userName = assignment.user
@@ -649,6 +714,9 @@ export function AssignmentEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear asignación"
       navigateButtonText="Ver asignación"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="assignment"
     />
   );
 }
@@ -659,6 +727,8 @@ export function QuarterlyControlEntitySearch({
   disabled = false,
   enableCreate = true,
   enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<QuarterlyControl>) {
   const dropdownRender = (control: QuarterlyControl) => {
     const vehicle = control.vehicle;
@@ -694,6 +764,9 @@ export function QuarterlyControlEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear checklist"
       navigateButtonText="Ver checklist"
+      getFormData={getFormData}
+      contextScope={contextScope}
+      entityType="quarterlyControl"
     />
   );
 }
