@@ -56,6 +56,16 @@ export const msalInstance = new PublicClientApplication({
 
 let initialized = false;
 let callbackRegistered = false;
+let redirectInProgress = false;
+
+// Detectar si estamos en un popup o iframe
+function isInPopupOrIframe(): boolean {
+  try {
+    return window.opener !== null || window.self !== window.top;
+  } catch {
+    return true; // Si hay error accediendo a window.top, probablemente estamos en iframe
+  }
+}
 
 export async function initMsal(): Promise<void> {
   if (!initialized) {
@@ -117,10 +127,25 @@ export async function ensureActiveAccount(): Promise<AccountInfo | null> {
 }
 
 export async function getAccessToken(): Promise<string | undefined> {
+  // No hacer nada si estamos en un popup/iframe
+  if (isInPopupOrIframe()) {
+    console.warn("Skipping token acquisition - running in popup/iframe");
+    return undefined;
+  }
+
+  // Evitar múltiples redirects simultáneos
+  if (redirectInProgress) {
+    console.warn("Redirect already in progress, skipping");
+    return undefined;
+  }
+
   try {
     const account = await ensureActiveAccount();
     if (!account || API_SCOPES.length === 0) {
-      window.location.href = "/login";
+      if (!redirectInProgress) {
+        redirectInProgress = true;
+        window.location.href = "/login";
+      }
       return undefined;
     }
     const silentParams = {
@@ -131,38 +156,35 @@ export async function getAccessToken(): Promise<string | undefined> {
       const result = await msalInstance.acquireTokenSilent(silentParams);
       return result.accessToken;
     } catch (e) {
-      // Silent token failed - use popup
-      console.warn("Silent token acquisition failed, using popup:", e);
-      try {
-        const result = await msalInstance.acquireTokenPopup({
+      // Silent token failed - use redirect
+      console.warn("Silent token acquisition failed, using redirect:", e);
+      if (!redirectInProgress) {
+        redirectInProgress = true;
+        await msalInstance.acquireTokenRedirect({
           scopes: API_SCOPES,
           account,
         });
-        return result.accessToken;
-      } catch (popupError) {
-        console.error("Popup failed, going to login:", popupError);
-        window.location.href = "/login";
-        return undefined;
       }
+      return undefined;
     }
   } catch (error) {
     console.error("Error crítico obteniendo token:", error);
-    window.location.href = "/login";
+    if (!redirectInProgress) {
+      redirectInProgress = true;
+      window.location.href = "/login";
+    }
     return undefined;
   }
 }
 
 export async function login(): Promise<void> {
   try {
-    const res = await msalInstance.loginPopup({
+    await msalInstance.loginRedirect({
       scopes: API_SCOPES,
       prompt: "select_account",
     });
-    if (res.account) {
-      msalInstance.setActiveAccount(res.account);
-    }
   } catch (error) {
-    console.error("Login popup failed:", error);
+    console.error("Login redirect failed:", error);
     throw error;
   }
 }
