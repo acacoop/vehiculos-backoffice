@@ -4,6 +4,7 @@ import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table/table";
+import { TableSelector } from "../../../components/TableSelector";
 import {
   getVehicleBrandById,
   createVehicleBrand,
@@ -21,6 +22,7 @@ import type {
 } from "../../../types/vehicleModel";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { ApiFindOptions } from "../../../services/common";
+import { Layers, Car } from "lucide-react";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -208,41 +210,57 @@ export default function BrandPage() {
       />
 
       {!isNew && id && (
-        <>
-          <Table
-            getRows={getModelsByBrand}
-            columns={modelColumns}
-            header={{
-              title: "Modelos de esta Marca",
-              addButton: {
-                text: "+ Nuevo Modelo",
-                onClick: () => navigate(`/vehicles/models/new?brandId=${id}`),
-              },
-            }}
-            actionColumn={{
-              route: "/vehicles/models",
-            }}
-            search={{
-              enabled: true,
-              placeholder: "Buscar modelos...",
-            }}
-          />
-
-          <Table
-            getRows={getVehiclesByBrand}
-            columns={vehicleColumns}
-            header={{
-              title: "Vehículos de esta Marca",
-            }}
-            actionColumn={{
-              route: "/vehicles",
-            }}
-            search={{
-              enabled: true,
-              placeholder: "Buscar vehículos...",
-            }}
-          />
-        </>
+        <TableSelector
+          tabs={[
+            {
+              id: "models",
+              label: "Modelos",
+              icon: Layers,
+              table: (
+                <Table
+                  getRows={getModelsByBrand}
+                  columns={modelColumns}
+                  header={{
+                    title: "Modelos de esta Marca",
+                    addButton: {
+                      text: "+ Nuevo Modelo",
+                      onClick: () =>
+                        navigate(`/vehicles/models/new?brandId=${id}`),
+                    },
+                  }}
+                  actionColumn={{
+                    route: "/vehicles/models",
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar modelos...",
+                  }}
+                />
+              ),
+            },
+            {
+              id: "vehicles",
+              label: "Vehículos",
+              icon: Car,
+              table: (
+                <Table
+                  getRows={getVehiclesByBrand}
+                  columns={vehicleColumns}
+                  header={{
+                    title: "Vehículos de esta Marca",
+                  }}
+                  actionColumn={{
+                    route: "/vehicles",
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar vehículos...",
+                  }}
+                />
+              ),
+            },
+          ]}
+        />
       )}
 
       <ConfirmDialog
