@@ -4,14 +4,27 @@
  * Manages a stack of page contexts so that nested navigation flows
  * (e.g., Vehicle → Model → Brand) can properly return through each level
  * with all the form data preserved.
+ *
+ * Architecture:
+ * - Page stack: tracks the return path chain (for knowing where to go back)
+ * - Form data store: preserves form data by route (for restoring state when returning)
+ * - Created entity: stores the last created entity for EntitySearch to consume
  */
 
-export interface PageContext<T = unknown> {
+export interface PageContext {
   /** The path to return to */
   returnPath: string;
-  /** Form data to restore */
-  formData: T;
   /** Scope/Entity type of the page that pushed this context */
+  scope?: string;
+  /** Timestamp for cleanup */
+  timestamp: number;
+}
+
+/** Form data stored by route */
+export interface StoredFormData<T = unknown> {
+  /** The form data */
+  data: T;
+  /** Scope for validation */
   scope?: string;
   /** Timestamp for cleanup */
   timestamp: number;
@@ -25,7 +38,8 @@ export interface CreatedEntityData<T = unknown> {
   entityType: string;
 }
 
-const STORAGE_KEY = "page_stack";
+const STACK_KEY = "page_stack";
+const FORM_DATA_KEY = "form_data_store";
 const CREATED_ENTITY_KEY = "created_entity";
 const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -34,7 +48,7 @@ const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
  */
 function getStack(): PageContext[] {
   try {
-    const data = sessionStorage.getItem(STORAGE_KEY);
+    const data = sessionStorage.getItem(STACK_KEY);
     if (!data) return [];
 
     const stack = JSON.parse(data) as PageContext[];
@@ -52,16 +66,51 @@ function getStack(): PageContext[] {
  */
 function saveStack(stack: PageContext[]): void {
   if (stack.length === 0) {
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STACK_KEY);
   } else {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stack));
+    sessionStorage.setItem(STACK_KEY, JSON.stringify(stack));
   }
 }
 
 /**
- * Push a new page context onto the stack
- * @param returnPath - The path to return to after the action
- * @param formData - The form data to preserve
+ * Get the form data store from sessionStorage
+ */
+function getFormDataStore(): Record<string, StoredFormData> {
+  try {
+    const data = sessionStorage.getItem(FORM_DATA_KEY);
+    if (!data) return {};
+
+    const store = JSON.parse(data) as Record<string, StoredFormData>;
+
+    // Clean up old entries
+    const now = Date.now();
+    const cleaned: Record<string, StoredFormData> = {};
+    for (const [key, value] of Object.entries(store)) {
+      if (now - value.timestamp < MAX_AGE_MS) {
+        cleaned[key] = value;
+      }
+    }
+    return cleaned;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Save the form data store to sessionStorage
+ */
+function saveFormDataStore(store: Record<string, StoredFormData>): void {
+  if (Object.keys(store).length === 0) {
+    sessionStorage.removeItem(FORM_DATA_KEY);
+  } else {
+    sessionStorage.setItem(FORM_DATA_KEY, JSON.stringify(store));
+  }
+}
+
+/**
+ * Push a new page context onto the stack and save form data for the current route
+ * @param returnPath - The path to return to after the action (current page)
+ * @param formData - The form data to preserve for the current page
  * @param scope - Optional scope/entity type identifier
  */
 export function pushPageContext<T>(
@@ -69,10 +118,19 @@ export function pushPageContext<T>(
   formData: T,
   scope?: string,
 ): void {
+  // Save form data for this route
+  const formStore = getFormDataStore();
+  formStore[returnPath] = {
+    data: formData,
+    scope,
+    timestamp: Date.now(),
+  };
+  saveFormDataStore(formStore);
+
+  // Push to stack
   const stack = getStack();
   stack.push({
     returnPath,
-    formData,
     scope,
     timestamp: Date.now(),
   });
@@ -82,35 +140,62 @@ export function pushPageContext<T>(
 /**
  * Pop the top page context from the stack
  * Returns the context to navigate back to, or null if stack is empty
+ * Note: Does NOT remove the form data - that's done separately via clearFormData
  */
-export function popPageContext<T = unknown>(): PageContext<T> | null {
+export function popPageContext(): PageContext | null {
   const stack = getStack();
   const context = stack.pop() || null;
   saveStack(stack);
-  return context as PageContext<T> | null;
+  return context;
 }
 
 /**
  * Peek at the top page context without removing it
  */
-export function peekPageContext<T = unknown>(): PageContext<T> | null {
+export function peekPageContext(): PageContext | null {
   const stack = getStack();
-  return stack.length > 0 ? (stack[stack.length - 1] as PageContext<T>) : null;
+  return stack.length > 0 ? stack[stack.length - 1] : null;
 }
 
 /**
- * Check if there's a pending page context
+ * Get saved form data for a specific route
+ * @param route - The route to get form data for
+ * @param expectedScope - Optional scope to validate against
  */
-export function hasPageContext(): boolean {
-  return getStack().length > 0;
+export function getFormData<T = unknown>(
+  route: string,
+  expectedScope?: string,
+): T | null {
+  const store = getFormDataStore();
+  const stored = store[route];
+
+  if (!stored) return null;
+
+  // Validate scope if provided
+  if (expectedScope && stored.scope !== expectedScope) {
+    return null;
+  }
+
+  return stored.data as T;
 }
 
 /**
- * Clear the entire page stack
+ * Clear form data for a specific route
+ * Call this after successfully consuming the form data
+ */
+export function clearFormData(route: string): void {
+  const store = getFormDataStore();
+  delete store[route];
+  saveFormDataStore(store);
+}
+
+/**
+ * Clear the entire page stack and form data store
  * Call this on logout or when needed
  */
 export function clearPageStack(): void {
-  sessionStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STACK_KEY);
+  sessionStorage.removeItem(FORM_DATA_KEY);
   sessionStorage.removeItem(CREATED_ENTITY_KEY);
 }
 

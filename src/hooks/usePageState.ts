@@ -1,13 +1,18 @@
 import { useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useConfirmDialog, useNotification } from "./index";
 import type { Identifiable } from "../types/common";
 import {
   peekPageContext,
   popPageContext,
-  hasPageContext,
   setCreatedEntity,
+  getFormData,
+  clearFormData,
+  consumeCreatedEntity,
 } from "../common/navigationStack";
+
+/** Mapping of entityType to field name for auto-merging created entities */
+export type EntityFieldMapping = Record<string, string>;
 
 interface UsePageStateOptions {
   redirectOnSuccess?: string;
@@ -26,6 +31,7 @@ export function usePageState(options: UsePageStateOptions = {}) {
     scope,
   } = options;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -53,13 +59,6 @@ export function usePageState(options: UsePageStateOptions = {}) {
   }, []);
 
   /**
-   * Get stored original data
-   */
-  const getOriginalData = useCallback(<T>(): T | null => {
-    return originalDataRef.current as T | null;
-  }, []);
-
-  /**
    * Enable edit mode
    */
   const enableEdit = useCallback(() => {
@@ -73,13 +72,6 @@ export function usePageState(options: UsePageStateOptions = {}) {
   const cancelEdit = useCallback(<T>(): T | null => {
     setIsEditing(false);
     return originalDataRef.current as T | null;
-  }, []);
-
-  /**
-   * Check if there's a pending page context to return to
-   */
-  const hasPendingReturn = useCallback((): boolean => {
-    return hasPageContext();
   }, []);
 
   /**
@@ -129,24 +121,28 @@ export function usePageState(options: UsePageStateOptions = {}) {
 
           if (options?.isCreate) {
             // Check page stack (from EntitySearch create flow)
-            // Use peek to get the returnPath without consuming the context yet
             const pageContext = peekPageContext();
 
             if (pageContext && response.data && scope) {
-              // Store only the created entity - formData stays in the stack
+              // Store the created entity for the destination page to consume
               setCreatedEntity(response.data, scope);
-              // Now pop to consume the context
+              // Clear form data for the current route (we're done with it)
+              clearFormData(location.pathname);
+              // Pop the navigation context
               popPageContext();
               // Navigate back to the page that initiated the create
               setTimeout(() => navigate(pageContext.returnPath), redirectDelay);
             } else if (options?.entityRoute && entityId) {
-              // Navigate to the newly created entity
+              // No stack context - navigate to the newly created entity
+              // Clear any saved form data for this route
+              clearFormData(location.pathname);
               setTimeout(
                 () => navigate(`${options.entityRoute}/${entityId}`),
                 redirectDelay,
               );
             } else if (redirectOnSuccess) {
               // Fallback to configured redirect
+              clearFormData(location.pathname);
               setTimeout(() => navigate(redirectOnSuccess), redirectDelay);
             }
           } else {
@@ -169,21 +165,50 @@ export function usePageState(options: UsePageStateOptions = {}) {
   };
 
   /**
-   * Get form data from a create flow (call this once on page load)
-   * Returns the preserved form data from the page stack
-   * Note: createdEntity is auto-consumed by EntitySearch components via consumeCreatedEntity()
+   * Get form data saved for the current route (call this once on page load)
+   * If entityFieldMapping is provided, will also consume any pending created entity
+   * and merge it into the returned form data.
+   *
+   * @param entityFieldMapping - Optional mapping of entityType to field name
+   *   e.g., { brand: "brand", model: "model" }
+   *   If the created entity's type matches a key, it will be set on that field
+   *
+   * @example
+   * // Without entity mapping (just restore form data)
+   * const savedData = getSavedFormData<FormType>();
+   *
+   * // With entity mapping (restore + merge created entity)
+   * const savedData = getSavedFormData<FormType>({ brand: "brand" });
    */
-  const getSavedFormData = useCallback(<TForm = unknown>(): TForm | null => {
-    const context = popPageContext<TForm>();
-    if (!context) return null;
+  const getSavedFormData = useCallback(
+    <TForm = unknown>(
+      entityFieldMapping?: EntityFieldMapping,
+    ): TForm | null => {
+      const currentPath = location.pathname;
+      const formData = getFormData<TForm>(currentPath, scope);
 
-    // Verify scope matches if provided
-    if (scope && context.scope !== scope) {
-      return null;
-    }
+      if (!formData) return null;
 
-    return context.formData;
-  }, [scope]);
+      // If we have an entity mapping, try to consume and merge created entity
+      if (entityFieldMapping) {
+        for (const [entityType, fieldName] of Object.entries(
+          entityFieldMapping,
+        )) {
+          const createdEntity = consumeCreatedEntity(entityType);
+          if (createdEntity) {
+            // Merge the created entity into the form data
+            return {
+              ...formData,
+              [fieldName]: createdEntity,
+            };
+          }
+        }
+      }
+
+      return formData;
+    },
+    [location.pathname, scope],
+  );
 
   /**
    * Navigates to a different route
@@ -197,11 +222,13 @@ export function usePageState(options: UsePageStateOptions = {}) {
   const cancelCreate = useCallback((): boolean => {
     const pageContext = popPageContext();
     if (pageContext) {
+      // Clear form data for the current route since we're canceling
+      clearFormData(location.pathname);
       navigate(pageContext.returnPath);
       return true;
     }
     return false;
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   return {
     // State
@@ -217,8 +244,6 @@ export function usePageState(options: UsePageStateOptions = {}) {
     cancelEdit,
     cancelCreate,
     setOriginalData,
-    getOriginalData,
-    hasPendingReturn,
     getSavedFormData,
 
     // Actions

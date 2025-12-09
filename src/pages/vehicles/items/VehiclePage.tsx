@@ -78,7 +78,10 @@ export default function VehiclesPage() {
 
   useEffect(() => {
     if (isNew) {
-      const savedFormData = getSavedFormData<Partial<Vehicle>>();
+      // Restore form data + merge any created entity (e.g., model created in nested flow)
+      const savedFormData = getSavedFormData<Partial<Vehicle>>({
+        model: "model", // If a model was created, merge it into the "model" field
+      });
 
       if (savedFormData) {
         setVehicle(savedFormData);

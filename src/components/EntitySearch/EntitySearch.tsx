@@ -18,10 +18,7 @@ import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
 import { getQuarterlyControls } from "../../services/quarterlyControls";
 import { QUARTER_LABELS } from "../../common";
-import {
-  pushPageContext,
-  consumeCreatedEntity,
-} from "../../common/navigationStack";
+import { pushPageContext } from "../../common/navigationStack";
 import "./EntitySearch.css";
 
 interface DisplayField<T> {
@@ -55,8 +52,6 @@ interface EntitySearchProps<T extends Identifiable> {
   getFormData?: () => unknown;
   /** Scope/Entity type of the current page (for navigation stack safety) */
   contextScope?: string;
-  /** Entity type identifier - used to auto-consume created entities from returnData */
-  entityType?: string;
 }
 
 export function EntitySearch<T extends Identifiable>({
@@ -82,7 +77,6 @@ export function EntitySearch<T extends Identifiable>({
   onCreateClick,
   getFormData,
   contextScope,
-  entityType,
 }: EntitySearchProps<T>) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,18 +86,6 @@ export function EntitySearch<T extends Identifiable>({
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const debounceTimer = useRef<number | undefined>(undefined);
-  const hasConsumedRef = useRef(false);
-
-  // Auto-consume created entity from returnData if entityType matches
-  useEffect(() => {
-    if (!entityType || entity || hasConsumedRef.current) return;
-
-    const createdEntity = consumeCreatedEntity<T>(entityType);
-    if (createdEntity) {
-      hasConsumedRef.current = true;
-      onEntityChange(createdEntity);
-    }
-  }, [entityType, entity, onEntityChange]);
 
   useEffect(() => {
     if (searchTerm.length < minChars) {
@@ -484,7 +466,6 @@ export function VehicleEntitySearch({
       enableNavigate={enableNavigate}
       createButtonText="Crear vehículo"
       navigateButtonText="Ver vehículo"
-      entityType="vehicle"
     />
   );
 }
@@ -525,7 +506,6 @@ export function UserEntitySearch({
       navigateButtonText="Ver usuario"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="user"
     />
   );
 }
@@ -566,7 +546,6 @@ export function VehicleModelEntitySearch({
       navigateButtonText="Ver modelo"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="model"
     />
   );
 }
@@ -600,7 +579,6 @@ export function VehicleBrandEntitySearch({
       navigateButtonText="Ver marca"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="brand"
     />
   );
 }
@@ -634,7 +612,6 @@ export function MaintenanceCategoryEntitySearch({
       navigateButtonText="Ver categoría"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="category"
     />
   );
 }
@@ -671,7 +648,6 @@ export function MaintenanceEntitySearch({
       navigateButtonText="Ver mantenimiento"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="maintenance"
     />
   );
 }
@@ -716,7 +692,6 @@ export function AssignmentEntitySearch({
       navigateButtonText="Ver asignación"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="assignment"
     />
   );
 }
@@ -766,7 +741,6 @@ export function QuarterlyControlEntitySearch({
       navigateButtonText="Ver checklist"
       getFormData={getFormData}
       contextScope={contextScope}
-      entityType="quarterlyControl"
     />
   );
 }
