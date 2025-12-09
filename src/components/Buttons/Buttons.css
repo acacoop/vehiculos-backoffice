@@ -35,15 +35,15 @@
 
 /* Botón de cancelar (amarillo/naranja empresarial) */
 .btn-cancel {
-  background-color: #fe9000;
-  color: white;
+  background-color: var(--color-secondary);
+  color: var(--color-white);
 }
 
 .btn-cancel:not(:disabled):hover {
-  background-color: white;
-  border: 1px solid #fe9000;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-secondary);
   border-radius: 0px;
-  color: #fe9000;
+  color: var(--color-secondary);
 }
 
 .btn-cancel:not(:disabled):active {
@@ -52,15 +52,15 @@
 
 /* Botón de eliminar (rojo) */
 .btn-delete {
-  background-color: #e53935;
-  color: white;
+  background-color: var(--color-error);
+  color: var(--color-white);
 }
 
 .btn-delete:not(:disabled):hover {
-  background-color: white;
-  border: 1px solid #e53935;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-error);
   border-radius: 0px;
-  color: #e53935;
+  color: var(--color-error);
 }
 
 .btn-delete:not(:disabled):active {
@@ -69,19 +69,19 @@
 
 /* Botón de confirmar (azul empresarial) */
 .btn-confirm {
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn-confirm:not(:disabled):hover {
-  background-color: white;
-  border: 1px solid #282d86;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-primary);
   border-radius: 0px;
-  color: #282d86;
+  color: var(--color-primary);
 }
 
 .btn-confirm:not(:disabled):active {
-  background-color: #1a1f5c;
+  background-color: var(--color-primary-hover);
 }
 
 /* Grupo de botones */

@@ -18,6 +18,6 @@
 .title {
   font-size: 34px;
   font-weight: 700;
-  color: #282d86;
+  color: var(--color-primary);
   margin-bottom: 20px;
 }

@@ -6,7 +6,7 @@
 }
 
 .home-header {
-  color: #282d86;
+  color: var(--color-primary);
 }
 
 .bento-home-container {

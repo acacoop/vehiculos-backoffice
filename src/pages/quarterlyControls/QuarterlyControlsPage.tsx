@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../components/Table/table";
 import type {
-  MaintenanceChecklist,
-  MaintenanceChecklistFilterParams,
-} from "../../../types/maintenanceChecklist";
-import { getMaintenanceChecklists } from "../../../services/maintenanceChecklists";
-import { QUARTER_LABELS, formatDate } from "../../../common";
-import { getChecklistStatus } from "../../../common/utils";
+  QuarterlyControl,
+  QuarterlyControlFilterParams,
+} from "../../types/quarterlyControl";
+import { getQuarterlyControls } from "../../services/quarterlyControls";
+import { QUARTER_LABELS, formatDate } from "../../common";
+import { getQuarterlyControlStatus } from "../../common/utils";
 
-export default function MaintenanceChecklistsPage() {
+export default function QuarterlyControlsPage() {
   const navigate = useNavigate();
 
-  const columns: TableColumn<MaintenanceChecklist>[] = [
+  const columns: TableColumn<QuarterlyControl>[] = [
     {
       field: "vehicle.licensePlate",
       headerName: "Vehículo",
@@ -59,36 +59,36 @@ export default function MaintenanceChecklistsPage() {
       headerName: "Estado",
       flex: 1,
       transform: (_value, row) => {
-        const { label } = getChecklistStatus(row);
+        const { label } = getQuarterlyControlStatus(row);
         return label;
       },
       color: (_value, row) => {
-        const { color } = getChecklistStatus(row);
+        const { color } = getQuarterlyControlStatus(row);
         return color;
       },
     },
   ];
 
   const actionColumn = {
-    route: "/maintenance/checklists",
+    route: "/quarterly-controls",
     width: 100,
   };
 
   return (
     <div className="page-container">
-      <Table<MaintenanceChecklistFilterParams, MaintenanceChecklist>
+      <Table<QuarterlyControlFilterParams, QuarterlyControl>
         columns={columns}
-        getRows={getMaintenanceChecklists}
+        getRows={getQuarterlyControls}
         actionColumn={actionColumn}
         search={{
           enabled: true,
-          placeholder: "Buscar checklists...",
+          placeholder: "Buscar controles...",
         }}
         header={{
-          title: "Checklists de Mantenimiento",
+          title: "Controles Trimestrales",
           addButton: {
-            text: "+ Nuevo Checklist",
-            onClick: () => navigate("/maintenance/checklists/new"),
+            text: "+ Nuevo Control",
+            onClick: () => navigate("/quarterly-controls/new"),
           },
         }}
         width={1200}

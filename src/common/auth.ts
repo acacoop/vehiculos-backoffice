@@ -1,10 +1,10 @@
 import {
   PublicClientApplication,
   type AccountInfo,
-  InteractionRequiredAuthError,
   EventType,
   type AuthenticationResult,
 } from "@azure/msal-browser";
+import { clearPageStack } from "./navigationStack";
 
 const CLIENT_ID = import.meta.env.VITE_ENTRA_CLIENT_ID as string | undefined;
 const TENANT_ID = import.meta.env.VITE_ENTRA_TENANT_ID as string | undefined;
@@ -43,21 +43,53 @@ export const msalInstance = new PublicClientApplication({
     authority,
     redirectUri: REDIRECT_URI,
     postLogoutRedirectUri: REDIRECT_URI,
+    navigateToLoginRequestUrl: false, // Prevent MSAL from navigating after login
   },
   cache: {
     cacheLocation: "localStorage",
-    storeAuthStateInCookie: false,
+    storeAuthStateInCookie: true, // Help with popup/redirect state persistence
+  },
+  system: {
+    allowRedirectInIframe: false, // Prevent iframe redirect issues
   },
 });
 
 let initialized = false;
 let callbackRegistered = false;
+let redirectInProgress = false;
+
+// Detectar si estamos en un popup o iframe
+function isInPopupOrIframe(): boolean {
+  try {
+    return window.opener !== null || window.self !== window.top;
+  } catch {
+    return true; // Si hay error accediendo a window.top, probablemente estamos en iframe
+  }
+}
 
 export async function initMsal(): Promise<void> {
   if (!initialized) {
     await msalInstance.initialize();
     initialized = true;
   }
+
+  // Process any redirect/popup hash - handles auth responses from redirects
+  try {
+    const response = await msalInstance.handleRedirectPromise();
+    if (response?.account) {
+      msalInstance.setActiveAccount(response.account);
+    }
+  } catch (error) {
+    // Clean up stale auth hash if present
+    console.error("Error handling redirect promise:", error);
+    if (
+      window.location.hash.includes("code=") ||
+      window.location.hash.includes("error=")
+    ) {
+      window.history.replaceState(null, "", window.location.pathname || "/");
+    }
+  }
+
   if (!callbackRegistered) {
     // Keep active account in sync after successful interactions
     msalInstance.addEventCallback((event) => {
@@ -74,8 +106,6 @@ export async function initMsal(): Promise<void> {
     });
     callbackRegistered = true;
   }
-  // Process any redirect hash if present
-  await msalInstance.handleRedirectPromise();
 }
 
 export function getActiveAccount(): AccountInfo | null {
@@ -97,11 +127,25 @@ export async function ensureActiveAccount(): Promise<AccountInfo | null> {
 }
 
 export async function getAccessToken(): Promise<string | undefined> {
+  // No hacer nada si estamos en un popup/iframe
+  if (isInPopupOrIframe()) {
+    console.warn("Skipping token acquisition - running in popup/iframe");
+    return undefined;
+  }
+
+  // Evitar múltiples redirects simultáneos
+  if (redirectInProgress) {
+    console.warn("Redirect already in progress, skipping");
+    return undefined;
+  }
+
   try {
     const account = await ensureActiveAccount();
     if (!account || API_SCOPES.length === 0) {
-      // No hay cuenta activa, redirigir a login
-      window.location.href = "/login";
+      if (!redirectInProgress) {
+        redirectInProgress = true;
+        window.location.href = "/login";
+      }
       return undefined;
     }
     const silentParams = {
@@ -112,67 +156,49 @@ export async function getAccessToken(): Promise<string | undefined> {
       const result = await msalInstance.acquireTokenSilent(silentParams);
       return result.accessToken;
     } catch (e) {
-      if (e instanceof InteractionRequiredAuthError) {
-        // Prefer popup to match desired UX, fallback to redirect in case of blockers
-        try {
-          const result = await msalInstance.acquireTokenPopup({
-            scopes: API_SCOPES,
-            account,
-          });
-          return result.accessToken;
-        } catch (popupError) {
-          console.error("Error en popup, redirigiendo:", popupError);
-          // Si falla el popup, redirigir a login
-          window.location.href = "/login";
-          return undefined;
-        }
+      // Silent token failed - use redirect
+      console.warn("Silent token acquisition failed, using redirect:", e);
+      if (!redirectInProgress) {
+        redirectInProgress = true;
+        await msalInstance.acquireTokenRedirect({
+          scopes: API_SCOPES,
+          account,
+        });
       }
-      console.error("Error obteniendo token:", e);
-      // Para otros errores, redirigir a login
-      window.location.href = "/login";
       return undefined;
     }
   } catch (error) {
     console.error("Error crítico obteniendo token:", error);
-    // Como último recurso, redirigir a login
-    window.location.href = "/login";
+    if (!redirectInProgress) {
+      redirectInProgress = true;
+      window.location.href = "/login";
+    }
     return undefined;
   }
 }
 
 export async function login(): Promise<void> {
   try {
-    const res = await msalInstance.loginPopup({
-      scopes: API_SCOPES,
-      prompt: "select_account",
-    });
-    if (res.account) {
-      msalInstance.setActiveAccount(res.account);
-    }
-  } catch (error) {
-    console.error("Error en login popup, usando redirect:", error);
     await msalInstance.loginRedirect({
       scopes: API_SCOPES,
       prompt: "select_account",
     });
+  } catch (error) {
+    console.error("Login redirect failed:", error);
+    throw error;
   }
 }
 
 export async function appLogout(): Promise<void> {
-  // Solo limpiar la sesión local de la app sin hacer logout de Microsoft
   const accounts = msalInstance.getAllAccounts();
 
-  // Limpiar cache de todas las cuentas
   for (const acc of accounts) {
     await msalInstance.clearCache({ account: acc });
   }
 
-  // Limpiar cuenta activa
   msalInstance.setActiveAccount(null);
 
-  console.log(
-    "Sesión cerrada localmente (sin afectar otras sesiones de Microsoft)",
-  );
+  clearPageStack();
 }
 
 export function isAuthenticated(): boolean {

@@ -3,6 +3,11 @@ export enum ResponseStatus {
   ERROR = "error",
 }
 
+// Interfaz base para entidades con ID
+export interface Identifiable {
+  id?: number | string;
+}
+
 // Configuración de paginación
 export interface PaginationParams {
   limit: number;

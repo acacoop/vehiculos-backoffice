@@ -24,10 +24,11 @@ import {
   PolarRadiusAxis,
   Radar,
 } from "recharts";
+import { COLORS as APP_COLORS } from "../../common/colors";
 
-const COLORS = [
-  "#282D86",
-  "#FE9000",
+const CHART_COLORS = [
+  APP_COLORS.primary,
+  APP_COLORS.secondary,
   "#888888",
   "#bdbdbd",
   "#616161",
@@ -79,14 +80,12 @@ export default function UnifiedMetrics({
       } finally {
         setLoading(false);
         // notify parent that this block finished loading
-        try {
-          onLoad && onLoad();
-        } catch {}
+        onLoad?.();
       }
     };
 
     fetchMetrics();
-  }, []);
+  }, [onLoad]);
 
   if (loading) {
     return (
@@ -130,7 +129,7 @@ export default function UnifiedMetrics({
                     `${name}: ${(percent * 100).toFixed(0)}%`
                   }
                 >
-                  <Cell key="activos" fill="#282D86" />
+                  <Cell key="activos" fill={APP_COLORS.primary} />
                   <Cell key="inactivos" fill="#bdbdbd" />
                 </Pie>
                 <Tooltip />
@@ -156,8 +155,8 @@ export default function UnifiedMetrics({
                 <Radar
                   name="Vehículos"
                   dataKey="count"
-                  stroke="#282D86"
-                  fill="#282D86"
+                  stroke={APP_COLORS.primary}
+                  fill={APP_COLORS.primary}
                   fillOpacity={0.3}
                   strokeWidth={2}
                 />
@@ -186,11 +185,11 @@ export default function UnifiedMetrics({
                 <XAxis dataKey="month" stroke="#888" />
                 <YAxis allowDecimals={false} stroke="#888" />
                 <Tooltip />
-                <Bar dataKey="count" fill="#FE9000">
+                <Bar dataKey="count" fill={APP_COLORS.secondary}>
                   {metrics.reservations.byMonth.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   ))}
                 </Bar>
@@ -226,11 +225,11 @@ export default function UnifiedMetrics({
                   stroke="#888"
                 />
                 <Tooltip />
-                <Bar dataKey="count" fill="#282D86">
+                <Bar dataKey="count" fill={APP_COLORS.primary}>
                   {metrics.reservations.byUser.slice(0, 5).map((_, index) => (
                     <Cell
                       key={`cell-user-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   ))}
                 </Bar>
@@ -266,7 +265,7 @@ export default function UnifiedMetrics({
                   `${name}: ${(percent * 100).toFixed(0)}%`
                 }
               >
-                <Cell key="activos" fill="#282D86" />
+                <Cell key="activos" fill={APP_COLORS.primary} />
                 <Cell key="inactivos" fill="#bdbdbd" />
               </Pie>
               <Tooltip />
@@ -297,8 +296,8 @@ export default function UnifiedMetrics({
               <XAxis dataKey="status" stroke="#888" />
               <YAxis allowDecimals={false} stroke="#888" />
               <Tooltip />
-              <Bar dataKey="count" fill="#282D86">
-                <Cell key="activos" fill="#282D86" />
+              <Bar dataKey="count" fill={APP_COLORS.primary}>
+                <Cell key="activos" fill={APP_COLORS.primary} />
                 <Cell key="inactivos" fill="#bdbdbd" />
               </Bar>
             </BarChart>
@@ -330,8 +329,8 @@ export default function UnifiedMetrics({
               <Radar
                 name="Vehículos"
                 dataKey="count"
-                stroke="#282D86"
-                fill="#282D86"
+                stroke={APP_COLORS.primary}
+                fill={APP_COLORS.primary}
                 fillOpacity={0.3}
               />
               <Tooltip />
@@ -359,9 +358,9 @@ export default function UnifiedMetrics({
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#FE9000"
+                stroke={APP_COLORS.secondary}
                 strokeWidth={3}
-                dot={{ fill: "#282D86", strokeWidth: 2, r: 4 }}
+                dot={{ fill: APP_COLORS.primary, strokeWidth: 2, r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -387,8 +386,8 @@ export default function UnifiedMetrics({
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="#282D86"
-                fill="#282D86"
+                stroke={APP_COLORS.primary}
+                fill={APP_COLORS.primary}
                 fillOpacity={0.3}
               />
             </AreaChart>
@@ -421,11 +420,11 @@ export default function UnifiedMetrics({
                 stroke="#888"
               />
               <Tooltip />
-              <Bar dataKey="count" fill="#FE9000">
+              <Bar dataKey="count" fill={APP_COLORS.secondary}>
                 {metrics.reservations.byUser.slice(0, 5).map((_, index) => (
                   <Cell
                     key={`cell-user-${index}`}
-                    fill={COLORS[index % COLORS.length]}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
                   />
                 ))}
               </Bar>

@@ -10,20 +10,26 @@
   margin-bottom: 20px;
 }
 
+.entity-search-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .entity-search-title {
   font-size: 20px;
   font-weight: 600;
-  border-left: 4px solid #fe9000;
+  border-left: 4px solid var(--color-secondary);
   padding-left: 12px;
   margin: 0 !important;
-  color: #282d86;
+  color: var(--color-primary);
   border-radius: 4px;
 }
 
 .entity-search-change-button {
-  background: #fe9000;
-  color: white;
-  border: 1px solid #fe9000;
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border: 1px solid var(--color-secondary);
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
@@ -34,13 +40,42 @@
 }
 
 .entity-search-change-button:hover {
-  background: white;
-  color: #fe9000;
+  background: var(--color-white);
+  color: var(--color-secondary);
   border-radius: 0px;
 }
 
 .entity-search-change-button:active {
   transform: translateY(0);
+}
+
+.entity-search-action-button {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.entity-search-action-button:hover {
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-radius: 0px;
+}
+
+.entity-search-navigate-button {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.entity-search-navigate-button:hover {
+  background: var(--color-white);
+  color: var(--color-primary);
 }
 
 .entity-search-input-container {
@@ -61,8 +96,8 @@
 
 .entity-search-input:focus {
   outline: none;
-  border-color: #282d86;
-  box-shadow: 0 0 0 3px rgba(40, 45, 134, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .entity-search-loading,
@@ -132,7 +167,7 @@
 .entity-search-selected-label {
   font-size: 14px;
   font-weight: 600;
-  color: #282d86;
+  color: var(--color-primary);
   margin: 0;
 }
 

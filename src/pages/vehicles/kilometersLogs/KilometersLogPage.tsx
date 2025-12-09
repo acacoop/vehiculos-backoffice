@@ -3,43 +3,33 @@ import { useLocation, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import {
-  Form,
-  type FormSection,
-  type FormButton,
-} from "../../../components/Form";
+import { Form, type FormSection } from "../../../components/Form";
 import {
   UserEntitySearch,
   VehicleEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
 import { usePageState } from "../../../hooks";
-import { getUserById } from "../../../services/users";
-import { getVehicleById } from "../../../services/vehicles";
 import {
   createVehicleKilometersLog,
   getVehicleKilometersLogById,
   updateVehicleKilometersLog,
   deleteVehicleKilometersLog,
 } from "../../../services/kilometers";
-import type { User } from "../../../types/user";
-import type { Vehicle } from "../../../types/vehicle";
+import type { VehicleKilometersLog } from "../../../types/kilometer";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [user, setUser] = useState<User | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-
-  const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
-    kilometers: 0,
-  });
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<VehicleKilometersLog>>({});
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -47,104 +37,83 @@ export default function KilometersLogPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles/kilometersLogs" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/vehicles/kilometersLogs",
+    startInViewMode: !isNew,
+    scope: "kilometersLog",
+  });
 
-  // Load existing kilometers log
   useEffect(() => {
-    if (isNew || !id) return;
+    if (isNew) {
+      const savedFormData = getSavedFormData<Partial<VehicleKilometersLog>>();
+
+      if (savedFormData) {
+        setFormState(savedFormData);
+      }
+      return;
+    }
+
+    if (!id) return;
 
     loadKilometersLog(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  // Load vehicle from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
-        if (response.success && response.data) {
-          setVehicle(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load user from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const userId = searchParams.get("userId");
-
-    if (userId) {
-      executeLoad(async () => {
-        const response = await getUserById(userId);
-        if (response.success && response.data) {
-          setUser(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadKilometersLog = async (logId: string) => {
     await executeLoad(async () => {
       const response = await getVehicleKilometersLogById(logId);
 
       if (response.success && response.data) {
-        const log = response.data;
-
-        const logDate = new Date(log.date);
-
-        setFormData({
-          date: logDate.toISOString().split("T")[0],
-          kilometers: log.kilometers,
-        });
-
-        if (log.user) {
-          setUser(log.user);
-        }
-
-        if (log.vehicle) {
-          setVehicle(log.vehicle);
-        }
+        setFormState(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar el registro");
       }
     }, "Error al cargar el registro");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles/kilometersLogs");
+    } else {
+      const original = cancelEdit<Partial<VehicleKilometersLog>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const validateForm = () => {
-    if (!user) {
+    if (!formState.user) {
       showError("Debe seleccionar un usuario");
       return false;
     }
-    if (!vehicle) {
+    if (!formState.vehicle) {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (!formData.date) {
+    if (!formState.date) {
       showError("Debe seleccionar una fecha");
       return false;
     }
 
-    const selectedDate = new Date(formData.date);
     const today = new Date();
-    if (selectedDate > today) {
+    const formDate = new Date(formState.date);
+    if (formDate > today) {
       showError("La fecha de registro no puede ser futura");
       return false;
     }
 
-    if (formData.kilometers <= 0) {
+    if (!formState.kilometers || formState.kilometers <= 0) {
       showError("El kilometraje debe ser mayor a 0");
       return false;
     }
@@ -158,10 +127,10 @@ export default function KilometersLogPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const payload = {
-      vehicleId: vehicle!.id,
-      userId: user!.id,
-      date: formData.date,
-      kilometers: formData.kilometers,
+      vehicleId: formState.vehicle!.id,
+      userId: formState.user!.id,
+      date: inputDateToISO(toInputDate(new Date(formState.date!))),
+      kilometers: formState.kilometers!,
     };
 
     executeSave(
@@ -184,24 +153,32 @@ export default function KilometersLogPage() {
     );
   };
 
+  const getFormData = () => formState;
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <UserEntitySearch
-          entity={user}
-          onEntityChange={setUser}
-          disabled={!isNew}
+          entity={formState.user || null}
+          onEntityChange={(user) =>
+            setFormState((prev) => ({ ...prev, user: user || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
-          disabled={!isNew}
+          entity={formState.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormState((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="kilometersLog"
+          getFormData={getFormData}
         />
       ),
     },
@@ -212,54 +189,26 @@ export default function KilometersLogPage() {
       fields: [
         {
           type: "date",
-          value: formData.date,
+          value: formState.date
+            ? toInputDate(new Date(formState.date))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, date: value }),
+            setFormState((prev) => ({ ...prev, date: value })),
           key: "date",
           label: "Fecha de Registro",
           required: true,
         },
         {
           type: "number",
-          value: formData.kilometers,
+          value: formState.kilometers || 0,
           onChange: (value: number) =>
-            setFormData({ ...formData, kilometers: value }),
+            setFormState((prev) => ({ ...prev, kilometers: value })),
           key: "kilometers",
           label: "Kilometraje",
           required: true,
           min: 0,
         },
       ],
-    },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/vehicles/kilometersLogs"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Eliminar",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Registro"
-        : "Actualizar Registro",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
     },
   ];
 
@@ -276,7 +225,16 @@ export default function KilometersLogPage() {
             : "Editar Registro de Kilometraje"
         }
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Registro",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

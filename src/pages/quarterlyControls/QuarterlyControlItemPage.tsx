@@ -1,46 +1,43 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
-import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import NotificationToast from "../../components/NotificationToast/NotificationToast";
+import { Form, type FormSection } from "../../components/Form";
+import { usePageState } from "../../hooks";
 import {
-  Form,
-  type FormSection,
-  type FormButton,
-} from "../../../components/Form";
-import { usePageState } from "../../../hooks";
+  getQuarterlyControlItemById,
+  updateQuarterlyControlItem,
+  deleteQuarterlyControlItem,
+} from "../../services/quarterlyControlItems";
+import { getQuarterlyControlById } from "../../services/quarterlyControls";
+import { QuarterlyControlEntitySearch } from "../../components/EntitySearch/EntitySearch";
+import type { QuarterlyControl } from "../../types/quarterlyControl";
 import {
-  getMaintenanceChecklistItemById,
-  updateMaintenanceChecklistItem,
-  deleteMaintenanceChecklistItem,
-} from "../../../services/maintenanceChecklistItems";
-import { getMaintenanceChecklistById } from "../../../services/maintenanceChecklists";
-import { MaintenanceChecklistEntitySearch } from "../../../components/EntitySearch/EntitySearch";
-import type { MaintenanceChecklist } from "../../../types/maintenanceChecklist";
-import {
-  BACKEND_CHECKLIST_ITEM_STATUS,
-  BACKEND_TO_UI_STATUS,
-  type BackendChecklistItemStatus,
-} from "../../../common";
-import type { MaintenanceChecklistItem } from "../../../types/maintenanceChecklistItem";
+  BACKEND_QUARTERLY_CONTROL_ITEM_STATUS,
+  BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS,
+  type BackendQuarterlyControlItemStatus,
+} from "../../common";
+import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
 
-export default function MaintenanceChecklistItemPage() {
+export default function QuarterlyControlItemPage() {
   const { id } = useParams<{ id: string }>();
 
-  const [item, setItem] = useState<MaintenanceChecklistItem | null>(null);
-  const [checklist, setChecklist] = useState<MaintenanceChecklist | null>(null);
+  const [item, setItem] = useState<QuarterlyControlItem | null>(null);
+  const [control, setControl] = useState<QuarterlyControl | null>(null);
 
   const [formData, setFormData] = useState({
     category: "",
     title: "",
     status:
-      BACKEND_CHECKLIST_ITEM_STATUS.PENDIENTE as BackendChecklistItemStatus,
+      BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.PENDIENTE as BackendQuarterlyControlItemStatus,
     observations: "",
   });
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -48,36 +45,46 @@ export default function MaintenanceChecklistItemPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
   } = usePageState({
-    redirectOnSuccess: checklist
-      ? `/maintenance/checklists/${checklist.id}`
-      : "/maintenance/checklists",
+    redirectOnSuccess: control
+      ? `/quarterly-controls/${control.id}`
+      : "/quarterly-controls",
+    startInViewMode: true,
   });
 
   const loadData = async () => {
     if (!id) return;
 
     await executeLoad(async () => {
-      const res = await getMaintenanceChecklistItemById(id);
+      const res = await getQuarterlyControlItemById(id);
       if (res.success && res.data) {
         setItem(res.data);
-        setFormData({
+        const loadedFormData = {
           category: res.data.category,
           title: res.data.title,
           status: res.data.status,
           observations: res.data.observations,
-        });
+        };
+        setFormData(loadedFormData);
 
-        // Fetch the associated checklist
-        const checklistRes = await getMaintenanceChecklistById(
-          res.data.maintenanceChecklistId,
+        // Fetch the associated control
+        const controlRes = await getQuarterlyControlById(
+          res.data.quarterlyControlId,
         );
-        if (checklistRes.success && checklistRes.data) {
-          setChecklist(checklistRes.data);
+        if (controlRes.success && controlRes.data) {
+          setControl(controlRes.data);
         }
+
+        setOriginalData({
+          formData: loadedFormData,
+          control: controlRes.success ? controlRes.data : null,
+        });
       }
     });
   };
@@ -87,9 +94,24 @@ export default function MaintenanceChecklistItemPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  const handleCancel = () => {
+    const original = cancelEdit<{
+      formData: typeof formData;
+      control: QuarterlyControl | null;
+    }>();
+    if (original) {
+      setFormData(original.formData);
+      setControl(original.control);
+    } else {
+      goTo(
+        control ? `/quarterly-controls/${control.id}` : "/quarterly-controls",
+      );
+    }
+  };
+
   const validateForm = () => {
-    if (!checklist) {
-      showError("Debe seleccionar un checklist");
+    if (!control) {
+      showError("Debe seleccionar un control trimestral");
       return false;
     }
     if (!formData.title.trim()) {
@@ -100,10 +122,10 @@ export default function MaintenanceChecklistItemPage() {
   };
 
   const handleSave = async () => {
-    if (!validateForm() || !id || !item || !checklist) return;
+    if (!validateForm() || !id || !item || !control) return;
 
     const payload = {
-      maintenanceChecklistId: checklist.id,
+      quarterlyControlId: control.id,
       category: formData.category,
       title: formData.title,
       status: formData.status,
@@ -111,8 +133,8 @@ export default function MaintenanceChecklistItemPage() {
     };
 
     executeSave(
-      "¿Está seguro que desea actualizar este item del checklist?",
-      () => updateMaintenanceChecklistItem(id, payload),
+      "¿Está seguro que desea actualizar este item del control trimestral?",
+      () => updateQuarterlyControlItem(id, payload),
       "Item actualizado con éxito",
     );
   };
@@ -121,8 +143,8 @@ export default function MaintenanceChecklistItemPage() {
     if (!id) return;
 
     executeSave(
-      "¿Está seguro que desea eliminar este item del checklist?",
-      () => deleteMaintenanceChecklistItem(id),
+      "¿Está seguro que desea eliminar este item del control trimestral?",
+      () => deleteQuarterlyControlItem(id),
       "Item eliminado con éxito",
     );
   };
@@ -130,10 +152,10 @@ export default function MaintenanceChecklistItemPage() {
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
-        <MaintenanceChecklistEntitySearch
-          entity={checklist}
-          onEntityChange={(c: MaintenanceChecklist | null) => setChecklist(c)}
+      render: () => (
+        <QuarterlyControlEntitySearch
+          entity={control}
+          onEntityChange={(c: QuarterlyControl | null) => setControl(c)}
           disabled={true}
         />
       ),
@@ -167,16 +189,18 @@ export default function MaintenanceChecklistItemPage() {
           onChange: (value: string) =>
             setFormData({
               ...formData,
-              status: value as BackendChecklistItemStatus,
+              status: value as BackendQuarterlyControlItemStatus,
             }),
           key: "status",
           label: "Estado",
           required: true,
-          options: Object.values(BACKEND_CHECKLIST_ITEM_STATUS).map(
+          options: Object.values(BACKEND_QUARTERLY_CONTROL_ITEM_STATUS).map(
             (backendKey) => ({
               value: backendKey,
               label:
-                BACKEND_TO_UI_STATUS[backendKey as BackendChecklistItemStatus],
+                BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS[
+                  backendKey as BackendQuarterlyControlItemStatus
+                ],
             }),
           ),
         },
@@ -193,33 +217,6 @@ export default function MaintenanceChecklistItemPage() {
     },
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () =>
-        goTo(
-          checklist
-            ? `/maintenance/checklists/${checklist.id}`
-            : "/maintenance/checklists",
-        ),
-      disabled: saving,
-    },
-    {
-      text: "Eliminar",
-      variant: "danger",
-      onClick: handleDelete,
-      disabled: saving,
-    },
-    {
-      text: saving ? "Guardando..." : "Actualizar Item",
-      variant: "primary",
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   if (loading) {
     return <LoadingSpinner message="Cargando item..." />;
   }
@@ -227,9 +224,18 @@ export default function MaintenanceChecklistItemPage() {
   return (
     <div>
       <Form
-        title="Editar Item del Checklist de Mantenimiento"
+        title="Editar Item del Control Trimestral"
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew: false,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: handleDelete,
+          saving,
+          entityName: "Item",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

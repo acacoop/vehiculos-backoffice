@@ -1,11 +1,11 @@
 import type { User } from "./user";
 import type { Vehicle } from "./vehicle";
 import type { FilterParams } from "./common";
-import type { MaintenanceChecklistItem } from "./maintenanceChecklistItem";
+import type { QuarterlyControlItem } from "./quarterlyControlItem";
 
 export type Quarter = 1 | 2 | 3 | 4;
 
-export interface MaintenanceChecklist {
+export interface QuarterlyControl {
   id: string;
   vehicle: Vehicle;
   year: number;
@@ -13,17 +13,17 @@ export interface MaintenanceChecklist {
   intendedDeliveryDate: string;
   filledBy: User | null;
   filledAt: string | null;
-  items: MaintenanceChecklistItem[];
+  items: QuarterlyControlItem[];
 }
 
-export interface MaintenanceChecklistInput {
+export interface QuarterlyControlInput {
   vehicleId: string;
   year: number;
   quarter: Quarter;
   intendedDeliveryDate: string;
 }
 
-export interface MaintenanceChecklistFilterParams extends FilterParams {
+export interface QuarterlyControlFilterParams extends FilterParams {
   vehicleId?: string;
   year?: number;
   quarter?: Quarter;

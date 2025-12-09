@@ -11,19 +11,19 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border);
   gap: 30px;
 }
 
 .document-header h2 {
-  color: #282d86;
+  color: var(--color-primary);
   font-size: 24px;
   margin: 0;
 }
 
 .add-document-btn {
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: 1px solid transparent;
   padding: 12px 20px;
   border-radius: 8px;
@@ -34,9 +34,9 @@
 }
 
 .add-document-btn:hover {
-  background-color: #fff;
-  border: 1px solid #282d86;
-  color: #282d86;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
   font-weight: 600;
   border-radius: 0px;
 }
@@ -51,8 +51,8 @@
 }
 
 .document-item {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -113,8 +113,8 @@
 }
 
 .download-btn {
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .download-btn:hover {
@@ -122,8 +122,8 @@
 }
 
 .edit-btn {
-  background-color: #fe9000;
-  color: #fff;
+  background-color: var(--color-secondary);
+  color: var(--color-white);
 }
 
 .edit-btn:hover {
@@ -131,8 +131,8 @@
 }
 
 .delete-btn {
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--color-error);
+  color: var(--color-white);
 }
 
 .delete-btn:hover {
@@ -145,7 +145,7 @@
 }
 
 .document-title {
-  color: #282d86;
+  color: var(--color-primary);
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 10px 0;
@@ -264,7 +264,7 @@
 }
 
 .document-form h3 {
-  color: #282d86;
+  color: var(--color-primary);
   font-size: 20px;
   margin: 0 0 20px 0;
   text-align: center;
@@ -277,7 +277,7 @@
 .document-form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -306,10 +306,10 @@
 
 .document-form-group input[type="text"]:focus,
 .document-form-group input[type="date"]:focus {
-  border-color: #282d86;
+  border-color: var(--color-primary);
   outline: none;
   background: #eef1fa;
-  box-shadow: 0 0 0 2px rgba(40, 45, 134, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
 }
 
 .selected-file {
@@ -335,8 +335,8 @@
 
 .document-cancel-btn {
   padding: 10px 20px;
-  background-color: #e53935;
-  color: white;
+  background-color: var(--color-error);
+  color: var(--color-white);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -345,13 +345,13 @@
 }
 
 .document-cancel-btn:hover {
-  background-color: #fe9000;
+  background-color: var(--color-secondary);
 }
 
 .document-submit-btn {
   padding: 10px 20px;
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -360,7 +360,7 @@
 }
 
 .document-submit-btn:hover {
-  background-color: #fe9000;
+  background-color: var(--color-secondary);
 }
 
 @media (max-width: 768px) {

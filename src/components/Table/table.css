@@ -8,19 +8,19 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border);
   margin-bottom: 20px;
 }
 
 .table-header-title {
-  color: #282d86;
+  color: var(--color-primary);
   font-size: 24px;
   margin: 0;
 }
 
 .table-add-btn {
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   padding: 12px 20px;
   border-radius: 8px;
@@ -33,10 +33,10 @@
 }
 
 .table-add-btn:hover {
-  background-color: white;
-  border: 1px solid #282d86;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-primary);
   border-radius: 0px;
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 600;
 }
 

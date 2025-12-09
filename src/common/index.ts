@@ -19,6 +19,9 @@ export * from "./auth";
 // Application constants
 export * from "./constants";
 
+// Navigation stack utilities
+export * from "./navigationStack";
+
 // Type definitions (for backward compatibility with old app/ files)
 export type {
   ServiceResponse,

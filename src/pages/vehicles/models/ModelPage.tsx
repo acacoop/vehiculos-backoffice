@@ -1,35 +1,32 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
-import type { FormSection, FormButton } from "../../../components/Form/Form";
+import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getVehicleModelById,
   createVehicleModel,
   updateVehicleModel,
 } from "../../../services/vehicleModels";
-import { getVehicleBrandById } from "../../../services/vehicleBrands";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import type { VehicleBrand } from "../../../types/vehicleBrand";
 import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import { VEHICLE_TYPES } from "../../../common/constants";
+import type { VehicleModel } from "../../../types/vehicleModel";
 
 export default function ModelPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    vehicleType: "",
-  });
-  const [brand, setBrand] = useState<VehicleBrand | null>(null);
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<VehicleModel>>({});
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -37,62 +34,74 @@ export default function ModelPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    cancelCreate,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles/models" });
+    getSavedFormData,
+  } = usePageState({
+    redirectOnSuccess: "/vehicles/models",
+    startInViewMode: !isNew,
+    scope: "model",
+  });
 
   useEffect(() => {
-    if (!isNew && id) {
+    if (isNew) {
+      // Restore form data + merge any created entity (e.g., brand created in nested flow)
+      const savedFormData = getSavedFormData<Partial<VehicleModel>>({
+        brand: "brand", // If a brand was created, merge it into the "brand" field
+      });
+
+      if (savedFormData) {
+        setFormState(savedFormData);
+      }
+      return;
+    }
+
+    if (id) {
       loadModel(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  // Load brand from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const brandId = searchParams.get("brandId");
-
-    if (brandId) {
-      executeLoad(async () => {
-        const response = await getVehicleBrandById(brandId);
-        if (response.success && response.data) {
-          setBrand(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadModel = async (modelId: string) => {
     await executeLoad(async () => {
       const response = await getVehicleModelById(modelId);
 
       if (response.success && response.data) {
-        setFormData({
-          name: response.data.name || "",
-          vehicleType: response.data.vehicleType || "",
-        });
-        setBrand(response.data.brand || null);
+        setFormState(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar el modelo");
       }
     }, "Error al cargar el modelo");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles/models");
+    } else {
+      const original = cancelEdit<Partial<VehicleModel>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const handleSave = () => {
-    if (!formData.name.trim()) {
+    if (!formState.name?.trim()) {
       showError("El nombre del modelo es obligatorio");
       return;
     }
-    if (!brand) {
+    if (!formState.brand) {
       showError("Debe seleccionar una marca");
       return;
     }
-    if (!formData.vehicleType.trim()) {
+    if (!formState.vehicleType?.trim()) {
       showError("Debe especificar el tipo de vehículo");
       return;
     }
@@ -103,16 +112,20 @@ export default function ModelPage() {
       () =>
         isNew
           ? createVehicleModel({
-              name: formData.name.trim(),
-              brandId: brand.id,
-              vehicleType: formData.vehicleType.trim(),
+              name: formState.name!.trim(),
+              brandId: formState.brand!.id,
+              vehicleType: formState.vehicleType!.trim(),
             })
           : updateVehicleModel(id!, {
-              name: formData.name.trim(),
-              brandId: brand.id,
-              vehicleType: formData.vehicleType.trim(),
+              name: formState.name!.trim(),
+              brandId: formState.brand!.id,
+              vehicleType: formState.vehicleType!.trim(),
             }),
       `Modelo ${actionText}do exitosamente`,
+      {
+        isCreate: isNew,
+        entityRoute: "/vehicles/models",
+      },
     );
   };
 
@@ -123,8 +136,16 @@ export default function ModelPage() {
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
-        <VehicleBrandEntitySearch entity={brand} onEntityChange={setBrand} />
+      render: ({ disabled }) => (
+        <VehicleBrandEntitySearch
+          entity={formState.brand || null}
+          onEntityChange={(brand) =>
+            setFormState((prev) => ({ ...prev, brand: brand || undefined }))
+          }
+          disabled={disabled}
+          contextScope="model"
+          getFormData={() => formState}
+        />
       ),
     },
     {
@@ -136,8 +157,9 @@ export default function ModelPage() {
           type: "text",
           key: "name",
           label: "Nombre",
-          value: formData.name,
-          onChange: (value) => setFormData({ ...formData, name: value }),
+          value: formState.name || "",
+          onChange: (value) =>
+            setFormState((prev) => ({ ...prev, name: value })),
           required: true,
           placeholder: "Ej: Corolla",
           disabled: false,
@@ -146,8 +168,9 @@ export default function ModelPage() {
           type: "select",
           key: "vehicleType",
           label: "Tipo de Vehículo",
-          value: formData.vehicleType,
-          onChange: (value) => setFormData({ ...formData, vehicleType: value }),
+          value: formState.vehicleType || "",
+          onChange: (value) =>
+            setFormState((prev) => ({ ...prev, vehicleType: value })),
           required: true,
           placeholder: "Seleccione un tipo de vehículo",
           options: VEHICLE_TYPES.map((type) => ({ value: type, label: type })),
@@ -157,32 +180,20 @@ export default function ModelPage() {
     },
   ];
 
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/vehicles/models"),
-      disabled: saving,
-    },
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Modelo"
-        : "Actualizar Modelo",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
   return (
     <div className="container">
       <Form
         title={isNew ? "Nuevo Modelo" : "Editar Modelo"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          saving,
+          entityName: "Modelo",
+        }}
       />
 
       <ConfirmDialog

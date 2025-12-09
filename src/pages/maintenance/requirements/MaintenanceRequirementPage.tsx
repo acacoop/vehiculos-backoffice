@@ -2,18 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { getVehicleModelById } from "../../../services/vehicleModels";
-import { getMaintenanceById } from "../../../services/maintenances";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 import {
   VehicleModelEntitySearch,
   MaintenanceEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
-import type { VehicleModel } from "../../../types/vehicleModel";
-import type { Maintenance } from "../../../types/maintenance";
-import type { FormSection, FormButton } from "../../../components/Form/Form";
+
+import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
+import type { FormSection } from "../../../components/Form/Form";
 import {
   createMaintenanceRequirement,
   deleteMaintenanceRequirement,
@@ -25,25 +24,21 @@ export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
-  const isReadOnly = !isNew && !id;
 
-  const [model, setModel] = useState<VehicleModel | null>(null);
-  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
-  const [formData, setFormData] = useState({
-    kilometersFrequency: 0,
-    daysFrequency: 0,
-    observations: "",
-    instructions: "",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: "",
-    isIndefinite: true,
-    useKilometers: false,
-    useDays: false,
-  });
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<MaintenanceRequirement>>(
+    {},
+  );
+
+  // UI-only checkbox states
+  const [useKilometers, setUseKilometers] = useState(false);
+  const [useDays, setUseDays] = useState(false);
+  const [isIndefinite, setIsIndefinite] = useState(true);
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -51,13 +46,39 @@ export default function MaintenanceRequirementPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/requirements" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/maintenance/requirements",
+    startInViewMode: !isNew,
+    scope: "maintenanceRequirement",
+  });
 
   useEffect(() => {
-    if (isNew || !id) return;
+    if (isNew) {
+      const savedFormData = getSavedFormData<{
+        formState: Partial<MaintenanceRequirement>;
+        useKilometers: boolean;
+        useDays: boolean;
+        isIndefinite: boolean;
+      }>();
+
+      if (savedFormData) {
+        setFormState(savedFormData.formState);
+        setUseKilometers(savedFormData.useKilometers);
+        setUseDays(savedFormData.useDays);
+        setIsIndefinite(savedFormData.isIndefinite);
+      }
+      return;
+    }
+
+    if (!id) return;
 
     let cancelled = false;
 
@@ -68,21 +89,19 @@ export default function MaintenanceRequirementPage() {
         if (cancelled) return;
 
         if (response.success && response.data) {
-          const assignment = response.data;
-          setModel(assignment.model || null);
-          setMaintenance(assignment.maintenance || null);
-          setFormData({
-            kilometersFrequency: assignment.kilometersFrequency || 0,
-            daysFrequency: assignment.daysFrequency || 0,
-            observations: assignment.observations || "",
-            instructions: assignment.instructions || "",
-            startDate: assignment.startDate || "",
-            endDate: assignment.endDate || "",
-            isIndefinite: !assignment.endDate,
+          const data = response.data;
+          setFormState(data);
+          setUseKilometers(
+            !!data.kilometersFrequency && data.kilometersFrequency > 0,
+          );
+          setUseDays(!!data.daysFrequency && data.daysFrequency > 0);
+          setIsIndefinite(!data.endDate);
+          setOriginalData({
+            formState: data,
             useKilometers:
-              !!assignment.kilometersFrequency &&
-              assignment.kilometersFrequency > 0,
-            useDays: !!assignment.daysFrequency && assignment.daysFrequency > 0,
+              !!data.kilometersFrequency && data.kilometersFrequency > 0,
+            useDays: !!data.daysFrequency && data.daysFrequency > 0,
+            isIndefinite: !data.endDate,
           });
         } else {
           showError(response.message || "Error al cargar la asignación");
@@ -96,74 +115,58 @@ export default function MaintenanceRequirementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  // Load model from query parameter
+  // Load frequencies when maintenance changes
   useEffect(() => {
-    if (!isNew) return;
+    if (!isNew || !formState.maintenance) return;
 
-    const searchParams = new URLSearchParams(location.search);
-    const modelId = searchParams.get("modelId");
+    const m = formState.maintenance;
+    const hasKm = m.kilometersFrequency && m.kilometersFrequency > 0;
+    const hasDays = m.daysFrequency && m.daysFrequency > 0;
 
-    if (modelId) {
-      executeLoad(async () => {
-        const response = await getVehicleModelById(modelId);
-        if (response.success && response.data) {
-          setModel(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load maintenance from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const maintenanceId = searchParams.get("maintenanceId");
-
-    if (maintenanceId) {
-      executeLoad(async () => {
-        const response = await getMaintenanceById(maintenanceId);
-        if (response.success && response.data) {
-          setMaintenance(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load frecuencies when maintenance changes
-  useEffect(() => {
-    if (!isNew) return;
-
-    const hasKm =
-      maintenance?.kilometersFrequency && maintenance.kilometersFrequency > 0;
-    const hasDays = maintenance?.daysFrequency && maintenance.daysFrequency > 0;
-
-    setFormData((prevData) => ({
-      ...prevData,
-      kilometersFrequency: maintenance?.kilometersFrequency || 0,
-      daysFrequency: maintenance?.daysFrequency || 0,
-      instructions: maintenance?.instructions || "",
-      observations: maintenance?.observations || "",
-      useKilometers: !!hasKm,
-      useDays: !!hasDays,
+    setFormState((prev) => ({
+      ...prev,
+      kilometersFrequency: m.kilometersFrequency || undefined,
+      daysFrequency: m.daysFrequency || undefined,
+      instructions: m.instructions || undefined,
+      observations: m.observations || undefined,
     }));
-  }, [maintenance, isNew]);
+    setUseKilometers(!!hasKm);
+    setUseDays(!!hasDays);
+  }, [formState.maintenance, isNew]);
+
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/maintenance/requirements");
+    } else {
+      const original = cancelEdit<{
+        formState: Partial<MaintenanceRequirement>;
+        useKilometers: boolean;
+        useDays: boolean;
+        isIndefinite: boolean;
+      }>();
+      if (original) {
+        setFormState(original.formState);
+        setUseKilometers(original.useKilometers);
+        setUseDays(original.useDays);
+        setIsIndefinite(original.isIndefinite);
+      }
+    }
+  };
 
   const handleSave = () => {
-    if (!model) {
+    if (!formState.model) {
       showError("El modelo es obligatorio");
       return;
     }
 
-    if (!maintenance) {
+    if (!formState.maintenance) {
       showError("El mantenimiento es obligatorio");
       return;
     }
 
-    const kmFreq = formData.useKilometers ? formData.kilometersFrequency : 0;
-    const daysFreq = formData.useDays ? formData.daysFrequency : 0;
+    const kmFreq = useKilometers ? formState.kilometersFrequency || 0 : 0;
+    const daysFreq = useDays ? formState.daysFrequency || 0 : 0;
 
     if (kmFreq <= 0 && daysFreq <= 0) {
       showError(
@@ -172,34 +175,37 @@ export default function MaintenanceRequirementPage() {
       return;
     }
 
+    const startDate = formState.startDate
+      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
+      : inputDateToISO(toInputDate(new Date()));
+
+    const endDate =
+      isIndefinite || !formState.endDate
+        ? null
+        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
       `¿Está seguro que desea ${actionText} este requerimiento de mantenimiento?`,
       () =>
         isNew
           ? createMaintenanceRequirement({
-              modelId: model.id!.toString(),
-              maintenanceId: maintenance.id!.toString(),
+              modelId: formState.model!.id!.toString(),
+              maintenanceId: formState.maintenance!.id!.toString(),
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
-              observations: formData.observations.trim() || undefined,
-              instructions: formData.instructions.trim() || undefined,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              observations: formState.observations?.trim() || undefined,
+              instructions: formState.instructions?.trim() || undefined,
+              startDate,
+              endDate,
             })
           : updateMaintenanceRequirement(id!, {
               kilometersFrequency: kmFreq > 0 ? kmFreq : undefined,
               daysFrequency: daysFreq > 0 ? daysFreq : undefined,
-              observations: formData.observations.trim() || undefined,
-              instructions: formData.instructions.trim() || undefined,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              observations: formState.observations?.trim() || undefined,
+              instructions: formState.instructions?.trim() || undefined,
+              startDate,
+              endDate,
             }),
       `Requerimiento ${actionText}do exitosamente`,
     );
@@ -217,24 +223,42 @@ export default function MaintenanceRequirementPage() {
     return <LoadingSpinner message="Cargando requerimiento..." />;
   }
 
+  const getFormData = () => ({
+    formState,
+    useKilometers,
+    useDays,
+    isIndefinite,
+  });
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleModelEntitySearch
-          entity={model}
-          onEntityChange={setModel}
-          disabled={!isNew}
+          entity={formState.model || null}
+          onEntityChange={(model) =>
+            setFormState((prev) => ({ ...prev, model: model || undefined }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="maintenanceRequirement"
+          getFormData={getFormData}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <MaintenanceEntitySearch
-          entity={maintenance}
-          onEntityChange={setMaintenance}
-          disabled={!isNew}
+          entity={formState.maintenance || null}
+          onEntityChange={(maintenance) =>
+            setFormState((prev) => ({
+              ...prev,
+              maintenance: maintenance || undefined,
+            }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="maintenanceRequirement"
+          getFormData={getFormData}
         />
       ),
     },
@@ -245,81 +269,85 @@ export default function MaintenanceRequirementPage() {
       fields: [
         {
           type: "checkbox",
-          value: formData.useKilometers,
-          onChange: (value: boolean) =>
-            setFormData({ ...formData, useKilometers: value }),
+          value: useKilometers,
+          onChange: (value: boolean) => setUseKilometers(value),
           key: "useKilometers",
           label: "Especificar frecuencia por kilómetros",
-          disabled: isReadOnly,
         },
         {
           type: "number",
           key: "kilometersFrequency",
           label: "Frecuencia en Kilómetros",
-          value: formData.kilometersFrequency,
+          value: formState.kilometersFrequency || 0,
           onChange: (value) =>
-            setFormData({
-              ...formData,
-              kilometersFrequency: Number(value) || 0,
-            }),
+            setFormState((prev) => ({
+              ...prev,
+              kilometersFrequency: Number(value) || undefined,
+            })),
           placeholder: "Ingrese frecuencia en kilómetros",
           min: 1,
-          disabled: isReadOnly,
-          show: formData.useKilometers,
+          show: useKilometers,
         },
         {
           type: "checkbox",
-          value: formData.useDays,
-          onChange: (value: boolean) =>
-            setFormData({ ...formData, useDays: value }),
+          value: useDays,
+          onChange: (value: boolean) => setUseDays(value),
           key: "useDays",
           label: "Especificar frecuencia por días",
-          disabled: isReadOnly,
         },
         {
           type: "number",
           key: "daysFrequency",
           label: "Frecuencia en Días",
-          value: formData.daysFrequency,
+          value: formState.daysFrequency || 0,
           onChange: (value) =>
-            setFormData({ ...formData, daysFrequency: Number(value) || 0 }),
+            setFormState((prev) => ({
+              ...prev,
+              daysFrequency: Number(value) || undefined,
+            })),
           placeholder: "Ingrese frecuencia en días",
           min: 1,
-          disabled: isReadOnly,
-          show: formData.useDays,
+          show: useDays,
         },
       ],
     },
     {
       type: "fields",
       title: "Período",
+      layout: "grid",
       fields: [
         {
           type: "date",
-          value: formData.startDate,
+          value: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, startDate: value }),
+            setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
           label: "Fecha Desde",
           required: true,
         },
         {
-          type: "checkbox",
-          value: formData.isIndefinite,
-          onChange: (value: boolean) =>
-            setFormData({ ...formData, isIndefinite: value }),
-          key: "isIndefinite",
-          label: "Asignación indefinida (sin fecha de fin)",
-        },
-        {
           type: "date",
-          value: formData.endDate,
+          value: formState.endDate
+            ? toInputDate(new Date(formState.endDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, endDate: value }),
+            setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
           label: "Fecha Hasta",
-          show: !formData.isIndefinite,
-          min: formData.startDate,
+          show: !isIndefinite,
+          min: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : undefined,
+        },
+        {
+          type: "checkbox",
+          value: isIndefinite,
+          onChange: (value: boolean) => setIsIndefinite(value),
+          key: "isIndefinite",
+          label: "Vigencia indefinida (sin fecha de fin)",
+          span: 2,
         },
       ],
     },
@@ -332,61 +360,24 @@ export default function MaintenanceRequirementPage() {
           type: "textarea",
           key: "observations",
           label: "Observaciones",
-          value: formData.observations,
+          value: formState.observations || "",
           onChange: (value) =>
-            setFormData({ ...formData, observations: value }),
+            setFormState((prev) => ({ ...prev, observations: value })),
           placeholder: "Observaciones adicionales...",
           rows: 3,
-          disabled: isReadOnly,
         },
         {
           type: "textarea",
           key: "instructions",
           label: "Instrucciones",
-          value: formData.instructions,
+          value: formState.instructions || "",
           onChange: (value) =>
-            setFormData({ ...formData, instructions: value }),
+            setFormState((prev) => ({ ...prev, instructions: value })),
           placeholder: "Instrucciones para el mantenimiento...",
           rows: 3,
-          disabled: isReadOnly,
         },
       ],
     },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/maintenance/requirements"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: saving ? "Eliminando..." : "Eliminar Requerimiento",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-            loading: saving,
-          },
-        ]
-      : []),
-    ...(!isReadOnly
-      ? [
-          {
-            text: saving
-              ? "Guardando..."
-              : isNew
-              ? "Crear Requerimiento"
-              : "Actualizar Requerimiento",
-            variant: "primary" as const,
-            onClick: handleSave,
-            disabled: saving,
-            loading: saving,
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -398,7 +389,16 @@ export default function MaintenanceRequirementPage() {
             : "Editar Requerimiento de Mantenimiento"
         }
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Requerimiento",
+        }}
       />
 
       <ConfirmDialog
