@@ -28,13 +28,9 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login();
-      // Solo navegar si el login fue exitoso
-      if (isAuthenticated()) {
-        navigate("/home", { replace: true });
-      }
+      // Con redirect, la página se recarga y el useEffect verificará la autenticación
     } catch (error) {
       console.error("Error during login:", error);
-    } finally {
       setIsLoading(false);
     }
   };

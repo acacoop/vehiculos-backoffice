@@ -17,14 +17,14 @@ interface BaseField {
 // ============ SPECIFIC FIELD TYPES ============
 export interface TextField extends BaseField {
   type: "text" | "email";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   placeholder?: string;
 }
 
 export interface NumberField extends BaseField {
   type: "number";
-  value: number;
+  value: number | undefined;
   onChange: (value: number) => void;
   placeholder?: string;
   min?: number;
@@ -33,7 +33,7 @@ export interface NumberField extends BaseField {
 
 export interface DateField extends BaseField {
   type: "date";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   min?: string;
   max?: string;
@@ -41,7 +41,7 @@ export interface DateField extends BaseField {
 
 export interface TimeField extends BaseField {
   type: "time";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   min?: string;
   max?: string;
@@ -50,7 +50,7 @@ export interface TimeField extends BaseField {
 
 export interface TextAreaField extends BaseField {
   type: "textarea";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   placeholder?: string;
   rows?: number;
@@ -58,7 +58,7 @@ export interface TextAreaField extends BaseField {
 
 export interface SelectField extends BaseField {
   type: "select";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   options: { label: string; value: string }[];
   placeholder?: string;
@@ -66,13 +66,13 @@ export interface SelectField extends BaseField {
 
 export interface CheckboxField extends BaseField {
   type: "checkbox";
-  value: boolean;
+  value: boolean | undefined;
   onChange: (value: boolean) => void;
 }
 
 export interface SwitchField extends BaseField {
   type: "switch";
-  value: boolean;
+  value: boolean | undefined;
   onChange: (value: boolean) => void;
   activeText?: string;
   inactiveText?: string;
@@ -112,7 +112,7 @@ export interface FieldsSection {
 export interface EntitySection {
   type: "entity";
   className?: string;
-  render: React.ReactNode;
+  render: (props: { disabled: boolean }) => React.ReactNode;
 }
 
 export type FormSection = FieldsSection | EntitySection;
@@ -127,11 +127,43 @@ export interface FormButton {
   type?: "button" | "submit";
 }
 
+// ============ MODE CONFIGURATION ============
+export type FormMode = "create" | "edit" | "view";
+
+export interface FormModeConfig {
+  isNew: boolean;
+  isEditing: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  saving?: boolean;
+  entityName?: string; // Ej: "Vehículo", "Categoría"
+  // Textos personalizables
+  texts?: {
+    create?: string; // Default: "Crear {entityName}"
+    save?: string; // Default: "Guardar Cambios"
+    saving?: string; // Default: "Guardando..."
+    cancel?: string; // Default: "Cancelar"
+    edit?: string; // Default: "Editar"
+    delete?: string; // Default: "Eliminar"
+  };
+}
+
+// Helper para calcular el modo basado en isNew e isEditing
+const getFormMode = (isNew: boolean, isEditing: boolean): FormMode => {
+  if (isNew) return "create";
+  if (isEditing) return "edit";
+  return "view";
+};
+
 // ============ MAIN PROPS ============
 interface FormProps {
   title?: string;
   sections: FormSection[];
+  /** @deprecated Use modeConfig instead */
   buttons?: FormButton[];
+  modeConfig?: FormModeConfig;
   className?: string;
   onSubmit?: (e: React.FormEvent) => void;
 }
@@ -140,6 +172,7 @@ const Form: React.FC<FormProps> = ({
   title,
   sections,
   buttons = [],
+  modeConfig,
   className = "",
   onSubmit,
 }) => {
@@ -149,11 +182,21 @@ const Form: React.FC<FormProps> = ({
     newValue?: boolean;
     onConfirm?: () => void;
   }>({ open: false });
+
+  // ========== MODE-BASED LOGIC ==========
+  const mode = modeConfig
+    ? getFormMode(modeConfig.isNew, modeConfig.isEditing)
+    : undefined;
+  const isViewMode = mode === "view";
+
   const renderField = (field: FormField) => {
     // Skip hidden fields
     if (field.show === false) {
       return null;
     }
+
+    // Apply mode-based disabled state
+    const isDisabled = field.disabled || isViewMode;
 
     const baseClassName = `form-field ${field.className || ""}`;
     const spanStyle = field.span ? { gridColumn: `span ${field.span}` } : {};
@@ -184,10 +227,10 @@ const Form: React.FC<FormProps> = ({
             <input
               type="checkbox"
               id={field.key}
-              checked={field.value}
+              checked={field.value ?? false}
               onChange={(e) => field.onChange(e.target.checked)}
               className="form-checkbox"
-              disabled={field.disabled}
+              disabled={isDisabled}
             />
             <label htmlFor={field.key} className="checkbox-label">
               {field.label}
@@ -208,9 +251,9 @@ const Form: React.FC<FormProps> = ({
           <select
             id={field.key}
             className="form-select"
-            value={field.value}
+            value={field.value ?? ""}
             onChange={(e) => field.onChange(e.target.value)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
           >
             {field.placeholder && (
@@ -240,9 +283,9 @@ const Form: React.FC<FormProps> = ({
             id={field.key}
             className="form-textarea"
             placeholder={field.placeholder}
-            value={field.value}
+            value={field.value ?? ""}
             onChange={(e) => field.onChange(e.target.value)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
             rows={field.rows || 4}
           />
@@ -263,11 +306,11 @@ const Form: React.FC<FormProps> = ({
             type="number"
             className="form-input"
             placeholder={field.placeholder}
-            value={field.value}
+            value={field.value ?? ""}
             min={field.min}
             max={field.max}
             onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
           />
         </div>
@@ -286,11 +329,11 @@ const Form: React.FC<FormProps> = ({
             id={field.key}
             type="date"
             className="form-input"
-            value={field.value}
+            value={field.value ?? ""}
             min={field.min}
             max={field.max}
             onChange={(e) => field.onChange(e.target.value)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
           />
         </div>
@@ -309,12 +352,12 @@ const Form: React.FC<FormProps> = ({
             id={field.key}
             type="time"
             className="form-input"
-            value={field.value}
+            value={field.value ?? ""}
             min={field.min}
             max={field.max}
             step={field.step}
             onChange={(e) => field.onChange(e.target.value)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
           />
         </div>
@@ -334,9 +377,9 @@ const Form: React.FC<FormProps> = ({
             type={field.type}
             className="form-input"
             placeholder={field.placeholder}
-            value={field.value}
+            value={field.value ?? ""}
             onChange={(e) => field.onChange(e.target.value)}
-            disabled={field.disabled}
+            disabled={isDisabled}
             required={field.required}
           />
         </div>
@@ -347,6 +390,7 @@ const Form: React.FC<FormProps> = ({
     if (field.type === "switch") {
       const activeText = field.activeText || "Activo";
       const inactiveText = field.inactiveText || "Inactivo";
+      const checked = field.value ?? false;
 
       return (
         <div
@@ -357,14 +401,14 @@ const Form: React.FC<FormProps> = ({
           <label className="form-label">{field.label}</label>
           <div className="switch-container">
             <div className="switch-status">
-              <span className={`status-text ${field.value ? "active" : ""}`}>
-                {field.value ? activeText : inactiveText}
+              <span className={`status-text ${checked ? "active" : ""}`}>
+                {checked ? activeText : inactiveText}
               </span>
             </div>
             <label className="switch">
               <input
                 type="checkbox"
-                checked={field.value}
+                checked={checked}
                 onChange={(e) => {
                   const newValue = e.target.checked;
                   if (field.confirmMessage) {
@@ -381,7 +425,7 @@ const Form: React.FC<FormProps> = ({
                     field.onChange(newValue);
                   }
                 }}
-                disabled={field.disabled}
+                disabled={isDisabled}
               />
               <span className="switch-slider"></span>
             </label>
@@ -410,6 +454,99 @@ const Form: React.FC<FormProps> = ({
     }
   };
 
+  // Generate buttons based on modeConfig or use legacy buttons
+  const getButtons = (): FormButton[] => {
+    if (!modeConfig) {
+      return buttons;
+    }
+
+    const {
+      isNew,
+      isEditing,
+      onSave,
+      onCancel,
+      onEdit,
+      onDelete,
+      saving = false,
+      entityName = "",
+      texts = {},
+    } = modeConfig;
+
+    const mode = getFormMode(isNew, isEditing);
+
+    // Textos con defaults
+    const t = {
+      create: texts.create || `Crear ${entityName}`.trim(),
+      save: texts.save || "Guardar Cambios",
+      saving: texts.saving || "Guardando...",
+      cancel: texts.cancel || "Cancelar",
+      edit: texts.edit || "Editar",
+      delete: texts.delete || "Eliminar",
+    };
+
+    // Crear todos los botones disponibles
+    const cancelButton: FormButton = {
+      text: t.cancel,
+      variant: "secondary",
+      onClick: onCancel,
+      disabled: saving,
+    };
+
+    const createButton: FormButton = {
+      text: saving ? t.saving : t.create,
+      variant: "primary",
+      onClick: onSave,
+      disabled: saving,
+      loading: saving,
+    };
+
+    const saveButton: FormButton = {
+      text: saving ? t.saving : t.save,
+      variant: "primary",
+      onClick: onSave,
+      disabled: saving,
+      loading: saving,
+    };
+
+    const editButton: FormButton = {
+      text: t.edit,
+      variant: "primary",
+      onClick: onEdit || (() => {}),
+    };
+
+    const deleteButton: FormButton = {
+      text: t.delete,
+      variant: "danger",
+      onClick: onDelete || (() => {}),
+      disabled: saving,
+    };
+
+    // Construir array según el modo
+    const result: FormButton[] = [];
+
+    switch (mode) {
+      case "create":
+        result.push(cancelButton);
+        result.push(createButton);
+        break;
+
+      case "edit":
+        result.push(cancelButton);
+        if (onDelete) result.push(deleteButton);
+        result.push(saveButton);
+        break;
+
+      case "view":
+        if (onEdit) result.push(editButton);
+        if (onDelete) result.push(deleteButton);
+        break;
+    }
+
+    return result;
+  };
+
+  const finalButtons = getButtons();
+
   return (
     <div className={`form ${className}`}>
       <form className="form-content" onSubmit={handleFormSubmit}>
@@ -426,7 +563,7 @@ const Form: React.FC<FormProps> = ({
           >
             {section.type === "entity" ? (
               // ========== ENTITY SECTION ==========
-              section.render
+              section.render({ disabled: isViewMode })
             ) : (
               // ========== FIELDS SECTION ==========
               <>
@@ -442,9 +579,9 @@ const Form: React.FC<FormProps> = ({
           </div>
         ))}
 
-        {buttons.length > 0 && (
+        {finalButtons.length > 0 && (
           <div className="form-actions">
-            {buttons.map((button, index) => {
+            {finalButtons.map((button, index) => {
               const buttonProps = {
                 text: button.text,
                 onClick: button.onClick,

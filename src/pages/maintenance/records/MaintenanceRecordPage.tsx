@@ -3,29 +3,21 @@ import { useLocation, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import {
-  Form,
-  type FormSection,
-  type FormButton,
-} from "../../../components/Form";
+import { Form, type FormSection } from "../../../components/Form";
 import {
   MaintenanceEntitySearch,
   UserEntitySearch,
   VehicleEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
 import { usePageState } from "../../../hooks";
-import { getUserById } from "../../../services/users";
-import { getVehicleById } from "../../../services/vehicles";
 import {
   createMaintenanceRecord,
   getMaintenanceRecordById,
   updateMaintenanceRecord,
   deleteMaintenanceRecord,
 } from "../../../services/maintenanceRecords";
-import type { User } from "../../../types/user";
-import type { Vehicle } from "../../../types/vehicle";
-import type { Maintenance } from "../../../types/maintenance";
-import { getMaintenanceById } from "../../../services/maintenances";
+
+import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
 import { inputDateToISO, toInputDate } from "../../../common/date";
 
 export default function MaintenanceRecordRegisterPage() {
@@ -33,19 +25,13 @@ export default function MaintenanceRecordRegisterPage() {
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [user, setUser] = useState<User | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
-
-  const [formData, setFormData] = useState({
-    date: new Date(),
-    kilometers: 0,
-    observations: "",
-  });
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<MaintenanceRecord>>({});
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -53,117 +39,80 @@ export default function MaintenanceRecordRegisterPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/records" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/maintenance/records",
+    startInViewMode: !isNew,
+    scope: "maintenanceRecord",
+  });
 
   useEffect(() => {
-    if (isNew || !id) return;
+    if (isNew) {
+      const savedFormData = getSavedFormData<Partial<MaintenanceRecord>>();
+
+      if (savedFormData) {
+        setFormState(savedFormData);
+      }
+      return;
+    }
+
+    if (!id) return;
 
     loadRecord(id);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
-        if (response.success && response.data) {
-          setVehicle(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load maintenance from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const maintenanceId = searchParams.get("maintenanceId");
-
-    if (maintenanceId) {
-      executeLoad(async () => {
-        const response = await getMaintenanceById(maintenanceId);
-        if (response.success && response.data) {
-          setMaintenance(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load user from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const userId = searchParams.get("userId");
-
-    if (userId) {
-      executeLoad(async () => {
-        const response = await getUserById(userId);
-        if (response.success && response.data) {
-          setUser(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
   const loadRecord = async (recordId: string) => {
     await executeLoad(async () => {
       const response = await getMaintenanceRecordById(recordId);
 
       if (response.success && response.data) {
-        const record = response.data;
-
-        setFormData({
-          date: new Date(record.date),
-          kilometers: record.kilometers,
-          observations: record.notes || "",
-        });
-
-        if (record.user) {
-          setUser(record.user);
-        }
-
-        if (record.maintenance) {
-          setVehicle(record.vehicle);
-          setMaintenance(record.maintenance);
-        }
+        setFormState(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar el registro");
       }
     }, "Error al cargar el registro");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/maintenance/records");
+    } else {
+      const original = cancelEdit<Partial<MaintenanceRecord>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const validateForm = () => {
-    if (!user) {
+    if (!formState.user) {
       showError("Debe seleccionar un usuario");
       return false;
     }
-    if (!vehicle) {
+    if (!formState.vehicle) {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (!maintenance) {
+    if (!formState.maintenance) {
       showError("Debe seleccionar un mantenimiento");
       return false;
     }
-    if (!formData.date) {
+    if (!formState.date) {
       showError("Debe seleccionar una fecha");
       return false;
     }
-    if (formData.kilometers <= 0) {
+    if (!formState.kilometers || formState.kilometers <= 0) {
       showError("Los kilómetros deben ser mayor a 0");
       return false;
     }
@@ -177,12 +126,12 @@ export default function MaintenanceRecordRegisterPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const payload = {
-      maintenanceId: maintenance!.id,
-      vehicleId: vehicle!.id,
-      userId: user!.id,
-      date: inputDateToISO(toInputDate(formData.date)),
-      kilometers: formData.kilometers,
-      notes: formData.observations,
+      maintenanceId: formState.maintenance!.id,
+      vehicleId: formState.vehicle!.id,
+      userId: formState.user!.id,
+      date: inputDateToISO(toInputDate(new Date(formState.date!))),
+      kilometers: formState.kilometers!,
+      notes: formState.notes || "",
     };
 
     executeSave(
@@ -205,34 +154,49 @@ export default function MaintenanceRecordRegisterPage() {
     );
   };
 
+  const getFormData = () => formState;
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <UserEntitySearch
-          entity={user}
-          onEntityChange={setUser}
-          disabled={!isNew}
+          entity={formState.user || null}
+          onEntityChange={(user) =>
+            setFormState((prev) => ({ ...prev, user: user || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
-          disabled={!isNew}
+          entity={formState.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormState((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="maintenanceRecord"
+          getFormData={getFormData}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <MaintenanceEntitySearch
-          entity={maintenance}
-          onEntityChange={setMaintenance}
-          disabled={!vehicle || !isNew}
+          entity={formState.maintenance || null}
+          onEntityChange={(maintenance) =>
+            setFormState((prev) => ({
+              ...prev,
+              maintenance: maintenance || undefined,
+            }))
+          }
+          disabled={disabled || !formState.vehicle || !isNew}
+          contextScope="maintenanceRecord"
+          getFormData={getFormData}
         />
       ),
     },
@@ -243,18 +207,20 @@ export default function MaintenanceRecordRegisterPage() {
       fields: [
         {
           type: "date",
-          value: toInputDate(formData.date),
+          value: formState.date
+            ? toInputDate(new Date(formState.date))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, date: new Date(value) }),
+            setFormState((prev) => ({ ...prev, date: value })),
           key: "date",
           label: "Fecha",
           required: true,
         },
         {
           type: "number",
-          value: formData.kilometers,
+          value: formState.kilometers || 0,
           onChange: (value: number) =>
-            setFormData({ ...formData, kilometers: value }),
+            setFormState((prev) => ({ ...prev, kilometers: value })),
           key: "kilometers",
           label: "Kilómetros",
           required: true,
@@ -262,44 +228,14 @@ export default function MaintenanceRecordRegisterPage() {
         },
         {
           type: "textarea",
-          value: formData.observations,
+          value: formState.notes || "",
           onChange: (value: string) =>
-            setFormData({ ...formData, observations: value }),
-          key: "observations",
+            setFormState((prev) => ({ ...prev, notes: value })),
+          key: "notes",
           label: "Observaciones",
           rows: 3,
         },
       ],
-    },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/maintenance/records"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Eliminar",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Registro"
-        : "Actualizar Registro",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
     },
   ];
 
@@ -316,7 +252,16 @@ export default function MaintenanceRecordRegisterPage() {
             : "Editar Registro de Mantenimiento"
         }
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Registro",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

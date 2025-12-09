@@ -12,11 +12,12 @@ import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import { Form } from "../../../components/Form";
-import type { FormSection, FormButton } from "../../../components/Form";
+import type { FormSection } from "../../../components/Form";
 import type {
   Maintenance,
   MaintenanceFilterParams,
 } from "../../../types/maintenance";
+import type { Category } from "../../../types/category";
 import type { ApiFindOptions } from "../../../services/common";
 
 const maintenanceColumns: TableColumn<Maintenance>[] = [
@@ -40,9 +41,16 @@ const maintenanceColumns: TableColumn<Maintenance>[] = [
 ];
 
 export default function CategoryPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isNew = location.pathname.endsWith("/new");
+
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -50,20 +58,20 @@ export default function CategoryPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/maintenance/categories" });
-
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const isNew = location.pathname.endsWith("/new");
-  const isReadOnly = !isNew && loading;
-  const [formData, setFormData] = useState({
-    name: "",
+  } = usePageState({
+    redirectOnSuccess: "/maintenance/categories",
+    startInViewMode: !isNew,
+    scope: "category",
   });
+
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<Category>>({});
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -77,9 +85,8 @@ export default function CategoryPage() {
         if (cancelled) return;
 
         if (response.success && response.data) {
-          setFormData({
-            name: response.data.name || "",
-          });
+          setFormState(response.data);
+          setOriginalData(response.data);
         } else {
           showError(response.message || "Error al cargar la categoría");
         }
@@ -93,8 +100,19 @@ export default function CategoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
+  const handleCancel = () => {
+    if (isNew) {
+      goTo("/maintenance/categories");
+    } else {
+      const original = cancelEdit<Partial<Category>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const handleSave = () => {
-    if (!formData.name.trim()) {
+    if (!formState.name?.trim()) {
       showError("El nombre de la categoría es obligatorio");
       return;
     }
@@ -105,10 +123,10 @@ export default function CategoryPage() {
       () =>
         isNew
           ? createMaintenanceCategory({
-              name: formData.name.trim(),
+              name: formState.name!.trim(),
             })
           : updateMaintenanceCategory(id!, {
-              name: formData.name.trim(),
+              name: formState.name!.trim(),
             }),
       `Categoría ${actionText}da exitosamente`,
     );
@@ -139,38 +157,14 @@ export default function CategoryPage() {
           type: "text",
           key: "name",
           label: "Nombre",
-          value: formData.name,
-          onChange: (value) => setFormData({ ...formData, name: value }),
+          value: formState.name || "",
+          onChange: (value) =>
+            setFormState((prev) => ({ ...prev, name: value })),
           required: true,
           placeholder: "Ej: Cambio de aceite",
-          disabled: isReadOnly,
         },
       ],
     },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/maintenance/categories"),
-      disabled: saving,
-    },
-    ...(!isReadOnly
-      ? [
-          {
-            text: saving
-              ? "Guardando..."
-              : isNew
-              ? "Crear Categoría"
-              : "Actualizar Categoría",
-            variant: "primary" as const,
-            onClick: handleSave,
-            disabled: saving,
-            loading: saving,
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -178,7 +172,15 @@ export default function CategoryPage() {
       <Form
         title={isNew ? "Nueva Categoría" : "Editar Categoría"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          saving,
+          entityName: "Categoría",
+        }}
       />
 
       {!isNew && id && (

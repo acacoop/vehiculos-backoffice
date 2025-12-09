@@ -1,9 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
-import {
-  Form,
-  type FormButton,
-  type FormSection,
-} from "../../../components/Form";
+import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
 import {
@@ -12,8 +8,6 @@ import {
   updateVehicleResponsible,
   deleteVehicleResponsible,
 } from "../../../services/vehicleResponsibles";
-import { getVehicleById } from "../../../services/vehicles";
-import { getUserById } from "../../../services/users";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import {
   VehicleEntitySearch,
@@ -21,26 +15,24 @@ import {
 } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import type { Vehicle } from "../../../types/vehicle";
-import type { User } from "../../../types/user";
+import type { VehicleResponsible } from "../../../types/vehicleResponsible";
+import { toInputDate, inputDateToISO } from "../../../common/date";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<VehicleResponsible>>({});
 
-  const [formData, setFormData] = useState({
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: "",
-    isIndefinite: true,
-  });
+  // UI-only checkbox state
+  const [isIndefinite, setIsIndefinite] = useState(true);
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -48,71 +40,39 @@ export default function ResponsiblePage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles/responsibles" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/vehicles/responsibles",
+    startInViewMode: !isNew,
+    scope: "responsible",
+  });
 
   useEffect(() => {
-    if (!isNew && id) {
+    if (isNew) {
+      const savedFormData = getSavedFormData<{
+        formState: Partial<VehicleResponsible>;
+        isIndefinite: boolean;
+      }>();
+
+      if (savedFormData) {
+        setFormState(savedFormData.formState);
+        setIsIndefinite(savedFormData.isIndefinite);
+      }
+      return;
+    }
+
+    if (id) {
       loadResponsible(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  // Load vehicle from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-
-    console.log("Loading vehicle from query param:", {
-      isNew,
-      locationSearch: location.search,
-      vehicleId,
-    });
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
-        console.log("Vehicle response:", response);
-        if (response.success && response.data) {
-          setVehicle(response.data);
-        } else {
-          console.error("Failed to load vehicle:", response.message);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load user from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const userId = searchParams.get("userId");
-
-    console.log("Loading user from query param:", {
-      isNew,
-      locationSearch: location.search,
-      userId,
-    });
-
-    if (userId) {
-      executeLoad(async () => {
-        const response = await getUserById(userId);
-        console.log("User response:", response);
-        if (response.success && response.data) {
-          setUser(response.data);
-        } else {
-          console.error("Failed to load user:", response.message);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadResponsible = async (responsibleId: string) => {
     await executeLoad(async () => {
@@ -120,23 +80,12 @@ export default function ResponsiblePage() {
 
       if (response.success && response.data) {
         const responsible = response.data;
-
-        setFormData({
-          startDate: responsible.startDate
-            ? String(responsible.startDate).split("T")[0]
-            : "",
-          endDate: responsible.endDate
-            ? String(responsible.endDate).split("T")[0]
-            : "",
+        setFormState(responsible);
+        setIsIndefinite(!responsible.endDate);
+        setOriginalData({
+          formState: responsible,
           isIndefinite: !responsible.endDate,
         });
-
-        if (responsible.vehicle) {
-          setVehicle(responsible.vehicle);
-        }
-        if (responsible.user) {
-          setUser(responsible.user);
-        }
       } else {
         showError(
           response.message || "Error al cargar el responsable de vehículo",
@@ -145,50 +94,69 @@ export default function ResponsiblePage() {
     }, "Error al cargar el responsable de vehículo");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles/responsibles");
+    } else {
+      const original = cancelEdit<{
+        formState: Partial<VehicleResponsible>;
+        isIndefinite: boolean;
+      }>();
+      if (original) {
+        setFormState(original.formState);
+        setIsIndefinite(original.isIndefinite);
+      }
+    }
+  };
+
   const handleSave = () => {
-    if (!formData.startDate) {
+    if (!formState.startDate) {
       showError("La fecha de inicio es obligatoria");
       return;
     }
 
-    if (!user) {
+    if (!formState.user) {
       showError("El usuario es obligatorio");
       return;
     }
 
-    if (!vehicle) {
+    if (!formState.vehicle) {
       showError("El vehículo es obligatorio");
       return;
     }
 
-    if (!formData.isIndefinite && !formData.endDate) {
+    if (!isIndefinite && !formState.endDate) {
       showError("La fecha de fin es obligatoria si no es indefinida");
       return;
     }
 
     const actionText = isNew ? "crear" : "actualizar";
 
+    const startDate = formState.startDate
+      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
+      : inputDateToISO(toInputDate(new Date()));
+
+    const endDate =
+      isIndefinite || !formState.endDate
+        ? null
+        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+
     executeSave(
       `¿Está seguro que desea ${actionText} este responsable de vehículo?`,
       () =>
         isNew
           ? createVehicleResponsible({
-              userId: user!.id,
-              vehicleId: vehicle!.id,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              userId: formState.user!.id,
+              vehicleId: formState.vehicle!.id,
+              startDate,
+              endDate,
             })
           : updateVehicleResponsible(id!, {
-              userId: user!.id,
-              vehicleId: vehicle!.id,
-              startDate: formData.startDate,
-              endDate:
-                formData.isIndefinite || !formData.endDate
-                  ? null
-                  : formData.endDate,
+              userId: formState.user!.id,
+              vehicleId: formState.vehicle!.id,
+              startDate,
+              endDate,
             }),
       `Responsable ${actionText}do con éxito`,
     );
@@ -204,89 +172,74 @@ export default function ResponsiblePage() {
     );
   };
 
+  const getFormData = () => ({ formState, isIndefinite });
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <UserEntitySearch
-          entity={user}
-          onEntityChange={setUser}
-          disabled={!isNew}
+          entity={formState.user || null}
+          onEntityChange={(user) =>
+            setFormState((prev) => ({ ...prev, user: user || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
-          disabled={!isNew}
+          entity={formState.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormState((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="responsible"
+          getFormData={getFormData}
         />
       ),
     },
     {
       type: "fields",
       title: "Período",
+      layout: "grid",
       fields: [
         {
           type: "date",
-          value: formData.startDate,
+          value: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, startDate: value }),
+            setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
           label: "Fecha Desde",
           required: true,
         },
         {
-          type: "checkbox",
-          value: formData.isIndefinite,
-          onChange: (value: boolean) =>
-            setFormData({ ...formData, isIndefinite: value }),
-          key: "isIndefinite",
-          label: "Asignación indefinida (sin fecha de fin)",
-        },
-        {
           type: "date",
-          value: formData.endDate,
+          value: formState.endDate
+            ? toInputDate(new Date(formState.endDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, endDate: value }),
+            setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
           label: "Fecha Hasta",
-          show: !formData.isIndefinite,
-          min: formData.startDate,
+          show: !isIndefinite,
+          min: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : undefined,
+        },
+        {
+          type: "checkbox",
+          value: isIndefinite,
+          onChange: (value: boolean) => setIsIndefinite(value),
+          key: "isIndefinite",
+          label: "Asignación indefinida (sin fecha de fin)",
+          span: 2,
         },
       ],
-    },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/vehicles/responsibles"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Eliminar",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Responsable"
-        : "Actualizar Responsable",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
     },
   ];
 
@@ -299,7 +252,16 @@ export default function ResponsiblePage() {
       <Form
         title={isNew ? "Nuevo Responsable" : "Editar Responsable"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Responsable",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

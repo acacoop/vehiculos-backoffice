@@ -1,9 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
-import {
-  Form,
-  type FormButton,
-  type FormSection,
-} from "../../../components/Form";
+import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
 import { toInputDate, inputDateToISO } from "../../../common/date";
@@ -13,8 +9,6 @@ import {
   updateAssignment,
   finishAssignment,
 } from "../../../services/assignments";
-import { getVehicleById } from "../../../services/vehicles";
-import { getUserById } from "../../../services/users";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import {
   VehicleEntitySearch,
@@ -22,27 +16,23 @@ import {
 } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import type { Vehicle } from "../../../types/vehicle";
-import type { User } from "../../../types/user";
-import type { AssignmentInput } from "../../../types/assignment";
+import type { Assignment, AssignmentInput } from "../../../types/assignment";
 
 export default function VehicleAssignmentPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<Assignment>>({});
 
-  const [formData, setFormData] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-    isIndefinite: true,
-  });
+  // UI-only checkbox state
+  const [isIndefinite, setIsIndefinite] = useState(true);
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -50,52 +40,50 @@ export default function VehicleAssignmentPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/vehicles/assignments" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/vehicles/assignments",
+    startInViewMode: !isNew,
+    scope: "assignment",
+  });
 
   useEffect(() => {
-    if (!isNew && assignmentId) {
+    if (isNew) {
+      const savedFormData = getSavedFormData<{
+        formState: Partial<Assignment>;
+        isIndefinite: boolean;
+      }>();
+
+      if (savedFormData) {
+        setFormState(savedFormData.formState);
+        setIsIndefinite(savedFormData.isIndefinite);
+      }
+
+      return;
+    }
+
+    if (assignmentId) {
       loadAssignment(assignmentId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignmentId, isNew]);
-
-  // Load vehicle/user from query params when creating
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-    const userId = searchParams.get("userId");
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const resp = await getVehicleById(vehicleId);
-        if (resp.success && resp.data) setVehicle(resp.data);
-      });
-    }
-
-    if (userId) {
-      executeLoad(async () => {
-        const resp = await getUserById(userId);
-        if (resp.success && resp.data) setUser(resp.data);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadAssignment = async (id: string) => {
     await executeLoad(async () => {
       const response = await getAssignmentById(id);
       if (response.success && response.data) {
         const a = response.data;
-        setUser(a.user || null);
-        setVehicle(a.vehicle || null);
-        setFormData({
-          startDate: a.startDate ? new Date(a.startDate) : new Date(),
-          endDate: a.endDate ? new Date(a.endDate) : new Date(),
+        setFormState(a);
+        setIsIndefinite(!a.endDate);
+        setOriginalData({
+          formState: a,
           isIndefinite: !a.endDate,
         });
       } else {
@@ -105,49 +93,68 @@ export default function VehicleAssignmentPage() {
   };
 
   const validate = () => {
-    if (!user) {
+    if (!formState.user) {
       showError("El usuario es obligatorio");
       return false;
     }
-    if (!vehicle) {
+    if (!formState.vehicle) {
       showError("El vehículo es obligatorio");
       return false;
     }
-    if (!formData.startDate) {
+    if (!formState.startDate) {
       showError("La fecha de inicio es obligatoria");
       return false;
     }
     return true;
   };
 
-  // Backend will handle existence/duplicate validations; keep UI checks minimal.
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/vehicles/assignments");
+    } else {
+      const original = cancelEdit<{
+        formState: Partial<Assignment>;
+        isIndefinite: boolean;
+      }>();
+      if (original) {
+        setFormState(original.formState);
+        setIsIndefinite(original.isIndefinite);
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!validate()) return;
 
     const actionText = isNew ? "crear" : "actualizar";
 
+    const startDate = formState.startDate
+      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
+      : inputDateToISO(toInputDate(new Date()));
+
+    const endDate =
+      isIndefinite || !formState.endDate
+        ? null
+        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+
     executeSave(
       `¿Está seguro que desea ${actionText} esta asignación?`,
       async () => {
         if (isNew) {
           const payload: AssignmentInput = {
-            userId: user!.id,
-            vehicleId: vehicle!.id,
-            startDate: inputDateToISO(toInputDate(formData.startDate)),
-            endDate: formData.isIndefinite
-              ? null
-              : inputDateToISO(toInputDate(formData.endDate)),
+            userId: formState.user!.id,
+            vehicleId: formState.vehicle!.id,
+            startDate,
+            endDate,
             active: true,
           };
 
           return await createAssignment(payload);
         } else {
           const updateData: Partial<AssignmentInput> = {
-            startDate: inputDateToISO(toInputDate(formData.startDate)),
-            endDate: formData.isIndefinite
-              ? null
-              : inputDateToISO(toInputDate(formData.endDate)),
+            startDate,
+            endDate,
           };
 
           return await updateAssignment(assignmentId!, updateData);
@@ -168,100 +175,97 @@ export default function VehicleAssignmentPage() {
     );
   };
 
+  if (loading) return <LoadingSpinner message="Cargando asignación..." />;
+
+  const getFormData = () => ({ formState, isIndefinite });
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <UserEntitySearch
-          entity={user}
-          onEntityChange={setUser}
-          disabled={!isNew}
+          entity={formState.user || null}
+          onEntityChange={(user) =>
+            setFormState((prev) => ({ ...prev, user: user || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
-          disabled={!isNew}
+          entity={formState.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormState((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
+          disabled={disabled || !isNew}
+          contextScope="assignment"
+          getFormData={getFormData}
         />
       ),
     },
     {
       type: "fields",
       title: "Período de Asignación",
+      layout: "grid",
       fields: [
         {
           type: "date",
-          value: toInputDate(formData.startDate),
+          value: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, startDate: new Date(value) }),
+            setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
           label: "Fecha Inicio",
           required: true,
         },
         {
-          type: "checkbox",
-          key: "isIndefinite",
-          label: "Asignación indefinida",
-          value: formData.isIndefinite,
-          onChange: (v: boolean) =>
-            setFormData({ ...formData, isIndefinite: v }),
-        },
-        {
           type: "date",
-          value: toInputDate(formData.endDate),
+          value: formState.endDate
+            ? toInputDate(new Date(formState.endDate))
+            : toInputDate(new Date()),
           onChange: (value: string) =>
-            setFormData({ ...formData, endDate: new Date(value) }),
+            setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
           label: "Fecha Fin",
-          show: !formData.isIndefinite,
-          min: toInputDate(formData.startDate),
+          show: !isIndefinite,
+          min: formState.startDate
+            ? toInputDate(new Date(formState.startDate))
+            : undefined,
+        },
+        {
+          type: "checkbox",
+          key: "isIndefinite",
+          label: "Asignación indefinida (sin fecha de fin)",
+          value: isIndefinite,
+          onChange: (v: boolean) => setIsIndefinite(v),
+          span: 2,
         },
       ],
     },
   ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary" as const,
-      onClick: () => goTo("/vehicles/assignments"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Finalizar asignación",
-            variant: "danger" as const,
-            onClick: handleUnassign,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Asignación"
-        : "Actualizar Asignación",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
-    },
-  ];
-
-  if (loading) return <LoadingSpinner message="Cargando asignación..." />;
 
   return (
     <div className="container">
       <Form
         title={isNew ? "Nueva Asignación" : "Editar Asignación"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleUnassign : undefined,
+          saving,
+          entityName: "Asignación",
+          texts: {
+            delete: "Finalizar asignación",
+          },
+        }}
       />
 
       <ConfirmDialog

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { Table } from "../../components/Table/table";
 import type { TableColumn } from "../../components/Table/table";
+import { TableSelector } from "../../components/TableSelector";
 import Form from "../../components/Form/Form";
 import type { FormSection } from "../../components/Form/Form";
 import { getUserById, updateUserStatus } from "../../services/users";
@@ -19,6 +20,7 @@ import type {
   ReservationFilterParams,
 } from "../../types/reservation";
 import type { VehicleResponsibleFilterParams } from "../../types/vehicleResponsible";
+import { Car, CalendarDays, UserCheck } from "lucide-react";
 
 export default function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -204,82 +206,107 @@ export default function UserPage() {
     <div className="container">
       <Form title="Detalle del Usuario" sections={userInfoSections} />
 
-      <Table<AssignmentFilterParams, Assignment>
-        getRows={(options) =>
-          getAssignments({
-            ...options,
-            filters: { ...options?.filters, userId: id },
-          })
-        }
-        columns={assignmentColumns}
-        header={{
-          title: "Vehículos Asignados",
-          addButton: {
-            text: "Agregar Vehículo",
-            onClick: () => navigate(`/vehicles/assignments/new?userId=${id}`),
+      <TableSelector
+        tabs={[
+          {
+            id: "assignments",
+            label: "Vehículos Asignados",
+            icon: Car,
+            table: (
+              <Table<AssignmentFilterParams, Assignment>
+                getRows={(options) =>
+                  getAssignments({
+                    ...options,
+                    filters: { ...options?.filters, userId: id },
+                  })
+                }
+                columns={assignmentColumns}
+                header={{
+                  title: "Vehículos Asignados",
+                  addButton: {
+                    text: "Agregar Vehículo",
+                    onClick: () =>
+                      navigate(`/vehicles/assignments/new?userId=${id}`),
+                  },
+                }}
+                actionColumn={{
+                  route: "/assignments",
+                  width: 80,
+                }}
+                search={{
+                  enabled: true,
+                  placeholder: "Buscar asignaciones...",
+                }}
+                minHeight="500px"
+              />
+            ),
           },
-        }}
-        actionColumn={{
-          route: "/assignments",
-          width: 80,
-        }}
-        search={{
-          enabled: true,
-          placeholder: "Buscar asignaciones...",
-        }}
-        minHeight="500px"
-      />
-
-      <Table<ReservationFilterParams, Reservation>
-        getRows={(options) =>
-          getReservations({
-            ...options,
-            filters: { ...options?.filters, userId: id },
-          })
-        }
-        columns={reservationColumns}
-        header={{
-          title: "Reservas de Vehículos",
-          addButton: {
-            text: "+ Nueva Reserva",
-            onClick: () => navigate(`/reservations/new?userId=${id}`),
+          {
+            id: "reservations",
+            label: "Reservas",
+            icon: CalendarDays,
+            table: (
+              <Table<ReservationFilterParams, Reservation>
+                getRows={(options) =>
+                  getReservations({
+                    ...options,
+                    filters: { ...options?.filters, userId: id },
+                  })
+                }
+                columns={reservationColumns}
+                header={{
+                  title: "Reservas de Vehículos",
+                  addButton: {
+                    text: "+ Nueva Reserva",
+                    onClick: () => navigate(`/reservations/new?userId=${id}`),
+                  },
+                }}
+                actionColumn={{
+                  route: "/reservations",
+                  width: 80,
+                }}
+                search={{
+                  enabled: true,
+                  placeholder: "Buscar reservas...",
+                }}
+                minHeight="500px"
+              />
+            ),
           },
-        }}
-        actionColumn={{
-          route: "/reservations",
-          width: 80,
-        }}
-        search={{
-          enabled: true,
-          placeholder: "Buscar reservas...",
-        }}
-        minHeight="500px"
-      />
-
-      <Table<VehicleResponsibleFilterParams, Assignment>
-        getRows={(options) =>
-          getVehicleResponsibles({
-            ...options,
-            filters: { ...options?.filters, userId: id },
-          })
-        }
-        columns={assignmentColumns}
-        header={{
-          title: "Vehículos bajo Responsabilidad",
-          addButton: {
-            text: "+ Agregar Responsable",
-            onClick: () => navigate(`/vehicles/responsibles/new?userId=${id}`),
+          {
+            id: "responsibles",
+            label: "Responsabilidades",
+            icon: UserCheck,
+            table: (
+              <Table<VehicleResponsibleFilterParams, Assignment>
+                getRows={(options) =>
+                  getVehicleResponsibles({
+                    ...options,
+                    filters: { ...options?.filters, userId: id },
+                  })
+                }
+                columns={assignmentColumns}
+                header={{
+                  title: "Vehículos bajo Responsabilidad",
+                  addButton: {
+                    text: "+ Agregar Responsable",
+                    onClick: () =>
+                      navigate(`/vehicles/responsibles/new?userId=${id}`),
+                  },
+                }}
+                actionColumn={{
+                  route: "/vehicles/responsibles",
+                  width: 80,
+                }}
+                search={{
+                  enabled: true,
+                  placeholder: "Buscar responsables...",
+                }}
+                minHeight="500px"
+              />
+            ),
           },
-        }}
-        actionColumn={{
-          route: "/vehicles/responsibles",
-          width: 80,
-        }}
-        search={{
-          enabled: true,
-          placeholder: "Buscar responsables...",
-        }}
-        minHeight="500px"
+        ]}
       />
     </div>
   );

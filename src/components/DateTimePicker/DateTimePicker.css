@@ -1,9 +1,7 @@
-
 .datetime-picker {
   width: 100%;
   margin-bottom: 20px;
 }
-
 
 .datetime-row {
   display: flex;
@@ -12,13 +10,11 @@
   width: 100%;
 }
 
-
 .datetime-field {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
-
 
 .datetime-label {
   font-weight: 600;
@@ -27,7 +23,6 @@
   margin-bottom: 8px;
   display: block;
 }
-
 
 .datetime-input {
   width: 100%;
@@ -40,17 +35,15 @@
   background-color: white;
 }
 
-
 .datetime-input:focus {
   outline: none;
-  border-color: #fe9000;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(254, 144, 0, 0.1);
 }
 
 .datetime-input:hover:not(:disabled) {
   border-color: #d1d5db;
 }
-
 
 .datetime-input:disabled {
   background-color: #f8f9fa;
@@ -59,7 +52,6 @@
   opacity: 1;
   cursor: not-allowed;
 }
-
 
 @media (max-width: 768px) {
   .datetime-row {
@@ -72,17 +64,15 @@
   }
 }
 
-
 .datetime-row:not(:last-child) {
   margin-bottom: 25px;
 }
 
-
 .datetime-picker
   .datetime-row:first-child
   .datetime-field:first-child
   .datetime-label {
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -90,7 +80,7 @@
   .datetime-row:first-child
   .datetime-field:last-child
   .datetime-label {
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -98,7 +88,7 @@
   .datetime-row:last-child
   .datetime-field:first-child
   .datetime-label {
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -106,6 +96,6 @@
   .datetime-row:last-child
   .datetime-field:last-child
   .datetime-label {
-  color: #282d86;
+  color: var(--color-primary);
   font-weight: 700;
 }

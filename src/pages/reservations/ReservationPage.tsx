@@ -1,5 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
-import { Form, type FormButton, type FormSection } from "../../components/Form";
+import { Form, type FormSection } from "../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../hooks";
 import {
@@ -8,8 +8,6 @@ import {
   updateReservation,
   deleteReservation,
 } from "../../services/reservations";
-import { getVehicleById } from "../../services/vehicles";
-import { getUserById } from "../../services/users";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import {
   VehicleEntitySearch,
@@ -17,8 +15,7 @@ import {
 } from "../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
-import type { Vehicle } from "../../types/vehicle";
-import type { User } from "../../types/user";
+import type { Reservation } from "../../types/reservation";
 import {
   toInputDate,
   toInputTime,
@@ -31,17 +28,13 @@ export default function ReservationPage() {
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-
-  const [formData, setFormData] = useState({
-    startDate: new Date(),
-    endDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
-  });
+  // Main form state (entity data)
+  const [formState, setFormState] = useState<Partial<Reservation>>({});
 
   const {
     loading,
     saving,
+    isEditing,
     isDialogOpen,
     dialogMessage,
     notification,
@@ -49,93 +42,78 @@ export default function ReservationPage() {
     executeSave,
     showError,
     goTo,
+    enableEdit,
+    cancelEdit,
+    setOriginalData,
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-  } = usePageState({ redirectOnSuccess: "/reservations" });
+    getSavedFormData,
+    cancelCreate,
+  } = usePageState({
+    redirectOnSuccess: "/reservations",
+    startInViewMode: !isNew,
+    scope: "reservation",
+  });
 
   useEffect(() => {
-    if (!isNew && id) {
+    if (isNew) {
+      const savedFormData = getSavedFormData<Partial<Reservation>>();
+
+      if (savedFormData) {
+        setFormState(savedFormData);
+      }
+      return;
+    }
+
+    if (id) {
       loadReservation(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
-
-  // Load vehicle from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const vehicleId = searchParams.get("vehicleId");
-
-    if (vehicleId) {
-      executeLoad(async () => {
-        const response = await getVehicleById(vehicleId);
-        if (response.success && response.data) {
-          setVehicle(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
-
-  // Load user from query parameter
-  useEffect(() => {
-    if (!isNew) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const userId = searchParams.get("userId");
-
-    if (userId) {
-      executeLoad(async () => {
-        const response = await getUserById(userId);
-        if (response.success && response.data) {
-          setUser(response.data);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, location.search]);
 
   const loadReservation = async (reservationId: string) => {
     await executeLoad(async () => {
       const response = await getReservationById(reservationId);
 
       if (response.success && response.data) {
-        const reservation = response.data;
-
-        setFormData({
-          startDate: new Date(reservation.startDate),
-          endDate: new Date(reservation.endDate),
-        });
-
-        if (reservation.vehicle) {
-          setVehicle(reservation.vehicle);
-        }
-        if (reservation.user) {
-          setUser(reservation.user);
-        }
+        setFormState(response.data);
+        setOriginalData(response.data);
       } else {
         showError(response.message || "Error al cargar la reserva");
       }
     }, "Error al cargar la reserva");
   };
 
+  const handleCancel = () => {
+    if (isNew) {
+      if (cancelCreate()) return;
+      goTo("/reservations");
+    } else {
+      const original = cancelEdit<Partial<Reservation>>();
+      if (original) {
+        setFormState(original);
+      }
+    }
+  };
+
   const validateForm = () => {
-    if (!user) {
+    if (!formState.user) {
       showError("Debe seleccionar un usuario");
       return false;
     }
-    if (!vehicle) {
+    if (!formState.vehicle) {
       showError("Debe seleccionar un vehículo");
       return false;
     }
-    if (!formData.startDate || !formData.endDate) {
+    if (!formState.startDate || !formState.endDate) {
       showError("Debe completar todas las fechas y horarios");
       return false;
     }
 
-    if (formData.endDate <= formData.startDate) {
+    const startDate = new Date(formState.startDate);
+    const endDate = new Date(formState.endDate);
+    if (endDate <= startDate) {
       showError("La fecha de fin debe ser posterior a la fecha de inicio");
       return false;
     }
@@ -148,21 +126,24 @@ export default function ReservationPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
+    const startDate = dateToISO(new Date(formState.startDate!));
+    const endDate = dateToISO(new Date(formState.endDate!));
+
     executeSave(
       `¿Está seguro que desea ${actionText} esta reserva?`,
       () =>
         isNew
           ? createReservation({
-              userId: user!.id,
-              vehicleId: vehicle!.id,
-              startDate: dateToISO(formData.startDate),
-              endDate: dateToISO(formData.endDate),
+              userId: formState.user!.id,
+              vehicleId: formState.vehicle!.id,
+              startDate,
+              endDate,
             })
           : updateReservation(id!, {
-              userId: user!.id,
-              vehicleId: vehicle!.id,
-              startDate: dateToISO(formData.startDate),
-              endDate: dateToISO(formData.endDate),
+              userId: formState.user!.id,
+              vehicleId: formState.vehicle!.id,
+              startDate,
+              endDate,
             }),
       `Reserva ${actionText}da con éxito`,
     );
@@ -178,24 +159,36 @@ export default function ReservationPage() {
     );
   };
 
+  // Helper to get current dates as Date objects
+  const getStartDate = () =>
+    formState.startDate ? new Date(formState.startDate) : new Date();
+  const getEndDate = () =>
+    formState.endDate
+      ? new Date(formState.endDate)
+      : new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+
   const sections: FormSection[] = [
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <UserEntitySearch
-          entity={user}
-          onEntityChange={setUser}
-          disabled={!isNew}
+          entity={formState.user || null}
+          onEntityChange={(user) =>
+            setFormState((prev) => ({ ...prev, user: user || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
     {
       type: "entity",
-      render: (
+      render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
-          disabled={!isNew}
+          entity={formState.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormState((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
+          disabled={disabled || !isNew}
         />
       ),
     },
@@ -207,13 +200,13 @@ export default function ReservationPage() {
       fields: [
         {
           type: "date",
-          value: toInputDate(formData.startDate),
+          value: toInputDate(getStartDate()),
           onChange: (dateValue: string) => {
-            const timeStr = toInputTime(formData.startDate);
-            setFormData({
-              ...formData,
-              startDate: inputsToDate(dateValue, timeStr),
-            });
+            const timeStr = toInputTime(getStartDate());
+            setFormState((prev) => ({
+              ...prev,
+              startDate: inputsToDate(dateValue, timeStr).toISOString(),
+            }));
           },
           key: "startDate",
           label: "Fecha Inicio",
@@ -221,13 +214,13 @@ export default function ReservationPage() {
         },
         {
           type: "time",
-          value: toInputTime(formData.startDate),
+          value: toInputTime(getStartDate()),
           onChange: (timeValue: string) => {
-            const dateStr = toInputDate(formData.startDate);
-            setFormData({
-              ...formData,
-              startDate: inputsToDate(dateStr, timeValue),
-            });
+            const dateStr = toInputDate(getStartDate());
+            setFormState((prev) => ({
+              ...prev,
+              startDate: inputsToDate(dateStr, timeValue).toISOString(),
+            }));
           },
           key: "startTime",
           label: "Hora Inicio",
@@ -235,64 +228,34 @@ export default function ReservationPage() {
         },
         {
           type: "date",
-          value: toInputDate(formData.endDate),
+          value: toInputDate(getEndDate()),
           onChange: (dateValue: string) => {
-            const timeStr = toInputTime(formData.endDate);
-            setFormData({
-              ...formData,
-              endDate: inputsToDate(dateValue, timeStr),
-            });
+            const timeStr = toInputTime(getEndDate());
+            setFormState((prev) => ({
+              ...prev,
+              endDate: inputsToDate(dateValue, timeStr).toISOString(),
+            }));
           },
           key: "endDate",
           label: "Fecha Fin",
           required: true,
-          min: toInputDate(formData.startDate),
+          min: toInputDate(getStartDate()),
         },
         {
           type: "time",
-          value: toInputTime(formData.endDate),
+          value: toInputTime(getEndDate()),
           onChange: (timeValue: string) => {
-            const dateStr = toInputDate(formData.endDate);
-            setFormData({
-              ...formData,
-              endDate: inputsToDate(dateStr, timeValue),
-            });
+            const dateStr = toInputDate(getEndDate());
+            setFormState((prev) => ({
+              ...prev,
+              endDate: inputsToDate(dateStr, timeValue).toISOString(),
+            }));
           },
           key: "endTime",
           label: "Hora Fin",
           required: true,
         },
       ],
-    },
-  ];
-
-  const buttons: FormButton[] = [
-    {
-      text: "Cancelar",
-      variant: "secondary",
-      onClick: () => goTo("/reservations"),
-      disabled: saving,
-    },
-    ...(!isNew
-      ? [
-          {
-            text: "Eliminar",
-            variant: "danger" as const,
-            onClick: handleDelete,
-            disabled: saving,
-          },
-        ]
-      : []),
-    {
-      text: saving
-        ? "Guardando..."
-        : isNew
-        ? "Crear Reserva"
-        : "Actualizar Reserva",
-      variant: "primary" as const,
-      onClick: handleSave,
-      disabled: saving,
-      loading: saving,
     },
   ];
 
@@ -305,7 +268,16 @@ export default function ReservationPage() {
       <Form
         title={isNew ? "Nueva Reserva" : "Editar Reserva"}
         sections={sections}
-        buttons={buttons}
+        modeConfig={{
+          isNew,
+          isEditing,
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onEdit: enableEdit,
+          onDelete: !isNew ? handleDelete : undefined,
+          saving,
+          entityName: "Reserva",
+        }}
       />
       <ConfirmDialog
         open={isDialogOpen}

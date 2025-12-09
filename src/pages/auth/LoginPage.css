@@ -33,17 +33,17 @@
   cursor: pointer;
   border: 1px solid transparent;
   transition: 0.5s;
-  background-color: #282d86;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   padding: 10px;
   font-size: 16px;
   gap: 10px;
 }
 
 .login-button:hover {
-  background-color: white;
-  color: #282d86;
-  border: 1px solid #282d86;
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
   border-radius: 0;
   font-weight: bold;
 }
