@@ -48,6 +48,44 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
 
   const isVertical = layout === "vertical";
 
+  // Custom tooltip para mostrar el label correctamente
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      payload: T;
+      name: string;
+      value: number;
+      color: string;
+    }>;
+  }) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload;
+      const label = item[xAxisKey] as string;
+      return (
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "8px 12px",
+            border: "1px solid #e0e0e0",
+            borderRadius: "4px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <p style={{ margin: 0, fontWeight: 600, marginBottom: 4 }}>{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ margin: 0, color: entry.color }}>
+              {entry.name}: <strong>{entry.value}</strong>
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div style={{ width: "100%", height, ...style }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -66,12 +104,22 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
             </>
           ) : (
             <>
-              <XAxis dataKey={xAxisKey} {...AXIS_CONFIG} />
+              <XAxis
+                dataKey={xAxisKey}
+                stroke="#888"
+                axisLine={{ stroke: "#e0e0e0" }}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#555" }}
+                angle={data.length > 6 ? -35 : 0}
+                textAnchor={data.length > 6 ? "end" : "middle"}
+                height={data.length > 6 ? 70 : 40}
+                interval={0}
+              />
               <YAxis allowDecimals={false} {...AXIS_CONFIG} />
             </>
           )}
 
-          {showTooltip && <Tooltip />}
+          {showTooltip && <Tooltip content={<CustomTooltip />} />}
           {showLegend && <Legend />}
 
           {series.map((s, seriesIndex) => (

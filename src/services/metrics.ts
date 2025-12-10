@@ -1,202 +1,277 @@
 import type { ServiceResponse } from "../types/common";
+import { generalApiCall } from "./common";
 
-export interface UserMetrics {
+// ============================================
+// Types from Backend API
+// ============================================
+
+/** Bucket for kilometer/age groupings */
+export interface Bucket {
+  label: string;
+  min: number;
+  max: number | null;
+  count: number;
+}
+
+/** Distribution item (brand, fuel type, etc.) */
+export interface DistributionItem {
+  id: string | null;
+  name: string;
+  count: number;
+}
+
+/** Timeline item for monthly data */
+export interface TimelineItem {
+  month: string;
+  count: number;
+}
+
+/** Quarterly control metric */
+export interface QuarterlyControlMetric {
+  year: number;
+  quarter: number;
+  label: string;
   total: number;
-  active: number;
-  inactive: number;
-  activePercentage: number;
+  aprobados: number;
+  pendientes: number;
+  rechazados: number;
+  vencidos: number;
 }
 
-export interface ReservationMetrics {
+/** Personnel metric (drivers/responsibles) */
+export interface PersonnelMetric {
+  totalActual: number;
+  timeline: TimelineItem[];
+}
+
+// ============================================
+// Response Types
+// ============================================
+
+export interface VehicleCountData {
   total: number;
-  byMonth: Array<{ month: string; count: number }>;
-  byUser: Array<{ userName: string; count: number }>;
-  byVehicle: Array<{ vehicleInfo: string; count: number }>;
 }
 
-export interface VehicleMetrics {
-  total: number;
-  byBrand: Array<{ brand: string; count: number }>;
-  mostReserved: Array<{ vehicleInfo: string; reservations: number }>;
+export interface BucketListData {
+  buckets: Bucket[];
 }
 
-export interface DashboardMetrics {
-  users: UserMetrics;
-  reservations: ReservationMetrics;
-  vehicles: VehicleMetrics;
-  assignments: {
-    total: number;
-  };
+export interface DistributionListData {
+  distribution: DistributionItem[];
 }
 
-// Helper para generar datos random
-const getRandomInt = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+export interface TimelineData {
+  timeline: TimelineItem[];
+}
 
-const months = [
-  "Enero 2024",
-  "Febrero 2024",
-  "Marzo 2024",
-  "Abril 2024",
-  "Mayo 2024",
-  "Junio 2024",
-  "Julio 2024",
-  "Agosto 2024",
-  "Septiembre 2024",
-  "Octubre 2024",
-  "Noviembre 2024",
-];
+export interface QuarterlyControlMetricsData {
+  metrics: QuarterlyControlMetric[];
+}
 
-const users = [
-  "Juan Pérez",
-  "María García",
-  "Carlos López",
-  "Ana Martínez",
-  "Luis Rodríguez",
-];
+// ============================================
+// Query Parameters
+// ============================================
 
-const vehicles = [
-  "Toyota Corolla (ABC123)",
-  "Honda Civic (XYZ789)",
-  "Ford Focus (DEF456)",
-  "Chevrolet Cruze (GHI012)",
-  "Volkswagen Golf (JKL345)",
-];
+export interface KilometersMetricsQuery {
+  bucketSize?: number;
+  maxBuckets?: number;
+}
 
-const brands = ["Toyota", "Honda", "Ford", "Chevrolet", "Volkswagen"];
+export interface AgeMetricsQuery {
+  bucketSize?: number;
+  maxBuckets?: number;
+}
+
+export interface TimelineMetricsQuery {
+  months?: number;
+}
+
+export interface QuarterlyControlMetricsQuery {
+  periods?: number;
+}
+
+// ============================================
+// API Functions - Vehicle Metrics
+// ============================================
 
 /**
- * TODO: Implementar endpoint en backend: GET /api/metrics/users
+ * GET /metrics/vehicles/count
+ * Returns total vehicle count
  */
-export async function getUserMetrics(): Promise<ServiceResponse<UserMetrics>> {
-  // Simulación - Reemplazar con llamada real al backend
-  const total = getRandomInt(50, 200);
-  const active = getRandomInt(Math.floor(total * 0.7), total);
-  const inactive = total - active;
-  const activePercentage = Math.round((active / total) * 100);
-
-  return {
-    success: true,
-    data: {
-      total,
-      active,
-      inactive,
-      activePercentage,
-    },
-  };
-}
-
-/**
- * TODO: Implementar endpoint en backend: GET /api/metrics/reservations
- */
-export async function getReservationMetrics(): Promise<
-  ServiceResponse<ReservationMetrics>
+export async function getVehicleCount(): Promise<
+  ServiceResponse<VehicleCountData>
 > {
-  // Simulación - Reemplazar con llamada real al backend
-  const byMonth = months.map((month) => ({
-    month,
-    count: getRandomInt(5, 30),
-  }));
-
-  const byUser = users
-    .map((userName) => ({
-      userName,
-      count: getRandomInt(1, 15),
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  const byVehicle = vehicles
-    .map((vehicleInfo) => ({
-      vehicleInfo,
-      count: getRandomInt(1, 20),
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  const total = byMonth.reduce((sum, m) => sum + m.count, 0);
-
-  return {
-    success: true,
-    data: {
-      total,
-      byMonth,
-      byUser,
-      byVehicle,
-    },
-  };
+  return generalApiCall<VehicleCountData>({
+    uri: "metrics/vehicles/count",
+    method: "GET",
+    errorMessage: "Error al obtener el conteo de vehículos",
+  });
 }
 
 /**
- * TODO: Implementar endpoint en backend: GET /api/metrics/vehicles
+ * GET /metrics/vehicles/kilometers
+ * Returns vehicles grouped by kilometer buckets
  */
-export async function getVehicleMetrics(): Promise<
-  ServiceResponse<VehicleMetrics>
-> {
-  // Simulación - Reemplazar con llamada real al backend
-  const byBrand = brands
-    .map((brand) => ({
-      brand,
-      count: getRandomInt(5, 30),
-    }))
-    .sort((a, b) => b.count - a.count);
+export async function getVehiclesByKilometers(
+  query?: KilometersMetricsQuery
+): Promise<ServiceResponse<BucketListData>> {
+  const usp = new URLSearchParams();
+  if (query?.bucketSize) usp.set("bucketSize", query.bucketSize.toString());
+  if (query?.maxBuckets) usp.set("maxBuckets", query.maxBuckets.toString());
 
-  const mostReserved = vehicles
-    .map((vehicleInfo) => ({
-      vehicleInfo,
-      reservations: getRandomInt(5, 50),
-    }))
-    .sort((a, b) => b.reservations - a.reservations)
-    .slice(0, 5);
-
-  const total = byBrand.reduce((sum, b) => sum + b.count, 0);
-
-  return {
-    success: true,
-    data: {
-      total,
-      byBrand,
-      mostReserved,
-    },
-  };
+  return generalApiCall<BucketListData>({
+    uri: "metrics/vehicles/kilometers",
+    method: "GET",
+    errorMessage: "Error al obtener métricas de kilómetros",
+    usp: usp.toString() ? usp : undefined,
+  });
 }
 
 /**
- * TODO: Implementar endpoint en backend: GET /api/metrics/dashboard
- * Este endpoint debería devolver todas las métricas en una sola llamada
+ * GET /metrics/vehicles/age
+ * Returns vehicles grouped by age buckets
  */
-export async function getDashboardMetrics(): Promise<
-  ServiceResponse<DashboardMetrics>
+export async function getVehiclesByAge(
+  query?: AgeMetricsQuery
+): Promise<ServiceResponse<BucketListData>> {
+  const usp = new URLSearchParams();
+  if (query?.bucketSize) usp.set("bucketSize", query.bucketSize.toString());
+  if (query?.maxBuckets) usp.set("maxBuckets", query.maxBuckets.toString());
+
+  return generalApiCall<BucketListData>({
+    uri: "metrics/vehicles/age",
+    method: "GET",
+    errorMessage: "Error al obtener métricas de antigüedad",
+    usp: usp.toString() ? usp : undefined,
+  });
+}
+
+/**
+ * GET /metrics/vehicles/fuel-type
+ * Returns vehicles grouped by fuel type
+ */
+export async function getVehiclesByFuelType(): Promise<
+  ServiceResponse<DistributionListData>
 > {
-  try {
-    const [userMetrics, reservationMetrics, vehicleMetrics] = await Promise.all(
-      [getUserMetrics(), getReservationMetrics(), getVehicleMetrics()],
-    );
+  return generalApiCall<DistributionListData>({
+    uri: "metrics/vehicles/fuel-type",
+    method: "GET",
+    errorMessage: "Error al obtener métricas por tipo de combustible",
+  });
+}
 
-    if (
-      !userMetrics.success ||
-      !reservationMetrics.success ||
-      !vehicleMetrics.success
-    ) {
-      return {
-        success: false,
-        message: "Error al obtener algunas métricas",
-      };
-    }
+/**
+ * GET /metrics/vehicles/brand
+ * Returns vehicles grouped by brand
+ */
+export async function getVehiclesByBrand(): Promise<
+  ServiceResponse<DistributionListData>
+> {
+  return generalApiCall<DistributionListData>({
+    uri: "metrics/vehicles/brand",
+    method: "GET",
+    errorMessage: "Error al obtener métricas por marca",
+  });
+}
 
-    return {
-      success: true,
-      data: {
-        users: userMetrics.data,
-        reservations: reservationMetrics.data,
-        vehicles: vehicleMetrics.data,
-        assignments: {
-          total: getRandomInt(20, 100),
-        },
-      },
-    };
-  } catch {
-    return {
-      success: false,
-      message: "Error al calcular métricas del dashboard",
-    };
-  }
+// ============================================
+// API Functions - Management Metrics
+// ============================================
+
+/**
+ * GET /metrics/reservations
+ * Returns reservations timeline by month
+ */
+export async function getReservationsTimeline(
+  query?: TimelineMetricsQuery
+): Promise<ServiceResponse<TimelineData>> {
+  const usp = new URLSearchParams();
+  if (query?.months) usp.set("months", query.months.toString());
+
+  return generalApiCall<TimelineData>({
+    uri: "metrics/reservations",
+    method: "GET",
+    errorMessage: "Error al obtener timeline de reservas",
+    usp: usp.toString() ? usp : undefined,
+  });
+}
+
+/**
+ * GET /metrics/maintenance-records
+ * Returns maintenance records timeline by month
+ */
+export async function getMaintenanceRecordsTimeline(
+  query?: TimelineMetricsQuery
+): Promise<ServiceResponse<TimelineData>> {
+  const usp = new URLSearchParams();
+  if (query?.months) usp.set("months", query.months.toString());
+
+  return generalApiCall<TimelineData>({
+    uri: "metrics/maintenance-records",
+    method: "GET",
+    errorMessage: "Error al obtener timeline de mantenimientos",
+    usp: usp.toString() ? usp : undefined,
+  });
+}
+
+// ============================================
+// API Functions - Quarterly Control Metrics
+// ============================================
+
+/**
+ * GET /metrics/quarterly-controls
+ * Returns quarterly controls by status
+ */
+export async function getQuarterlyControlsStatus(
+  query?: QuarterlyControlMetricsQuery
+): Promise<ServiceResponse<QuarterlyControlMetricsData>> {
+  const usp = new URLSearchParams();
+  if (query?.periods) usp.set("periods", query.periods.toString());
+
+  return generalApiCall<QuarterlyControlMetricsData>({
+    uri: "metrics/quarterly-controls",
+    method: "GET",
+    errorMessage: "Error al obtener métricas de controles trimestrales",
+    usp: usp.toString() ? usp : undefined,
+  });
+}
+
+// ============================================
+// API Functions - Personnel Metrics
+// ============================================
+
+/**
+ * GET /metrics/drivers
+ * Returns driver assignments metrics
+ */
+export async function getDriversMetrics(
+  query?: TimelineMetricsQuery
+): Promise<ServiceResponse<PersonnelMetric>> {
+  const usp = new URLSearchParams();
+  if (query?.months) usp.set("months", query.months.toString());
+
+  return generalApiCall<PersonnelMetric>({
+    uri: "metrics/drivers",
+    method: "GET",
+    errorMessage: "Error al obtener métricas de conductores",
+    usp: usp.toString() ? usp : undefined,
+  });
+}
+
+/**
+ * GET /metrics/responsibles
+ * Returns vehicle responsibles metrics
+ */
+export async function getResponsiblesMetrics(
+  query?: TimelineMetricsQuery
+): Promise<ServiceResponse<PersonnelMetric>> {
+  const usp = new URLSearchParams();
+  if (query?.months) usp.set("months", query.months.toString());
+
+  return generalApiCall<PersonnelMetric>({
+    uri: "metrics/responsibles",
+    method: "GET",
+    errorMessage: "Error al obtener métricas de responsables",
+    usp: usp.toString() ? usp : undefined,
+  });
 }

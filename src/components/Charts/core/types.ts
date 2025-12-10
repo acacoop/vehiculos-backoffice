@@ -13,9 +13,10 @@ export type ChartType =
 
 /**
  * Datos base para cualquier gráfico
+ * Permite string, number, boolean y null como valores
  */
 export interface ChartDataItem {
-  [key: string]: string | number;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 /**

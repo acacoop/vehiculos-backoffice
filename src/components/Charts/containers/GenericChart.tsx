@@ -5,6 +5,7 @@ import type {
   AreaChartProps,
   PieChartProps,
   RadarChartProps,
+  ChartDataItem,
 } from "../core/types";
 import {
   BarChart as BarChartComponent,
@@ -31,7 +32,7 @@ import {
  * />
  * ```
  */
-export default function GenericChart<T extends Record<string, unknown>>({
+export default function GenericChart<T extends ChartDataItem = ChartDataItem>({
   type,
   data,
   config,
