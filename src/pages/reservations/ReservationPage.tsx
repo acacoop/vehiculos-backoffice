@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../components/Form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../hooks";
 import {
   createReservation,
@@ -31,6 +31,11 @@ export default function ReservationPage() {
   // Main form state (entity data)
   const [formState, setFormState] = useState<Partial<Reservation>>({});
 
+  // Handler for initial data
+  const handleInitialData = useCallback((data: Partial<Reservation>) => {
+    setFormState(data);
+  }, []);
+
   const {
     loading,
     saving,
@@ -48,25 +53,17 @@ export default function ReservationPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<Reservation>>({
     redirectOnSuccess: "/reservations",
     startInViewMode: !isNew,
     scope: "reservation",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<Partial<Reservation>>();
-
-      if (savedFormData) {
-        setFormState(savedFormData);
-      }
-      return;
-    }
-
-    if (id) {
+    // Only load existing reservation (new entities handled via onInitialData)
+    if (!isNew && id) {
       loadReservation(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

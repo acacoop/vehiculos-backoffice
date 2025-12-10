@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
@@ -26,6 +26,14 @@ export default function KilometersLogPage() {
   // Main form state (entity data)
   const [formState, setFormState] = useState<Partial<VehicleKilometersLog>>({});
 
+  // Handler for initial data
+  const handleInitialData = useCallback(
+    (data: Partial<VehicleKilometersLog>) => {
+      setFormState(data);
+    },
+    [],
+  );
+
   const {
     loading,
     saving,
@@ -43,27 +51,19 @@ export default function KilometersLogPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<VehicleKilometersLog>>({
     redirectOnSuccess: "/vehicles/kilometersLogs",
     startInViewMode: !isNew,
     scope: "kilometersLog",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<Partial<VehicleKilometersLog>>();
-
-      if (savedFormData) {
-        setFormState(savedFormData);
-      }
-      return;
+    // Only load existing log (new entities handled via onInitialData)
+    if (!isNew && id) {
+      loadKilometersLog(id);
     }
-
-    if (!id) return;
-
-    loadKilometersLog(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 

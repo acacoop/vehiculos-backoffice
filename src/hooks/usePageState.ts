@@ -1,34 +1,45 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useConfirmDialog, useNotification } from "./index";
 import type { Identifiable } from "../types/common";
 import {
   peekPageContext,
   popPageContext,
-  setCreatedEntity,
+  setPendingFormData,
   getFormData,
   clearFormData,
-  consumeCreatedEntity,
+  consumePendingFormData,
 } from "../common/navigationStack";
 
-/** Mapping of entityType to field name for auto-merging created entities */
-export type EntityFieldMapping = Record<string, string>;
-
-interface UsePageStateOptions {
+interface UsePageStateOptions<TForm = unknown> {
   redirectOnSuccess?: string;
   redirectDelay?: number;
   /** If true, form starts in view mode (non-editable) for existing items */
   startInViewMode?: boolean;
   /** Scope/Entity type for navigation stack safety (e.g., "vehicle", "brand") */
   scope?: string;
+  /** Default/empty form state for new entities */
+  defaultFormState?: TForm;
+  /**
+   * Callback when initial form data is ready.
+   * Called once on mount with merged data from:
+   * 1. defaultFormState
+   * 2. Saved form data (from navigation stack return flow)
+   * 3. Pending form data (from parent page or created entity)
+   */
+  onInitialData?: (data: TForm) => void;
 }
 
-export function usePageState(options: UsePageStateOptions = {}) {
+export function usePageState<TForm = unknown>(
+  options: UsePageStateOptions<TForm> = {},
+) {
   const {
     redirectOnSuccess,
     redirectDelay = 1500,
     startInViewMode = false,
     scope,
+    defaultFormState,
+    onInitialData,
   } = options;
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +47,9 @@ export function usePageState(options: UsePageStateOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(!startInViewMode);
+
+  // Track if initial data has been processed
+  const initialDataProcessedRef = useRef(false);
 
   // Store original data for cancel/restore functionality
   const originalDataRef = useRef<unknown>(null);
@@ -50,6 +64,47 @@ export function usePageState(options: UsePageStateOptions = {}) {
 
   const { notification, showSuccess, showError, closeNotification } =
     useNotification();
+
+  /**
+   * Process initial form data on mount (for new entities only).
+   * Merges: defaultFormState < savedFormData < pendingFormData
+   * Priority: pending data wins over saved, saved wins over default.
+   */
+  useEffect(() => {
+    // Only run once and only if we have a callback
+    if (initialDataProcessedRef.current || !onInitialData) return;
+
+    // Only process for new entities (when not in view mode initially)
+    if (startInViewMode) return;
+
+    initialDataProcessedRef.current = true;
+
+    const currentPath = location.pathname;
+
+    // Start with default
+    let mergedData: TForm = defaultFormState ?? ({} as TForm);
+
+    // Layer 1: Saved form data (from stack return flow)
+    const savedData = getFormData<TForm>(currentPath, scope);
+    if (savedData) {
+      mergedData = { ...mergedData, ...savedData };
+    }
+
+    // Layer 2: Pending form data (from parent page or created entity) - highest priority
+    const pendingData = consumePendingFormData<Partial<TForm>>(currentPath);
+    if (pendingData) {
+      mergedData = { ...mergedData, ...pendingData };
+    }
+
+    // Call the callback with merged data
+    onInitialData(mergedData);
+  }, [
+    location.pathname,
+    scope,
+    startInViewMode,
+    defaultFormState,
+    onInitialData,
+  ]);
 
   /**
    * Store original form data to restore on cancel
@@ -124,8 +179,11 @@ export function usePageState(options: UsePageStateOptions = {}) {
             const pageContext = peekPageContext();
 
             if (pageContext && response.data && scope) {
-              // Store the created entity for the destination page to consume
-              setCreatedEntity(response.data, scope);
+              // Store the created entity as pending data for the destination page
+              // The destination will merge it into its form via onInitialData
+              setPendingFormData(pageContext.returnPath, {
+                [scope]: response.data,
+              });
               // Clear form data for the current route (we're done with it)
               clearFormData(location.pathname);
               // Pop the navigation context
@@ -165,55 +223,28 @@ export function usePageState(options: UsePageStateOptions = {}) {
   };
 
   /**
-   * Get form data saved for the current route (call this once on page load)
-   * If entityFieldMapping is provided, will also consume any pending created entity
-   * and merge it into the returned form data.
-   *
-   * @param entityFieldMapping - Optional mapping of entityType to field name
-   *   e.g., { brand: "brand", model: "model" }
-   *   If the created entity's type matches a key, it will be set on that field
-   *
-   * @example
-   * // Without entity mapping (just restore form data)
-   * const savedData = getSavedFormData<FormType>();
-   *
-   * // With entity mapping (restore + merge created entity)
-   * const savedData = getSavedFormData<FormType>({ brand: "brand" });
-   */
-  const getSavedFormData = useCallback(
-    <TForm = unknown>(
-      entityFieldMapping?: EntityFieldMapping,
-    ): TForm | null => {
-      const currentPath = location.pathname;
-      const formData = getFormData<TForm>(currentPath, scope);
-
-      if (!formData) return null;
-
-      // If we have an entity mapping, try to consume and merge created entity
-      if (entityFieldMapping) {
-        for (const [entityType, fieldName] of Object.entries(
-          entityFieldMapping,
-        )) {
-          const createdEntity = consumeCreatedEntity(entityType);
-          if (createdEntity) {
-            // Merge the created entity into the form data
-            return {
-              ...formData,
-              [fieldName]: createdEntity,
-            };
-          }
-        }
-      }
-
-      return formData;
-    },
-    [location.pathname, scope],
-  );
-
-  /**
    * Navigates to a different route
    */
   const goTo = (path: string) => navigate(path);
+
+  /**
+   * Navigate to a route with initial form data.
+   * The destination page will receive this data via onInitialData callback.
+   *
+   * @param path - The route to navigate to
+   * @param initialData - Partial form data to preload in the destination
+   *
+   * @example
+   * // From VehiclePage, navigate to create assignment with vehicle preloaded
+   * goToWithData("/vehicles/assignments/new", { vehicle: currentVehicle });
+   */
+  const goToWithData = useCallback(
+    <T = unknown>(path: string, initialData: T) => {
+      setPendingFormData(path, initialData);
+      navigate(path);
+    },
+    [navigate],
+  );
 
   /**
    * Cancels a create operation and returns to the previous page if one exists in the stack.
@@ -244,7 +275,6 @@ export function usePageState(options: UsePageStateOptions = {}) {
     cancelEdit,
     cancelCreate,
     setOriginalData,
-    getSavedFormData,
 
     // Actions
     executeLoad,
@@ -252,6 +282,7 @@ export function usePageState(options: UsePageStateOptions = {}) {
     showSuccess,
     showError,
     goTo,
+    goToWithData,
 
     // Dialog handlers
     handleDialogConfirm: handleConfirm,

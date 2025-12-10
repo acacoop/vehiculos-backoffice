@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../../components/Form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
 import { toInputDate, inputDateToISO } from "../../../common/date";
 import {
@@ -29,6 +29,12 @@ export default function VehicleAssignmentPage() {
   // UI-only checkbox state
   const [isIndefinite, setIsIndefinite] = useState(true);
 
+  // Handler for initial data - extracts Assignment from the merged data
+  const handleInitialData = useCallback((data: Partial<Assignment>) => {
+    setFormState(data);
+    setIsIndefinite(!data.endDate);
+  }, []);
+
   const {
     loading,
     saving,
@@ -46,30 +52,17 @@ export default function VehicleAssignmentPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<Assignment>>({
     redirectOnSuccess: "/vehicles/assignments",
     startInViewMode: !isNew,
     scope: "assignment",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<{
-        formState: Partial<Assignment>;
-        isIndefinite: boolean;
-      }>();
-
-      if (savedFormData) {
-        setFormState(savedFormData.formState);
-        setIsIndefinite(savedFormData.isIndefinite);
-      }
-
-      return;
-    }
-
-    if (assignmentId) {
+    // Only load existing assignment (new entities handled via onInitialData)
+    if (!isNew && assignmentId) {
       loadAssignment(assignmentId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

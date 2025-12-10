@@ -24,8 +24,6 @@ export interface VehicleInput {
 
 export interface VehicleFilterParams extends FilterParams {
   licensePlate?: string;
-  brand?: string;
-  model?: string;
   brandId?: string;
   modelId?: string;
   year?: number;

@@ -1,4 +1,4 @@
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
@@ -46,7 +46,6 @@ const emptyVehicle: Partial<Vehicle> = {
 export default function VehiclesPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const navigate = useNavigate();
   const isNew = location.pathname.endsWith("/new");
 
   const [vehicle, setVehicle] = useState<Partial<Vehicle>>(emptyVehicle);
@@ -62,6 +61,7 @@ export default function VehiclesPage() {
     executeSave,
     showError,
     goTo,
+    goToWithData,
     enableEdit,
     cancelEdit,
     cancelCreate,
@@ -69,27 +69,17 @@ export default function VehiclesPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
-  } = usePageState({
+  } = usePageState<Partial<Vehicle>>({
     redirectOnSuccess: "/vehicles",
     startInViewMode: !isNew,
     scope: "vehicle",
+    defaultFormState: emptyVehicle,
+    onInitialData: setVehicle,
   });
 
   useEffect(() => {
-    if (isNew) {
-      // Restore form data + merge any created entity (e.g., model created in nested flow)
-      const savedFormData = getSavedFormData<Partial<Vehicle>>({
-        model: "model", // If a model was created, merge it into the "model" field
-      });
-
-      if (savedFormData) {
-        setVehicle(savedFormData);
-      }
-      return;
-    }
-
-    if (id) {
+    // Only load existing vehicle data (new entities handled via onInitialData)
+    if (!isNew && id) {
       loadVehicle(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -472,7 +462,7 @@ export default function VehiclesPage() {
                     addButton: {
                       text: "+ Agregar Asignación",
                       onClick: () =>
-                        navigate(`/vehicles/assignments/new?vehicleId=${id}`),
+                        goToWithData("/vehicles/assignments/new", { vehicle }),
                     },
                   }}
                   search={{
@@ -504,7 +494,7 @@ export default function VehiclesPage() {
                     addButton: {
                       text: "+ Agregar Responsable",
                       onClick: () =>
-                        navigate(`/vehicles/responsibles/new?vehicleId=${id}`),
+                        goToWithData("/vehicles/responsibles/new", { vehicle }),
                     },
                   }}
                   actionColumn={{
@@ -539,9 +529,9 @@ export default function VehiclesPage() {
                     addButton: {
                       text: "+ Nuevo Registro",
                       onClick: () =>
-                        navigate(
-                          `/vehicles/kilometersLogs/new?vehicleId=${id}`,
-                        ),
+                        goToWithData("/vehicles/kilometersLogs/new", {
+                          vehicle,
+                        }),
                     },
                   }}
                   actionColumn={{
@@ -572,7 +562,7 @@ export default function VehiclesPage() {
                     addButton: {
                       text: "+ Nuevo Registro",
                       onClick: () =>
-                        navigate(`/maintenance/records/new?vehicleId=${id}`),
+                        goToWithData("/maintenance/records/new", { vehicle }),
                     },
                   }}
                   actionColumn={{
@@ -604,7 +594,7 @@ export default function VehiclesPage() {
                     addButton: {
                       text: "+ Nueva Reserva",
                       onClick: () =>
-                        navigate(`/reservations/new?vehicleId=${id}`),
+                        goToWithData("/reservations/new", { vehicle }),
                     },
                   }}
                   actionColumn={{

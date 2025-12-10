@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { Table } from "../../components/Table/table";
@@ -10,6 +10,7 @@ import { getUserById, updateUserStatus } from "../../services/users";
 import { getAssignments } from "../../services/assignments";
 import { getReservations } from "../../services/reservations";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
+import { setPendingFormData } from "../../common/navigationStack";
 import type { User } from "../../types/user";
 import type {
   Assignment,
@@ -30,6 +31,17 @@ export default function UserPage() {
   const [userData, setUserData] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Helper to navigate with user data preloaded
+  const goToWithUser = useCallback(
+    (path: string) => {
+      if (userData) {
+        setPendingFormData(path, { user: userData });
+        navigate(path);
+      }
+    },
+    [userData, navigate],
+  );
 
   useEffect(() => {
     if (!id) {
@@ -225,8 +237,7 @@ export default function UserPage() {
                   title: "Vehículos Asignados",
                   addButton: {
                     text: "Agregar Vehículo",
-                    onClick: () =>
-                      navigate(`/vehicles/assignments/new?userId=${id}`),
+                    onClick: () => goToWithUser("/vehicles/assignments/new"),
                   },
                 }}
                 actionColumn={{
@@ -258,7 +269,7 @@ export default function UserPage() {
                   title: "Reservas de Vehículos",
                   addButton: {
                     text: "+ Nueva Reserva",
-                    onClick: () => navigate(`/reservations/new?userId=${id}`),
+                    onClick: () => goToWithUser("/reservations/new"),
                   },
                 }}
                 actionColumn={{
@@ -290,8 +301,7 @@ export default function UserPage() {
                   title: "Vehículos bajo Responsabilidad",
                   addButton: {
                     text: "+ Agregar Responsable",
-                    onClick: () =>
-                      navigate(`/vehicles/responsibles/new?userId=${id}`),
+                    onClick: () => goToWithUser("/vehicles/responsibles/new"),
                   },
                 }}
                 actionColumn={{
