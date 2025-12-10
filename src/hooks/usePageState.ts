@@ -5,6 +5,7 @@ import type { Identifiable } from "../types/common";
 import {
   peekPageContext,
   popPageContext,
+  pushPageContext,
   setPendingFormData,
   getFormData,
   clearFormData,
@@ -240,10 +241,12 @@ export function usePageState<TForm = unknown>(
    */
   const goToWithData = useCallback(
     <T = unknown>(path: string, initialData: T) => {
+      // Push current page to stack so cancelCreate can return here
+      pushPageContext(location.pathname);
       setPendingFormData(path, initialData);
       navigate(path);
     },
-    [navigate],
+    [navigate, location.pathname],
   );
 
   /**

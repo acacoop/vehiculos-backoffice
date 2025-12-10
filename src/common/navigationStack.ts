@@ -116,24 +116,26 @@ function saveFormDataStore(store: Record<string, StoredFormData>): void {
 }
 
 /**
- * Push a new page context onto the stack and save form data for the current route
+ * Push a new page context onto the stack and optionally save form data for the current route
  * @param returnPath - The path to return to after the action (current page)
- * @param formData - The form data to preserve for the current page
+ * @param formData - Optional form data to preserve for the current page
  * @param scope - Optional scope/entity type identifier
  */
-export function pushPageContext<T>(
+export function pushPageContext<T = unknown>(
   returnPath: string,
-  formData: T,
+  formData?: T,
   scope?: string,
 ): void {
-  // Save form data for this route
-  const formStore = getFormDataStore();
-  formStore[returnPath] = {
-    data: formData,
-    scope,
-    timestamp: Date.now(),
-  };
-  saveFormDataStore(formStore);
+  // Save form data for this route only if provided
+  if (formData !== undefined) {
+    const formStore = getFormDataStore();
+    formStore[returnPath] = {
+      data: formData,
+      scope,
+      timestamp: Date.now(),
+    };
+    saveFormDataStore(formStore);
+  }
 
   // Push to stack
   const stack = getStack();

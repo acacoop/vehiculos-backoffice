@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { Table } from "../../components/Table/table";
 import type { TableColumn } from "../../components/Table/table";
@@ -10,7 +10,7 @@ import { getUserById, updateUserStatus } from "../../services/users";
 import { getAssignments } from "../../services/assignments";
 import { getReservations } from "../../services/reservations";
 import { getVehicleResponsibles } from "../../services/vehicleResponsibles";
-import { setPendingFormData } from "../../common/navigationStack";
+import { usePageState } from "../../hooks";
 import type { User } from "../../types/user";
 import type {
   Assignment,
@@ -25,48 +25,33 @@ import { Car, CalendarDays, UserCheck } from "lucide-react";
 
 export default function UserPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<Partial<User>>({});
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  // Helper to navigate with user data preloaded
-  const goToWithUser = useCallback(
-    (path: string) => {
-      if (userData) {
-        setPendingFormData(path, { user: userData });
-        navigate(path);
-      }
-    },
-    [userData, navigate],
-  );
+  const { loading, executeLoad, showError, goTo, goToWithData } = usePageState<
+    Partial<User>
+  >({
+    startInViewMode: true,
+    redirectOnSuccess: "/users",
+  });
 
   useEffect(() => {
     if (!id) {
-      navigate("/users");
+      goTo("/users");
       return;
     }
 
-    const loadUser = async () => {
-      try {
-        setLoading(true);
-        const response = await getUserById(id);
-        if (response.success && response.data) {
-          setUserData(response.data);
-        } else {
-          setError("Error al cargar usuario");
-        }
-      } catch {
-        setError("Error al cargar usuario");
-      } finally {
-        setLoading(false);
+    executeLoad(async () => {
+      const response = await getUserById(id);
+      if (response.success && response.data) {
+        setUserData(response.data);
+      } else {
+        showError(response.message || "Error al cargar usuario");
       }
-    };
-
-    loadUser();
-  }, [id, navigate]);
+    }, "Error al cargar usuario");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Assignment columns
   const assignmentColumns: TableColumn<Assignment>[] = [
@@ -134,16 +119,6 @@ export default function UserPage() {
     return <LoadingSpinner message="Cargando datos del usuario..." />;
   }
 
-  if (error || !userData) {
-    return (
-      <div style={{ padding: "2rem" }}>
-        <h1>Error</h1>
-        <p>{error || "Usuario no encontrado"}</p>
-        <button onClick={() => navigate("/users")}>Volver a usuarios</button>
-      </div>
-    );
-  }
-
   const handleStatusToggle = async (newState: boolean) => {
     if (!id) return;
 
@@ -151,12 +126,12 @@ export default function UserPage() {
     try {
       const response = await updateUserStatus(id, newState);
       if (response.success) {
-        setUserData((prev) => (prev ? { ...prev, active: newState } : null));
+        setUserData((prev) => ({ ...prev, active: newState }));
       } else {
-        console.error("Error al actualizar estado:", response.message);
+        showError(response.message || "Error al actualizar estado");
       }
-    } catch (error) {
-      console.error("Error al actualizar estado:", error);
+    } catch {
+      showError("Error al actualizar estado");
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -237,7 +212,11 @@ export default function UserPage() {
                   title: "Vehículos Asignados",
                   addButton: {
                     text: "Agregar Vehículo",
-                    onClick: () => goToWithUser("/vehicles/assignments/new"),
+                    onClick: () =>
+                      userData.id &&
+                      goToWithData("/vehicles/assignments/new", {
+                        user: userData,
+                      }),
                   },
                 }}
                 actionColumn={{
@@ -269,7 +248,9 @@ export default function UserPage() {
                   title: "Reservas de Vehículos",
                   addButton: {
                     text: "+ Nueva Reserva",
-                    onClick: () => goToWithUser("/reservations/new"),
+                    onClick: () =>
+                      userData.id &&
+                      goToWithData("/reservations/new", { user: userData }),
                   },
                 }}
                 actionColumn={{
@@ -301,7 +282,11 @@ export default function UserPage() {
                   title: "Vehículos bajo Responsabilidad",
                   addButton: {
                     text: "+ Agregar Responsable",
-                    onClick: () => goToWithUser("/vehicles/responsibles/new"),
+                    onClick: () =>
+                      userData.id &&
+                      goToWithData("/vehicles/responsibles/new", {
+                        user: userData,
+                      }),
                   },
                 }}
                 actionColumn={{
