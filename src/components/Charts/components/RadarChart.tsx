@@ -11,10 +11,6 @@ import {
 import type { RadarChartProps, ChartClickEvent } from "../core/types";
 import { getChartColor, DEFAULT_CHART_HEIGHT } from "../core/constants";
 
-/**
- * Componente de gráfico de radar genérico.
- * Soporta múltiples series y click handlers.
- */
 export default function RadarChartComponent<T extends Record<string, unknown>>({
   data,
   angleKey,

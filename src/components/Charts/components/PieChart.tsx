@@ -15,10 +15,6 @@ interface PieEntry {
   [key: string]: unknown;
 }
 
-/**
- * Componente de gráfico de pie/dona genérico.
- * Soporta labels personalizados, dona (innerRadius > 0) y click handlers.
- */
 export default function PieChartComponent<T extends Record<string, unknown>>({
   data,
   nameKey,

@@ -16,10 +16,6 @@ import {
   DEFAULT_CHART_HEIGHT,
 } from "../core/constants";
 
-/**
- * Componente de gráfico de líneas genérico.
- * Soporta múltiples series, diferentes tipos de curva y click handlers.
- */
 export default function LineChartComponent<T extends Record<string, unknown>>({
   data,
   xAxisKey,
@@ -50,7 +46,7 @@ export default function LineChartComponent<T extends Record<string, unknown>>({
   };
 
   return (
-    <div style={{ width: "100%", height, ...style }}>
+    <div style={{ width: "100%", height, ...style, marginLeft: -50 }}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsLineChart
           data={data}
