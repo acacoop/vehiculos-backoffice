@@ -15,23 +15,6 @@ import {
   RadarChart as RadarChartComponent,
 } from "../components";
 
-/**
- * Componente wrapper genérico que renderiza el tipo de gráfico apropiado
- * basándose en la prop `type`.
- *
- * @example
- * ```tsx
- * <GenericChart
- *   type="bar"
- *   data={data}
- *   config={{
- *     xAxisKey: "month",
- *     series: [{ dataKey: "value", name: "Ventas" }],
- *   }}
- *   onElementClick={(e) => navigate(`/details/${e.data.id}`)}
- * />
- * ```
- */
 export default function GenericChart<T extends ChartDataItem = ChartDataItem>({
   type,
   data,

@@ -62,7 +62,7 @@ export default function LineChartComponent<T extends Record<string, unknown>>({
           }}
         >
           {showGrid && <CartesianGrid {...GRID_CONFIG} />}
-          <XAxis dataKey={xAxisKey} {...AXIS_CONFIG} />
+          <XAxis dataKey={xAxisKey} {...AXIS_CONFIG} tick={{ dy: 15 }} />
           <YAxis allowDecimals={false} {...AXIS_CONFIG} />
           {showTooltip && <Tooltip />}
           {showLegend && <Legend />}
