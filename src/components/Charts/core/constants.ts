@@ -2,20 +2,15 @@ import { COLORS } from "../../../common/colors";
 
 /**
  * Colores por defecto para los gráficos
+ * Usa primary, secondary y neutral colors para consistencia visual
  */
 export const DEFAULT_CHART_COLORS = [
-  COLORS.primary,
-  COLORS.secondary,
-  COLORS.success,
-  COLORS.info,
-  COLORS.warning,
-  COLORS.error,
-  "#888888",
-  "#bdbdbd",
-  "#616161",
-  "#a6a6a6",
-  "#cfd8dc",
-  "#424242",
+  COLORS.primary, // Azul primario
+  COLORS.secondary, // Naranja secundario
+  COLORS.textSecondary, // Gris oscuro
+  COLORS.textMuted, // Gris medio
+  COLORS.border, // Gris claro
+  COLORS.black, // Gris muy claro
 ];
 
 /**
