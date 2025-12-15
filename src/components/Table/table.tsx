@@ -1,7 +1,5 @@
 import {
   DataGrid,
-  Toolbar,
-  QuickFilter,
   type GridFilterModel,
   type GridColDef,
   type GridValidRowModel,
@@ -444,6 +442,57 @@ export function Table<
         </div>
       )}
 
+      {/* Filtros activos */}
+      {hasActiveFilters && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+            mb: 1.5,
+            p: 1,
+            backgroundColor: "#fafafa",
+            borderRadius: 2,
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <span style={{ fontSize: 13, color: "#666", fontWeight: 500 }}>
+            Filtros:
+          </span>
+          {activeFilters.map((filter) => (
+            <Chip
+              key={filter.key}
+              label={`${filter.label}: ${filter.value}`}
+              size="small"
+              sx={{
+                backgroundColor: COLORS.primary,
+                color: "#fff",
+                fontWeight: 500,
+                fontSize: 12,
+              }}
+            />
+          ))}
+          {onClearFilters && (
+            <Chip
+              label="Limpiar"
+              size="small"
+              onClick={onClearFilters}
+              onDelete={onClearFilters}
+              deleteIcon={<X size={14} color="#fff" />}
+              sx={{
+                backgroundColor: "#666",
+                color: "#fff",
+                fontWeight: 500,
+                fontSize: 12,
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "#555" },
+              }}
+            />
+          )}
+        </Box>
+      )}
+
       <div
         style={{
           borderRadius: 20,
@@ -479,81 +528,13 @@ export function Table<
           disableColumnSelector
           disableDensitySelector
           showToolbar={search?.enabled || hasActiveFilters}
-          slots={{
-            toolbar: () => (
-              <Toolbar>
-                <Box
-                  sx={{
-                    p: 1.5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 2,
-                    width: "350px",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      flex: 1,
-                    }}
-                  >
-                    {hasActiveFilters && (
-                      <>
-                        <span
-                          style={{
-                            fontSize: 13,
-                            color: "#666",
-                            fontWeight: 500,
-                          }}
-                        >
-                          Filtros:
-                        </span>
-                        {activeFilters.map((filter) => (
-                          <Chip
-                            key={filter.key}
-                            label={`${filter.label}: ${filter.value}`}
-                            size="small"
-                            sx={{
-                              backgroundColor: COLORS.primary,
-                              color: "#fff",
-                              fontWeight: 500,
-                              fontSize: 12,
-                            }}
-                          />
-                        ))}
-                        {onClearFilters && (
-                          <Chip
-                            label="Limpiar"
-                            size="small"
-                            onClick={onClearFilters}
-                            onDelete={onClearFilters}
-                            deleteIcon={<X size={14} color="#fff" />}
-                            sx={{
-                              backgroundColor: "#666",
-                              color: "#fff",
-                              fontWeight: 500,
-                              fontSize: 12,
-                              cursor: "pointer",
-                              "&:hover": { backgroundColor: "#555" },
-                            }}
-                          />
-                        )}
-                      </>
-                    )}
-                  </Box>
-
-                  {/* Búsqueda a la derecha */}
-                  {search?.enabled && (
-                    <Box sx={{ minWidth: 250 }}>
-                      <QuickFilter debounceMs={400} />
-                    </Box>
-                  )}
-                </Box>
-              </Toolbar>
-            ),
+          slotProps={{
+            toolbar: search?.enabled
+              ? {
+                  showQuickFilter: true,
+                  quickFilterProps: { debounceMs: 400 },
+                }
+              : undefined,
           }}
           localeText={localeText}
           style={{ flex: hasRows ? 1 : undefined }}
