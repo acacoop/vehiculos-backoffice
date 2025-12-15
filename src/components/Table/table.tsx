@@ -1,11 +1,13 @@
 import {
   DataGrid,
+  Toolbar,
+  QuickFilter,
   type GridFilterModel,
   type GridColDef,
   type GridValidRowModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-import { Chip } from "@mui/material";
+import { Chip, Box } from "@mui/material";
 import { esES } from "@mui/x-data-grid/locales";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,10 +22,10 @@ import {
   COLORS,
 } from "../../common";
 import "./table.css";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 
 function createGridColumn<T extends GridValidRowModel>(
-  column: TableColumn<T>,
+  column: TableColumn<T>
 ): GridColDef<T> {
   const baseColumn: GridColDef<T> = {
     field: column.field,
@@ -101,7 +103,7 @@ function createGridColumn<T extends GridValidRowModel>(
     case "map":
       if (!column.map) {
         throw new Error(
-          `Column ${column.field} is type map but no map property provided`,
+          `Column ${column.field} is type map but no map property provided`
         );
       }
       // If color function is provided, use renderCell to apply styling
@@ -196,12 +198,22 @@ interface TableSearch {
   placeholder?: string;
 }
 
+/** Configuración para mostrar filtros activos con labels legibles */
+interface FilterLabelConfig {
+  key: string;
+  label: string;
+  format?: (value: string) => string;
+}
+
 interface TableProps<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
+  filters?: TFilters;
+  filterLabels?: FilterLabelConfig[];
+  onClearFilters?: () => void;
 
   header?: TableHeader;
   actionColumn?: TableActionColumn<T>;
@@ -215,10 +227,13 @@ interface TableProps<
 
 export function Table<
   TFilters extends FilterParams,
-  T extends GridValidRowModel,
+  T extends GridValidRowModel
 >({
   getRows,
   columns,
+  filters,
+  filterLabels,
+  onClearFilters,
   header,
   actionColumn,
   search,
@@ -260,7 +275,7 @@ export function Table<
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue,
+        current === trimmedValue ? current : trimmedValue
       );
     }, 400);
 
@@ -279,6 +294,7 @@ export function Table<
           pagination: { limit: pageSize, offset },
           search:
             search?.enabled && normalizedSearch ? normalizedSearch : undefined,
+          filters,
         });
 
         if (response.success) {
@@ -295,7 +311,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled],
+    [getRows, search?.enabled, filters]
   );
 
   useEffect(() => {
@@ -307,7 +323,7 @@ export function Table<
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      search?.enabled ? debouncedSearch : undefined,
+      search?.enabled ? debouncedSearch : undefined
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -316,6 +332,7 @@ export function Table<
     search?.enabled,
     debouncedSearch,
     fetchData,
+    filters,
   ]);
 
   const handlePaginationChange = useCallback(
@@ -323,10 +340,10 @@ export function Table<
       setPaginationModel((prev) =>
         prev.page === model.page && prev.pageSize === model.pageSize
           ? prev
-          : model,
+          : model
       );
     },
-    [],
+    []
   );
 
   const handleFilterModelChange = useCallback(
@@ -344,7 +361,7 @@ export function Table<
         setPaginationModel({ ...paginationModel, page: 0 });
       }
     },
-    [search?.enabled, searchTerm, paginationModel],
+    [search?.enabled, searchTerm, paginationModel]
   );
 
   // Build final columns with action column if needed
@@ -389,6 +406,28 @@ export function Table<
 
   const hasRows = rows.length > 0;
 
+  // Calcular filtros activos para mostrar
+  const activeFilters = useMemo(() => {
+    if (!filters || !filterLabels) return [];
+
+    return filterLabels
+      .filter((config) => {
+        const value = filters[config.key as keyof TFilters];
+        return value !== undefined && value !== null && value !== "";
+      })
+      .map((config) => {
+        const value = filters[config.key as keyof TFilters] as string;
+        const displayValue = config.format ? config.format(value) : value;
+        return {
+          key: config.key,
+          label: config.label,
+          value: displayValue,
+        };
+      });
+  }, [filters, filterLabels]);
+
+  const hasActiveFilters = activeFilters.length > 0;
+
   return (
     <div className="table-main-container" style={{ maxWidth, width }}>
       {header && (
@@ -404,6 +443,7 @@ export function Table<
           )}
         </div>
       )}
+
       <div
         style={{
           borderRadius: 20,
@@ -438,14 +478,82 @@ export function Table<
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
-          showToolbar={search?.enabled}
-          slotProps={{
-            toolbar: search?.enabled
-              ? {
-                  showQuickFilter: true,
-                  quickFilterProps: { debounceMs: 400 },
-                }
-              : undefined,
+          showToolbar={search?.enabled || hasActiveFilters}
+          slots={{
+            toolbar: () => (
+              <Toolbar>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 2,
+                    width: "350px",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      flex: 1,
+                    }}
+                  >
+                    {hasActiveFilters && (
+                      <>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            color: "#666",
+                            fontWeight: 500,
+                          }}
+                        >
+                          Filtros:
+                        </span>
+                        {activeFilters.map((filter) => (
+                          <Chip
+                            key={filter.key}
+                            label={`${filter.label}: ${filter.value}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: COLORS.primary,
+                              color: "#fff",
+                              fontWeight: 500,
+                              fontSize: 12,
+                            }}
+                          />
+                        ))}
+                        {onClearFilters && (
+                          <Chip
+                            label="Limpiar"
+                            size="small"
+                            onClick={onClearFilters}
+                            onDelete={onClearFilters}
+                            deleteIcon={<X size={14} color="#fff" />}
+                            sx={{
+                              backgroundColor: "#666",
+                              color: "#fff",
+                              fontWeight: 500,
+                              fontSize: 12,
+                              cursor: "pointer",
+                              "&:hover": { backgroundColor: "#555" },
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </Box>
+
+                  {/* Búsqueda a la derecha */}
+                  {search?.enabled && (
+                    <Box sx={{ minWidth: 250 }}>
+                      <QuickFilter debounceMs={400} />
+                    </Box>
+                  )}
+                </Box>
+              </Toolbar>
+            ),
           }}
           localeText={localeText}
           style={{ flex: hasRows ? 1 : undefined }}

@@ -28,6 +28,11 @@ export interface VehicleFilterParams extends FilterParams {
   model?: string;
   brandId?: string;
   modelId?: string;
-  year?: number;
+  year?: string;
+  minYear?: string;
+  maxYear?: string;
   chassisNumber?: string;
+  fuelType?: string;
+  minKilometers?: string;
+  maxKilometers?: string;
 }
