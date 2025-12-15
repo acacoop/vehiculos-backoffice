@@ -109,11 +109,12 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
                 stroke="#888"
                 axisLine={{ stroke: "#e0e0e0" }}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "#555" }}
-                angle={data.length > 6 ? -35 : 0}
-                textAnchor={data.length > 6 ? "end" : "middle"}
-                height={data.length > 6 ? 70 : 40}
+                tick={{ fontSize: 11, fill: "#333" }}
+                angle={data.length > 5 ? -45 : 0}
+                textAnchor={data.length > 5 ? "end" : "middle"}
+                height={data.length > 5 ? 80 : 50}
                 interval={0}
+                dy={data.length > 5 ? 5 : 10}
               />
               <YAxis allowDecimals={false} {...AXIS_CONFIG} />
             </>

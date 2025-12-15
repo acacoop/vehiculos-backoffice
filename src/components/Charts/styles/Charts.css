@@ -53,7 +53,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 320px;
+  height: 320px;
+  overflow: visible;
 }
 
 .chart-card__content--loading,

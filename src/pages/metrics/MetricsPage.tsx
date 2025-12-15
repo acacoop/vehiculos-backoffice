@@ -162,7 +162,6 @@ export default function MetricsPage() {
         <h1 className="title">Métricas</h1>
       </div>
 
-      {/* Sección: Vehículos */}
       <section className="metrics-section">
         <h2 className="section-title">Vehículos</h2>
         <div className="charts-grid charts-grid--2-cols">
@@ -205,7 +204,7 @@ export default function MetricsPage() {
           <ChartCard
             title="Vehículos por Marca"
             subtitle="Click para ver vehículos de la marca"
-            footer={<span>Top 4 + Otros</span>}
+            footer={<span>Distribución por marca</span>}
           >
             <GenericChart
               type="pie"
@@ -240,7 +239,6 @@ export default function MetricsPage() {
         </div>
       </section>
 
-      {/* Sección: Reservas y Mantenimientos */}
       <section className="metrics-section">
         <h2 className="section-title">Reservas y Mantenimientos</h2>
         <div className="charts-grid">
@@ -267,7 +265,7 @@ export default function MetricsPage() {
           </ChartCard>
 
           <ChartCard
-            title="Mantenimientos por Mes"
+            title="Registros de Mantenimiento"
             fullWidth
             footer={
               <span>
