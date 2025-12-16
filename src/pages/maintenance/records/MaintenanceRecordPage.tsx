@@ -26,7 +26,9 @@ export default function MaintenanceRecordRegisterPage() {
   const isNew = location.pathname.endsWith("/new");
 
   // Main form state (entity data)
-  const [formState, setFormState] = useState<Partial<MaintenanceRecord>>({});
+  const [formState, setFormState] = useState<Partial<MaintenanceRecord>>({
+    date: toInputDate(new Date()),
+  });
 
   const {
     loading,
