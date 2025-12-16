@@ -258,58 +258,46 @@ export default function Chart<
     return <div className="chart-card__footer">{content}</div>;
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className={cardClasses} style={containerStyle}>
-        <div className="chart-card__header">
-          <h3 className="chart-card__title">{title}</h3>
-          {subtitle && <p className="chart-card__subtitle">{subtitle}</p>}
-        </div>
-        {renderFilters()}
+  // Render header
+  const renderHeader = () => (
+    <div className="chart-card__header">
+      <h3 className="chart-card__title">{title}</h3>
+      {subtitle && <p className="chart-card__subtitle">{subtitle}</p>}
+    </div>
+  );
+
+  // Render chart content based on state
+  const renderContent = () => {
+    if (loading) {
+      return (
         <div className="chart-card__content chart-card__content--loading">
           <div className="chart-card__spinner" />
           <span>Cargando...</span>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // Error state
-  if (error) {
-    return (
-      <div className={cardClasses} style={containerStyle}>
-        <div className="chart-card__header">
-          <h3 className="chart-card__title">{title}</h3>
-          {subtitle && <p className="chart-card__subtitle">{subtitle}</p>}
-        </div>
-        {renderFilters()}
+    if (error) {
+      return (
         <div className="chart-card__content chart-card__content--error">
           <span className="chart-card__error-icon">⚠️</span>
           <span>{error}</span>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // Empty data state - show message instead of rendering chart
-  if (!data || data.length === 0) {
-    return (
-      <div className={cardClasses} style={containerStyle}>
-        <div className="chart-card__header">
-          <h3 className="chart-card__title">{title}</h3>
-          {subtitle && <p className="chart-card__subtitle">{subtitle}</p>}
-        </div>
-        {renderFilters()}
+    if (!data || data.length === 0) {
+      return (
         <div className="chart-card__content">
           <span className="chart-card__empty-message">
             Sin datos disponibles
           </span>
         </div>
-        {renderFooter()}
-      </div>
-    );
-  }
+      );
+    }
+
+    return <div className="chart-card__content">{renderChart()}</div>;
+  };
 
   // Render chart based on type
   const renderChart = () => {
@@ -365,12 +353,9 @@ export default function Chart<
 
   return (
     <div className={cardClasses} style={containerStyle}>
-      <div className="chart-card__header">
-        <h3 className="chart-card__title">{title}</h3>
-        {subtitle && <p className="chart-card__subtitle">{subtitle}</p>}
-      </div>
+      {renderHeader()}
       {renderFilters()}
-      <div className="chart-card__content">{renderChart()}</div>
+      {renderContent()}
       {renderFooter()}
     </div>
   );
