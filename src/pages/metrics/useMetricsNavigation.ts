@@ -2,10 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import type { ChartClickEvent } from "../../components/Charts";
 import type {
-  BucketChartData,
-  DistributionChartData,
-  TimelineChartData,
-} from "./types";
+  Bucket,
+  DistributionItem,
+  TimelineItem,
+} from "../../services/metrics";
 
 /**
  * Hook que proporciona handlers de navegación para los gráficos de métricas
@@ -14,7 +14,7 @@ export function useMetricsNavigation() {
   const navigate = useNavigate();
 
   const handleKilometersClick = useCallback(
-    (event: ChartClickEvent<BucketChartData>) => {
+    (event: ChartClickEvent<Bucket>) => {
       const { min, max } = event.data;
       const params = new URLSearchParams();
       params.set("minKilometers", min.toString());
@@ -23,11 +23,11 @@ export function useMetricsNavigation() {
       }
       navigate(`/vehicles?${params.toString()}`);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleAgeClick = useCallback(
-    (event: ChartClickEvent<BucketChartData>) => {
+    (event: ChartClickEvent<Bucket>) => {
       const { min, max } = event.data;
       const currentYear = new Date().getFullYear();
       const params = new URLSearchParams();
@@ -37,34 +37,34 @@ export function useMetricsNavigation() {
       params.set("maxYear", (currentYear - min).toString());
       navigate(`/vehicles?${params.toString()}`);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleBrandClick = useCallback(
-    (event: ChartClickEvent<DistributionChartData>) => {
+    (event: ChartClickEvent<DistributionItem>) => {
       const { id } = event.data;
       if (id) {
         navigate(`/vehicles?brandId=${id}`);
       }
     },
-    [navigate]
+    [navigate],
   );
 
   const handleFuelTypeClick = useCallback(
-    (event: ChartClickEvent<DistributionChartData>) => {
+    (event: ChartClickEvent<DistributionItem>) => {
       const { name } = event.data;
       navigate(`/vehicles?fuelType=${encodeURIComponent(name)}`);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleReservationsClick = useCallback(
-    (event: ChartClickEvent<TimelineChartData>) => {
+    (event: ChartClickEvent<TimelineItem>) => {
       const { month } = event.data;
       const [year, monthNum] = month.split("-");
       navigate(`/reservations?year=${year}&month=${monthNum}`);
     },
-    [navigate]
+    [navigate],
   );
 
   return {
