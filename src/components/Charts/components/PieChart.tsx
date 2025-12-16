@@ -30,6 +30,22 @@ export default function PieChartComponent<T extends Record<string, unknown>>({
   labelFormatter,
   style,
 }: PieChartProps<T>) {
+  // Build color map: assign colors based on value ranking (highest value = first color)
+  const colorRankMap = new Map<number, number>();
+  const indexedValues = data.map((item, index) => ({
+    index,
+    value: Number(item[dataKey] ?? 0),
+  }));
+  indexedValues.sort((a, b) => b.value - a.value);
+  indexedValues.forEach((item, rank) => {
+    colorRankMap.set(item.index, rank);
+  });
+
+  const getColorByRank = (index: number) => {
+    const rank = colorRankMap.get(index) ?? index;
+    return getChartColor(rank, colors);
+  };
+
   const handlePieClick = (pieData: T, index: number) => {
     if (onElementClick) {
       onElementClick({
@@ -76,7 +92,7 @@ export default function PieChartComponent<T extends Record<string, unknown>>({
             {data.map((_, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={getChartColor(index, colors)}
+                fill={getColorByRank(index)}
                 cursor={onElementClick ? "pointer" : undefined}
               />
             ))}

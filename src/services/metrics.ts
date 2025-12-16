@@ -90,6 +90,10 @@ export interface QuarterlyControlMetricsQuery {
   periods?: number;
 }
 
+export interface DistributionMetricsQuery {
+  limit?: number;
+}
+
 // ============================================
 // API Functions - Vehicle Metrics
 // ============================================
@@ -113,7 +117,7 @@ export async function getVehicleCount(): Promise<
  * Returns vehicles grouped by kilometer buckets
  */
 export async function getVehiclesByKilometers(
-  query?: KilometersMetricsQuery
+  query?: KilometersMetricsQuery,
 ): Promise<ServiceResponse<BucketListData>> {
   const usp = new URLSearchParams();
   if (query?.bucketSize) usp.set("bucketSize", query.bucketSize.toString());
@@ -132,7 +136,7 @@ export async function getVehiclesByKilometers(
  * Returns vehicles grouped by age buckets
  */
 export async function getVehiclesByAge(
-  query?: AgeMetricsQuery
+  query?: AgeMetricsQuery,
 ): Promise<ServiceResponse<BucketListData>> {
   const usp = new URLSearchParams();
   if (query?.bucketSize) usp.set("bucketSize", query.bucketSize.toString());
@@ -150,13 +154,17 @@ export async function getVehiclesByAge(
  * GET /metrics/vehicles/fuel-type
  * Returns vehicles grouped by fuel type
  */
-export async function getVehiclesByFuelType(): Promise<
-  ServiceResponse<DistributionListData>
-> {
+export async function getVehiclesByFuelType(
+  query?: DistributionMetricsQuery,
+): Promise<ServiceResponse<DistributionListData>> {
+  const usp = new URLSearchParams();
+  if (query?.limit) usp.set("limit", query.limit.toString());
+
   return generalApiCall<DistributionListData>({
     uri: "metrics/vehicles/fuel-type",
     method: "GET",
     errorMessage: "Error al obtener métricas por tipo de combustible",
+    usp: usp.toString() ? usp : undefined,
   });
 }
 
@@ -164,13 +172,17 @@ export async function getVehiclesByFuelType(): Promise<
  * GET /metrics/vehicles/brand
  * Returns vehicles grouped by brand
  */
-export async function getVehiclesByBrand(): Promise<
-  ServiceResponse<DistributionListData>
-> {
+export async function getVehiclesByBrand(
+  query?: DistributionMetricsQuery,
+): Promise<ServiceResponse<DistributionListData>> {
+  const usp = new URLSearchParams();
+  if (query?.limit) usp.set("limit", query.limit.toString());
+
   return generalApiCall<DistributionListData>({
     uri: "metrics/vehicles/brand",
     method: "GET",
     errorMessage: "Error al obtener métricas por marca",
+    usp: usp.toString() ? usp : undefined,
   });
 }
 
@@ -183,7 +195,7 @@ export async function getVehiclesByBrand(): Promise<
  * Returns reservations timeline by month
  */
 export async function getReservationsTimeline(
-  query?: TimelineMetricsQuery
+  query?: TimelineMetricsQuery,
 ): Promise<ServiceResponse<TimelineData>> {
   const usp = new URLSearchParams();
   if (query?.months) usp.set("months", query.months.toString());
@@ -201,7 +213,7 @@ export async function getReservationsTimeline(
  * Returns maintenance records timeline by month
  */
 export async function getMaintenanceRecordsTimeline(
-  query?: TimelineMetricsQuery
+  query?: TimelineMetricsQuery,
 ): Promise<ServiceResponse<TimelineData>> {
   const usp = new URLSearchParams();
   if (query?.months) usp.set("months", query.months.toString());
@@ -223,7 +235,7 @@ export async function getMaintenanceRecordsTimeline(
  * Returns quarterly controls by status
  */
 export async function getQuarterlyControlsStatus(
-  query?: QuarterlyControlMetricsQuery
+  query?: QuarterlyControlMetricsQuery,
 ): Promise<ServiceResponse<QuarterlyControlMetricsData>> {
   const usp = new URLSearchParams();
   if (query?.periods) usp.set("periods", query.periods.toString());
@@ -245,7 +257,7 @@ export async function getQuarterlyControlsStatus(
  * Returns driver assignments metrics
  */
 export async function getDriversMetrics(
-  query?: TimelineMetricsQuery
+  query?: TimelineMetricsQuery,
 ): Promise<ServiceResponse<PersonnelMetric>> {
   const usp = new URLSearchParams();
   if (query?.months) usp.set("months", query.months.toString());
@@ -263,7 +275,7 @@ export async function getDriversMetrics(
  * Returns vehicle responsibles metrics
  */
 export async function getResponsiblesMetrics(
-  query?: TimelineMetricsQuery
+  query?: TimelineMetricsQuery,
 ): Promise<ServiceResponse<PersonnelMetric>> {
   const usp = new URLSearchParams();
   if (query?.months) usp.set("months", query.months.toString());

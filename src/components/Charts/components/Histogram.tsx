@@ -9,49 +9,49 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import type { BarChartProps, ChartClickEvent } from "../core/types";
+import type { HistogramProps, ChartDataItem } from "../core/types";
 import {
-  getChartColor,
   GRID_CONFIG,
   AXIS_CONFIG,
+  getChartColor,
   DEFAULT_CHART_HEIGHT,
 } from "../core/constants";
 import { getTickFormatter, calculateTickInterval } from "../core/formatters";
 import { COLORS } from "../../../common";
 
-export default function BarChartComponent<T extends Record<string, unknown>>({
+/**
+ * Histograma - Barras pegadas para distribuciones de frecuencia
+ */
+export default function Histogram<T extends ChartDataItem = ChartDataItem>({
   data,
   xAxisKey,
   series,
+  layout = "horizontal",
   height = DEFAULT_CHART_HEIGHT,
   colors,
   showTooltip = true,
   showLegend = false,
   showGrid = true,
   onElementClick,
-  layout = "horizontal",
-  barRadius = 4,
-  maxBarSize = 60,
-  maxXAxisLabels = 8,
-  xAxisFormat = "auto",
-  xAxisLabelRotation = 0,
   style,
-}: BarChartProps<T>) {
-  // 1. Sanitize the main height to ensure it's never NaN or invalid before rendering
-  const validHeight =
-    Number.isFinite(height) && height > 0 ? height : DEFAULT_CHART_HEIGHT;
+  maxXAxisLabels = 10,
+  xAxisFormat = "none",
+  specialCategories = [],
+}: HistogramProps<T>) {
+  const isVertical = layout === "vertical";
+  const SPECIAL_COLOR = COLORS.default;
+
+  // Check if a category is special (like "Sin registro")
+  const isSpecialCategory = (item: T) => {
+    const label = String(item[xAxisKey] ?? "");
+    return specialCategories.includes(label);
+  };
 
   const handleBarClick = (barData: T, index: number, seriesDataKey: string) => {
     if (onElementClick) {
-      onElementClick({
-        data: barData,
-        index,
-        dataKey: seriesDataKey,
-      } as ChartClickEvent<T>);
+      onElementClick({ data: barData, index, dataKey: seriesDataKey });
     }
   };
-
-  const isVertical = layout === "vertical";
 
   // Custom tooltip component
   const CustomTooltip = ({
@@ -60,13 +60,13 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   }: {
     active?: boolean;
     payload?: Array<{
-      payload: T;
       name: string;
       value: number;
       color: string;
+      payload: T;
     }>;
   }) => {
-    if (active && payload && payload.length) {
+    if (active && payload && payload.length > 0) {
       const item = payload[0].payload;
       const label = String(item[xAxisKey] ?? "");
       return (
@@ -91,14 +91,17 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
     return null;
   };
 
+  // For vertical (horizontal bars) layout
   if (isVertical) {
     return (
-      <div style={{ width: "100%", height: validHeight, ...style }}>
+      <div style={{ width: "100%", height, ...style }}>
         <ResponsiveContainer width="100%" height="100%">
           <RechartsBarChart
             data={data}
             layout="vertical"
             margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+            barCategoryGap={0}
+            barGap={0}
           >
             {showGrid && <CartesianGrid {...GRID_CONFIG} />}
             <XAxis type="number" allowDecimals={false} />
@@ -111,14 +114,29 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
                 dataKey={s.dataKey}
                 name={s.name || s.dataKey}
                 fill={s.color || getChartColor(seriesIndex, colors)}
-                radius={barRadius}
-                maxBarSize={maxBarSize}
+                radius={0}
                 stackId={s.stackId}
                 cursor={onElementClick ? "pointer" : undefined}
                 onClick={(barData: T, index: number) =>
                   handleBarClick(barData, index, s.dataKey)
                 }
-              />
+              >
+                {data.map((item, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      isSpecialCategory(item)
+                        ? SPECIAL_COLOR
+                        : series.length === 1 && colors
+                        ? getChartColor(index, colors)
+                        : s.color || getChartColor(seriesIndex, colors)
+                    }
+                    stroke="#fff"
+                    strokeWidth={1}
+                    cursor={onElementClick ? "pointer" : undefined}
+                  />
+                ))}
+              </Bar>
             ))}
           </RechartsBarChart>
         </ResponsiveContainer>
@@ -130,28 +148,22 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   const tickFormatter = getTickFormatter(xAxisFormat, data, xAxisKey);
   const tickInterval = calculateTickInterval(data.length, maxXAxisLabels);
 
-  // Calculate bottom margin based on rotation
-  const bottomMargin = xAxisLabelRotation !== 0 ? 60 : 5;
-  const xAxisHeightProps = xAxisLabelRotation !== 0 ? { height: 80 } : {};
-
   return (
-    <div style={{ width: "100%", height: validHeight, ...style }}>
+    <div style={{ width: "100%", height, ...style }}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsBarChart
           data={data}
-          margin={{ top: 5, right: 30, left: 0, bottom: bottomMargin }}
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+          barCategoryGap={0}
+          barGap={0}
         >
           {showGrid && <CartesianGrid {...GRID_CONFIG} />}
           <XAxis
             dataKey={xAxisKey}
             {...AXIS_CONFIG}
-            // Spread the conditional height props here
-            {...xAxisHeightProps}
             tickMargin={8}
-            interval={xAxisLabelRotation !== 0 ? 0 : tickInterval}
+            interval={tickInterval}
             tickFormatter={tickFormatter}
-            angle={xAxisLabelRotation}
-            textAnchor={xAxisLabelRotation !== 0 ? "end" : "middle"}
           />
           <YAxis allowDecimals={false} {...AXIS_CONFIG} />
           {showTooltip && <Tooltip content={<CustomTooltip />} />}
@@ -162,23 +174,28 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
               dataKey={s.dataKey}
               name={s.name || s.dataKey}
               fill={s.color || getChartColor(seriesIndex, colors)}
-              radius={barRadius}
-              maxBarSize={maxBarSize}
+              radius={0}
               stackId={s.stackId}
               cursor={onElementClick ? "pointer" : undefined}
               onClick={(barData: T, index: number) =>
                 handleBarClick(barData, index, s.dataKey)
               }
             >
-              {series.length === 1 &&
-                colors &&
-                data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={getChartColor(index, colors)}
-                    cursor={onElementClick ? "pointer" : undefined}
-                  />
-                ))}
+              {data.map((item, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={
+                    isSpecialCategory(item)
+                      ? SPECIAL_COLOR
+                      : series.length === 1 && colors
+                      ? getChartColor(index, colors)
+                      : s.color || getChartColor(seriesIndex, colors)
+                  }
+                  stroke="#fff"
+                  strokeWidth={1}
+                  cursor={onElementClick ? "pointer" : undefined}
+                />
+              ))}
             </Bar>
           ))}
         </RechartsBarChart>

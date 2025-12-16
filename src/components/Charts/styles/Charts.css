@@ -53,9 +53,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 320px;
-  height: 320px;
+  height: 350px;
   overflow: visible;
+  width: 100%;
 }
 
 .chart-card__content--loading,
@@ -71,6 +71,16 @@
 
 .chart-card__error-icon {
   font-size: 2rem;
+}
+
+.chart-card__empty-message {
+  color: var(--color-text-secondary);
+}
+
+.chart-card__unsupported {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
 }
 
 /* Spinner de carga */
@@ -96,6 +106,60 @@
   font-size: 0.95rem;
   padding-top: 8px;
   border-top: 1px solid var(--color-border);
+}
+
+/* Filters inside chart card */
+.chart-card__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-background);
+  border-radius: 8px;
+  align-items: flex-end;
+}
+
+.chart-card__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100px;
+}
+
+.chart-card__filter-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.chart-card__filter-select,
+.chart-card__filter-input {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.chart-card__filter-select:hover,
+.chart-card__filter-input:hover {
+  border-color: var(--color-primary);
+}
+
+.chart-card__filter-select:focus,
+.chart-card__filter-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(40, 45, 134, 0.1);
+}
+
+.chart-card__filter-input {
+  width: 80px;
 }
 
 /* ===========================================

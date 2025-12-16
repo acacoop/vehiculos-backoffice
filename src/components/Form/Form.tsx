@@ -161,8 +161,6 @@ const getFormMode = (isNew: boolean, isEditing: boolean): FormMode => {
 interface FormProps {
   title?: string;
   sections: FormSection[];
-  /** @deprecated Use modeConfig instead */
-  buttons?: FormButton[];
   modeConfig?: FormModeConfig;
   className?: string;
   onSubmit?: (e: React.FormEvent) => void;
@@ -171,7 +169,6 @@ interface FormProps {
 const Form: React.FC<FormProps> = ({
   title,
   sections,
-  buttons = [],
   modeConfig,
   className = "",
   onSubmit,
@@ -457,7 +454,7 @@ const Form: React.FC<FormProps> = ({
   // Generate buttons based on modeConfig or use legacy buttons
   const getButtons = (): FormButton[] => {
     if (!modeConfig) {
-      return buttons;
+      return [];
     }
 
     const {

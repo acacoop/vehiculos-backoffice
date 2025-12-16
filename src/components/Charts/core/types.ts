@@ -1,23 +1,16 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 /**
  * Tipos de gráficos disponibles
  */
-export type ChartType =
-  | "bar"
-  | "line"
-  | "area"
-  | "pie"
-  | "radar"
-  | "horizontalBar";
+export type ChartType = "bar" | "line" | "area" | "pie" | "radar" | "histogram";
 
 /**
  * Datos base para cualquier gráfico
- * Permite string, number, boolean y null como valores
+ * Usa Record para permitir cualquier objeto con propiedades string/number/boolean/null
  */
-export interface ChartDataItem {
-  [key: string]: string | number | boolean | null | undefined;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ChartDataItem = Record<string, any>;
 
 /**
  * Configuración de una serie de datos (para gráficos con múltiples series)
@@ -80,7 +73,39 @@ export interface BarChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   barRadius?: number;
   /** Tamaño máximo de las barras */
   maxBarSize?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
+  /** Rotación de las etiquetas del eje X en grados (0 = horizontal, -45 = diagonal, -90 = vertical) */
+  xAxisLabelRotation?: number;
 }
+
+/**
+ * Props para histograma (barras pegadas para distribuciones)
+ */
+export interface HistogramProps<T = ChartDataItem> extends AxisChartProps<T> {
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X */
+  xAxisFormat?: XAxisFormat;
+  /** Categorías especiales que se muestran con color gris (ej: "Sin registro") */
+  specialCategories?: string[];
+  /** Rotación de las etiquetas del eje X en grados (0 = horizontal, -45 = diagonal, -90 = vertical) */
+  xAxisLabelRotation?: number;
+}
+
+/**
+ * Formato del eje X para gráficos de tiempo
+ */
+export type XAxisFormat =
+  | "auto"
+  | "year"
+  | "month"
+  | "week"
+  | "day"
+  | "quarter"
+  | "none";
 
 /**
  * Props para gráfico de líneas
@@ -92,6 +117,10 @@ export interface LineChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   showDots?: boolean;
   /** Grosor de la línea */
   strokeWidth?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
 }
 
 /**
@@ -102,6 +131,10 @@ export interface AreaChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   curveType?: "linear" | "monotone" | "step";
   /** Opacidad del relleno */
   fillOpacity?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
 }
 
 /**
@@ -135,38 +168,14 @@ export interface RadarChartProps<T = ChartDataItem> extends BaseChartProps<T> {
 }
 
 /**
- * Props para el componente ChartCard (contenedor)
- */
-export interface ChartCardProps {
-  /** Título del gráfico */
-  title: string;
-  /** Subtítulo opcional */
-  subtitle?: string;
-  /** Contenido del pie de página */
-  footer?: ReactNode;
-  /** Ancho del card */
-  width?: string | number;
-  /** Altura del card */
-  height?: string | number;
-  /** Si el card es ancho completo */
-  fullWidth?: boolean;
-  /** Estado de carga */
-  loading?: boolean;
-  /** Mensaje de error */
-  error?: string;
-  /** Contenido del gráfico */
-  children: ReactNode;
-  /** Estilos adicionales */
-  style?: CSSProperties;
-  /** Clase CSS adicional */
-  className?: string;
-}
-
-/**
  * Configuraciones específicas por tipo de gráfico
  */
 export type BarChartConfig<T = ChartDataItem> = Omit<
   BarChartProps<T>,
+  "data" | "onElementClick"
+>;
+export type HistogramConfig<T = ChartDataItem> = Omit<
+  HistogramProps<T>,
   "data" | "onElementClick"
 >;
 export type LineChartConfig<T = ChartDataItem> = Omit<
@@ -186,43 +195,46 @@ export type RadarChartConfig<T = ChartDataItem> = Omit<
   "data" | "onElementClick"
 >;
 
+// ============================================
+// Filtros dinámicos para Charts
+// ============================================
+
 /**
- * Props para el componente GenericChart (wrapper principal) con tipos discriminados
+ * Opción de un filtro select
  */
-export type GenericChartProps<T = ChartDataItem> =
-  | {
-      type: "bar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "horizontalBar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "line";
-      data: T[];
-      config: LineChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "area";
-      data: T[];
-      config: AreaChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "pie";
-      data: T[];
-      config: PieChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "radar";
-      data: T[];
-      config: RadarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    };
+export interface ChartFilterOption<T = string | number> {
+  value: T;
+  label: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyParams = Record<string, any>;
+
+/**
+ * Definición de un filtro para el gráfico
+ */
+export interface ChartFilter<TParams extends AnyParams> {
+  /** Key del parámetro que se pasará al fetch */
+  key: keyof TParams & string;
+  /** Label visible del filtro */
+  label: string;
+  /** Tipo de control */
+  type: "select" | "number";
+  /** Opciones para select */
+  options?: ChartFilterOption[];
+  /** Valor por defecto */
+  defaultValue: string | number;
+  /** Min para inputs numéricos */
+  min?: number;
+  /** Max para inputs numéricos */
+  max?: number;
+}
+
+/**
+ * Resultado de una función de fetch de datos
+ */
+export interface ChartFetchResult<T> {
+  data: T[];
+  /** Datos adicionales para mostrar (ej: totales) */
+  meta?: Record<string, unknown>;
+}

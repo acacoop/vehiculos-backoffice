@@ -1,7 +1,8 @@
-// Contenedores principales
-export { ChartCard, GenericChart } from "./containers";
+// Componente principal unificado
+export { default as Chart } from "./Chart";
+export type { ChartProps } from "./Chart";
 
-// Componentes de gráficos individuales
+// Componentes de gráficos individuales (uso avanzado)
 export {
   BarChart,
   LineChart,
@@ -16,20 +17,14 @@ export type {
   ChartDataItem,
   ChartSeries,
   ChartClickEvent,
-  BaseChartProps,
-  AxisChartProps,
-  BarChartProps,
-  LineChartProps,
-  AreaChartProps,
-  PieChartProps,
-  RadarChartProps,
-  ChartCardProps,
-  GenericChartProps,
   BarChartConfig,
   LineChartConfig,
   AreaChartConfig,
   PieChartConfig,
   RadarChartConfig,
+  ChartFilter,
+  ChartFilterOption,
+  ChartFetchResult,
 } from "./core";
 
 // Constantes y utilidades
