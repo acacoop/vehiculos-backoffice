@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 /**
  * Tipos de gráficos disponibles
@@ -135,34 +135,6 @@ export interface RadarChartProps<T = ChartDataItem> extends BaseChartProps<T> {
 }
 
 /**
- * Props para el componente ChartCard (contenedor)
- */
-export interface ChartCardProps {
-  /** Título del gráfico */
-  title: string;
-  /** Subtítulo opcional */
-  subtitle?: string;
-  /** Contenido del pie de página */
-  footer?: ReactNode;
-  /** Ancho del card */
-  width?: string | number;
-  /** Altura del card */
-  height?: string | number;
-  /** Si el card es ancho completo */
-  fullWidth?: boolean;
-  /** Estado de carga */
-  loading?: boolean;
-  /** Mensaje de error */
-  error?: string;
-  /** Contenido del gráfico */
-  children: ReactNode;
-  /** Estilos adicionales */
-  style?: CSSProperties;
-  /** Clase CSS adicional */
-  className?: string;
-}
-
-/**
  * Configuraciones específicas por tipo de gráfico
  */
 export type BarChartConfig<T = ChartDataItem> = Omit<
@@ -185,44 +157,3 @@ export type RadarChartConfig<T = ChartDataItem> = Omit<
   RadarChartProps<T>,
   "data" | "onElementClick"
 >;
-
-/**
- * Props para el componente GenericChart (wrapper principal) con tipos discriminados
- */
-export type GenericChartProps<T = ChartDataItem> =
-  | {
-      type: "bar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "horizontalBar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "line";
-      data: T[];
-      config: LineChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "area";
-      data: T[];
-      config: AreaChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "pie";
-      data: T[];
-      config: PieChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "radar";
-      data: T[];
-      config: RadarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    };

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ChartCard, GenericChart } from "../../components/Charts";
+import { Chart } from "../../components/Charts";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import {
   getVehicleCount,
@@ -110,14 +110,14 @@ export default function MetricsPage() {
     const brandData = prepareDistributionData(metrics.vehiclesByBrand, 4);
     const fuelTypeData = prepareDistributionData(
       metrics.vehiclesByFuelType,
-      10
+      10,
     );
     const reservationsData = prepareTimelineData(metrics.reservationsTimeline);
     const maintenanceData = prepareTimelineData(metrics.maintenanceTimeline);
     const driversData = prepareTimelineData(metrics.driversMetrics);
     const responsiblesData = prepareTimelineData(metrics.responsiblesMetrics);
     const quarterlyControlsData = prepareQuarterlyControlsData(
-      metrics.quarterlyControls
+      metrics.quarterlyControls,
     );
 
     return {
@@ -166,7 +166,7 @@ export default function MetricsPage() {
       <section className="metrics-section">
         <h2 className="section-title">Vehículos</h2>
         <div className="charts-grid charts-grid--2-cols">
-          <ChartCard
+          <Chart
             title="Vehículos por Kilómetros"
             subtitle="Click en una barra para ver vehículos"
             footer={
@@ -174,76 +174,64 @@ export default function MetricsPage() {
                 <b>{chartData.totalVehicles}</b> vehículos totales
               </span>
             }
-          >
-            <GenericChart
-              type="bar"
-              data={chartData.kilometersData}
-              config={{
-                xAxisKey: "label",
-                series: [{ dataKey: "count", name: "Vehículos" }],
-              }}
-              onElementClick={handleKilometersClick}
-            />
-          </ChartCard>
+            type="bar"
+            data={chartData.kilometersData}
+            config={{
+              xAxisKey: "label",
+              series: [{ dataKey: "count", name: "Vehículos" }],
+            }}
+            onElementClick={handleKilometersClick}
+          />
 
-          <ChartCard
+          <Chart
             title="Vehículos por Antigüedad"
             subtitle="Click en una barra para ver vehículos"
             footer={<span>Agrupados por años de antigüedad</span>}
-          >
-            <GenericChart
-              type="bar"
-              data={chartData.ageData}
-              config={{
-                xAxisKey: "label",
-                series: [{ dataKey: "count", name: "Vehículos" }],
-              }}
-              onElementClick={handleAgeClick}
-            />
-          </ChartCard>
+            type="bar"
+            data={chartData.ageData}
+            config={{
+              xAxisKey: "label",
+              series: [{ dataKey: "count", name: "Vehículos" }],
+            }}
+            onElementClick={handleAgeClick}
+          />
 
-          <ChartCard
+          <Chart
             title="Vehículos por Marca"
             subtitle="Click para ver vehículos de la marca"
             footer={<span>Distribución por marca</span>}
-          >
-            <GenericChart
-              type="pie"
-              data={chartData.brandData}
-              config={{
-                nameKey: "name",
-                dataKey: "count",
-                outerRadius: 70,
-                showLabels: true,
-              }}
-              onElementClick={handleBrandClick}
-            />
-          </ChartCard>
+            type="pie"
+            data={chartData.brandData}
+            config={{
+              nameKey: "name",
+              dataKey: "count",
+              outerRadius: 70,
+              showLabels: true,
+            }}
+            onElementClick={handleBrandClick}
+          />
 
-          <ChartCard
+          <Chart
             title="Vehículos por Combustible"
             subtitle="Click para filtrar por tipo"
             footer={<span>Distribución por tipo</span>}
-          >
-            <GenericChart
-              type="pie"
-              data={chartData.fuelTypeData}
-              config={{
-                nameKey: "name",
-                dataKey: "count",
-                outerRadius: 70,
-                showLabels: true,
-              }}
-              onElementClick={handleFuelTypeClick}
-            />
-          </ChartCard>
+            type="pie"
+            data={chartData.fuelTypeData}
+            config={{
+              nameKey: "name",
+              dataKey: "count",
+              outerRadius: 70,
+              showLabels: true,
+            }}
+            onElementClick={handleFuelTypeClick}
+          />
         </div>
       </section>
 
       <section className="metrics-section">
         <h2 className="section-title">Reservas y Mantenimientos</h2>
         <div className="charts-grid">
-          <ChartCard
+          <Chart
             title="Reservas por Mes"
             fullWidth
             footer={
@@ -251,21 +239,18 @@ export default function MetricsPage() {
                 <b>{chartData.totalReservations}</b> reservas en el período
               </span>
             }
-          >
-            <GenericChart
-              type="line"
-              data={chartData.reservationsData}
-              config={{
-                xAxisKey: "month",
-                series: [{ dataKey: "count", name: "Reservas" }],
-                strokeWidth: 3,
-                showDots: true,
-              }}
-              onElementClick={handleReservationsClick}
-            />
-          </ChartCard>
+            type="line"
+            data={chartData.reservationsData}
+            config={{
+              xAxisKey: "month",
+              series: [{ dataKey: "count", name: "Reservas" }],
+              strokeWidth: 3,
+              showDots: true,
+            }}
+            onElementClick={handleReservationsClick}
+          />
 
-          <ChartCard
+          <Chart
             title="Registros de Mantenimiento"
             fullWidth
             footer={
@@ -273,17 +258,14 @@ export default function MetricsPage() {
                 <b>{chartData.totalMaintenance}</b> mantenimientos en el período
               </span>
             }
-          >
-            <GenericChart
-              type="area"
-              data={chartData.maintenanceData}
-              config={{
-                xAxisKey: "month",
-                series: [{ dataKey: "count", name: "Mantenimientos" }],
-                fillOpacity: 0.4,
-              }}
-            />
-          </ChartCard>
+            type="area"
+            data={chartData.maintenanceData}
+            config={{
+              xAxisKey: "month",
+              series: [{ dataKey: "count", name: "Mantenimientos" }],
+              fillOpacity: 0.4,
+            }}
+          />
         </div>
       </section>
 
@@ -292,38 +274,35 @@ export default function MetricsPage() {
         <section className="metrics-section">
           <h2 className="section-title">Controles Trimestrales</h2>
           <div className="charts-grid">
-            <ChartCard
+            <Chart
               title="Estado de Controles por Trimestre"
               fullWidth
               footer={<span>Últimos 8 trimestres</span>}
-            >
-              <GenericChart
-                type="bar"
-                data={chartData.quarterlyControlsData}
-                config={{
-                  xAxisKey: "label",
-                  series: [
-                    {
-                      dataKey: "aprobados",
-                      name: "Aprobados",
-                      color: "#43A047",
-                    },
-                    {
-                      dataKey: "pendientes",
-                      name: "Pendientes",
-                      color: "#FB8C00",
-                    },
-                    {
-                      dataKey: "rechazados",
-                      name: "Rechazados",
-                      color: "#E53935",
-                    },
-                    { dataKey: "vencidos", name: "Vencidos", color: "#9E9E9E" },
-                  ],
-                  showLegend: true,
-                }}
-              />
-            </ChartCard>
+              type="bar"
+              data={chartData.quarterlyControlsData}
+              config={{
+                xAxisKey: "label",
+                series: [
+                  {
+                    dataKey: "aprobados",
+                    name: "Aprobados",
+                    color: "#43A047",
+                  },
+                  {
+                    dataKey: "pendientes",
+                    name: "Pendientes",
+                    color: "#FB8C00",
+                  },
+                  {
+                    dataKey: "rechazados",
+                    name: "Rechazados",
+                    color: "#E53935",
+                  },
+                  { dataKey: "vencidos", name: "Vencidos", color: "#9E9E9E" },
+                ],
+                showLegend: true,
+              }}
+            />
           </div>
         </section>
       )}
@@ -332,45 +311,39 @@ export default function MetricsPage() {
       <section className="metrics-section">
         <h2 className="section-title">Personal Asignado</h2>
         <div className="charts-grid charts-grid--2-cols">
-          <ChartCard
+          <Chart
             title="Conductores Asignados"
             footer={
               <span>
                 <b>{chartData.totalDrivers}</b> conductores activos
               </span>
             }
-          >
-            <GenericChart
-              type="line"
-              data={chartData.driversData}
-              config={{
-                xAxisKey: "month",
-                series: [{ dataKey: "count", name: "Asignaciones" }],
-                strokeWidth: 2,
-                showDots: true,
-              }}
-            />
-          </ChartCard>
+            type="line"
+            data={chartData.driversData}
+            config={{
+              xAxisKey: "month",
+              series: [{ dataKey: "count", name: "Asignaciones" }],
+              strokeWidth: 2,
+              showDots: true,
+            }}
+          />
 
-          <ChartCard
+          <Chart
             title="Responsables de Vehículos"
             footer={
               <span>
                 <b>{chartData.totalResponsibles}</b> responsables activos
               </span>
             }
-          >
-            <GenericChart
-              type="line"
-              data={chartData.responsiblesData}
-              config={{
-                xAxisKey: "month",
-                series: [{ dataKey: "count", name: "Asignaciones" }],
-                strokeWidth: 2,
-                showDots: true,
-              }}
-            />
-          </ChartCard>
+            type="line"
+            data={chartData.responsiblesData}
+            config={{
+              xAxisKey: "month",
+              series: [{ dataKey: "count", name: "Asignaciones" }],
+              strokeWidth: 2,
+              showDots: true,
+            }}
+          />
         </div>
       </section>
     </div>
