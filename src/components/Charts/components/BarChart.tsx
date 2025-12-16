@@ -12,15 +12,10 @@ import {
 import type { BarChartProps, ChartClickEvent } from "../core/types";
 import {
   getChartColor,
-  AXIS_CONFIG,
   GRID_CONFIG,
   DEFAULT_CHART_HEIGHT,
 } from "../core/constants";
 
-/**
- * Componente de gráfico de barras genérico.
- * Soporta layout vertical y horizontal, múltiples series y click handlers.
- */
 export default function BarChartComponent<T extends Record<string, unknown>>({
   data,
   xAxisKey,
@@ -48,7 +43,7 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
 
   const isVertical = layout === "vertical";
 
-  // Custom tooltip para mostrar el label correctamente
+  // Custom tooltip component
   const CustomTooltip = ({
     active,
     payload,
@@ -63,7 +58,7 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   }) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload;
-      const label = item[xAxisKey] as string;
+      const label = String(item[xAxisKey] ?? "");
       return (
         <div
           style={{
@@ -86,43 +81,58 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
     return null;
   };
 
+  if (isVertical) {
+    return (
+      <div style={{ width: "100%", height, ...style }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RechartsBarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+          >
+            {showGrid && <CartesianGrid {...GRID_CONFIG} />}
+            <XAxis type="number" allowDecimals={false} />
+            <YAxis dataKey={xAxisKey} type="category" width={100} />
+            {showTooltip && <Tooltip content={<CustomTooltip />} />}
+            {showLegend && <Legend />}
+            {series.map((s, seriesIndex) => (
+              <Bar
+                key={s.dataKey}
+                dataKey={s.dataKey}
+                name={s.name || s.dataKey}
+                fill={s.color || getChartColor(seriesIndex, colors)}
+                radius={barRadius}
+                maxBarSize={maxBarSize}
+                stackId={s.stackId}
+                cursor={onElementClick ? "pointer" : undefined}
+                onClick={(barData: T, index: number) =>
+                  handleBarClick(barData, index, s.dataKey)
+                }
+              />
+            ))}
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  // Horizontal layout (default)
   return (
     <div style={{ width: "100%", height, ...style }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RechartsBarChart data={data} layout={layout}>
+        <RechartsBarChart data={data}>
           {showGrid && <CartesianGrid {...GRID_CONFIG} />}
-
-          {isVertical ? (
-            <>
-              <XAxis type="number" allowDecimals={false} {...AXIS_CONFIG} />
-              <YAxis
-                dataKey={xAxisKey}
-                type="category"
-                width={120}
-                {...AXIS_CONFIG}
-              />
-            </>
-          ) : (
-            <>
-              <XAxis
-                dataKey={xAxisKey}
-                stroke="#888"
-                axisLine={{ stroke: "#e0e0e0" }}
-                tickLine={false}
-                tick={{ fontSize: 11, fill: "#333" }}
-                angle={data.length > 5 ? -45 : 0}
-                textAnchor={data.length > 5 ? "end" : "middle"}
-                height={data.length > 5 ? 80 : 50}
-                interval={0}
-                dy={data.length > 5 ? 5 : 10}
-              />
-              <YAxis allowDecimals={false} {...AXIS_CONFIG} />
-            </>
-          )}
-
+          <XAxis
+            dataKey={xAxisKey}
+            angle={-45}
+            textAnchor="end"
+            interval={0}
+            height={60}
+            tick={{ fontSize: 13 }}
+          />
+          <YAxis allowDecimals={false} />
           {showTooltip && <Tooltip content={<CustomTooltip />} />}
           {showLegend && <Legend />}
-
           {series.map((s, seriesIndex) => (
             <Bar
               key={s.dataKey}
@@ -137,7 +147,6 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
                 handleBarClick(barData, index, s.dataKey)
               }
             >
-              {/* Si hay un solo serie y queremos colores individuales por barra */}
               {series.length === 1 &&
                 colors &&
                 data.map((_, index) => (

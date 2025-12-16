@@ -24,7 +24,7 @@ export function prepareBucketData(
   );
 }
 
-/** Transforma distribución del API a datos para gráfico con top N + "Otros" */
+/** Transforma distribución del API a datos para gráfico Distribución por marca */
 export function prepareDistributionData(
   distribution: MetricsState["vehiclesByBrand"],
   topN: number = 4

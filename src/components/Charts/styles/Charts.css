@@ -54,8 +54,8 @@
   align-items: center;
   justify-content: center;
   min-height: 320px;
-  height: 320px;
   overflow: visible;
+  width: 100%;
 }
 
 .chart-card__content--loading,

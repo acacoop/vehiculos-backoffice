@@ -155,6 +155,7 @@ export default function MetricsPage() {
       </div>
     );
   }
+  console.log("MIS DATOS:", chartData.kilometersData[0]);
 
   return (
     <div className="metrics-container">

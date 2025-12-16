@@ -41,4 +41,4 @@ export const GRID_CONFIG = {
 /**
  * Altura por defecto de los gráficos
  */
-export const DEFAULT_CHART_HEIGHT = 300;
+export const DEFAULT_CHART_HEIGHT = 350;

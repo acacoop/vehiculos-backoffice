@@ -1,10 +1,6 @@
 import type { ChartCardProps } from "../core/types";
 import "../styles/Charts.css";
 
-/**
- * Componente contenedor base para gráficos.
- * Proporciona un layout consistente con título, área de gráfico y footer opcional.
- */
 export default function ChartCard({
   title,
   subtitle,
