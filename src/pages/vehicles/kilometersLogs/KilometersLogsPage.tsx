@@ -1,10 +1,28 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../../components/Table/table";
 import type {
   VehicleKilometersLog,
   KilometersFilterParams,
 } from "../../../types/kilometer";
 import { getVehicleKilometersLogs } from "../../../services/kilometers";
+
+// Definición de filtros disponibles
+const filterDefinitions: FilterDefinition<KilometersFilterParams>[] = [
+  {
+    type: "date",
+    field: "startDate",
+    label: "Fecha desde",
+  },
+  {
+    type: "date",
+    field: "endDate",
+    label: "Fecha hasta",
+  },
+];
 
 export default function KilometersLogsPage() {
   const navigate = useNavigate();
@@ -57,6 +75,9 @@ export default function KilometersLogsPage() {
       <Table<KilometersFilterParams, VehicleKilometersLog>
         getRows={getVehicleKilometersLogs}
         columns={columns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         header={{
           title: "Registros de Kilometraje",
           addButton: {

@@ -33,6 +33,15 @@ export const FUEL_TYPES = [
   "Flex",
 ] as const;
 
+// Opciones de filtro para tipos de combustible
+export const FUEL_TYPE_OPTIONS = FUEL_TYPES.map((fuel) => ({
+  label: fuel,
+  value: fuel
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""),
+}));
+
 // Etiquetas de trimestres
 export const QUARTER_LABELS: Record<number, string> = {
   1: "Q1",
@@ -40,6 +49,24 @@ export const QUARTER_LABELS: Record<number, string> = {
   3: "Q3",
   4: "Q4",
 } as const;
+
+// Opciones de filtro para trimestres
+export const QUARTER_OPTIONS = [
+  { label: "1er Trimestre", value: "1" },
+  { label: "2do Trimestre", value: "2" },
+  { label: "3er Trimestre", value: "3" },
+  { label: "4to Trimestre", value: "4" },
+];
+
+// Generar opciones de año (desde 2020 hasta el año actual + 1)
+const currentYear = new Date().getFullYear();
+export const YEAR_OPTIONS = Array.from(
+  { length: currentYear - 2020 + 2 },
+  (_, i) => ({
+    label: String(2020 + i),
+    value: String(2020 + i),
+  })
+);
 
 // Estados de control trimestral
 export const QUARTERLY_CONTROL_STATUS = {

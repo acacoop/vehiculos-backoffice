@@ -1,5 +1,8 @@
-import { Table } from "../../components/Table/table";
-import type { TableColumn } from "../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../components/Table/table";
 import { getUsers } from "../../services/users";
 import type { User, UserFilterParams } from "../../types/user";
 
@@ -32,11 +35,25 @@ const userColumns: TableColumn<User>[] = [
   },
 ];
 
+// Definición de filtros disponibles
+const filterDefinitions: FilterDefinition<UserFilterParams>[] = [
+  {
+    type: "boolean",
+    field: "active",
+    label: "Estado",
+    trueLabel: "Activo",
+    falseLabel: "Inactivo",
+  },
+];
+
 export default function UsersPage() {
   return (
     <Table<UserFilterParams, User>
       getRows={getUsers}
       columns={userColumns}
+      filters={{
+        definitions: filterDefinitions,
+      }}
       header={{
         title: "Gestión de Usuarios",
       }}

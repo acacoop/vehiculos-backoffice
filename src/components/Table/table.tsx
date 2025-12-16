@@ -5,9 +5,9 @@ import {
   type GridValidRowModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-import { Chip, Box } from "@mui/material";
+import { Chip } from "@mui/material";
 import { esES } from "@mui/x-data-grid/locales";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ApiFindOptions } from "../../services/common";
 import type { FilterParams, ServiceResponse } from "../../types/common";
@@ -20,7 +20,420 @@ import {
   COLORS,
 } from "../../common";
 import "./table.css";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X, ChevronDown, ChevronRight } from "lucide-react";
+
+// ============ FILTER TYPES ============
+interface BaseFilterDefinition<TFilters> {
+  field: keyof TFilters;
+  label: string;
+}
+
+export interface SelectFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "select";
+  options: { label: string; value: string }[];
+}
+
+export interface TextFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "text";
+  placeholder?: string;
+}
+
+export interface NumberFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "number";
+  placeholder?: string;
+}
+
+export interface DateFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "date";
+}
+
+export interface BooleanFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "boolean";
+  trueLabel?: string;
+  falseLabel?: string;
+}
+
+export interface SearchFilterDefinition<TFilters>
+  extends BaseFilterDefinition<TFilters> {
+  type: "search";
+  /** Función de búsqueda que retorna opciones filtradas */
+  searchFn: (term: string) => Promise<{ label: string; value: string }[]>;
+  placeholder?: string;
+  /** Milisegundos de debounce (default: 300) */
+  debounceMs?: number;
+  /** Mínimo de caracteres para buscar (default: 1) */
+  minChars?: number;
+}
+
+export type FilterDefinition<TFilters> =
+  | SelectFilterDefinition<TFilters>
+  | TextFilterDefinition<TFilters>
+  | NumberFilterDefinition<TFilters>
+  | DateFilterDefinition<TFilters>
+  | BooleanFilterDefinition<TFilters>
+  | SearchFilterDefinition<TFilters>;
+
+// ============ FILTER DROPDOWN COMPONENT ============
+interface FilterDropdownProps<TFilters extends FilterParams> {
+  definitions: FilterDefinition<TFilters>[];
+  activeFilters: Partial<TFilters>;
+  onAddFilter: (
+    field: keyof TFilters,
+    value: string,
+    displayLabel?: string
+  ) => void;
+}
+
+function FilterDropdown<TFilters extends FilterParams>({
+  definitions,
+  activeFilters,
+  onAddFilter,
+}: FilterDropdownProps<TFilters>) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] =
+    useState<FilterDefinition<TFilters> | null>(null);
+  const [filterValue, setFilterValue] = useState("");
+  const [filterLabel, setFilterLabel] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Search filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [selectedSearchIndex, setSelectedSearchIndex] = useState(-1);
+  const searchDebounceRef = useRef<number | undefined>(undefined);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setSelectedFilter(null);
+        setFilterValue("");
+        setFilterLabel("");
+        setSearchTerm("");
+        setSearchResults([]);
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Search filter effect
+  useEffect(() => {
+    if (selectedFilter?.type !== "search") return;
+
+    const minChars = selectedFilter.minChars ?? 1;
+    const debounceMs = selectedFilter.debounceMs ?? 300;
+
+    if (searchTerm.length < minChars) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    searchDebounceRef.current = window.setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await selectedFilter.searchFn(searchTerm);
+        setSearchResults(results);
+        setShowSearchDropdown(true);
+        setSelectedSearchIndex(-1);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, debounceMs);
+
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, [searchTerm, selectedFilter]);
+
+  // Get available filters (not already active)
+  const availableFilters = definitions.filter(
+    (def) =>
+      activeFilters[def.field] === undefined ||
+      activeFilters[def.field] === null ||
+      activeFilters[def.field] === ""
+  );
+
+  const handleFilterSelect = (filter: FilterDefinition<TFilters>) => {
+    setSelectedFilter(filter);
+    setFilterValue("");
+    setFilterLabel("");
+    setSearchTerm("");
+    setSearchResults([]);
+    setShowSearchDropdown(false);
+    setSelectedSearchIndex(-1);
+  };
+
+  const handleApplyFilter = () => {
+    if (selectedFilter && filterValue) {
+      onAddFilter(selectedFilter.field, filterValue, filterLabel || undefined);
+      setSelectedFilter(null);
+      setFilterValue("");
+      setFilterLabel("");
+      setSearchTerm("");
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      setIsOpen(false);
+    }
+  };
+
+  const handleSearchResultSelect = (result: {
+    label: string;
+    value: string;
+  }) => {
+    setFilterValue(result.value);
+    setFilterLabel(result.label);
+    setSearchTerm(result.label);
+    setShowSearchDropdown(false);
+    setSearchResults([]);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSearchDropdown || searchResults.length === 0) {
+      if (e.key === "Enter" && filterValue) {
+        handleApplyFilter();
+      }
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSearchIndex((prev) =>
+        prev < searchResults.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSearchIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (
+        selectedSearchIndex >= 0 &&
+        selectedSearchIndex < searchResults.length
+      ) {
+        handleSearchResultSelect(searchResults[selectedSearchIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setShowSearchDropdown(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && filterValue) {
+      handleApplyFilter();
+    }
+  };
+
+  if (availableFilters.length === 0) return null;
+
+  return (
+    <div className="filter-dropdown-container" ref={dropdownRef}>
+      <button
+        className="filter-add-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+      >
+        Agregar filtro
+        <ChevronDown size={16} />
+      </button>
+
+      {isOpen && (
+        <div className="filter-dropdown-menu">
+          {!selectedFilter ? (
+            // Step 1: Select filter type
+            <div className="filter-dropdown-list">
+              {availableFilters.map((filter) => (
+                <button
+                  key={String(filter.field)}
+                  className="filter-dropdown-item"
+                  onClick={() => handleFilterSelect(filter)}
+                  type="button"
+                >
+                  {filter.label} <ChevronRight size={16} />
+                </button>
+              ))}
+            </div>
+          ) : (
+            // Step 2: Enter filter value
+            <div className="filter-value-input">
+              <span className="filter-value-label">{selectedFilter.label}</span>
+
+              {selectedFilter.type === "select" && (
+                <select
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  className="filter-input-field"
+                  autoFocus
+                >
+                  <option value="">Seleccionar...</option>
+                  {selectedFilter.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {selectedFilter.type === "text" && (
+                <input
+                  type="text"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={selectedFilter.placeholder || "Escribir..."}
+                  className="filter-input-field"
+                  autoFocus
+                />
+              )}
+
+              {selectedFilter.type === "number" && (
+                <input
+                  type="number"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={selectedFilter.placeholder || "Número..."}
+                  className="filter-input-field"
+                  autoFocus
+                />
+              )}
+
+              {selectedFilter.type === "date" && (
+                <input
+                  type="date"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="filter-input-field"
+                  autoFocus
+                />
+              )}
+
+              {selectedFilter.type === "boolean" && (
+                <select
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                  className="filter-input-field"
+                  autoFocus
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="true">
+                    {selectedFilter.trueLabel || "Sí"}
+                  </option>
+                  <option value="false">
+                    {selectedFilter.falseLabel || "No"}
+                  </option>
+                </select>
+              )}
+
+              {selectedFilter.type === "search" && (
+                <div className="filter-search-container">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      // Clear selection if user types again
+                      if (filterValue && e.target.value !== filterLabel) {
+                        setFilterValue("");
+                        setFilterLabel("");
+                      }
+                    }}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder={selectedFilter.placeholder || "Buscar..."}
+                    className="filter-input-field"
+                    autoFocus
+                  />
+                  {isSearching && (
+                    <div className="filter-search-loading">Buscando...</div>
+                  )}
+                  {showSearchDropdown && searchResults.length > 0 && (
+                    <div
+                      className="filter-search-dropdown"
+                      ref={searchResultsRef}
+                    >
+                      {searchResults.map((result, index) => (
+                        <button
+                          key={result.value}
+                          className={`filter-search-item ${
+                            index === selectedSearchIndex ? "selected" : ""
+                          }`}
+                          onClick={() => handleSearchResultSelect(result)}
+                          type="button"
+                        >
+                          {result.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showSearchDropdown &&
+                    !isSearching &&
+                    searchResults.length === 0 &&
+                    searchTerm.length >= (selectedFilter.minChars ?? 1) && (
+                      <div className="filter-search-dropdown">
+                        <div className="filter-search-no-results">
+                          No se encontraron resultados
+                        </div>
+                      </div>
+                    )}
+                </div>
+              )}
+
+              <div className="filter-value-actions">
+                <button
+                  className="filter-cancel-btn"
+                  onClick={() => {
+                    setSelectedFilter(null);
+                    setFilterValue("");
+                    setFilterLabel("");
+                    setSearchTerm("");
+                    setSearchResults([]);
+                    setShowSearchDropdown(false);
+                  }}
+                  type="button"
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="filter-apply-btn"
+                  onClick={handleApplyFilter}
+                  disabled={!filterValue}
+                  type="button"
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function createGridColumn<T extends GridValidRowModel>(
   column: TableColumn<T>
@@ -168,6 +581,7 @@ export interface TableColumn<T extends GridValidRowModel> {
     | "text"
     | "boolean"
     | "date"
+    | "number"
     | "datetime"
     | "enddate"
     | "relativedate"
@@ -196,11 +610,12 @@ interface TableSearch {
   placeholder?: string;
 }
 
-/** Configuración para mostrar filtros activos con labels legibles */
-interface FilterLabelConfig {
-  key: string;
-  label: string;
-  format?: (value: string) => string;
+// ============ TABLE FILTERS CONFIG ============
+export interface TableFiltersConfig<TFilters extends FilterParams> {
+  /** Definiciones de filtros disponibles */
+  definitions: FilterDefinition<TFilters>[];
+  /** Valores iniciales de los filtros (opcional) */
+  initialValues?: Partial<TFilters>;
 }
 
 interface TableProps<
@@ -209,13 +624,11 @@ interface TableProps<
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
-  filters?: TFilters;
-  filterLabels?: FilterLabelConfig[];
-  onClearFilters?: () => void;
 
   header?: TableHeader;
   actionColumn?: TableActionColumn<T>;
   search?: TableSearch;
+  filters?: TableFiltersConfig<TFilters>;
 
   width?: number | string;
   maxWidth?: string;
@@ -229,12 +642,10 @@ export function Table<
 >({
   getRows,
   columns,
-  filters,
-  filterLabels,
-  onClearFilters,
   header,
   actionColumn,
   search,
+  filters,
   width,
   maxWidth = "1200px",
   maxHeight = "600px",
@@ -251,6 +662,16 @@ export function Table<
   const [rowCount, setRowCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Estado interno de filtros (valores para enviar al backend)
+  const [filterValues, setFilterValues] = useState<Partial<TFilters>>(
+    () => filters?.initialValues || {}
+  );
+
+  // Labels personalizados para mostrar en los chips (para filtros tipo search)
+  const [filterDisplayLabels, setFilterDisplayLabels] = useState<
+    Partial<Record<keyof TFilters, string>>
+  >({});
 
   const localeText = useMemo(() => {
     if (search?.placeholder) {
@@ -288,11 +709,24 @@ export function Table<
         // MUI uses 0-based pages, convert to offset for backend
         const offset = page * pageSize;
         const normalizedSearch = searchValue?.trim();
+
+        // Clean filter values (remove empty/null/undefined)
+        const cleanedFilters = filterValues
+          ? (Object.fromEntries(
+              Object.entries(filterValues).filter(
+                ([, v]) => v !== undefined && v !== null && v !== ""
+              )
+            ) as TFilters)
+          : undefined;
+
         const response = await getRows({
           pagination: { limit: pageSize, offset },
           search:
             search?.enabled && normalizedSearch ? normalizedSearch : undefined,
-          filters,
+          filters:
+            cleanedFilters && Object.keys(cleanedFilters).length > 0
+              ? cleanedFilters
+              : undefined,
         });
 
         if (response.success) {
@@ -309,7 +743,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled, filters]
+    [getRows, search?.enabled, filterValues]
   );
 
   useEffect(() => {
@@ -330,7 +764,7 @@ export function Table<
     search?.enabled,
     debouncedSearch,
     fetchData,
-    filters,
+    filterValues,
   ]);
 
   const handlePaginationChange = useCallback(
@@ -406,25 +840,98 @@ export function Table<
 
   // Calcular filtros activos para mostrar
   const activeFilters = useMemo(() => {
-    if (!filters || !filterLabels) return [];
+    if (!filters?.definitions) return [];
 
-    return filterLabels
-      .filter((config) => {
-        const value = filters[config.key as keyof TFilters];
+    return filters.definitions
+      .filter((def) => {
+        const value = filterValues[def.field];
         return value !== undefined && value !== null && value !== "";
       })
-      .map((config) => {
-        const value = filters[config.key as keyof TFilters] as string;
-        const displayValue = config.format ? config.format(value) : value;
+      .map((def) => {
+        const rawValue = filterValues[def.field] as string;
+        let displayValue = rawValue;
+
+        // Check if we have a custom display label (for search filters)
+        const customLabel = filterDisplayLabels[def.field];
+        if (customLabel) {
+          displayValue = customLabel;
+        } else if (def.type === "select") {
+          // Format display value based on filter type
+          const option = def.options.find((o) => o.value === rawValue);
+          displayValue = option?.label || rawValue;
+        } else if (def.type === "boolean") {
+          displayValue =
+            rawValue === "true"
+              ? def.trueLabel || "Sí"
+              : def.falseLabel || "No";
+        } else if (def.type === "date") {
+          displayValue = formatDate(rawValue);
+        }
+
         return {
-          key: config.key,
-          label: config.label,
+          field: def.field,
+          label: def.label,
           value: displayValue,
         };
       });
-  }, [filters, filterLabels]);
+  }, [filters?.definitions, filterValues, filterDisplayLabels]);
 
   const hasActiveFilters = activeFilters.length > 0;
+  const hasFilterConfig =
+    filters && filters.definitions && filters.definitions.length > 0;
+
+  // Handler para agregar un filtro
+  const handleAddFilter = useCallback(
+    (field: keyof TFilters, value: string, displayLabel?: string) => {
+      setFilterValues((prev) => ({ ...prev, [field]: value }));
+      // Save custom display label if provided
+      if (displayLabel) {
+        setFilterDisplayLabels((prev) => ({ ...prev, [field]: displayLabel }));
+      } else {
+        // Clear any existing custom label
+        setFilterDisplayLabels((prev) => {
+          const newLabels = { ...prev };
+          delete newLabels[field];
+          return newLabels;
+        });
+      }
+      // Reset to first page when filters change
+      if (paginationModel.page !== 0) {
+        setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      }
+    },
+    [paginationModel.page]
+  );
+
+  // Handler para remover un filtro específico
+  const handleRemoveFilter = useCallback(
+    (field: keyof TFilters) => {
+      setFilterValues((prev) => {
+        const newFilters = { ...prev };
+        delete newFilters[field];
+        return newFilters;
+      });
+      // Also remove display label
+      setFilterDisplayLabels((prev) => {
+        const newLabels = { ...prev };
+        delete newLabels[field];
+        return newLabels;
+      });
+      if (paginationModel.page !== 0) {
+        setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      }
+    },
+    [paginationModel.page]
+  );
+
+  // Handler para limpiar todos los filtros
+  const handleClearFilters = useCallback(() => {
+    setFilterValues({});
+    setFilterDisplayLabels({});
+    if (paginationModel.page !== 0) {
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    }
+  }, [paginationModel.page]);
 
   return (
     <div className="table-main-container" style={{ maxWidth, width }}>
@@ -442,55 +949,48 @@ export function Table<
         </div>
       )}
 
-      {/* Filtros activos */}
-      {hasActiveFilters && (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            flexWrap: "wrap",
-            mb: 1.5,
-            p: 1,
-            backgroundColor: "#fafafa",
-            borderRadius: 2,
-            border: "1px solid #e0e0e0",
-          }}
-        >
-          <span style={{ fontSize: 13, color: "#666", fontWeight: 500 }}>
-            Filtros:
-          </span>
-          {activeFilters.map((filter) => (
-            <Chip
-              key={filter.key}
-              label={`${filter.label}: ${filter.value}`}
-              size="small"
-              sx={{
-                backgroundColor: COLORS.primary,
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: 12,
-              }}
+      {/* Filters Bar */}
+      {hasFilterConfig && (
+        <div className="filters-container">
+          <div className="filters-tag">
+            {hasActiveFilters ? (
+              <>
+                <span className="filters-label">Filtros activos:</span>
+                {activeFilters.map((filter) => (
+                  <span
+                    key={String(filter.field)}
+                    className="filter-chip"
+                    onClick={() => handleRemoveFilter(filter.field)}
+                    title="Click para remover"
+                  >
+                    {filter.label}: {filter.value}
+                    <X size={14} />
+                  </span>
+                ))}
+              </>
+            ) : (
+              <span className="filters-label filters-label--empty">
+                Sin filtros activos
+              </span>
+            )}
+          </div>
+          <div className="filters-actions">
+            {hasActiveFilters && (
+              <button
+                className="filter-clear-btn"
+                onClick={handleClearFilters}
+                type="button"
+              >
+                Limpiar filtros
+              </button>
+            )}
+            <FilterDropdown
+              definitions={filters.definitions}
+              activeFilters={filterValues}
+              onAddFilter={handleAddFilter}
             />
-          ))}
-          {onClearFilters && (
-            <Chip
-              label="Limpiar"
-              size="small"
-              onClick={onClearFilters}
-              onDelete={onClearFilters}
-              deleteIcon={<X size={14} color="#fff" />}
-              sx={{
-                backgroundColor: "#666",
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: 12,
-                cursor: "pointer",
-                "&:hover": { backgroundColor: "#555" },
-              }}
-            />
-          )}
-        </Box>
+          </div>
+        </div>
       )}
 
       <div

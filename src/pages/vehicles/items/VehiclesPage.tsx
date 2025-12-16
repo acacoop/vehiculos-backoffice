@@ -1,8 +1,13 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMemo } from "react";
-import { Table, type TableColumn } from "../../../components/Table/table";
-import { getVehicles, type VehicleFilters } from "../../../services/vehicles";
-import type { Vehicle } from "../../../types/vehicle";
+import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../../components/Table/table";
+import { getVehicles } from "../../../services/vehicles";
+import { getVehicleBrands } from "../../../services/vehicleBrands";
+import { FUEL_TYPE_OPTIONS } from "../../../common";
+import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
 
 const columns: TableColumn<Vehicle>[] = [
   { field: "licensePlate", headerName: "Patente", flex: 1 },
@@ -11,58 +16,72 @@ const columns: TableColumn<Vehicle>[] = [
   { field: "year", headerName: "Año", flex: 1 },
 ];
 
-const FILTER_LABELS = [
-  {
-    key: "minKilometers",
-    label: "Km desde",
-    format: (v: string) => Number(v).toLocaleString(),
-  },
-  {
-    key: "maxKilometers",
-    label: "Km hasta",
-    format: (v: string) => Number(v).toLocaleString(),
-  },
-  { key: "minYear", label: "Año desde" },
-  { key: "maxYear", label: "Año hasta" },
-  { key: "brandId", label: "Marca" },
-  { key: "fuelType", label: "Combustible" },
-];
+// Función de búsqueda para el filtro de marcas
+const searchBrands = async (
+  term: string
+): Promise<{ label: string; value: string }[]> => {
+  const response = await getVehicleBrands({ search: term });
+  if (response.success && response.data) {
+    return response.data.map((brand) => ({
+      label: brand.name,
+      value: brand.id,
+    }));
+  }
+  return [];
+};
 
 export default function VehiclesPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
-  // Leer filtros de la URL
-  const filters = useMemo<VehicleFilters>(() => {
-    const result: VehicleFilters = {};
-
-    const minKilometers = searchParams.get("minKilometers");
-    const maxKilometers = searchParams.get("maxKilometers");
-    const minYear = searchParams.get("minYear");
-    const maxYear = searchParams.get("maxYear");
-    const brandId = searchParams.get("brandId");
-    const fuelType = searchParams.get("fuelType");
-
-    if (minKilometers) result.minKilometers = minKilometers;
-    if (maxKilometers) result.maxKilometers = maxKilometers;
-    if (minYear) result.minYear = minYear;
-    if (maxYear) result.maxYear = maxYear;
-    if (brandId) result.brandId = brandId;
-    if (fuelType) result.fuelType = fuelType;
-
-    return result;
-  }, [searchParams]);
-
-  const handleClearFilters = () => navigate("/vehicles");
+  const filterDefinitions: FilterDefinition<VehicleFilterParams>[] = [
+    {
+      type: "search",
+      field: "brandId",
+      label: "Marca",
+      searchFn: searchBrands,
+      placeholder: "Buscar marca...",
+      minChars: 1,
+    },
+    {
+      type: "select",
+      field: "fuelType",
+      label: "Combustible",
+      options: FUEL_TYPE_OPTIONS,
+    },
+    {
+      type: "number",
+      field: "minYear",
+      label: "Año desde",
+      placeholder: "Ej: 2020",
+    },
+    {
+      type: "number",
+      field: "maxYear",
+      label: "Año hasta",
+      placeholder: "Ej: 2024",
+    },
+    {
+      type: "number",
+      field: "minKilometers",
+      label: "Km desde",
+      placeholder: "Ej: 0",
+    },
+    {
+      type: "number",
+      field: "maxKilometers",
+      label: "Km hasta",
+      placeholder: "Ej: 100000",
+    },
+  ];
 
   return (
     <div className="container">
-      <Table
+      <Table<VehicleFilterParams, Vehicle>
         getRows={getVehicles}
         columns={columns}
-        filters={filters}
-        filterLabels={FILTER_LABELS}
-        onClearFilters={handleClearFilters}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         header={{
           title: "Gestión de Vehículos",
           addButton: {
