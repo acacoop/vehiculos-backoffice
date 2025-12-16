@@ -13,8 +13,10 @@ import type { BarChartProps, ChartClickEvent } from "../core/types";
 import {
   getChartColor,
   GRID_CONFIG,
+  AXIS_CONFIG,
   DEFAULT_CHART_HEIGHT,
 } from "../core/constants";
+import { getTickFormatter, calculateTickInterval } from "../core/formatters";
 
 export default function BarChartComponent<T extends Record<string, unknown>>({
   data,
@@ -29,6 +31,8 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   layout = "horizontal",
   barRadius = 4,
   maxBarSize = 60,
+  maxXAxisLabels = 8,
+  xAxisFormat = "auto",
   style,
 }: BarChartProps<T>) {
   const handleBarClick = (barData: T, index: number, seriesDataKey: string) => {
@@ -117,20 +121,25 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   }
 
   // Horizontal layout (default)
+  const tickFormatter = getTickFormatter(xAxisFormat, data, xAxisKey);
+  const tickInterval = calculateTickInterval(data.length, maxXAxisLabels);
+
   return (
     <div style={{ width: "100%", height, ...style }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RechartsBarChart data={data}>
+        <RechartsBarChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+        >
           {showGrid && <CartesianGrid {...GRID_CONFIG} />}
           <XAxis
             dataKey={xAxisKey}
-            angle={-45}
-            textAnchor="end"
-            interval={0}
-            height={60}
-            tick={{ fontSize: 13 }}
+            {...AXIS_CONFIG}
+            tickMargin={8}
+            interval={tickInterval}
+            tickFormatter={tickFormatter}
           />
-          <YAxis allowDecimals={false} />
+          <YAxis allowDecimals={false} {...AXIS_CONFIG} />
           {showTooltip && <Tooltip content={<CustomTooltip />} />}
           {showLegend && <Legend />}
           {series.map((s, seriesIndex) => (

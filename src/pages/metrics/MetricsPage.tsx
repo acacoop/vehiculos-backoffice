@@ -63,7 +63,7 @@ export default function MetricsPage() {
           getReservationsTimeline({ months: 12 }),
           getMaintenanceRecordsTimeline({ months: 12 }),
           getQuarterlyControlsStatus({ periods: 8 }),
-          getDriversMetrics({ months: 12 }),
+          getDriversMetrics({ months: 24 }),
           getResponsiblesMetrics({ months: 12 }),
         ]);
 
@@ -155,7 +155,6 @@ export default function MetricsPage() {
       </div>
     );
   }
-  console.log("MIS DATOS:", chartData.kilometersData[0]);
 
   return (
     <div className="metrics-container">

@@ -80,7 +80,23 @@ export interface BarChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   barRadius?: number;
   /** Tamaño máximo de las barras */
   maxBarSize?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
 }
+
+/**
+ * Formato del eje X para gráficos de tiempo
+ */
+export type XAxisFormat =
+  | "auto"
+  | "year"
+  | "month"
+  | "week"
+  | "day"
+  | "quarter"
+  | "none";
 
 /**
  * Props para gráfico de líneas
@@ -92,6 +108,10 @@ export interface LineChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   showDots?: boolean;
   /** Grosor de la línea */
   strokeWidth?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
 }
 
 /**
@@ -102,6 +122,10 @@ export interface AreaChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   curveType?: "linear" | "monotone" | "step";
   /** Opacidad del relleno */
   fillOpacity?: number;
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X (auto detecta el formato) */
+  xAxisFormat?: XAxisFormat;
 }
 
 /**

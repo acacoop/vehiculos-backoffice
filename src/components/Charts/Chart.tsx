@@ -44,44 +44,62 @@ interface BaseChartCardProps {
   className?: string;
 }
 
+// ============================================
+// Chart-specific props for each type
+// ============================================
+
+interface BarChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "bar";
+  data: T[];
+  config: BarChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
+interface HorizontalBarChartSpecificProps<
+  T extends ChartDataItem = ChartDataItem,
+> {
+  type: "horizontalBar";
+  data: T[];
+  config: BarChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
+interface LineChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "line";
+  data: T[];
+  config: LineChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
+interface AreaChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "area";
+  data: T[];
+  config: AreaChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
+interface PieChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "pie";
+  data: T[];
+  config: PieChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
+interface RadarChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "radar";
+  data: T[];
+  config: RadarChartConfig<T>;
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
 // Union type for chart-specific props
 type ChartSpecificProps<T extends ChartDataItem = ChartDataItem> =
-  | {
-      type: "bar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "horizontalBar";
-      data: T[];
-      config: BarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "line";
-      data: T[];
-      config: LineChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "area";
-      data: T[];
-      config: AreaChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "pie";
-      data: T[];
-      config: PieChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    }
-  | {
-      type: "radar";
-      data: T[];
-      config: RadarChartConfig<T>;
-      onElementClick?: (event: ChartClickEvent<T>) => void;
-    };
+  | BarChartSpecificProps<T>
+  | HorizontalBarChartSpecificProps<T>
+  | LineChartSpecificProps<T>
+  | AreaChartSpecificProps<T>
+  | PieChartSpecificProps<T>
+  | RadarChartSpecificProps<T>;
 
 export type ChartProps<T extends ChartDataItem = ChartDataItem> =
   BaseChartCardProps & ChartSpecificProps<T>;

@@ -9,6 +9,7 @@ export type {
   AreaChartConfig,
   PieChartConfig,
   RadarChartConfig,
+  XAxisFormat,
 } from "./types";
 
 // Constantes y utilidades
