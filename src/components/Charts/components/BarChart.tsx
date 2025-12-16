@@ -37,6 +37,10 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   xAxisLabelRotation = 0,
   style,
 }: BarChartProps<T>) {
+  // 1. Sanitize the main height to ensure it's never NaN or invalid before rendering
+  const validHeight =
+    Number.isFinite(height) && height > 0 ? height : DEFAULT_CHART_HEIGHT;
+
   const handleBarClick = (barData: T, index: number, seriesDataKey: string) => {
     if (onElementClick) {
       onElementClick({
@@ -89,7 +93,7 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
 
   if (isVertical) {
     return (
-      <div style={{ width: "100%", height, ...style }}>
+      <div style={{ width: "100%", height: validHeight, ...style }}>
         <ResponsiveContainer width="100%" height="100%">
           <RechartsBarChart
             data={data}
@@ -126,11 +130,12 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
   const tickFormatter = getTickFormatter(xAxisFormat, data, xAxisKey);
   const tickInterval = calculateTickInterval(data.length, maxXAxisLabels);
 
-  // Calculate bottom margin based on rotation (more space for angled labels)
+  // Calculate bottom margin based on rotation
   const bottomMargin = xAxisLabelRotation !== 0 ? 60 : 5;
+  const xAxisHeightProps = xAxisLabelRotation !== 0 ? { height: 80 } : {};
 
   return (
-    <div style={{ width: "100%", height, ...style }}>
+    <div style={{ width: "100%", height: validHeight, ...style }}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsBarChart
           data={data}
@@ -140,12 +145,13 @@ export default function BarChartComponent<T extends Record<string, unknown>>({
           <XAxis
             dataKey={xAxisKey}
             {...AXIS_CONFIG}
+            // Spread the conditional height props here
+            {...xAxisHeightProps}
             tickMargin={8}
             interval={xAxisLabelRotation !== 0 ? 0 : tickInterval}
             tickFormatter={tickFormatter}
             angle={xAxisLabelRotation}
             textAnchor={xAxisLabelRotation !== 0 ? "end" : "middle"}
-            height={xAxisLabelRotation !== 0 ? 80 : undefined}
           />
           <YAxis allowDecimals={false} {...AXIS_CONFIG} />
           {showTooltip && <Tooltip content={<CustomTooltip />} />}

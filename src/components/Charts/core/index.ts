@@ -10,6 +10,9 @@ export type {
   PieChartConfig,
   RadarChartConfig,
   XAxisFormat,
+  ChartFilter,
+  ChartFilterOption,
+  ChartFetchResult,
 } from "./types";
 
 // Constantes y utilidades

@@ -7,11 +7,10 @@ export type ChartType = "bar" | "line" | "area" | "pie" | "radar" | "histogram";
 
 /**
  * Datos base para cualquier gráfico
- * Permite string, number, boolean y null como valores
+ * Usa Record para permitir cualquier objeto con propiedades string/number/boolean/null
  */
-export interface ChartDataItem {
-  [key: string]: string | number | boolean | null | undefined;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ChartDataItem = Record<string, any>;
 
 /**
  * Configuración de una serie de datos (para gráficos con múltiples series)
@@ -195,3 +194,47 @@ export type RadarChartConfig<T = ChartDataItem> = Omit<
   RadarChartProps<T>,
   "data" | "onElementClick"
 >;
+
+// ============================================
+// Filtros dinámicos para Charts
+// ============================================
+
+/**
+ * Opción de un filtro select
+ */
+export interface ChartFilterOption<T = string | number> {
+  value: T;
+  label: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyParams = Record<string, any>;
+
+/**
+ * Definición de un filtro para el gráfico
+ */
+export interface ChartFilter<TParams extends AnyParams> {
+  /** Key del parámetro que se pasará al fetch */
+  key: keyof TParams & string;
+  /** Label visible del filtro */
+  label: string;
+  /** Tipo de control */
+  type: "select" | "number";
+  /** Opciones para select */
+  options?: ChartFilterOption[];
+  /** Valor por defecto */
+  defaultValue: string | number;
+  /** Min para inputs numéricos */
+  min?: number;
+  /** Max para inputs numéricos */
+  max?: number;
+}
+
+/**
+ * Resultado de una función de fetch de datos
+ */
+export interface ChartFetchResult<T> {
+  data: T[];
+  /** Datos adicionales para mostrar (ej: totales) */
+  meta?: Record<string, unknown>;
+}

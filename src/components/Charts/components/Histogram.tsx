@@ -10,7 +10,12 @@ import {
   Cell,
 } from "recharts";
 import type { HistogramProps, ChartDataItem } from "../core/types";
-import { GRID_CONFIG, AXIS_CONFIG, getChartColor } from "../core/constants";
+import {
+  GRID_CONFIG,
+  AXIS_CONFIG,
+  getChartColor,
+  DEFAULT_CHART_HEIGHT,
+} from "../core/constants";
 import { getTickFormatter, calculateTickInterval } from "../core/formatters";
 import { COLORS } from "../../../common";
 
@@ -22,7 +27,7 @@ export default function Histogram<T extends ChartDataItem = ChartDataItem>({
   xAxisKey,
   series,
   layout = "horizontal",
-  height = 300,
+  height = DEFAULT_CHART_HEIGHT,
   colors,
   showTooltip = true,
   showLegend = false,

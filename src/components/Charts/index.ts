@@ -22,6 +22,9 @@ export type {
   AreaChartConfig,
   PieChartConfig,
   RadarChartConfig,
+  ChartFilter,
+  ChartFilterOption,
+  ChartFetchResult,
 } from "./core";
 
 // Constantes y utilidades
