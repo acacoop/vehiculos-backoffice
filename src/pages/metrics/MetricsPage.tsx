@@ -22,6 +22,7 @@ import {
   sumTimelineCount,
 } from "./utils";
 import { INITIAL_METRICS_STATE, type MetricsState } from "./types";
+import { COLORS } from "../../common";
 import "./MetricsPage.css";
 
 export default function MetricsPage() {
@@ -56,10 +57,10 @@ export default function MetricsPage() {
           responsiblesMetrics,
         ] = await Promise.all([
           getVehicleCount(),
-          getVehiclesByKilometers({ bucketSize: 20000, maxBuckets: 8 }),
-          getVehiclesByAge({ bucketSize: 2, maxBuckets: 10 }),
-          getVehiclesByFuelType(),
-          getVehiclesByBrand(),
+          getVehiclesByKilometers({ bucketSize: 20000, maxBuckets: 7 }),
+          getVehiclesByAge({ bucketSize: 1, maxBuckets: 10 }),
+          getVehiclesByFuelType({ limit: 10 }),
+          getVehiclesByBrand({ limit: 10 }),
           getReservationsTimeline({ months: 12 }),
           getMaintenanceRecordsTimeline({ months: 12 }),
           getQuarterlyControlsStatus({ periods: 8 }),
@@ -107,11 +108,8 @@ export default function MetricsPage() {
   const chartData = useMemo(() => {
     const kilometersData = prepareBucketData(metrics.vehiclesByKilometers);
     const ageData = prepareBucketData(metrics.vehiclesByAge);
-    const brandData = prepareDistributionData(metrics.vehiclesByBrand, 4);
-    const fuelTypeData = prepareDistributionData(
-      metrics.vehiclesByFuelType,
-      10,
-    );
+    const brandData = prepareDistributionData(metrics.vehiclesByBrand);
+    const fuelTypeData = prepareDistributionData(metrics.vehiclesByFuelType);
     const reservationsData = prepareTimelineData(metrics.reservationsTimeline);
     const maintenanceData = prepareTimelineData(metrics.maintenanceTimeline);
     const driversData = prepareTimelineData(metrics.driversMetrics);
@@ -173,11 +171,13 @@ export default function MetricsPage() {
                 <b>{chartData.totalVehicles}</b> vehículos totales
               </span>
             }
-            type="bar"
+            type="histogram"
+            direction="vertical"
             data={chartData.kilometersData}
             config={{
               xAxisKey: "label",
               series: [{ dataKey: "count", name: "Vehículos" }],
+              specialCategories: ["Sin registro"],
             }}
             onElementClick={handleKilometersClick}
           />
@@ -186,7 +186,8 @@ export default function MetricsPage() {
             title="Vehículos por Antigüedad"
             subtitle="Click en una barra para ver vehículos"
             footer={<span>Agrupados por años de antigüedad</span>}
-            type="bar"
+            type="histogram"
+            direction="vertical"
             data={chartData.ageData}
             config={{
               xAxisKey: "label",
@@ -199,13 +200,12 @@ export default function MetricsPage() {
             title="Vehículos por Marca"
             subtitle="Click para ver vehículos de la marca"
             footer={<span>Distribución por marca</span>}
-            type="pie"
+            type="bar"
             data={chartData.brandData}
             config={{
-              nameKey: "name",
-              dataKey: "count",
-              outerRadius: 70,
-              showLabels: true,
+              xAxisKey: "name",
+              series: [{ dataKey: "count", name: "Vehículos" }],
+              xAxisLabelRotation: -45,
             }}
             onElementClick={handleBrandClick}
           />
@@ -219,7 +219,7 @@ export default function MetricsPage() {
             config={{
               nameKey: "name",
               dataKey: "count",
-              outerRadius: 70,
+              outerRadius: 90,
               showLabels: true,
             }}
             onElementClick={handleFuelTypeClick}
@@ -285,19 +285,23 @@ export default function MetricsPage() {
                   {
                     dataKey: "aprobados",
                     name: "Aprobados",
-                    color: "#43A047",
+                    color: COLORS.success,
                   },
                   {
                     dataKey: "pendientes",
                     name: "Pendientes",
-                    color: "#FB8C00",
+                    color: COLORS.warning,
                   },
                   {
                     dataKey: "rechazados",
                     name: "Rechazados",
-                    color: "#E53935",
+                    color: COLORS.error,
                   },
-                  { dataKey: "vencidos", name: "Vencidos", color: "#9E9E9E" },
+                  {
+                    dataKey: "vencidos",
+                    name: "Vencidos",
+                    color: COLORS.default,
+                  },
                 ],
                 showLegend: true,
               }}

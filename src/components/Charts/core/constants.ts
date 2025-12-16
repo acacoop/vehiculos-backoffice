@@ -25,9 +25,9 @@ export function getChartColor(index: number, customColors?: string[]): string {
  * Configuraciones comunes para ejes
  */
 export const AXIS_CONFIG = {
-  stroke: "#888",
+  stroke: COLORS.textMuted,
   tickLine: false,
-  axisLine: { stroke: "#e0e0e0" },
+  axisLine: { stroke: COLORS.border },
 } as const;
 
 /**
@@ -35,7 +35,7 @@ export const AXIS_CONFIG = {
  */
 export const GRID_CONFIG = {
   strokeDasharray: "3 3",
-  stroke: "#e0e0e0",
+  stroke: COLORS.border,
 } as const;
 
 /**

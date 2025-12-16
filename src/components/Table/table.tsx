@@ -450,12 +450,12 @@ export function Table<
           localeText={localeText}
           style={{ flex: hasRows ? 1 : undefined }}
           sx={{
-            backgroundColor: "#f2f2f2",
+            backgroundColor: COLORS.background,
             "& .MuiDataGrid-row:nth-of-type(even)": {
-              backgroundColor: "#f2f2f2",
+              backgroundColor: COLORS.background,
             },
             "& .MuiDataGrid-row:nth-of-type(odd)": {
-              backgroundColor: "#ffffff",
+              backgroundColor: COLORS.white,
             },
             borderRadius: 5,
             ...(hasRows && { height: "100%" }),

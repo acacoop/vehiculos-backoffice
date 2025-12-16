@@ -3,13 +3,7 @@ import type { CSSProperties } from "react";
 /**
  * Tipos de gráficos disponibles
  */
-export type ChartType =
-  | "bar"
-  | "line"
-  | "area"
-  | "pie"
-  | "radar"
-  | "horizontalBar";
+export type ChartType = "bar" | "line" | "area" | "pie" | "radar" | "histogram";
 
 /**
  * Datos base para cualquier gráfico
@@ -84,6 +78,22 @@ export interface BarChartProps<T = ChartDataItem> extends AxisChartProps<T> {
   maxXAxisLabels?: number;
   /** Formato de las etiquetas del eje X (auto detecta el formato) */
   xAxisFormat?: XAxisFormat;
+  /** Rotación de las etiquetas del eje X en grados (0 = horizontal, -45 = diagonal, -90 = vertical) */
+  xAxisLabelRotation?: number;
+}
+
+/**
+ * Props para histograma (barras pegadas para distribuciones)
+ */
+export interface HistogramProps<T = ChartDataItem> extends AxisChartProps<T> {
+  /** Máximo de etiquetas en el eje X */
+  maxXAxisLabels?: number;
+  /** Formato de las etiquetas del eje X */
+  xAxisFormat?: XAxisFormat;
+  /** Categorías especiales que se muestran con color gris (ej: "Sin registro") */
+  specialCategories?: string[];
+  /** Rotación de las etiquetas del eje X en grados (0 = horizontal, -45 = diagonal, -90 = vertical) */
+  xAxisLabelRotation?: number;
 }
 
 /**
@@ -163,6 +173,10 @@ export interface RadarChartProps<T = ChartDataItem> extends BaseChartProps<T> {
  */
 export type BarChartConfig<T = ChartDataItem> = Omit<
   BarChartProps<T>,
+  "data" | "onElementClick"
+>;
+export type HistogramConfig<T = ChartDataItem> = Omit<
+  HistogramProps<T>,
   "data" | "onElementClick"
 >;
 export type LineChartConfig<T = ChartDataItem> = Omit<

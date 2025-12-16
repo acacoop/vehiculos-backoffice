@@ -12,7 +12,7 @@ import type {
 
 /** Transforma buckets del API a datos para gráfico */
 export function prepareBucketData(
-  buckets: MetricsState["vehiclesByKilometers"]
+  buckets: MetricsState["vehiclesByKilometers"],
 ): BucketChartData[] {
   return (
     buckets?.buckets.map((b) => ({
@@ -27,36 +27,21 @@ export function prepareBucketData(
 /** Transforma distribución del API a datos para gráfico Distribución por marca */
 export function prepareDistributionData(
   distribution: MetricsState["vehiclesByBrand"],
-  topN: number = 4
 ): DistributionChartData[] {
-  const allData: DistributionChartData[] =
+  return (
     distribution?.distribution.map((d) => ({
       id: d.id,
       name: d.name,
       count: d.count,
-    })) ?? [];
-
-  if (allData.length <= topN) return allData;
-
-  const sorted = [...allData].sort((a, b) => b.count - a.count);
-  const topItems = sorted.slice(0, topN);
-  const otherItems = sorted.slice(topN);
-
-  return [
-    ...topItems,
-    {
-      id: null,
-      name: "Otros",
-      count: otherItems.reduce((sum, item) => sum + item.count, 0),
-    },
-  ];
+    })) ?? []
+  );
 }
 
 /** Transforma timeline del API a datos para gráfico */
 export function prepareTimelineData(
   timeline:
     | MetricsState["reservationsTimeline"]
-    | MetricsState["driversMetrics"]
+    | MetricsState["driversMetrics"],
 ): TimelineChartData[] {
   if (!timeline) return [];
 
@@ -69,7 +54,7 @@ export function prepareTimelineData(
 
 /** Transforma controles trimestrales del API a datos para gráfico */
 export function prepareQuarterlyControlsData(
-  controls: MetricsState["quarterlyControls"]
+  controls: MetricsState["quarterlyControls"],
 ): QuarterlyControlChartData[] {
   return (
     controls?.metrics.map((q) => ({

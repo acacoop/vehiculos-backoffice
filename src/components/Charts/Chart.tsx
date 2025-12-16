@@ -7,6 +7,7 @@ import type {
   AreaChartConfig,
   PieChartConfig,
   RadarChartConfig,
+  HistogramConfig,
 } from "./core/types";
 import {
   BarChart,
@@ -14,6 +15,7 @@ import {
   AreaChart,
   PieChart,
   RadarChart,
+  Histogram,
 } from "./components";
 import "./styles/Charts.css";
 
@@ -52,15 +54,8 @@ interface BarChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
   type: "bar";
   data: T[];
   config: BarChartConfig<T>;
-  onElementClick?: (event: ChartClickEvent<T>) => void;
-}
-
-interface HorizontalBarChartSpecificProps<
-  T extends ChartDataItem = ChartDataItem,
-> {
-  type: "horizontalBar";
-  data: T[];
-  config: BarChartConfig<T>;
+  /** Dirección del bar chart: horizontal (barras verticales) o vertical (barras horizontales) */
+  direction?: "horizontal" | "vertical";
   onElementClick?: (event: ChartClickEvent<T>) => void;
 }
 
@@ -92,14 +87,23 @@ interface RadarChartSpecificProps<T extends ChartDataItem = ChartDataItem> {
   onElementClick?: (event: ChartClickEvent<T>) => void;
 }
 
+interface HistogramSpecificProps<T extends ChartDataItem = ChartDataItem> {
+  type: "histogram";
+  data: T[];
+  config: HistogramConfig<T>;
+  /** Dirección del histograma: horizontal (barras verticales) o vertical (barras horizontales) */
+  direction?: "horizontal" | "vertical";
+  onElementClick?: (event: ChartClickEvent<T>) => void;
+}
+
 // Union type for chart-specific props
 type ChartSpecificProps<T extends ChartDataItem = ChartDataItem> =
   | BarChartSpecificProps<T>
-  | HorizontalBarChartSpecificProps<T>
   | LineChartSpecificProps<T>
   | AreaChartSpecificProps<T>
   | PieChartSpecificProps<T>
-  | RadarChartSpecificProps<T>;
+  | RadarChartSpecificProps<T>
+  | HistogramSpecificProps<T>;
 
 export type ChartProps<T extends ChartDataItem = ChartDataItem> =
   BaseChartCardProps & ChartSpecificProps<T>;
@@ -129,6 +133,14 @@ export default function Chart<T extends ChartDataItem = ChartDataItem>(
     config,
     onElementClick,
   } = props;
+
+  // Extract direction for bar and histogram (default: horizontal)
+  const direction =
+    type === "histogram"
+      ? (props as HistogramSpecificProps<T>).direction
+      : type === "bar"
+      ? (props as BarChartSpecificProps<T>).direction
+      : undefined;
 
   const containerStyle: CSSProperties = { ...style };
   if (width) containerStyle.width = width;
@@ -181,15 +193,10 @@ export default function Chart<T extends ChartDataItem = ChartDataItem>(
     switch (type) {
       case "bar":
         return (
-          <BarChart<T> {...baseProps} {...(config as BarChartConfig<T>)} />
-        );
-
-      case "horizontalBar":
-        return (
           <BarChart<T>
             {...baseProps}
             {...(config as BarChartConfig<T>)}
-            layout="vertical"
+            layout={direction === "vertical" ? "vertical" : "horizontal"}
           />
         );
 
@@ -211,6 +218,15 @@ export default function Chart<T extends ChartDataItem = ChartDataItem>(
       case "radar":
         return (
           <RadarChart<T> {...baseProps} {...(config as RadarChartConfig<T>)} />
+        );
+
+      case "histogram":
+        return (
+          <Histogram<T>
+            {...baseProps}
+            {...(config as HistogramConfig<T>)}
+            layout={direction === "vertical" ? "vertical" : "horizontal"}
+          />
         );
 
       default:
