@@ -39,8 +39,8 @@ export default function MaintenanceRequirementPage() {
   const handleInitialData = useCallback(
     (data: Partial<MaintenanceRequirement>) => {
       setFormState(data);
-      setUseKilometers(!!data.kilometerInterval);
-      setUseDays(!!data.dayInterval);
+      setUseKilometers(!!data.kilometersFrequency);
+      setUseDays(!!data.daysFrequency);
       setIsIndefinite(!data.endDate);
     },
     [],
