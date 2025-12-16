@@ -25,4 +25,5 @@ export const COLORS = {
   background: "#f5f5f5",
   backgroundHover: "#e8e8e8",
   white: "#fff",
+  black: "#3d3c3c",
 } as const;

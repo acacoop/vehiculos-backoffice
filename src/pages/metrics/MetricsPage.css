@@ -1,9 +1,49 @@
 .metrics-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-top: 120px;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 32px;
+  min-height: 100vh;
+  padding: 0 20px 40px;
+  width: 1200px;
+}
+
+.header-metrics {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-primary);
+  padding-bottom: 20px;
+  width: 100%;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.metrics-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary, #333);
+  margin: 0;
+}
+
+.metrics-error {
+  background: var(--color-error);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  text-align: center;
 }
 
 .metrics-charts {
@@ -11,13 +51,6 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  max-width: 900px;
+  max-width: 1200px;
   gap: 20px;
-}
-
-.title {
-  font-size: 34px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: 20px;
 }

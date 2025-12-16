@@ -24,11 +24,6 @@ const columns: TableColumn<Assignment>[] = [
     },
   },
   {
-    field: "vehicle.year",
-    headerName: "Año",
-    minWidth: 110,
-  },
-  {
     field: "startDate",
     headerName: "Fecha Inicio",
     minWidth: 130,
