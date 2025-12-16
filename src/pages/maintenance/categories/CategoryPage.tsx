@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table/table";
 import {
@@ -42,7 +42,6 @@ const maintenanceColumns: TableColumn<Maintenance>[] = [
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const isNew = location.pathname.endsWith("/new");
@@ -58,6 +57,7 @@ export default function CategoryPage() {
     executeSave,
     showError,
     goTo,
+    goToWithData,
     enableEdit,
     cancelEdit,
     setOriginalData,
@@ -192,7 +192,7 @@ export default function CategoryPage() {
             addButton: {
               text: "+ Nuevo Mantenimiento",
               onClick: () =>
-                navigate(`/maintenance/items/new?categoryId=${id}`),
+                goToWithData("/maintenance/items/new", { category: formState }),
             },
           }}
           actionColumn={{

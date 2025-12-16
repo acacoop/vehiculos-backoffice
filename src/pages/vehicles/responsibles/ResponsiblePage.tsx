@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../../components/Form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
 import {
   createVehicleResponsible,
@@ -29,6 +29,12 @@ export default function ResponsiblePage() {
   // UI-only checkbox state
   const [isIndefinite, setIsIndefinite] = useState(true);
 
+  // Handler for initial data
+  const handleInitialData = useCallback((data: Partial<VehicleResponsible>) => {
+    setFormState(data);
+    setIsIndefinite(!data.endDate);
+  }, []);
+
   const {
     loading,
     saving,
@@ -46,29 +52,17 @@ export default function ResponsiblePage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<VehicleResponsible>>({
     redirectOnSuccess: "/vehicles/responsibles",
     startInViewMode: !isNew,
     scope: "responsible",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<{
-        formState: Partial<VehicleResponsible>;
-        isIndefinite: boolean;
-      }>();
-
-      if (savedFormData) {
-        setFormState(savedFormData.formState);
-        setIsIndefinite(savedFormData.isIndefinite);
-      }
-      return;
-    }
-
-    if (id) {
+    // Only load existing responsible (new entities handled via onInitialData)
+    if (!isNew && id) {
       loadResponsible(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

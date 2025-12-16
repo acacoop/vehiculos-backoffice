@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -57,7 +57,6 @@ const modelColumns: TableColumn<VehicleModel>[] = [
 
 export default function BrandPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
@@ -76,6 +75,7 @@ export default function BrandPage() {
     executeSave,
     showError,
     goTo,
+    goToWithData,
     enableEdit,
     cancelEdit,
     cancelCreate,
@@ -225,7 +225,9 @@ export default function BrandPage() {
                     addButton: {
                       text: "+ Nuevo Modelo",
                       onClick: () =>
-                        navigate(`/vehicles/models/new?brandId=${id}`),
+                        goToWithData("/vehicles/models/new", {
+                          brand: formState,
+                        }),
                     },
                   }}
                   actionColumn={{

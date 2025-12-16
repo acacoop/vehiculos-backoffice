@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -35,6 +35,17 @@ export default function MaintenanceRequirementPage() {
   const [useDays, setUseDays] = useState(false);
   const [isIndefinite, setIsIndefinite] = useState(true);
 
+  // Handler for initial data
+  const handleInitialData = useCallback(
+    (data: Partial<MaintenanceRequirement>) => {
+      setFormState(data);
+      setUseKilometers(!!data.kilometersFrequency);
+      setUseDays(!!data.daysFrequency);
+      setIsIndefinite(!data.endDate);
+    },
+    [],
+  );
+
   const {
     loading,
     saving,
@@ -52,66 +63,50 @@ export default function MaintenanceRequirementPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<MaintenanceRequirement>>({
     redirectOnSuccess: "/maintenance/requirements",
     startInViewMode: !isNew,
     scope: "maintenanceRequirement",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<{
-        formState: Partial<MaintenanceRequirement>;
-        useKilometers: boolean;
-        useDays: boolean;
-        isIndefinite: boolean;
-      }>();
+    // Only load existing requirement (new entities handled via onInitialData)
+    if (!isNew && id) {
+      let cancelled = false;
 
-      if (savedFormData) {
-        setFormState(savedFormData.formState);
-        setUseKilometers(savedFormData.useKilometers);
-        setUseDays(savedFormData.useDays);
-        setIsIndefinite(savedFormData.isIndefinite);
-      }
-      return;
-    }
+      (async () => {
+        await executeLoad(async () => {
+          const response = await getMaintenanceRequirementById(id);
 
-    if (!id) return;
+          if (cancelled) return;
 
-    let cancelled = false;
-
-    (async () => {
-      await executeLoad(async () => {
-        const response = await getMaintenanceRequirementById(id);
-
-        if (cancelled) return;
-
-        if (response.success && response.data) {
-          const data = response.data;
-          setFormState(data);
-          setUseKilometers(
-            !!data.kilometersFrequency && data.kilometersFrequency > 0,
-          );
-          setUseDays(!!data.daysFrequency && data.daysFrequency > 0);
-          setIsIndefinite(!data.endDate);
-          setOriginalData({
-            formState: data,
-            useKilometers:
+          if (response.success && response.data) {
+            const data = response.data;
+            setFormState(data);
+            setUseKilometers(
               !!data.kilometersFrequency && data.kilometersFrequency > 0,
-            useDays: !!data.daysFrequency && data.daysFrequency > 0,
-            isIndefinite: !data.endDate,
-          });
-        } else {
-          showError(response.message || "Error al cargar la asignación");
-        }
-      }, "Error al cargar la asignación");
-    })();
+            );
+            setUseDays(!!data.daysFrequency && data.daysFrequency > 0);
+            setIsIndefinite(!data.endDate);
+            setOriginalData({
+              formState: data,
+              useKilometers:
+                !!data.kilometersFrequency && data.kilometersFrequency > 0,
+              useDays: !!data.daysFrequency && data.daysFrequency > 0,
+              isIndefinite: !data.endDate,
+            });
+          } else {
+            showError(response.message || "Error al cargar la asignación");
+          }
+        }, "Error al cargar la asignación");
+      })();
 
-    return () => {
-      cancelled = true;
-    };
+      return () => {
+        cancelled = true;
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 

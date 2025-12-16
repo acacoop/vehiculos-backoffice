@@ -39,7 +39,6 @@ export default function Sidebar({
         (item) => currentPath === item.to
       );
       if (hasActiveItem) {
-        console.log("Expanding section:", section.title);
         return i;
       }
     }

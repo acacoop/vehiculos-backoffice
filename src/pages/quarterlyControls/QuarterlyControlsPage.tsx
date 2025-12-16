@@ -1,15 +1,39 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../components/Table/table";
 import type {
   QuarterlyControl,
   QuarterlyControlFilterParams,
 } from "../../types/quarterlyControl";
 import { getQuarterlyControls } from "../../services/quarterlyControls";
-import { QUARTER_LABELS, formatDate } from "../../common";
+import {
+  QUARTER_LABELS,
+  QUARTER_OPTIONS,
+  YEAR_OPTIONS,
+  formatDate,
+} from "../../common";
 import { getQuarterlyControlStatus } from "../../common/utils";
 
 export default function QuarterlyControlsPage() {
   const navigate = useNavigate();
+
+  const filterDefinitions: FilterDefinition<QuarterlyControlFilterParams>[] = [
+    {
+      type: "select",
+      field: "year",
+      label: "Año",
+      options: YEAR_OPTIONS,
+    },
+    {
+      type: "select",
+      field: "quarter",
+      label: "Trimestre",
+      options: QUARTER_OPTIONS,
+    },
+  ];
 
   const columns: TableColumn<QuarterlyControl>[] = [
     {
@@ -79,6 +103,9 @@ export default function QuarterlyControlsPage() {
       <Table<QuarterlyControlFilterParams, QuarterlyControl>
         columns={columns}
         getRows={getQuarterlyControls}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         actionColumn={actionColumn}
         search={{
           enabled: true,

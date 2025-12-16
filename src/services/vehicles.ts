@@ -12,6 +12,8 @@ import {
   type ApiFindOptions,
 } from "./common";
 
+export type VehicleFilters = VehicleFilterParams;
+
 export async function getVehicles(
   findOptions?: ApiFindOptions<VehicleFilterParams>
 ): Promise<ServiceResponse<Vehicle[]>> {

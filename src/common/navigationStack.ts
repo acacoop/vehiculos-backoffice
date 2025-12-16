@@ -8,7 +8,8 @@
  * Architecture:
  * - Page stack: tracks the return path chain (for knowing where to go back)
  * - Form data store: preserves form data by route (for restoring state when returning)
- * - Created entity: stores the last created entity for EntitySearch to consume
+ * - Pending form data: data to preload in the destination form (unified for both
+ *   "created entity returns" and "initial data from parent pages")
  */
 
 export interface PageContext {
@@ -30,17 +31,24 @@ export interface StoredFormData<T = unknown> {
   timestamp: number;
 }
 
-/** Data stored when returning from a create flow - just the created entity */
-export interface CreatedEntityData<T = unknown> {
-  /** The created entity object */
-  entity: T;
-  /** The type of entity (e.g., "vehicle", "model", "brand") */
-  entityType: string;
+/**
+ * Pending form data to be consumed by the destination page.
+ * Used for both:
+ * - Created entities returning from a nested create flow
+ * - Initial data when navigating to create with preloaded entities
+ */
+export interface PendingFormData<T = unknown> {
+  /** Partial form data to merge into the destination form */
+  data: T;
+  /** Target route - only consumed if current route matches */
+  targetRoute: string;
+  /** Timestamp for cleanup */
+  timestamp: number;
 }
 
 const STACK_KEY = "page_stack";
 const FORM_DATA_KEY = "form_data_store";
-const CREATED_ENTITY_KEY = "created_entity";
+const PENDING_DATA_KEY = "pending_form_data";
 const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
 
 /**
@@ -108,24 +116,26 @@ function saveFormDataStore(store: Record<string, StoredFormData>): void {
 }
 
 /**
- * Push a new page context onto the stack and save form data for the current route
+ * Push a new page context onto the stack and optionally save form data for the current route
  * @param returnPath - The path to return to after the action (current page)
- * @param formData - The form data to preserve for the current page
+ * @param formData - Optional form data to preserve for the current page
  * @param scope - Optional scope/entity type identifier
  */
-export function pushPageContext<T>(
+export function pushPageContext<T = unknown>(
   returnPath: string,
-  formData: T,
+  formData?: T,
   scope?: string,
 ): void {
-  // Save form data for this route
-  const formStore = getFormDataStore();
-  formStore[returnPath] = {
-    data: formData,
-    scope,
-    timestamp: Date.now(),
-  };
-  saveFormDataStore(formStore);
+  // Save form data for this route only if provided
+  if (formData !== undefined) {
+    const formStore = getFormDataStore();
+    formStore[returnPath] = {
+      data: formData,
+      scope,
+      timestamp: Date.now(),
+    };
+    saveFormDataStore(formStore);
+  }
 
   // Push to stack
   const stack = getStack();
@@ -196,38 +206,85 @@ export function clearFormData(route: string): void {
 export function clearPageStack(): void {
   sessionStorage.removeItem(STACK_KEY);
   sessionStorage.removeItem(FORM_DATA_KEY);
-  sessionStorage.removeItem(CREATED_ENTITY_KEY);
+  sessionStorage.removeItem(PENDING_DATA_KEY);
 }
 
 /**
- * Store the created entity for the destination page to consume
+ * Set pending form data for a target route.
+ * The destination page will consume this data when it initializes.
+ * Overwrites any previous pending data.
+ *
+ * @param targetRoute - The route that should consume this data
+ * @param data - Partial form data to merge (e.g., { vehicle: vehicleEntity })
  */
-export function setCreatedEntity<T>(entity: T, entityType: string): void {
-  const data: CreatedEntityData<T> = { entity, entityType };
-  sessionStorage.setItem(CREATED_ENTITY_KEY, JSON.stringify(data));
+export function setPendingFormData<T>(targetRoute: string, data: T): void {
+  const pending: PendingFormData<T> = {
+    data,
+    targetRoute,
+    timestamp: Date.now(),
+  };
+  sessionStorage.setItem(PENDING_DATA_KEY, JSON.stringify(pending));
 }
 
 /**
- * Consume the created entity only if it matches the expected type
- * Returns the entity if type matches, null otherwise
+ * Consume pending form data if it matches the current route.
+ * Returns the data and clears it from storage.
+ * Returns null if no pending data or route doesn't match.
+ *
+ * @param currentRoute - The current route to match against
  */
-export function consumeCreatedEntity<T = unknown>(
-  expectedEntityType: string,
+export function consumePendingFormData<T = unknown>(
+  currentRoute: string,
 ): T | null {
   try {
-    const data = sessionStorage.getItem(CREATED_ENTITY_KEY);
-    if (!data) return null;
+    const raw = sessionStorage.getItem(PENDING_DATA_KEY);
+    if (!raw) return null;
 
-    const parsed = JSON.parse(data) as CreatedEntityData<unknown>;
+    const pending = JSON.parse(raw) as PendingFormData<unknown>;
 
-    // Only consume if entity type matches
-    if (parsed.entityType !== expectedEntityType) {
+    // Check if expired
+    if (Date.now() - pending.timestamp > MAX_AGE_MS) {
+      sessionStorage.removeItem(PENDING_DATA_KEY);
       return null;
     }
 
-    // Remove after consuming
-    sessionStorage.removeItem(CREATED_ENTITY_KEY);
-    return parsed.entity as T;
+    // Only consume if route matches
+    if (pending.targetRoute !== currentRoute) {
+      return null;
+    }
+
+    // Clear after consuming
+    sessionStorage.removeItem(PENDING_DATA_KEY);
+    return pending.data as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Peek at pending form data without consuming it.
+ * Useful for checking if there's pending data before navigation.
+ */
+export function peekPendingFormData<T = unknown>(
+  targetRoute?: string,
+): T | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_DATA_KEY);
+    if (!raw) return null;
+
+    const pending = JSON.parse(raw) as PendingFormData<unknown>;
+
+    // Check if expired
+    if (Date.now() - pending.timestamp > MAX_AGE_MS) {
+      return null;
+    }
+
+    // If targetRoute specified, check it matches
+    if (targetRoute && pending.targetRoute !== targetRoute) {
+      return null;
+    }
+
+    return pending.data as T;
   } catch {
     return null;
   }
