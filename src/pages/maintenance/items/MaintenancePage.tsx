@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
@@ -25,6 +25,13 @@ export default function MaintenancePage() {
   const [useKilometers, setUseKilometers] = useState(false);
   const [useDays, setUseDays] = useState(false);
 
+  // Handler for initial data
+  const handleInitialData = useCallback((data: Partial<Maintenance>) => {
+    setFormState(data);
+    setUseKilometers(!!data.kilometersFrequency);
+    setUseDays(!!data.daysFrequency);
+  }, []);
+
   const {
     loading,
     saving,
@@ -42,65 +49,51 @@ export default function MaintenancePage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<Maintenance>>({
     redirectOnSuccess: "/maintenance/items",
     startInViewMode: !isNew,
     scope: "maintenance",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<{
-        formState: Partial<Maintenance>;
-        useKilometers: boolean;
-        useDays: boolean;
-      }>();
+    // Only load existing maintenance (new entities handled via onInitialData)
+    if (!isNew && id) {
+      let cancelled = false;
 
-      if (savedFormData) {
-        setFormState(savedFormData.formState);
-        setUseKilometers(savedFormData.useKilometers);
-        setUseDays(savedFormData.useDays);
-      }
-      return;
+      (async () => {
+        await executeLoad(async () => {
+          const response = await getMaintenanceById(id);
+
+          if (cancelled) return;
+
+          if (response.success && response.data) {
+            const hasKm =
+              response.data.kilometersFrequency !== undefined &&
+              response.data.kilometersFrequency > 0;
+            const hasDays =
+              response.data.daysFrequency !== undefined &&
+              response.data.daysFrequency > 0;
+
+            setFormState(response.data);
+            setUseKilometers(hasKm);
+            setUseDays(hasDays);
+            setOriginalData({
+              formState: response.data,
+              useKilometers: hasKm,
+              useDays: hasDays,
+            });
+          } else {
+            showError(response.message || "Error al cargar el mantenimiento");
+          }
+        }, "Error al cargar el mantenimiento");
+      })();
+
+      return () => {
+        cancelled = true;
+      };
     }
-
-    if (!id) return;
-
-    let cancelled = false;
-
-    (async () => {
-      await executeLoad(async () => {
-        const response = await getMaintenanceById(id);
-
-        if (cancelled) return;
-
-        if (response.success && response.data) {
-          const hasKm =
-            response.data.kilometersFrequency !== undefined &&
-            response.data.kilometersFrequency > 0;
-          const hasDays =
-            response.data.daysFrequency !== undefined &&
-            response.data.daysFrequency > 0;
-
-          setFormState(response.data);
-          setUseKilometers(hasKm);
-          setUseDays(hasDays);
-          setOriginalData({
-            formState: response.data,
-            useKilometers: hasKm,
-            useDays: hasDays,
-          });
-        } else {
-          showError(response.message || "Error al cargar el mantenimiento");
-        }
-      }, "Error al cargar el mantenimiento");
-    })();
-
-    return () => {
-      cancelled = true;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 

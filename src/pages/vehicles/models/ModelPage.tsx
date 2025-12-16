@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
@@ -23,6 +23,11 @@ export default function ModelPage() {
   // Main form state (entity data)
   const [formState, setFormState] = useState<Partial<VehicleModel>>({});
 
+  // Handler for initial data
+  const handleInitialData = useCallback((data: Partial<VehicleModel>) => {
+    setFormState(data);
+  }, []);
+
   const {
     loading,
     saving,
@@ -41,27 +46,16 @@ export default function ModelPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
-  } = usePageState({
+  } = usePageState<Partial<VehicleModel>>({
     redirectOnSuccess: "/vehicles/models",
     startInViewMode: !isNew,
     scope: "model",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      // Restore form data + merge any created entity (e.g., brand created in nested flow)
-      const savedFormData = getSavedFormData<Partial<VehicleModel>>({
-        brand: "brand", // If a brand was created, merge it into the "brand" field
-      });
-
-      if (savedFormData) {
-        setFormState(savedFormData);
-      }
-      return;
-    }
-
-    if (id) {
+    // Only load existing model (new entities handled via onInitialData)
+    if (!isNew && id) {
       loadModel(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

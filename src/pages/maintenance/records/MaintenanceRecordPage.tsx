@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
@@ -30,6 +30,11 @@ export default function MaintenanceRecordRegisterPage() {
     date: toInputDate(new Date()),
   });
 
+  // Handler for initial data
+  const handleInitialData = useCallback((data: Partial<MaintenanceRecord>) => {
+    setFormState(data);
+  }, []);
+
   const {
     loading,
     saving,
@@ -47,28 +52,19 @@ export default function MaintenanceRecordRegisterPage() {
     handleDialogConfirm,
     handleDialogCancel,
     closeNotification,
-    getSavedFormData,
     cancelCreate,
-  } = usePageState({
+  } = usePageState<Partial<MaintenanceRecord>>({
     redirectOnSuccess: "/maintenance/records",
     startInViewMode: !isNew,
     scope: "maintenanceRecord",
+    onInitialData: handleInitialData,
   });
 
   useEffect(() => {
-    if (isNew) {
-      const savedFormData = getSavedFormData<Partial<MaintenanceRecord>>();
-
-      if (savedFormData) {
-        setFormState(savedFormData);
-      }
-      return;
+    // Only load existing record (new entities handled via onInitialData)
+    if (!isNew && id) {
+      loadRecord(id);
     }
-
-    if (!id) return;
-
-    loadRecord(id);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
