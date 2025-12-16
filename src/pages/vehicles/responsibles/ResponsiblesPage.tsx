@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../../components/Table/table";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
-import type { VehicleResponsible } from "../../../types/vehicleResponsible";
+import type {
+  VehicleResponsible,
+  VehicleResponsibleFilterParams,
+} from "../../../types/vehicleResponsible";
 
 const columns: TableColumn<VehicleResponsible>[] = [
   { field: "user.cuit", headerName: "CUIT", minWidth: 120 },
@@ -24,12 +31,28 @@ const columns: TableColumn<VehicleResponsible>[] = [
   },
 ];
 
+// Definición de filtros disponibles
+const filterDefinitions: FilterDefinition<VehicleResponsibleFilterParams>[] = [
+  {
+    type: "boolean",
+    field: "active",
+    label: "Estado",
+    trueLabel: "Activo",
+    falseLabel: "Inactivo",
+  },
+  {
+    type: "date",
+    field: "date",
+    label: "Fecha",
+  },
+];
+
 export default function ResponsiblesPage() {
   const navigate = useNavigate();
 
   return (
     <div className="responsibles-page">
-      <Table
+      <Table<VehicleResponsibleFilterParams, VehicleResponsible>
         getRows={getVehicleResponsibles}
         columns={columns}
         header={{
@@ -45,6 +68,9 @@ export default function ResponsiblesPage() {
         search={{
           enabled: true,
           placeholder: "Buscar responsables...",
+        }}
+        filters={{
+          definitions: filterDefinitions,
         }}
         width={1200}
       />

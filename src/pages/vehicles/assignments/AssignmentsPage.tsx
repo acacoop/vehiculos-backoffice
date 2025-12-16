@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../../components/Table/table";
 import { getAssignments } from "../../../services/assignments";
-import type { Assignment } from "../../../types/assignment";
+import type {
+  Assignment,
+  AssignmentFilterParams,
+} from "../../../types/assignment";
 import { formatDate } from "../../../common/date";
 import { COLORS } from "../../../common/colors";
 
@@ -50,14 +57,33 @@ const columns: TableColumn<Assignment>[] = [
   },
 ];
 
+// Definición de filtros disponibles
+const filterDefinitions: FilterDefinition<AssignmentFilterParams>[] = [
+  {
+    type: "boolean",
+    field: "active",
+    label: "Estado",
+    trueLabel: "Activa",
+    falseLabel: "Finalizada",
+  },
+  {
+    type: "date",
+    field: "date",
+    label: "Fecha",
+  },
+];
+
 export default function AssignmentsPage() {
   const navigate = useNavigate();
 
   return (
     <div className="container">
-      <Table
+      <Table<AssignmentFilterParams, Assignment>
         getRows={getAssignments}
         columns={columns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         header={{
           title: "Gestión de Asignaciones",
           addButton: {

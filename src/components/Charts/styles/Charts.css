@@ -112,38 +112,40 @@
 .chart-card__filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 8px 12px;
-  background: var(--color-background);
-  border-radius: 8px;
-  align-items: flex-end;
+  gap: 16px;
+  padding: 12px 16px;
+  background-color: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  align-items: center;
 }
 
 .chart-card__filter {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 100px;
+  gap: 4px;
+  min-width: 120px;
 }
 
 .chart-card__filter-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .chart-card__filter-select,
 .chart-card__filter-input {
-  padding: 6px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-primary);
   background: var(--color-white);
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .chart-card__filter-select:hover,
@@ -159,7 +161,7 @@
 }
 
 .chart-card__filter-input {
-  width: 80px;
+  width: 100px;
 }
 
 /* ===========================================

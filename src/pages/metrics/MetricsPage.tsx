@@ -29,7 +29,6 @@ interface KilometersParams {
 
 interface AgeParams {
   bucketSize: number;
-  maxBuckets: number;
 }
 
 interface DistributionParams {
@@ -51,7 +50,7 @@ interface QuarterlyParams {
 const kilometersFilters: ChartFilter<KilometersParams>[] = [
   {
     key: "bucketSize",
-    label: "Rango (km)",
+    label: "Agrupar cada",
     type: "select",
     defaultValue: 20000,
     options: [
@@ -76,7 +75,7 @@ const kilometersFilters: ChartFilter<KilometersParams>[] = [
 const ageFilters: ChartFilter<AgeParams>[] = [
   {
     key: "bucketSize",
-    label: "Rango (años)",
+    label: "Agrupar cada",
     type: "select",
     defaultValue: 1,
     options: [
@@ -85,30 +84,19 @@ const ageFilters: ChartFilter<AgeParams>[] = [
       { value: 5, label: "5 años" },
     ],
   },
-  {
-    key: "maxBuckets",
-    label: "Máx grupos",
-    type: "select",
-    defaultValue: 10,
-    options: [
-      { value: 5, label: "5" },
-      { value: 10, label: "10" },
-      { value: 15, label: "15" },
-    ],
-  },
 ];
 
 const brandFilters: ChartFilter<DistributionParams>[] = [
   {
     key: "limit",
-    label: "Top",
+    label: "Mostrar",
     type: "select",
     defaultValue: 10,
     options: [
-      { value: 5, label: "Top 5" },
-      { value: 10, label: "Top 10" },
-      { value: 15, label: "Top 15" },
-      { value: 20, label: "Top 20" },
+      { value: 5, label: "5 marcas" },
+      { value: 10, label: "10 marcas" },
+      { value: 15, label: "15 marcas" },
+      { value: 20, label: "20 marcas" },
     ],
   },
 ];
@@ -116,12 +104,12 @@ const brandFilters: ChartFilter<DistributionParams>[] = [
 const fuelTypeFilters: ChartFilter<DistributionParams>[] = [
   {
     key: "limit",
-    label: "Top",
+    label: "Mostrar",
     type: "select",
     defaultValue: 10,
     options: [
-      { value: 5, label: "Top 5" },
-      { value: 10, label: "Top 10" },
+      { value: 5, label: "5 tipos" },
+      { value: 10, label: "10 tipos" },
     ],
   },
 ];
@@ -172,7 +160,7 @@ const fetchKilometers = async (params: KilometersParams) => {
 const fetchAge = async (params: AgeParams) => {
   const result = await getVehiclesByAge({
     bucketSize: params.bucketSize,
-    maxBuckets: params.maxBuckets,
+    maxBuckets: 10, // Fijo: mostrar hasta 10 grupos
   });
   const data = result.success ? result.data.buckets : [];
   return { data, meta: {} };

@@ -1,13 +1,48 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../../components/Table/table";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,
 } from "../../../types/maintenanceRecord";
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
+import { getMaintenances } from "../../../services/maintenances";
+import type { Maintenance } from "../../../types/maintenance";
 
 export default function MaintenanceRecordsPage() {
   const navigate = useNavigate();
+  const [maintenanceOptions, setMaintenanceOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
+  // Cargar tipos de mantenimiento para el filtro select
+  useEffect(() => {
+    const loadMaintenances = async () => {
+      const response = await getMaintenances();
+      if (response.success && response.data) {
+        setMaintenanceOptions(
+          response.data.map((m: Maintenance) => ({
+            label: m.name,
+            value: m.id,
+          }))
+        );
+      }
+    };
+    loadMaintenances();
+  }, []);
+
+  const filterDefinitions: FilterDefinition<MaintenanceRecordFilterParams>[] = [
+    {
+      type: "select",
+      field: "maintenanceId",
+      label: "Tipo de Mantenimiento",
+      options: maintenanceOptions,
+    },
+  ];
 
   const columns: TableColumn<MaintenanceRecord>[] = [
     {
@@ -68,6 +103,9 @@ export default function MaintenanceRecordsPage() {
       <Table<MaintenanceRecordFilterParams, MaintenanceRecord>
         getRows={(options) => getMaintenanceRecords(options)}
         columns={columns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         header={{
           title: "Registros de Mantenimiento",
           addButton: {
