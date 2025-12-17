@@ -33,4 +33,5 @@ export interface VehicleFilterParams extends FilterParams {
   fuelType?: string;
   minKilometers?: string;
   maxKilometers?: string;
+  hasNoKilometers?: string;
 }

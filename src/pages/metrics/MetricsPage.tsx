@@ -223,6 +223,7 @@ export default function MetricsPage() {
     handleBrandClick,
     handleFuelTypeClick,
     handleReservationsClick,
+    handleQuarterlyControlsClick,
   } = useMetricsNavigation();
 
   return (
@@ -350,6 +351,7 @@ export default function MetricsPage() {
         <div className="charts-grid">
           <Chart<QuarterlyControlMetric, QuarterlyParams>
             title="Estado de Controles por Trimestre"
+            subtitle="Click para ver controles"
             fullWidth
             footer={<span>Estado por trimestre</span>}
             type="bar"
@@ -381,6 +383,7 @@ export default function MetricsPage() {
               ],
               showLegend: true,
             }}
+            onElementClick={handleQuarterlyControlsClick}
           />
         </div>
       </section>

@@ -8,7 +8,7 @@ import {
 import { Chip } from "@mui/material";
 import { esES } from "@mui/x-data-grid/locales";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { ApiFindOptions } from "../../services/common";
 import type { FilterParams, ServiceResponse } from "../../types/common";
 import {
@@ -614,8 +614,6 @@ interface TableSearch {
 export interface TableFiltersConfig<TFilters extends FilterParams> {
   /** Definiciones de filtros disponibles */
   definitions: FilterDefinition<TFilters>[];
-  /** Valores iniciales de los filtros (opcional) */
-  initialValues?: Partial<TFilters>;
 }
 
 interface TableProps<
@@ -652,6 +650,7 @@ export function Table<
   minHeight,
 }: TableProps<TFilters, T>) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [rows, setRows] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
@@ -663,15 +662,113 @@ export function Table<
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // Serializar searchParams para detectar cambios en la URL
+  const searchParamsKey = searchParams.toString();
+
+  // Leer filtros desde URL search params basándose en las definiciones de filtros
+  const filtersFromUrl = useMemo((): Partial<TFilters> => {
+    if (!filters?.definitions) return {};
+
+    const urlFilters: Partial<TFilters> = {};
+
+    for (const def of filters.definitions) {
+      const paramValue = searchParams.get(String(def.field));
+      if (paramValue) {
+        (urlFilters as Record<string, string>)[String(def.field)] = paramValue;
+      }
+    }
+
+    return urlFilters;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters?.definitions, searchParamsKey]);
+
   // Estado interno de filtros (valores para enviar al backend)
-  const [filterValues, setFilterValues] = useState<Partial<TFilters>>(
-    () => filters?.initialValues || {}
-  );
+  // Inicializar con los filtros de la URL si existen
+  const [filterValues, setFilterValues] = useState<Partial<TFilters>>(() => {
+    if (!filters?.definitions) return {};
+
+    const urlFilters: Partial<TFilters> = {};
+    for (const def of filters.definitions) {
+      const paramValue = searchParams.get(String(def.field));
+      if (paramValue) {
+        (urlFilters as Record<string, string>)[String(def.field)] = paramValue;
+      }
+    }
+    return urlFilters;
+  });
 
   // Labels personalizados para mostrar en los chips (para filtros tipo search)
   const [filterDisplayLabels, setFilterDisplayLabels] = useState<
     Partial<Record<keyof TFilters, string>>
   >({});
+
+  // Referencia para trackear la última URL procesada
+  const lastProcessedUrlKey = useRef<string>(searchParamsKey);
+
+  // Sincronizar filtros cuando cambia la URL (después del mount inicial)
+  useEffect(() => {
+    const syncFiltersFromUrl = async () => {
+      if (!filters?.definitions) return;
+
+      // Evitar procesar la misma URL dos veces
+      if (lastProcessedUrlKey.current === searchParamsKey) return;
+      lastProcessedUrlKey.current = searchParamsKey;
+
+      // Si no hay filtros en la URL, limpiar
+      if (Object.keys(filtersFromUrl).length === 0) {
+        setFilterValues({});
+        setFilterDisplayLabels({});
+        return;
+      }
+
+      // Establecer los valores de los filtros
+      setFilterValues(filtersFromUrl);
+
+      // Resolver labels para filtros tipo search
+      const labelsToResolve: Promise<{
+        field: keyof TFilters;
+        label: string;
+      } | null>[] = [];
+
+      for (const def of filters.definitions) {
+        const paramValue = filtersFromUrl[def.field];
+        if (paramValue && def.type === "search") {
+          // Llamar a searchFn para obtener el label
+          labelsToResolve.push(
+            def
+              .searchFn(String(paramValue))
+              .then((results) => {
+                const match = results.find(
+                  (r) => r.value === String(paramValue)
+                );
+                if (match) {
+                  return { field: def.field, label: match.label };
+                }
+                return null;
+              })
+              .catch(() => null)
+          );
+        }
+      }
+
+      if (labelsToResolve.length > 0) {
+        const resolvedLabels = await Promise.all(labelsToResolve);
+        const newLabels: Partial<Record<keyof TFilters, string>> = {};
+
+        for (const result of resolvedLabels) {
+          if (result) {
+            newLabels[result.field] = result.label;
+          }
+        }
+
+        setFilterDisplayLabels(newLabels);
+      } else {
+        setFilterDisplayLabels({});
+      }
+    };
+
+    syncFiltersFromUrl();
+  }, [filters?.definitions, filtersFromUrl, searchParamsKey]);
 
   const localeText = useMemo(() => {
     if (search?.placeholder) {
