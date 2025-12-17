@@ -150,6 +150,25 @@ const overdueQuarterlyControlsColumns: TableColumn<OverdueQuarterlyControl>[] =
       transform: (value) => `${value} días`,
       color: () => COLORS.error,
     },
+    {
+      field: "pendingItemsCount",
+      headerName: "Estado",
+      minWidth: 130,
+      transform: (value, row) => {
+        if (row.totalItemsCount === 0) return "Sin ítems";
+        const pending = Number(value);
+        const completed = row.totalItemsCount - pending;
+        return `${completed}/${row.totalItemsCount} completados`;
+      },
+      color: (value, row) => {
+        const pending = Number(value);
+        return pending === 0
+          ? COLORS.success
+          : pending === row.totalItemsCount
+          ? COLORS.error
+          : COLORS.warning;
+      },
+    },
   ];
 
 const quarterlyControlsWithErrorsColumns: TableColumn<QuarterlyControlWithErrors>[] =
@@ -320,6 +339,9 @@ export default function RisksPage() {
                 columns={vehiclesWithoutResponsibleColumns}
                 header={{ title: "Vehículos sin responsable asignado" }}
                 search={{ enabled: true, placeholder: "Buscar por patente..." }}
+                actionColumn={{
+                  route: "/vehicles",
+                }}
                 minHeight="400px"
               />
             ),
@@ -338,6 +360,9 @@ export default function RisksPage() {
                   placeholder: "Buscar por mantenimiento...",
                 }}
                 filters={{ definitions: toleranceFilterDefinitions }}
+                actionColumn={{
+                  route: "/maintenance/requirements",
+                }}
                 minHeight="400px"
               />
             ),
@@ -353,6 +378,9 @@ export default function RisksPage() {
                 header={{ title: "Controles trimestrales vencidos" }}
                 search={{ enabled: true, placeholder: "Buscar por patente..." }}
                 filters={{ definitions: toleranceFilterDefinitionsQC }}
+                actionColumn={{
+                  route: "/quarterly-controls",
+                }}
                 minHeight="400px"
               />
             ),
@@ -369,6 +397,9 @@ export default function RisksPage() {
                   title: "Controles trimestrales con ítems rechazados",
                 }}
                 search={{ enabled: true, placeholder: "Buscar por patente..." }}
+                actionColumn={{
+                  route: "/quarterly-controls",
+                }}
                 minHeight="400px"
               />
             ),
@@ -378,7 +409,10 @@ export default function RisksPage() {
             label: "Sin km reciente",
             icon: Gauge,
             table: (
-              <Table<VehiclesWithoutRecentKilometersFilters, VehicleWithoutRecentKilometers>
+              <Table<
+                VehiclesWithoutRecentKilometersFilters,
+                VehicleWithoutRecentKilometers
+              >
                 getRows={(opts) => getVehiclesWithoutRecentKilometers(opts)}
                 columns={vehiclesWithoutRecentKilometersColumns}
                 header={{
@@ -386,6 +420,9 @@ export default function RisksPage() {
                 }}
                 search={{ enabled: true, placeholder: "Buscar por patente..." }}
                 filters={{ definitions: kilometersFilterDefinitions }}
+                actionColumn={{
+                  route: "/vehicles",
+                }}
                 minHeight="400px"
               />
             ),

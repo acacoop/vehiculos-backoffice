@@ -85,7 +85,7 @@ interface FilterDropdownProps<TFilters extends FilterParams> {
   onAddFilter: (
     field: keyof TFilters,
     value: string,
-    displayLabel?: string
+    displayLabel?: string,
   ) => void;
 }
 
@@ -176,7 +176,7 @@ function FilterDropdown<TFilters extends FilterParams>({
     (def) =>
       activeFilters[def.field] === undefined ||
       activeFilters[def.field] === null ||
-      activeFilters[def.field] === ""
+      activeFilters[def.field] === "",
   );
 
   const handleFilterSelect = (filter: FilterDefinition<TFilters>) => {
@@ -224,7 +224,7 @@ function FilterDropdown<TFilters extends FilterParams>({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedSearchIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev
+        prev < searchResults.length - 1 ? prev + 1 : prev,
       );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -436,7 +436,7 @@ function FilterDropdown<TFilters extends FilterParams>({
 }
 
 function createGridColumn<T extends GridValidRowModel>(
-  column: TableColumn<T>
+  column: TableColumn<T>,
 ): GridColDef<T> {
   const baseColumn: GridColDef<T> = {
     field: column.field,
@@ -514,7 +514,7 @@ function createGridColumn<T extends GridValidRowModel>(
     case "map":
       if (!column.map) {
         throw new Error(
-          `Column ${column.field} is type map but no map property provided`
+          `Column ${column.field} is type map but no map property provided`,
         );
       }
       // If color function is provided, use renderCell to apply styling
@@ -618,7 +618,7 @@ export interface TableFiltersConfig<TFilters extends FilterParams> {
 
 interface TableProps<
   TFilters extends FilterParams,
-  T extends GridValidRowModel
+  T extends GridValidRowModel,
 > {
   getRows(findOptions: ApiFindOptions<TFilters>): Promise<ServiceResponse<T[]>>;
   columns: TableColumn<T>[];
@@ -636,7 +636,7 @@ interface TableProps<
 
 export function Table<
   TFilters extends FilterParams,
-  T extends GridValidRowModel
+  T extends GridValidRowModel,
 >({
   getRows,
   columns,
@@ -739,14 +739,14 @@ export function Table<
               .searchFn(String(paramValue))
               .then((results) => {
                 const match = results.find(
-                  (r) => r.value === String(paramValue)
+                  (r) => r.value === String(paramValue),
                 );
                 if (match) {
                   return { field: def.field, label: match.label };
                 }
                 return null;
               })
-              .catch(() => null)
+              .catch(() => null),
           );
         }
       }
@@ -791,7 +791,7 @@ export function Table<
     const handler = setTimeout(() => {
       const trimmedValue = searchTerm.trim();
       setDebouncedSearch((current) =>
-        current === trimmedValue ? current : trimmedValue
+        current === trimmedValue ? current : trimmedValue,
       );
     }, 400);
 
@@ -811,8 +811,8 @@ export function Table<
         const cleanedFilters = filterValues
           ? (Object.fromEntries(
               Object.entries(filterValues).filter(
-                ([, v]) => v !== undefined && v !== null && v !== ""
-              )
+                ([, v]) => v !== undefined && v !== null && v !== "",
+              ),
             ) as TFilters)
           : undefined;
 
@@ -840,7 +840,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled, filterValues]
+    [getRows, search?.enabled, filterValues],
   );
 
   useEffect(() => {
@@ -852,7 +852,7 @@ export function Table<
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
-      search?.enabled ? debouncedSearch : undefined
+      search?.enabled ? debouncedSearch : undefined,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -869,10 +869,10 @@ export function Table<
       setPaginationModel((prev) =>
         prev.page === model.page && prev.pageSize === model.pageSize
           ? prev
-          : model
+          : model,
       );
     },
-    []
+    [],
   );
 
   const handleFilterModelChange = useCallback(
@@ -890,7 +890,7 @@ export function Table<
         setPaginationModel({ ...paginationModel, page: 0 });
       }
     },
-    [search?.enabled, searchTerm, paginationModel]
+    [search?.enabled, searchTerm, paginationModel],
   );
 
   // Build final columns with action column if needed
@@ -997,7 +997,7 @@ export function Table<
         setPaginationModel((prev) => ({ ...prev, page: 0 }));
       }
     },
-    [paginationModel.page]
+    [paginationModel.page],
   );
 
   // Handler para remover un filtro específico
@@ -1018,7 +1018,7 @@ export function Table<
         setPaginationModel((prev) => ({ ...prev, page: 0 }));
       }
     },
-    [paginationModel.page]
+    [paginationModel.page],
   );
 
   // Handler para limpiar todos los filtros

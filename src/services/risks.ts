@@ -52,6 +52,8 @@ export interface OverdueQuarterlyControl {
   quarter: number;
   intendedDeliveryDate: string;
   daysOverdue: number;
+  pendingItemsCount: number;
+  totalItemsCount: number;
 }
 
 export interface QuarterlyControlWithErrors {
