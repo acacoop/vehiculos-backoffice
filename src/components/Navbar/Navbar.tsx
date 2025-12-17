@@ -22,6 +22,7 @@ import {
   ChartBar,
   Menu,
   LogOut,
+  AlertTriangle,
 } from "lucide-react";
 
 function Navbar() {
@@ -103,7 +104,10 @@ function Navbar() {
     },
     {
       title: "Informes",
-      items: [{ icon: ChartBar, label: "Métricas", to: "/metrics" }],
+      items: [
+        { icon: ChartBar, label: "Métricas", to: "/metrics" },
+        { icon: AlertTriangle, label: "Riesgos", to: "/risks" },
+      ],
     },
   ];
 
