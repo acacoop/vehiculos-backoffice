@@ -11,7 +11,7 @@ import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { VehicleModelEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { TableSelector } from "../../../components/TableSelector";
 import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Vehicle } from "../../../types/vehicle";

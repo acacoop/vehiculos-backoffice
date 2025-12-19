@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
 import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 

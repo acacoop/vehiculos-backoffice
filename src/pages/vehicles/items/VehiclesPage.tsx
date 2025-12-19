@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getVehicles } from "../../../services/vehicles";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import { FUEL_TYPE_OPTIONS } from "../../../common";

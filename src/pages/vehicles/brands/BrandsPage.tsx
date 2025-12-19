@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Table } from "../../../components/Table/table";
-import type { TableColumn } from "../../../components/Table/table";
+import { Table } from "../../../components/Table";
+import type { TableColumn } from "../../../components/Table";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 

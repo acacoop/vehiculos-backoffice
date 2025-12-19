@@ -4,7 +4,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,

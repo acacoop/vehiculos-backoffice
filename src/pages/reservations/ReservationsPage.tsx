@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../components/Table/table";
+} from "../../components/Table";
 import { getReservations } from "../../services/reservations";
 import type {
   Reservation,

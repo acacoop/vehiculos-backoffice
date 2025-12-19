@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { TableSelector } from "../../../components/TableSelector";
 import {
   getVehicleModelById,
