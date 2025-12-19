@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../components/Table/table";
+import {
+  Table,
+  type TableColumn,
+  type FilterDefinition,
+} from "../../components/Table";
 import { getReservations } from "../../services/reservations";
-import type { Reservation } from "../../types/reservation";
+import type {
+  Reservation,
+  ReservationFilterParams,
+} from "../../types/reservation";
 
 const columns: TableColumn<Reservation>[] = [
   {
@@ -39,11 +46,27 @@ const columns: TableColumn<Reservation>[] = [
 export default function ReservationsPage() {
   const navigate = useNavigate();
 
+  const filterDefinitions: FilterDefinition<ReservationFilterParams>[] = [
+    {
+      type: "date",
+      field: "startDate",
+      label: "Fecha desde",
+    },
+    {
+      type: "date",
+      field: "endDate",
+      label: "Fecha hasta",
+    },
+  ];
+
   return (
     <div className="container">
-      <Table
+      <Table<ReservationFilterParams, Reservation>
         getRows={getReservations}
         columns={columns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
         header={{
           title: "Reservas",
           addButton: {

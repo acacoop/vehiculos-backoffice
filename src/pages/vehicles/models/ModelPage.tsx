@@ -3,17 +3,64 @@ import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import { Table, type TableColumn } from "../../../components/Table";
+import { TableSelector } from "../../../components/TableSelector";
 import {
   getVehicleModelById,
   createVehicleModel,
   updateVehicleModel,
 } from "../../../services/vehicleModels";
+import { getVehicles } from "../../../services/vehicles";
+import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import { VehicleBrandEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import { VEHICLE_TYPES } from "../../../common/constants";
 import type { VehicleModel } from "../../../types/vehicleModel";
+import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
+import type {
+  MaintenanceRequirement,
+  MaintenanceRequirementFilterParams,
+} from "../../../types/maintenanceRequirement";
+import type { ApiFindOptions } from "../../../services/common";
+import { Car, Wrench } from "lucide-react";
+
+const vehicleColumns: TableColumn<Vehicle>[] = [
+  {
+    field: "licensePlate",
+    headerName: "Patente",
+    minWidth: 120,
+  },
+  {
+    field: "model.brand.name",
+    headerName: "Marca",
+    minWidth: 150,
+  },
+  {
+    field: "year",
+    headerName: "Año",
+    minWidth: 80,
+  },
+];
+
+const maintenanceRequirementColumns: TableColumn<MaintenanceRequirement>[] = [
+  {
+    field: "maintenance.name",
+    headerName: "Mantenimiento",
+    minWidth: 200,
+  },
+  {
+    field: "kilometersFrequency",
+    headerName: "Frecuencia (Km)",
+    minWidth: 130,
+  },
+  {
+    field: "daysFrequency",
+    headerName: "Frecuencia (Días)",
+    minWidth: 130,
+  },
+];
 
 export default function ModelPage() {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +170,28 @@ export default function ModelPage() {
     );
   };
 
+  const getVehiclesByModel = async (
+    findOptions?: ApiFindOptions<VehicleFilterParams>,
+  ) => {
+    const modelFilter: VehicleFilterParams = {
+      ...findOptions?.filters,
+      modelId: id!,
+    };
+
+    return getVehicles({ ...findOptions, filters: modelFilter });
+  };
+
+  const getMaintenanceRequirementsByModel = async (
+    findOptions?: ApiFindOptions<MaintenanceRequirementFilterParams>,
+  ) => {
+    const modelFilter: MaintenanceRequirementFilterParams = {
+      ...findOptions?.filters,
+      modelId: id!,
+    };
+
+    return getMaintenanceRequirements({ ...findOptions, filters: modelFilter });
+  };
+
   if (loading) {
     return <LoadingSpinner message="Cargando modelo..." />;
   }
@@ -189,6 +258,55 @@ export default function ModelPage() {
           entityName: "Modelo",
         }}
       />
+
+      {!isNew && id && (
+        <TableSelector
+          tabs={[
+            {
+              id: "vehicles",
+              label: "Vehículos",
+              icon: Car,
+              table: (
+                <Table
+                  getRows={getVehiclesByModel}
+                  columns={vehicleColumns}
+                  header={{
+                    title: "Vehículos de este Modelo",
+                  }}
+                  actionColumn={{
+                    route: "/vehicles",
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar vehículos...",
+                  }}
+                />
+              ),
+            },
+            {
+              id: "maintenanceRequirements",
+              label: "Mantenimientos Requeridos",
+              icon: Wrench,
+              table: (
+                <Table
+                  getRows={getMaintenanceRequirementsByModel}
+                  columns={maintenanceRequirementColumns}
+                  header={{
+                    title: "Mantenimientos Requeridos de este Modelo",
+                  }}
+                  actionColumn={{
+                    route: "/maintenance/requirements",
+                  }}
+                  search={{
+                    enabled: true,
+                    placeholder: "Buscar mantenimientos...",
+                  }}
+                />
+              ),
+            },
+          ]}
+        />
+      )}
 
       <ConfirmDialog
         open={isDialogOpen}

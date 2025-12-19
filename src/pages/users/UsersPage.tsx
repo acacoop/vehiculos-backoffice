@@ -2,7 +2,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../components/Table/table";
+} from "../../components/Table";
 import { getUsers } from "../../services/users";
 import type { User, UserFilterParams } from "../../types/user";
 

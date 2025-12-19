@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
 import "./TableSelector.css";
 
@@ -18,6 +18,8 @@ export interface TableSelectorProps {
   tabs: TableTab[];
   /** Default selected tab id (optional, defaults to first tab) */
   defaultTab?: string;
+  /** Controlled selected tab id (optional, for external control) */
+  selectedTab?: string;
   /** Callback when tab changes */
   onTabChange?: (tabId: string) => void;
   /** Variant of the selector: 'tabs' for horizontal tabs, 'dropdown' for select dropdown */
@@ -27,13 +29,26 @@ export interface TableSelectorProps {
 export function TableSelector({
   tabs,
   defaultTab,
+  selectedTab,
   onTabChange,
   variant = "tabs",
 }: TableSelectorProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || "");
+  const [internalTab, setInternalTab] = useState(
+    defaultTab || tabs[0]?.id || "",
+  );
+
+  // Use controlled or uncontrolled mode
+  const activeTab = selectedTab !== undefined ? selectedTab : internalTab;
+
+  // Sync internal state when selectedTab changes (controlled mode)
+  useEffect(() => {
+    if (selectedTab !== undefined) {
+      setInternalTab(selectedTab);
+    }
+  }, [selectedTab]);
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
+    setInternalTab(tabId);
     onTabChange?.(tabId);
   };
 

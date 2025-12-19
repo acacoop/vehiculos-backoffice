@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
-import { Table } from "../../components/Table/table";
-import type { TableColumn } from "../../components/Table/table";
+import { Table } from "../../components/Table";
+import type { TableColumn } from "../../components/Table";
 import { TableSelector } from "../../components/TableSelector";
 import Form from "../../components/Form/Form";
 import type { FormSection } from "../../components/Form/Form";

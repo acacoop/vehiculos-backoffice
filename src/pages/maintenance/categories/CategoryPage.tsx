@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import {
   getMaintenanceCategoryById,
   createMaintenanceCategory,

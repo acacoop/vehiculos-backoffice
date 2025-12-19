@@ -11,7 +11,7 @@ import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { VehicleModelEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { TableSelector } from "../../../components/TableSelector";
 import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Vehicle } from "../../../types/vehicle";
@@ -41,6 +41,7 @@ import {
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
+  registrationDate: new Date().toISOString().split("T")[0],
 };
 
 export default function VehiclesPage() {
@@ -130,6 +131,11 @@ export default function VehiclesPage() {
       return;
     }
 
+    if (!vehicle.registrationDate) {
+      showError("La fecha de alta es obligatoria");
+      return;
+    }
+
     const actionText = isNew ? "crear" : "actualizar";
     const statusText = isNew ? "creado" : "actualizado";
 
@@ -144,6 +150,7 @@ export default function VehiclesPage() {
           engineNumber: vehicle.engineNumber || undefined,
           transmission: vehicle.transmission || undefined,
           fuelType: vehicle.fuelType || undefined,
+          registrationDate: vehicle.registrationDate!,
         };
 
         return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
@@ -350,6 +357,16 @@ export default function VehiclesPage() {
           key: "year",
           label: "Año",
           required: true,
+        },
+        {
+          type: "date",
+          value: vehicle.registrationDate,
+          onChange: (value: string) =>
+            setVehicle({ ...vehicle, registrationDate: value }),
+          key: "registrationDate",
+          label: "Fecha de Alta",
+          required: true,
+          span: 2,
         },
       ],
     },

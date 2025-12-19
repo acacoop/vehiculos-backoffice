@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { Table, type TableColumn } from "../../components/Table/table";
+import { Table, type TableColumn } from "../../components/Table";
 import { Form, type FormSection } from "../../components/Form";
 import { usePageState } from "../../hooks";
 import {

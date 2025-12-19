@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./HomePage.css";
 import BentoButton from "../../components/BentoButton/BentoButton";
-import { Users, Car, ClipboardList, Gauge } from "lucide-react";
+import { Users, Car, ClipboardList, Gauge, AlertTriangle } from "lucide-react";
 import IconArgentina from "../../assets/icons/escudo-de-la-rep-argentina.svg";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
@@ -65,6 +65,11 @@ export default function HomePage() {
           icon={Gauge}
           text="Métricas"
           onClick={() => navigate("/metrics")}
+        />
+        <BentoButton
+          icon={AlertTriangle}
+          text="Riesgos"
+          onClick={() => navigate("/risks")}
         />
         <BentoButton
           customIcon={IconArgentina}

@@ -1,0 +1,37 @@
+.risks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 20px 40px;
+  width: 1200px;
+}
+
+.header-risks {
+  display: flex;
+  align-items: center;
+}
+
+.header-risks .title {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .risks-container {
+    width: 100%;
+    max-width: 1200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .risks-container {
+    padding: 0 16px 32px;
+  }
+
+  .header-risks .title {
+    font-size: 28px;
+  }
+}

@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getAssignments } from "../../../services/assignments";
 import type {
   Assignment,
