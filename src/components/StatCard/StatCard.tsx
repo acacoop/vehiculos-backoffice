@@ -1,11 +1,12 @@
 import { type LucideIcon } from "lucide-react";
+import type { RiskSeverity } from "../../services/risks";
 import "./StatCard.css";
 
 export interface StatCardData {
   key: string;
   label: string;
   count: number;
-  severity: "high" | "medium" | "low";
+  severity: RiskSeverity;
   icon: LucideIcon;
   span?: number;
 }

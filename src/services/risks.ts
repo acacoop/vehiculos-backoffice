@@ -5,11 +5,13 @@ import { apiFindItems, generalApiCall, type ApiFindOptions } from "./common";
 // Types from Backend API
 // ============================================
 
+export type RiskSeverity = "high" | "medium" | "low";
+
 export interface RisksSummary {
   key: string;
   label: string;
   count: number;
-  severity: "high" | "medium" | "low";
+  severity: RiskSeverity;
 }
 
 export interface VehicleWithoutResponsible {
