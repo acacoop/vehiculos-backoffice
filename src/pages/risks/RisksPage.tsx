@@ -10,13 +10,13 @@ import {
 import {
   getRisksSummary,
   getVehiclesWithoutResponsible,
-  getOverdueMaintenance,
+  getOverdueMaintenanceVehicles,
   getOverdueQuarterlyControls,
   getQuarterlyControlsWithErrors,
   getVehiclesWithoutRecentKilometers,
   type RisksSummary,
   type VehicleWithoutResponsible,
-  type OverdueMaintenanceRequirement,
+  type OverdueMaintenanceVehicleFlat,
   type OverdueQuarterlyControl,
   type QuarterlyControlWithErrors,
   type VehicleWithoutRecentKilometers,
@@ -81,12 +81,17 @@ const vehiclesWithoutResponsibleColumns: TableColumn<VehicleWithoutResponsible>[
     },
   ];
 
-const overdueMaintenanceColumns: TableColumn<OverdueMaintenanceRequirement>[] =
+const overdueMaintenanceColumns: TableColumn<OverdueMaintenanceVehicleFlat>[] =
   [
+    {
+      field: "vehicleLicensePlate",
+      headerName: "Patente",
+      minWidth: 120,
+    },
     {
       field: "maintenanceName",
       headerName: "Mantenimiento",
-      minWidth: 200,
+      minWidth: 180,
     },
     {
       field: "brandName",
@@ -96,26 +101,41 @@ const overdueMaintenanceColumns: TableColumn<OverdueMaintenanceRequirement>[] =
     {
       field: "modelName",
       headerName: "Modelo",
-      minWidth: 150,
-    },
-    {
-      field: "daysFrequency",
-      headerName: "Frecuencia (días)",
       minWidth: 130,
-      transform: (value) => (value ? `${value} días` : "-"),
     },
     {
-      field: "kilometersFrequency",
-      headerName: "Frecuencia (km)",
-      minWidth: 130,
-      transform: (value) =>
-        value ? `${Number(value).toLocaleString()} km` : "-",
+      field: "daysOverdue",
+      headerName: "Días vencido",
+      minWidth: 110,
+      transform: (value) => {
+        const num = Number(value);
+        return value !== undefined && value !== null && !isNaN(num)
+          ? `${num} días`
+          : "-";
+      },
+      color: (value) => {
+        const num = Number(value);
+        return value !== undefined && value !== null && !isNaN(num)
+          ? COLORS.error
+          : "";
+      },
     },
     {
-      field: "affectedVehiclesCount",
-      headerName: "Vehículos afectados",
-      minWidth: 150,
-      color: () => COLORS.error,
+      field: "kilometersOverdue",
+      headerName: "Km excedidos",
+      minWidth: 120,
+      transform: (value) => {
+        const num = Number(value);
+        return value !== undefined && value !== null && !isNaN(num)
+          ? `${num.toLocaleString()} km`
+          : "-";
+      },
+      color: (value) => {
+        const num = Number(value);
+        return value !== undefined && value !== null && !isNaN(num)
+          ? COLORS.error
+          : "";
+      },
     },
   ];
 
@@ -235,6 +255,7 @@ export default function RisksPage() {
   // Summary state
   const [summary, setSummary] = useState<RisksSummary[]>([]);
   const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryError, setSummaryError] = useState(false);
   const [selectedRisk, setSelectedRisk] = useState<string>(
     "vehicles-without-responsible",
   );
@@ -242,9 +263,12 @@ export default function RisksPage() {
   // Load summary
   const loadSummary = useCallback(async () => {
     setSummaryLoading(true);
+    setSummaryError(false);
     const result = await getRisksSummary();
     if (result.success) {
       setSummary(result.data);
+    } else {
+      setSummaryError(true);
     }
     setSummaryLoading(false);
   }, []);
@@ -253,9 +277,11 @@ export default function RisksPage() {
     void loadSummary();
   }, [loadSummary]);
 
-  // Get count from summary by key
-  const getCount = (key: string) =>
-    summary.find((s) => s.key === key)?.count ?? 0;
+  // Get count from summary by key (show "-" indicator when error via -1)
+  const getCount = (key: string): number => {
+    if (summaryError) return -1;
+    return summary.find((s) => s.key === key)?.count ?? 0;
+  };
   const getSeverity = (key: string) =>
     summary.find((s) => s.key === key)?.severity ?? "low";
 
@@ -351,17 +377,18 @@ export default function RisksPage() {
             label: "Mantenimientos vencidos",
             icon: Wrench,
             table: (
-              <Table<OverdueMaintenanceFilters, OverdueMaintenanceRequirement>
-                getRows={(opts) => getOverdueMaintenance(opts)}
+              <Table<OverdueMaintenanceFilters, OverdueMaintenanceVehicleFlat>
+                getRows={(opts) => getOverdueMaintenanceVehicles(opts)}
                 columns={overdueMaintenanceColumns}
-                header={{ title: "Requerimientos de mantenimiento vencidos" }}
+                header={{ title: "Vehículos con mantenimiento vencido" }}
                 search={{
                   enabled: true,
-                  placeholder: "Buscar por mantenimiento...",
+                  placeholder: "Buscar por patente, mantenimiento...",
                 }}
                 filters={{ definitions: toleranceFilterDefinitions }}
                 actionColumn={{
-                  route: "/maintenance/requirements",
+                  route: "/vehicles",
+                  idField: "vehicleId",
                 }}
                 minHeight="400px"
               />

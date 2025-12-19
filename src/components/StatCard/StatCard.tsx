@@ -18,6 +18,9 @@ export interface StatCardProps {
 export function StatCard({ data, onClick }: StatCardProps) {
   const { label, count, severity, icon: Icon, span } = data;
 
+  // Show "-" when count is -1 (error state)
+  const displayCount = count === -1 ? "-" : count;
+
   return (
     <button
       type="button"
@@ -30,7 +33,7 @@ export function StatCard({ data, onClick }: StatCardProps) {
         <Icon size={24} className="stat-card__icon" />
       </div>
       <div className="stat-card__content">
-        <span className="stat-card__count">{count}</span>
+        <span className="stat-card__count">{displayCount}</span>
         <span className="stat-card__label">{label}</span>
       </div>
     </button>
@@ -51,8 +54,13 @@ export function StatCardsGrid({
   if (loading) {
     return (
       <div className="stat-cards-grid">
-        {cards.map((i) => (
-          <div key={i.key} className="stat-card stat-card--loading">
+        {cards.map((card) => (
+          <div
+            key={card.key}
+            className={`stat-card stat-card--loading ${
+              card.span ? `stat-card--span-${card.span}` : ""
+            }`}
+          >
             <div className="stat-card__skeleton-icon" />
             <div className="stat-card__skeleton-content">
               <div className="stat-card__skeleton-count" />

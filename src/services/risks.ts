@@ -19,9 +19,11 @@ export interface VehicleWithoutResponsible {
   lastResponsibleEndDate?: string;
 }
 
-// Overdue maintenance requirement (grouped by requirement)
-export interface OverdueMaintenanceRequirement {
+// Overdue maintenance vehicle (flat, one row per vehicle-requirement pair)
+export interface OverdueMaintenanceVehicleFlat {
   id: string;
+  vehicleId: string;
+  vehicleLicensePlate: string;
   maintenanceRequirementId: string;
   maintenanceId: string;
   maintenanceName: string;
@@ -30,13 +32,6 @@ export interface OverdueMaintenanceRequirement {
   brandName: string;
   daysFrequency?: number;
   kilometersFrequency?: number;
-  affectedVehiclesCount: number;
-  vehicles: OverdueMaintenanceVehicle[];
-}
-
-export interface OverdueMaintenanceVehicle {
-  vehicleId: string;
-  vehicleLicensePlate: string;
   dueDate?: string;
   dueKilometers?: number;
   currentKilometers?: number;
@@ -146,19 +141,19 @@ export async function getVehiclesWithoutResponsible(
   });
 }
 
-export async function getOverdueMaintenance(
+export async function getOverdueMaintenanceVehicles(
   findOptions?: ApiFindOptions<OverdueMaintenanceFilters>,
-): Promise<ServiceResponse<OverdueMaintenanceRequirement[]>> {
-  return apiFindItems<OverdueMaintenanceRequirement, OverdueMaintenanceFilters>(
+): Promise<ServiceResponse<OverdueMaintenanceVehicleFlat[]>> {
+  return apiFindItems<OverdueMaintenanceVehicleFlat, OverdueMaintenanceFilters>(
     {
-      uri: "risks/overdue-maintenance",
+      uri: "risks/overdue-maintenance-vehicles",
       findOptions,
       paramsConfig: [
         { field: "toleranceDays" },
         { field: "maintenanceId" },
         { field: "modelId" },
       ],
-      errorMessage: "Error al obtener mantenimientos vencidos",
+      errorMessage: "Error al obtener vehículos con mantenimientos vencidos",
     },
   );
 }

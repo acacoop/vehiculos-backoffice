@@ -602,6 +602,7 @@ interface TableHeader {
 interface TableActionColumn<T extends GridValidRowModel> {
   route: string;
   width?: number;
+  idField?: keyof T;
   customRender?: (params: GridRenderCellParams<T>) => React.ReactNode;
 }
 
@@ -923,7 +924,12 @@ export function Table<
               height: "100%",
               justifyContent: "center",
             }}
-            onClick={() => navigate(`${actionColumn.route}/${params.row.id}`)}
+            onClick={() => {
+              const id = actionColumn.idField
+                ? params.row[actionColumn.idField]
+                : params.row.id;
+              navigate(`${actionColumn.route}/${id}`);
+            }}
           >
             <ArrowRight size={20} color={COLORS.primary} />
           </span>
