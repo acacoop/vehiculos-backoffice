@@ -36,12 +36,12 @@ function Navbar() {
       title: "General",
       items: [
         { icon: LayoutDashboard, label: "Dashboard", to: "/home" },
-        { icon: UserIcon, label: "Usuarios", to: "/users" },
-        { icon: Car, label: "Vehículos", to: "/vehicles" },
+        { icon: UserIcon, label: "Empleados", to: "/users" },
+        { icon: Car, label: "Flota de vehículos", to: "/vehicles" },
       ],
     },
     {
-      title: "Vehículos",
+      title: "Gestión de vehículos",
       items: [
         {
           icon: ClipboardList,
