@@ -2,6 +2,7 @@ import type { FilterParams } from "./common";
 import type { User } from "./user";
 import type { Vehicle } from "./vehicle";
 import type { Maintenance } from "./maintenance";
+import type { VehicleKilometersLog } from "./kilometer";
 
 export interface MaintenanceRecord {
   id: string;
@@ -9,7 +10,7 @@ export interface MaintenanceRecord {
   vehicle: Vehicle;
   user: User;
   date: string;
-  kilometers: number;
+  kilometersLog: VehicleKilometersLog;
   notes?: string;
 }
 

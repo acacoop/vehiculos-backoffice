@@ -282,6 +282,14 @@ export default function QuarterlyControlPage() {
                 key: "filledAt",
                 label: "Fecha de completado",
               },
+              {
+                type: "display" as const,
+                value: control!.kilometersLog
+                  ? `${control!.kilometersLog.kilometers} km`
+                  : "No registrado",
+                key: "kilometers",
+                label: "Kilómetros",
+              },
             ],
           },
         ]

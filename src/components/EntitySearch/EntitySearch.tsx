@@ -8,6 +8,7 @@ import type { VehicleModel } from "../../types/vehicleModel";
 import type { Category } from "../../types/category";
 import type { Assignment } from "../../types/assignment";
 import type { QuarterlyControl } from "../../types/quarterlyControl";
+import type { VehicleKilometersLog } from "../../types/kilometer";
 import type { Identifiable } from "../../types/common";
 import { getVehicles } from "../../services/vehicles";
 import { getUsers } from "../../services/users";
@@ -17,7 +18,8 @@ import { getMaintenanceCategories } from "../../services/categories";
 import { getMaintenances } from "../../services/maintenances";
 import { getAssignments } from "../../services/assignments";
 import { getQuarterlyControls } from "../../services/quarterlyControls";
-import { QUARTER_LABELS } from "../../common";
+import { getVehicleKilometersLogs } from "../../services/kilometers";
+import { QUARTER_LABELS, formatDate } from "../../common";
 import { pushPageContext } from "../../common/navigationStack";
 import "./EntitySearch.css";
 
@@ -415,6 +417,16 @@ async function searchQuarterlyControls(
   return response.success ? response.data : [];
 }
 
+async function searchVehicleKilometersLogs(
+  term: string,
+): Promise<VehicleKilometersLog[]> {
+  const response = await getVehicleKilometersLogs({
+    filters: { search: term },
+    pagination: { offset: 0, limit: 10 },
+  });
+  return response.success ? response.data || [] : [];
+}
+
 // =============================================================================
 // Wrapper Components
 // =============================================================================
@@ -741,6 +753,51 @@ export function QuarterlyControlEntitySearch({
       navigateButtonText="Ver checklist"
       getFormData={getFormData}
       contextScope={contextScope}
+    />
+  );
+}
+
+export function VehicleKilometersLogEntitySearch({
+  entity,
+  onEntityChange,
+  disabled = false,
+  enableCreate = false,
+  enableNavigate = false,
+}: EntitySearchWrapperProps<VehicleKilometersLog>) {
+  const dropdownRender = (log: VehicleKilometersLog) => {
+    const vehicleInfo = log.vehicle
+      ? `${log.vehicle.model?.brand?.name || ""} ${
+          log.vehicle.model?.name || ""
+        } - ${log.vehicle.licensePlate}`.trim()
+      : "";
+    const userInfo = log.user
+      ? `${log.user.firstName} ${log.user.lastName}`
+      : "";
+    return `${vehicleInfo} - ${log.kilometers} km - ${formatDate(
+      log.date,
+    )} - ${userInfo}`;
+  };
+
+  return (
+    <EntitySearch<VehicleKilometersLog>
+      entity={entity}
+      onEntityChange={onEntityChange}
+      searchFunction={searchVehicleKilometersLogs}
+      displayFields={[
+        { path: "kilometers", label: "Kilómetros" },
+        { path: "date", label: "Fecha" },
+        {
+          path: "user",
+          label: "Registrado por",
+        },
+      ]}
+      dropdownRender={dropdownRender}
+      placeholder="Buscar registro de kilómetros..."
+      title="Registro de Kilómetros"
+      changeButtonText="Cambiar registro"
+      disabled={disabled}
+      enableCreate={enableCreate}
+      enableNavigate={enableNavigate}
     />
   );
 }

@@ -2,7 +2,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 import {
   createAssignment,
   getAssignmentById,
@@ -123,13 +123,13 @@ export default function VehicleAssignmentPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const startDate = formState.startDate
-      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
-      : inputDateToISO(toInputDate(new Date()));
+      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
+      : inputDateToAPI(toInputDate(new Date()));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta asignación?`,
