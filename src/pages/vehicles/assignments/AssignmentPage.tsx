@@ -24,7 +24,9 @@ export default function VehicleAssignmentPage() {
   const isNew = location.pathname.endsWith("/new");
 
   // Main form state (entity data)
-  const [formState, setFormState] = useState<Partial<Assignment>>({});
+  const [formState, setFormState] = useState<Partial<Assignment>>({
+    startDate: toInputDate(new Date()),
+  });
 
   // UI-only checkbox state
   const [isIndefinite, setIsIndefinite] = useState(true);
