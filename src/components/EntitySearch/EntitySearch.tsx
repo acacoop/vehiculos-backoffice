@@ -762,7 +762,9 @@ export function VehicleKilometersLogEntitySearch({
   onEntityChange,
   disabled = false,
   enableCreate = false,
-  enableNavigate = false,
+  enableNavigate = true,
+  getFormData,
+  contextScope,
 }: EntitySearchWrapperProps<VehicleKilometersLog>) {
   const dropdownRender = (log: VehicleKilometersLog) => {
     const vehicleInfo = log.vehicle
@@ -783,14 +785,7 @@ export function VehicleKilometersLogEntitySearch({
       entity={entity}
       onEntityChange={onEntityChange}
       searchFunction={searchVehicleKilometersLogs}
-      displayFields={[
-        { path: "kilometers", label: "Kilómetros" },
-        { path: "date", label: "Fecha" },
-        {
-          path: "user",
-          label: "Registrado por",
-        },
-      ]}
+      displayFields={[{ path: "kilometers", label: "Kilómetros" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar registro de kilómetros..."
       title="Registro de Kilómetros"
@@ -798,6 +793,10 @@ export function VehicleKilometersLogEntitySearch({
       disabled={disabled}
       enableCreate={enableCreate}
       enableNavigate={enableNavigate}
+      navigateButtonText="Ver registro"
+      route="/vehicles/kilometersLogs"
+      getFormData={getFormData}
+      contextScope={contextScope}
     />
   );
 }

@@ -214,7 +214,6 @@ export default function MaintenanceRecordRegisterPage() {
         />
       ),
     },
-    // Show VehicleKilometersLogEntitySearch in view mode only
     ...(isViewMode && formState.kilometersLog
       ? [
           {
@@ -224,8 +223,6 @@ export default function MaintenanceRecordRegisterPage() {
                 entity={formState.kilometersLog || null}
                 onEntityChange={() => {}}
                 disabled={true}
-                enableCreate={false}
-                enableNavigate={false}
               />
             ),
           },
