@@ -8,6 +8,7 @@ import {
   MaintenanceEntitySearch,
   UserEntitySearch,
   VehicleEntitySearch,
+  VehicleKilometersLogEntitySearch,
 } from "../../../components/EntitySearch/EntitySearch";
 import { usePageState } from "../../../hooks";
 import {
@@ -18,21 +19,29 @@ import {
 } from "../../../services/maintenanceRecords";
 
 import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
-import { inputDateToISO, toInputDate } from "../../../common/date";
+import { inputDateToAPI, toInputDate } from "../../../common/date";
+
+// Extended form state with local kilometers field for editing
+interface FormState extends Partial<MaintenanceRecord> {
+  kilometers?: number;
+}
 
 export default function MaintenanceRecordRegisterPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const isNew = location.pathname.endsWith("/new");
 
-  // Main form state (entity data)
-  const [formState, setFormState] = useState<Partial<MaintenanceRecord>>({
+  // Main form state (entity data with local kilometers field)
+  const [formState, setFormState] = useState<FormState>({
     date: toInputDate(new Date()),
   });
 
-  // Handler for initial data
+  // Handler for initial data - extract kilometers from kilometersLog
   const handleInitialData = useCallback((data: Partial<MaintenanceRecord>) => {
-    setFormState(data);
+    setFormState({
+      ...data,
+      kilometers: data.kilometersLog?.kilometers,
+    });
   }, []);
 
   const {
@@ -73,8 +82,12 @@ export default function MaintenanceRecordRegisterPage() {
       const response = await getMaintenanceRecordById(recordId);
 
       if (response.success && response.data) {
-        setFormState(response.data);
-        setOriginalData(response.data);
+        const formData: FormState = {
+          ...response.data,
+          kilometers: response.data.kilometersLog?.kilometers,
+        };
+        setFormState(formData);
+        setOriginalData(formData);
       } else {
         showError(response.message || "Error al cargar el registro");
       }
@@ -86,7 +99,7 @@ export default function MaintenanceRecordRegisterPage() {
       if (cancelCreate()) return;
       goTo("/maintenance/records");
     } else {
-      const original = cancelEdit<Partial<MaintenanceRecord>>();
+      const original = cancelEdit<FormState>();
       if (original) {
         setFormState(original);
       }
@@ -127,7 +140,7 @@ export default function MaintenanceRecordRegisterPage() {
       maintenanceId: formState.maintenance!.id,
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToISO(toInputDate(new Date(formState.date!))),
+      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
       kilometers: formState.kilometers!,
       notes: formState.notes || "",
     };
@@ -153,6 +166,9 @@ export default function MaintenanceRecordRegisterPage() {
   };
 
   const getFormData = () => formState;
+
+  // Determine if we're in view mode (not new and not editing)
+  const isViewMode = !isNew && !isEditing;
 
   const sections: FormSection[] = [
     {
@@ -198,6 +214,20 @@ export default function MaintenanceRecordRegisterPage() {
         />
       ),
     },
+    ...(isViewMode && formState.kilometersLog
+      ? [
+          {
+            type: "entity" as const,
+            render: () => (
+              <VehicleKilometersLogEntitySearch
+                entity={formState.kilometersLog || null}
+                onEntityChange={() => {}}
+                disabled={true}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       type: "fields",
       title: "Detalles del Registro",
@@ -214,16 +244,21 @@ export default function MaintenanceRecordRegisterPage() {
           label: "Fecha",
           required: true,
         },
-        {
-          type: "number",
-          value: formState.kilometers || 0,
-          onChange: (value: number) =>
-            setFormState((prev) => ({ ...prev, kilometers: value })),
-          key: "kilometers",
-          label: "Kilómetros",
-          required: true,
-          min: 0,
-        },
+        // Show number input only in edit/create mode
+        ...(!isViewMode
+          ? [
+              {
+                type: "number" as const,
+                value: formState.kilometers || 0,
+                onChange: (value: number) =>
+                  setFormState((prev) => ({ ...prev, kilometers: value })),
+                key: "kilometers",
+                label: "Kilómetros",
+                required: true,
+                min: 0,
+              },
+            ]
+          : []),
         {
           type: "textarea",
           value: formState.notes || "",

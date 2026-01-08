@@ -180,17 +180,6 @@ export function inputDateToAPI(dateStr: string): string {
   return dateStr;
 }
 
-/**
- * @deprecated Use inputDateToAPI for date-only values to avoid timezone issues
- * Converts "YYYY-MM-DD" input to ISO string for API requests (date only, time at midnight)
- * @example inputDateToISO("2024-01-15") => "2024-01-15T00:00:00.000Z"
- */
-export function inputDateToISO(dateStr: string): string {
-  // Parse as local to avoid UTC shift
-  const date = parseDate(dateStr);
-  return date?.toISOString() ?? new Date(dateStr).toISOString();
-}
-
 // ============================================================================
 // UTILITIES - Helper functions
 // ============================================================================

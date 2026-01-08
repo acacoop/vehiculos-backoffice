@@ -79,6 +79,12 @@ export default function QuarterlyControlsPage() {
       transform: (value) => (value ? formatDate(value) : "No completado"),
     },
     {
+      field: "kilometersLog.kilometers",
+      headerName: "Kilómetros",
+      flex: 1,
+      transform: (value) => (value ? `${value} km` : "N/A"),
+    },
+    {
       field: "hasFailedItems",
       headerName: "Estado",
       flex: 1,

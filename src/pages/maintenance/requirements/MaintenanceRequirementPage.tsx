@@ -5,7 +5,7 @@ import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 import {
   VehicleModelEntitySearch,
   MaintenanceEntitySearch,
@@ -171,13 +171,13 @@ export default function MaintenanceRequirementPage() {
     }
 
     const startDate = formState.startDate
-      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
-      : inputDateToISO(toInputDate(new Date()));
+      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
+      : inputDateToAPI(toInputDate(new Date()));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
 
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(

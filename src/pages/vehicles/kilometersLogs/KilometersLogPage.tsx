@@ -16,7 +16,7 @@ import {
   deleteVehicleKilometersLog,
 } from "../../../services/kilometers";
 import type { VehicleKilometersLog } from "../../../types/kilometer";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -129,7 +129,7 @@ export default function KilometersLogPage() {
     const payload = {
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToISO(toInputDate(new Date(formState.date!))),
+      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
       kilometers: formState.kilometers!,
     };
 

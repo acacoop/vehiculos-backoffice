@@ -28,7 +28,7 @@ export default function MaintenanceRecordsPage() {
           response.data.map((m: Maintenance) => ({
             label: m.name,
             value: m.id,
-          }))
+          })),
         );
       }
     };
@@ -85,7 +85,7 @@ export default function MaintenanceRecordsPage() {
       type: "date",
     },
     {
-      field: "kilometers",
+      field: "kilometersLog.kilometers",
       headerName: "Kilómetros",
       minWidth: 130,
       transform: (value) => (value ? `${value} km` : "N/A"),
