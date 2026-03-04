@@ -20,9 +20,9 @@ export default function CategoriesPage() {
         getRows={getMaintenanceCategories}
         columns={columns}
         header={{
-          title: "Categorías de Mantenimiento",
+          title: "Categorías de mantenimiento",
           addButton: {
-            text: "+ Nueva Categoría",
+            text: "+ Nueva categoría",
             onClick: () => navigate("/maintenance/categories/new"),
           },
         }}

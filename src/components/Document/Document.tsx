@@ -26,7 +26,7 @@ export default function Document({
   const [showForm, setShowForm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentItem | null>(
-    null
+    null,
   );
   const [newTitle, setNewTitle] = useState("");
   const [newExpirationDate, setNewExpirationDate] = useState("");
@@ -60,7 +60,7 @@ export default function Document({
     const today = new Date();
     const expDate = new Date(expirationDate);
     const daysDiff = Math.ceil(
-      (expDate.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      (expDate.getTime() - today.getTime()) / (1000 * 3600 * 24),
     );
     return daysDiff > 0 && daysDiff <= 30;
   };
@@ -98,11 +98,11 @@ export default function Document({
         () => {
           setDocuments((prev) => prev.filter((d) => d.id !== docId));
           showSuccess("Documento eliminado exitosamente");
-        }
+        },
       );
     } else {
       showError(
-        "Solo se pueden eliminar documentos vencidos o sin fecha de vencimiento."
+        "Solo se pueden eliminar documentos vencidos o sin fecha de vencimiento.",
       );
     }
   };
@@ -125,8 +125,8 @@ export default function Document({
 
       setDocuments((prev) =>
         prev.map((doc) =>
-          doc.id === editingDocument.id ? updatedDocument : doc
-        )
+          doc.id === editingDocument.id ? updatedDocument : doc,
+        ),
       );
       showSuccess("Documento actualizado exitosamente");
     } else {
@@ -161,7 +161,7 @@ export default function Document({
       setIsClosing(false);
 
       const fileInput = document.getElementById(
-        "file-input"
+        "file-input",
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     }, 195);
@@ -192,8 +192,8 @@ export default function Document({
                       isExpired(doc.expirationDate)
                         ? "expired"
                         : isExpiringSoon(doc.expirationDate)
-                        ? "expiring-soon"
-                        : "valid"
+                          ? "expiring-soon"
+                          : "valid"
                     }`}
                   >
                     Vencimiento: {formatDate(doc.expirationDate)}
@@ -253,11 +253,11 @@ export default function Document({
         >
           <div className="document-form">
             <h3>
-              {editingDocument ? "Editar Documento" : "Agregar Nuevo Documento"}
+              {editingDocument ? "Editar documento" : "Agregar nuevo documento"}
             </h3>
             <form onSubmit={handleSubmit}>
               <div className="document-form-group">
-                <label htmlFor="title">Título del Documento *</label>
+                <label htmlFor="title">Título del documento *</label>
                 <input
                   type="text"
                   id="title"

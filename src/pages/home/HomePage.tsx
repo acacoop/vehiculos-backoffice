@@ -74,9 +74,7 @@ export default function HomePage() {
         <BentoButton
           customIcon={IconArgentina}
           text="DNRPA"
-          onClick={() =>
-            window.open("https://www.dnrpa.gov.ar/portal_dnrpa/", "_blank")
-          }
+          onClick={() => window.open("https://rac.dnrpa.gov.ar/", "_blank")}
         />
       </div>
     </div>

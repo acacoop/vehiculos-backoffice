@@ -470,7 +470,7 @@ export function VehicleEntitySearch({
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar vehículo..."
-      title="Datos del Vehículo"
+      title="Datos del vehículo"
       changeButtonText="Cambiar vehículo"
       disabled={disabled}
       route="/vehicles"
@@ -508,7 +508,7 @@ export function UserEntitySearch({
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar usuario..."
-      title="Datos del Usuario"
+      title="Datos del usuario"
       changeButtonText="Cambiar usuario"
       disabled={disabled}
       route="/users"
@@ -548,7 +548,7 @@ export function VehicleModelEntitySearch({
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar modelo..."
-      title="Datos del Modelo"
+      title="Datos del modelo"
       changeButtonText="Cambiar modelo"
       disabled={disabled}
       route="/vehicles/models"
@@ -581,7 +581,7 @@ export function VehicleBrandEntitySearch({
       displayFields={[{ path: "name", label: "Marca" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar marca..."
-      title="Datos de la Marca"
+      title="Datos de la marca"
       changeButtonText="Cambiar marca"
       disabled={disabled}
       route="/vehicles/brands"
@@ -614,7 +614,7 @@ export function MaintenanceCategoryEntitySearch({
       displayFields={[{ path: "name", label: "Nombre" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar categoría..."
-      title="Datos de la Categoría"
+      title="Datos de la categoría"
       changeButtonText="Cambiar categoría"
       disabled={disabled}
       route="/maintenance/categories"
@@ -650,7 +650,7 @@ export function MaintenanceEntitySearch({
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar mantenimiento..."
-      title="Datos del Mantenimiento"
+      title="Datos del mantenimiento"
       changeButtonText="Cambiar mantenimiento"
       disabled={disabled}
       route="/maintenance/posibles"
@@ -689,12 +689,12 @@ export function AssignmentEntitySearch({
       displayFields={[
         { path: "user.firstName", label: "Usuario" },
         { path: "vehicle.licensePlate", label: "Vehículo" },
-        { path: "startDate", label: "Fecha Inicio" },
-        { path: "endDate", label: "Fecha Fin" },
+        { path: "startDate", label: "Fecha inicio" },
+        { path: "endDate", label: "Fecha fin" },
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar asignación..."
-      title="Datos de la Asignación"
+      title="Datos de la asignación"
       changeButtonText="Cambiar asignación"
       disabled={disabled}
       route="/vehicles/assignments"
@@ -739,18 +739,18 @@ export function QuarterlyControlEntitySearch({
         { path: "vehicle.licensePlate", label: "Vehículo" },
         { path: "year", label: "Año" },
         { path: "quarter", label: "Trimestre" },
-        { path: "intendedDeliveryDate", label: "Fecha Entrega" },
+        { path: "intendedDeliveryDate", label: "Fecha entrega" },
       ]}
       dropdownRender={dropdownRender}
       placeholder="Buscar control trimestral..."
-      title="Datos del Control Trimestral"
+      title="Datos del control trimestral"
       changeButtonText="Cambiar control"
       disabled={disabled}
-      route="/maintenance/checklists"
+      route="/quarterly-controls"
       enableCreate={enableCreate}
       enableNavigate={enableNavigate}
-      createButtonText="Crear checklist"
-      navigateButtonText="Ver checklist"
+      createButtonText="Crear control trimestral"
+      navigateButtonText="Ver control trimestral"
       getFormData={getFormData}
       contextScope={contextScope}
     />
@@ -788,7 +788,7 @@ export function VehicleKilometersLogEntitySearch({
       displayFields={[{ path: "kilometers", label: "Kilómetros" }]}
       dropdownRender={dropdownRender}
       placeholder="Buscar registro de kilómetros..."
-      title="Registro de Kilómetros"
+      title="Registro de kilómetros"
       changeButtonText="Cambiar registro"
       disabled={disabled}
       enableCreate={enableCreate}

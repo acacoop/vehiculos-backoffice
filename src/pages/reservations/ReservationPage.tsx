@@ -191,7 +191,7 @@ export default function ReservationPage() {
     },
     {
       type: "fields",
-      title: "Fechas y Horarios",
+      title: "Fechas y horarios",
       layout: "grid",
       columns: 2,
       fields: [
@@ -263,7 +263,7 @@ export default function ReservationPage() {
   return (
     <div>
       <Form
-        title={isNew ? "Nueva Reserva" : "Editar Reserva"}
+        title={isNew ? "Nueva reserva" : "Editar reserva"}
         sections={sections}
         modeConfig={{
           isNew,

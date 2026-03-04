@@ -39,7 +39,7 @@ export default function MaintenanceRecordsPage() {
     {
       type: "select",
       field: "maintenanceId",
-      label: "Tipo de Mantenimiento",
+      label: "Tipo de mantenimiento",
       options: maintenanceOptions,
     },
   ];
@@ -107,9 +107,9 @@ export default function MaintenanceRecordsPage() {
           definitions: filterDefinitions,
         }}
         header={{
-          title: "Registros de Mantenimiento",
+          title: "Registros de mantenimiento",
           addButton: {
-            text: "+ Nuevo Registro",
+            text: "+ Nuevo registro",
             onClick: () => navigate("/maintenance/records/new"),
           },
         }}

@@ -161,7 +161,7 @@ export default function QuarterlyControlItemPage() {
       ),
     },
     {
-      title: "Información del Item",
+      title: "Información del item",
       type: "fields",
       layout: "vertical",
       fields: [
@@ -224,7 +224,7 @@ export default function QuarterlyControlItemPage() {
   return (
     <div>
       <Form
-        title="Editar Item del Control Trimestral"
+        title="Editar ítem del control trimestral"
         sections={sections}
         modeConfig={{
           isNew: false,

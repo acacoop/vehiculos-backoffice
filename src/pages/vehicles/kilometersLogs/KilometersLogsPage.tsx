@@ -46,7 +46,7 @@ export default function KilometersLogsPage() {
     },
     {
       field: "date",
-      headerName: "Fecha de Registro",
+      headerName: "Fecha de registro",
       minWidth: 180,
       type: "date",
     },
@@ -79,9 +79,9 @@ export default function KilometersLogsPage() {
           definitions: filterDefinitions,
         }}
         header={{
-          title: "Registros de Kilometraje",
+          title: "Registros de kilometraje",
           addButton: {
-            text: "+ Nuevo Registro",
+            text: "+ Nuevo registro",
             onClick: () => navigate("/vehicles/kilometersLogs/new"),
           },
         }}

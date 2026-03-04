@@ -230,7 +230,7 @@ export default function MaintenanceRecordRegisterPage() {
       : []),
     {
       type: "fields",
-      title: "Detalles del Registro",
+      title: "Detalles del registro",
       layout: "vertical",
       fields: [
         {
@@ -281,8 +281,8 @@ export default function MaintenanceRecordRegisterPage() {
       <Form
         title={
           isNew
-            ? "Nuevo Registro de Mantenimiento"
-            : "Editar Registro de Mantenimiento"
+            ? "Nuevo registro de mantenimiento"
+            : "Editar registro de mantenimiento"
         }
         sections={sections}
         modeConfig={{
