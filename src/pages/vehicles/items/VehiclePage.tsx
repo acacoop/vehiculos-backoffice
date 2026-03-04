@@ -11,7 +11,7 @@ import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { VehicleModelEntitySearch } from "../../../components/EntitySearch/EntitySearch";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { TableSelector } from "../../../components/TableSelector";
 import type { VehicleModel } from "../../../types/vehicleModel";
 import type { Vehicle } from "../../../types/vehicle";
@@ -41,6 +41,7 @@ import {
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
+  registrationDate: new Date().toISOString().split("T")[0],
 };
 
 export default function VehiclesPage() {
@@ -130,6 +131,11 @@ export default function VehiclesPage() {
       return;
     }
 
+    if (!vehicle.registrationDate) {
+      showError("La fecha de alta es obligatoria");
+      return;
+    }
+
     const actionText = isNew ? "crear" : "actualizar";
     const statusText = isNew ? "creado" : "actualizado";
 
@@ -144,6 +150,7 @@ export default function VehiclesPage() {
           engineNumber: vehicle.engineNumber || undefined,
           transmission: vehicle.transmission || undefined,
           fuelType: vehicle.fuelType || undefined,
+          registrationDate: vehicle.registrationDate!,
         };
 
         return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
@@ -163,13 +170,13 @@ export default function VehiclesPage() {
     { field: "user.firstName", headerName: "Nombre", minWidth: 150 },
     {
       field: "startDate",
-      headerName: "Fecha Desde",
+      headerName: "Fecha desde",
       minWidth: 130,
       type: "date",
     },
     {
       field: "endDate",
-      headerName: "Fecha Hasta",
+      headerName: "Fecha hasta",
       minWidth: 130,
       type: "enddate",
     },
@@ -351,6 +358,16 @@ export default function VehiclesPage() {
           label: "Año",
           required: true,
         },
+        {
+          type: "date",
+          value: vehicle.registrationDate,
+          onChange: (value: string) =>
+            setVehicle({ ...vehicle, registrationDate: value }),
+          key: "registrationDate",
+          label: "Fecha de Alta",
+          required: true,
+          span: 2,
+        },
       ],
     },
     {
@@ -367,7 +384,7 @@ export default function VehiclesPage() {
     },
     {
       type: "fields",
-      title: "Ficha Técnica",
+      title: "Ficha técnica",
       layout: "grid",
       fields: [
         {
@@ -425,7 +442,7 @@ export default function VehiclesPage() {
   return (
     <div className="container">
       <Form
-        title="Detalle del Vehículo"
+        title="Detalle del vehículo"
         sections={vehicleInfoSections}
         modeConfig={{
           isNew,
@@ -460,7 +477,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Asignaciones",
                     addButton: {
-                      text: "+ Agregar Asignación",
+                      text: "+ Agregar asignación",
                       onClick: () =>
                         goToWithData("/vehicles/assignments/new", { vehicle }),
                     },
@@ -492,7 +509,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Responsables",
                     addButton: {
-                      text: "+ Agregar Responsable",
+                      text: "+ Agregar responsable",
                       onClick: () =>
                         goToWithData("/vehicles/responsibles/new", { vehicle }),
                     },
@@ -525,9 +542,9 @@ export default function VehiclesPage() {
                   }
                   columns={kilometersColumns}
                   header={{
-                    title: "Historial de Kilometraje",
+                    title: "Historial de kilometraje",
                     addButton: {
-                      text: "+ Nuevo Registro",
+                      text: "+ Nuevo registro",
                       onClick: () =>
                         goToWithData("/vehicles/kilometersLogs/new", {
                           vehicle,
@@ -558,9 +575,9 @@ export default function VehiclesPage() {
                   }
                   columns={maintenanceRecordColumns}
                   header={{
-                    title: "Registro de Mantenimientos",
+                    title: "Registro de mantenimientos",
                     addButton: {
-                      text: "+ Nuevo Registro",
+                      text: "+ Nuevo registro",
                       onClick: () =>
                         goToWithData("/maintenance/records/new", { vehicle }),
                     },
@@ -592,7 +609,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Reservas",
                     addButton: {
-                      text: "+ Nueva Reserva",
+                      text: "+ Nueva reserva",
                       onClick: () =>
                         goToWithData("/reservations/new", { vehicle }),
                     },
@@ -622,7 +639,7 @@ export default function VehiclesPage() {
                   }
                   columns={quarterlyControlColumns}
                   header={{
-                    title: "Controles Trimestrales",
+                    title: "Controles trimestrales",
                   }}
                   actionColumn={{
                     route: "/quarterly-controls",

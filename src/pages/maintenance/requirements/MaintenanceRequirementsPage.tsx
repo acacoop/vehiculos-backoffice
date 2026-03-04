@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
 import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
 
@@ -26,7 +26,7 @@ const columns: TableColumn<MaintenanceRequirement>[] = [
   },
   {
     field: "kilometersFrequency",
-    headerName: "Frecuencia KM",
+    headerName: "Frecuencia km",
     minWidth: 120,
     transform: (_value, row) => {
       const freq = row.kilometersFrequency;
@@ -35,7 +35,7 @@ const columns: TableColumn<MaintenanceRequirement>[] = [
   },
   {
     field: "daysFrequency",
-    headerName: "Frecuencia Días",
+    headerName: "Frecuencia días",
     minWidth: 120,
     transform: (_value, row) => {
       const freq = row.daysFrequency;
@@ -53,9 +53,9 @@ export default function MaintenanceRequirementsPage() {
         getRows={getMaintenanceRequirements}
         columns={columns}
         header={{
-          title: "Requerimientos de Mantenimiento",
+          title: "Requerimientos de mantenimiento",
           addButton: {
-            text: "+ Nuevo Requerimiento",
+            text: "+ Nuevo requerimiento",
             onClick: () => navigate("/maintenance/requirements/new"),
           },
         }}

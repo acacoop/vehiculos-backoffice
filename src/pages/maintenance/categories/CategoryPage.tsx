@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import {
   getMaintenanceCategoryById,
   createMaintenanceCategory,
@@ -150,7 +150,7 @@ export default function CategoryPage() {
   const sections: FormSection[] = [
     {
       type: "fields",
-      title: "Información de la Categoría",
+      title: "Información de la categoría",
       layout: "vertical",
       fields: [
         {
@@ -170,7 +170,7 @@ export default function CategoryPage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nueva Categoría" : "Editar Categoría"}
+        title={isNew ? "Nueva categoría" : "Editar categoría"}
         sections={sections}
         modeConfig={{
           isNew,
@@ -188,9 +188,9 @@ export default function CategoryPage() {
           getRows={getMaintenancesByCategory}
           columns={maintenanceColumns}
           header={{
-            title: "Mantenimientos de esta Categoría",
+            title: "Mantenimientos de esta categoría",
             addButton: {
-              text: "+ Nuevo Mantenimiento",
+              text: "+ Nuevo mantenimiento",
               onClick: () =>
                 goToWithData("/maintenance/items/new", { category: formState }),
             },

@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../components/Table/table";
+} from "../../components/Table";
 import type {
   QuarterlyControl,
   QuarterlyControlFilterParams,
@@ -79,6 +79,12 @@ export default function QuarterlyControlsPage() {
       transform: (value) => (value ? formatDate(value) : "No completado"),
     },
     {
+      field: "kilometersLog.kilometers",
+      headerName: "Kilómetros",
+      flex: 1,
+      transform: (value) => (value ? `${value} km` : "N/A"),
+    },
+    {
       field: "hasFailedItems",
       headerName: "Estado",
       flex: 1,
@@ -112,9 +118,9 @@ export default function QuarterlyControlsPage() {
           placeholder: "Buscar controles...",
         }}
         header={{
-          title: "Controles Trimestrales",
+          title: "Controles trimestrales",
           addButton: {
-            text: "+ Nuevo Control",
+            text: "+ Nuevo control",
             onClick: () => navigate("/quarterly-controls/new"),
           },
         }}

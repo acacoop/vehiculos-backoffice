@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getVehicleResponsibles } from "../../../services/vehicleResponsibles";
 import type {
   VehicleResponsible,
@@ -19,13 +19,13 @@ const columns: TableColumn<VehicleResponsible>[] = [
   { field: "vehicle.licensePlate", headerName: "Patente", minWidth: 120 },
   {
     field: "startDate",
-    headerName: "Fecha Inicio",
+    headerName: "Fecha inicio",
     minWidth: 130,
     type: "date",
   },
   {
     field: "endDate",
-    headerName: "Fecha Fin",
+    headerName: "Fecha fin",
     minWidth: 130,
     type: "enddate",
   },
@@ -56,9 +56,9 @@ export default function ResponsiblesPage() {
         getRows={getVehicleResponsibles}
         columns={columns}
         header={{
-          title: "Responsables de Vehículos",
+          title: "Responsables de vehículos",
           addButton: {
-            text: "+ Agregar Responsable",
+            text: "+ Agregar responsable",
             onClick: () => navigate("/vehicles/responsibles/new"),
           },
         }}

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Table } from "../../../components/Table/table";
-import type { TableColumn } from "../../../components/Table/table";
+import { Table } from "../../../components/Table";
+import type { TableColumn } from "../../../components/Table";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 
@@ -21,9 +21,9 @@ export default function BrandsPage() {
         getRows={getVehicleBrands}
         columns={columns}
         header={{
-          title: "Marcas de Vehículos",
+          title: "Marcas de vehículos",
           addButton: {
-            text: "+ Nueva Marca",
+            text: "+ Nueva marca",
             onClick: () => navigate("/vehicles/brands/new"),
           },
         }}

@@ -3,6 +3,26 @@
 // ============================================================================
 
 /**
+ * Parses a date string handling timezone issues.
+ * For date-only strings (YYYY-MM-DD), treats them as local dates to avoid UTC shift.
+ * For full ISO strings with time, parses normally.
+ */
+export function parseDate(value: string | Date): Date | null {
+  if (value instanceof Date) return value;
+
+  // Check if it's a date-only string (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    // Parse as local date by adding time component without Z
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  // For full datetime strings, parse normally
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+/**
  * Formats a date to DD/MM/YYYY
  * @example formatDate("2024-01-15") => "15/01/2024"
  */
@@ -10,8 +30,8 @@ export function formatDate(value: unknown, fallback = "Sin fecha"): string {
   if (!value) return fallback;
 
   try {
-    const date = new Date(value as string | Date);
-    if (isNaN(date.getTime())) return fallback;
+    const date = parseDate(value as string | Date);
+    if (!date) return fallback;
 
     return date.toLocaleDateString("es-AR", {
       year: "numeric",
@@ -31,8 +51,8 @@ export function formatDateTime(value: unknown, fallback = "Sin fecha"): string {
   if (!value) return fallback;
 
   try {
-    const date = new Date(value as string | Date);
-    if (isNaN(date.getTime())) return fallback;
+    const date = parseDate(value as string | Date);
+    if (!date) return fallback;
 
     const dateStr = date.toLocaleDateString("es-AR", {
       year: "numeric",
@@ -72,12 +92,19 @@ export function formatRelativeDate(
   if (!value) return fallback;
 
   try {
-    const date = new Date(value as string | Date);
-    if (isNaN(date.getTime())) return fallback;
+    const date = parseDate(value as string | Date);
+    if (!date) return fallback;
 
     const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Compare dates at midnight to avoid time-of-day issues
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+    const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = dateOnly.getTime() - nowOnly.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return "Hoy";
     if (diffDays === 1) return "Mañana";
@@ -137,11 +164,20 @@ export function dateToISO(date: Date): string {
 }
 
 /**
- * Converts "YYYY-MM-DD" input to ISO string for API requests (date only, time at midnight)
- * @example inputDateToISO("2024-01-15") => "2024-01-15T00:00:00.000Z"
+ * Converts "YYYY-MM-DD" input to date string for API requests.
+ * Returns the date as-is (YYYY-MM-DD format) to avoid timezone conversion issues.
+ * @example inputDateToAPI("2024-01-15") => "2024-01-15"
  */
-export function inputDateToISO(dateStr: string): string {
-  return new Date(dateStr).toISOString();
+export function inputDateToAPI(dateStr: string): string {
+  // Validate format and return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  // If it's a full ISO string, extract just the date part
+  if (dateStr.includes("T")) {
+    return dateStr.split("T")[0];
+  }
+  return dateStr;
 }
 
 // ============================================================================
@@ -157,15 +193,21 @@ export function isActive(
   endDate: string | null | undefined,
 ): boolean {
   const now = new Date();
+  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   if (startDate) {
-    const startDateTime = new Date(startDate);
-    if (startDateTime > now) return false;
+    const start = parseDate(startDate);
+    if (start && start > todayOnly) return false;
   }
 
   if (endDate) {
-    const endDateTime = new Date(endDate);
-    return endDateTime > now;
+    const end = parseDate(endDate);
+    if (end) {
+      // End date is inclusive - add 1 day and compare
+      const endPlusOne = new Date(end);
+      endPlusOne.setDate(endPlusOne.getDate() + 1);
+      return todayOnly < endPlusOne;
+    }
   }
 
   return true;

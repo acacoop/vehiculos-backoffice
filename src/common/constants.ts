@@ -65,13 +65,14 @@ export const YEAR_OPTIONS = Array.from(
   (_, i) => ({
     label: String(2020 + i),
     value: String(2020 + i),
-  })
+  }),
 );
 
 // Estados de control trimestral
 export const QUARTERLY_CONTROL_STATUS = {
   PENDING: "Pendiente",
   APPROVED: "Aprobado",
+  INCOMPLETE: "Incompleto",
   WITH_FAILURES: "Con fallos",
   OVERDUE: "Vencido",
 } as const;

@@ -5,7 +5,7 @@ import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 import {
   VehicleModelEntitySearch,
   MaintenanceEntitySearch,
@@ -171,13 +171,13 @@ export default function MaintenanceRequirementPage() {
     }
 
     const startDate = formState.startDate
-      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
-      : inputDateToISO(toInputDate(new Date()));
+      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
+      : inputDateToAPI(toInputDate(new Date()));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
 
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
@@ -272,7 +272,7 @@ export default function MaintenanceRequirementPage() {
         {
           type: "number",
           key: "kilometersFrequency",
-          label: "Frecuencia en Kilómetros",
+          label: "Frecuencia en kilómetros",
           value: formState.kilometersFrequency || 0,
           onChange: (value) =>
             setFormState((prev) => ({
@@ -293,7 +293,7 @@ export default function MaintenanceRequirementPage() {
         {
           type: "number",
           key: "daysFrequency",
-          label: "Frecuencia en Días",
+          label: "Frecuencia en días",
           value: formState.daysFrequency || 0,
           onChange: (value) =>
             setFormState((prev) => ({
@@ -319,7 +319,7 @@ export default function MaintenanceRequirementPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha Desde",
+          label: "Fecha desde",
           required: true,
         },
         {
@@ -330,7 +330,7 @@ export default function MaintenanceRequirementPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha Hasta",
+          label: "Fecha hasta",
           show: !isIndefinite,
           min: formState.startDate
             ? toInputDate(new Date(formState.startDate))
@@ -348,7 +348,7 @@ export default function MaintenanceRequirementPage() {
     },
     {
       type: "fields",
-      title: "Información Adicional",
+      title: "Información adicional",
       layout: "vertical",
       fields: [
         {
@@ -380,8 +380,8 @@ export default function MaintenanceRequirementPage() {
       <Form
         title={
           isNew
-            ? "Nuevo Requerimiento de Mantenimiento"
-            : "Editar Requerimiento de Mantenimiento"
+            ? "Nuevo requerimiento de mantenimiento"
+            : "Editar requerimiento de mantenimiento"
         }
         sections={sections}
         modeConfig={{

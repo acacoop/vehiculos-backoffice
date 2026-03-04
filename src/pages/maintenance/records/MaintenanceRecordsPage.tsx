@@ -4,7 +4,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import type {
   MaintenanceRecord,
   MaintenanceRecordFilterParams,
@@ -28,7 +28,7 @@ export default function MaintenanceRecordsPage() {
           response.data.map((m: Maintenance) => ({
             label: m.name,
             value: m.id,
-          }))
+          })),
         );
       }
     };
@@ -39,7 +39,7 @@ export default function MaintenanceRecordsPage() {
     {
       type: "select",
       field: "maintenanceId",
-      label: "Tipo de Mantenimiento",
+      label: "Tipo de mantenimiento",
       options: maintenanceOptions,
     },
   ];
@@ -85,7 +85,7 @@ export default function MaintenanceRecordsPage() {
       type: "date",
     },
     {
-      field: "kilometers",
+      field: "kilometersLog.kilometers",
       headerName: "Kilómetros",
       minWidth: 130,
       transform: (value) => (value ? `${value} km` : "N/A"),
@@ -107,9 +107,9 @@ export default function MaintenanceRecordsPage() {
           definitions: filterDefinitions,
         }}
         header={{
-          title: "Registros de Mantenimiento",
+          title: "Registros de mantenimiento",
           addButton: {
-            text: "+ Nuevo Registro",
+            text: "+ Nuevo registro",
             onClick: () => navigate("/maintenance/records/new"),
           },
         }}

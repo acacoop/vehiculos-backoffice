@@ -5,6 +5,7 @@ import type {
   Bucket,
   DistributionItem,
   TimelineItem,
+  QuarterlyControlMetric,
 } from "../../services/metrics";
 
 /**
@@ -15,15 +16,21 @@ export function useMetricsNavigation() {
 
   const handleKilometersClick = useCallback(
     (event: ChartClickEvent<Bucket>) => {
-      const { min, max } = event.data;
+      const { min, max, label } = event.data;
       const params = new URLSearchParams();
-      params.set("minKilometers", min.toString());
-      if (max !== null) {
-        params.set("maxKilometers", max.toString());
+
+      // Si es "Sin registro", no aplicar filtros de kilómetros
+      if (label === "Sin registro") {
+        params.set("hasNoKilometers", "true");
+      } else {
+        params.set("minKilometers", min.toString());
+        if (max !== null) {
+          params.set("maxKilometers", max.toString());
+        }
       }
       navigate(`/vehicles?${params.toString()}`);
     },
-    [navigate],
+    [navigate]
   );
 
   const handleAgeClick = useCallback(
@@ -37,7 +44,7 @@ export function useMetricsNavigation() {
       params.set("maxYear", (currentYear - min).toString());
       navigate(`/vehicles?${params.toString()}`);
     },
-    [navigate],
+    [navigate]
   );
 
   const handleBrandClick = useCallback(
@@ -47,7 +54,7 @@ export function useMetricsNavigation() {
         navigate(`/vehicles?brandId=${id}`);
       }
     },
-    [navigate],
+    [navigate]
   );
 
   const handleFuelTypeClick = useCallback(
@@ -55,16 +62,37 @@ export function useMetricsNavigation() {
       const { name } = event.data;
       navigate(`/vehicles?fuelType=${encodeURIComponent(name)}`);
     },
-    [navigate],
+    [navigate]
   );
 
   const handleReservationsClick = useCallback(
     (event: ChartClickEvent<TimelineItem>) => {
       const { month } = event.data;
       const [year, monthNum] = month.split("-");
-      navigate(`/reservations?year=${year}&month=${monthNum}`);
+
+      // Calcular startDate (primer día del mes) y endDate (último día del mes)
+      const startDate = `${year}-${monthNum}-01`;
+      const lastDay = new Date(parseInt(year), parseInt(monthNum), 0).getDate();
+      const endDate = `${year}-${monthNum}-${lastDay
+        .toString()
+        .padStart(2, "0")}`;
+
+      navigate(`/reservations?startDate=${startDate}&endDate=${endDate}`);
     },
-    [navigate],
+    [navigate]
+  );
+
+  const handleQuarterlyControlsClick = useCallback(
+    (event: ChartClickEvent<QuarterlyControlMetric>) => {
+      const { year, quarter } = event.data;
+      const params = new URLSearchParams();
+
+      params.set("year", year.toString());
+      params.set("quarter", quarter.toString());
+
+      navigate(`/quarterly-controls?${params.toString()}`);
+    },
+    [navigate]
   );
 
   return {
@@ -73,5 +101,6 @@ export function useMetricsNavigation() {
     handleBrandClick,
     handleFuelTypeClick,
     handleReservationsClick,
+    handleQuarterlyControlsClick,
   };
 }

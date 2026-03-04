@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
-import { Table } from "../../components/Table/table";
-import type { TableColumn } from "../../components/Table/table";
+import { Table } from "../../components/Table";
+import type { TableColumn } from "../../components/Table";
 import { TableSelector } from "../../components/TableSelector";
 import Form from "../../components/Form/Form";
 import type { FormSection } from "../../components/Form/Form";
@@ -103,13 +103,13 @@ export default function UserPage() {
     },
     {
       field: "startDate",
-      headerName: "Fecha Inicio",
+      headerName: "Fecha inicio",
       width: 150,
       type: "datetime",
     },
     {
       field: "endDate",
-      headerName: "Fecha Fin",
+      headerName: "Fecha fin",
       width: 150,
       type: "datetime",
     },
@@ -142,7 +142,7 @@ export default function UserPage() {
   const userInfoSections: FormSection[] = [
     {
       type: "fields",
-      title: "Información Personal",
+      title: "Información personal",
       layout: "vertical",
       fields: [
         {
@@ -172,7 +172,7 @@ export default function UserPage() {
         {
           type: "switch",
           key: "active",
-          label: "Estado del Usuario",
+          label: "Estado del usuario",
           value: isActive,
           onChange: handleStatusToggle,
           activeText: "Usuario activo",
@@ -181,7 +181,7 @@ export default function UserPage() {
           confirmMessage: isActive
             ? "¿Estás seguro de que quieres bloquear a este usuario? Perderá acceso al sistema."
             : "¿Estás seguro de que quieres activar a este usuario? Recuperará acceso al sistema.",
-          confirmTitle: isActive ? "Bloquear Usuario" : "Activar Usuario",
+          confirmTitle: isActive ? "Bloquear usuario" : "Activar usuario",
           confirmText: isActive ? "Bloquear" : "Activar",
           cancelText: "Cancelar",
         },
@@ -191,13 +191,49 @@ export default function UserPage() {
 
   return (
     <div className="container">
-      <Form title="Detalle del Usuario" sections={userInfoSections} />
+      <Form title="Detalle del usuario" sections={userInfoSections} />
 
       <TableSelector
         tabs={[
           {
+            id: "responsibles",
+            label: "Vehículos bajo responsabilidad",
+            icon: UserCheck,
+            table: (
+              <Table<VehicleResponsibleFilterParams, Assignment>
+                getRows={(options) =>
+                  getVehicleResponsibles({
+                    ...options,
+                    filters: { ...options?.filters, userId: id },
+                  })
+                }
+                columns={assignmentColumns}
+                header={{
+                  title: "Vehículos bajo responsabilidad",
+                  addButton: {
+                    text: "+ Agregar responsable",
+                    onClick: () =>
+                      userData.id &&
+                      goToWithData("/vehicles/responsibles/new", {
+                        user: userData,
+                      }),
+                  },
+                }}
+                actionColumn={{
+                  route: "/vehicles/responsibles",
+                  width: 80,
+                }}
+                search={{
+                  enabled: true,
+                  placeholder: "Buscar responsables...",
+                }}
+                minHeight="500px"
+              />
+            ),
+          },
+          {
             id: "assignments",
-            label: "Vehículos Asignados",
+            label: "Vehículos asignados",
             icon: Car,
             table: (
               <Table<AssignmentFilterParams, Assignment>
@@ -209,9 +245,9 @@ export default function UserPage() {
                 }
                 columns={assignmentColumns}
                 header={{
-                  title: "Vehículos Asignados",
+                  title: "Vehículos asignados",
                   addButton: {
-                    text: "Agregar Vehículo",
+                    text: "Agregar vehículo",
                     onClick: () =>
                       userData.id &&
                       goToWithData("/vehicles/assignments/new", {
@@ -245,9 +281,9 @@ export default function UserPage() {
                 }
                 columns={reservationColumns}
                 header={{
-                  title: "Reservas de Vehículos",
+                  title: "Reservas de vehículos",
                   addButton: {
-                    text: "+ Nueva Reserva",
+                    text: "+ Nueva reserva",
                     onClick: () =>
                       userData.id &&
                       goToWithData("/reservations/new", { user: userData }),
@@ -260,42 +296,6 @@ export default function UserPage() {
                 search={{
                   enabled: true,
                   placeholder: "Buscar reservas...",
-                }}
-                minHeight="500px"
-              />
-            ),
-          },
-          {
-            id: "responsibles",
-            label: "Responsabilidades",
-            icon: UserCheck,
-            table: (
-              <Table<VehicleResponsibleFilterParams, Assignment>
-                getRows={(options) =>
-                  getVehicleResponsibles({
-                    ...options,
-                    filters: { ...options?.filters, userId: id },
-                  })
-                }
-                columns={assignmentColumns}
-                header={{
-                  title: "Vehículos bajo Responsabilidad",
-                  addButton: {
-                    text: "+ Agregar Responsable",
-                    onClick: () =>
-                      userData.id &&
-                      goToWithData("/vehicles/responsibles/new", {
-                        user: userData,
-                      }),
-                  },
-                }}
-                actionColumn={{
-                  route: "/vehicles/responsibles",
-                  width: 80,
-                }}
-                search={{
-                  enabled: true,
-                  placeholder: "Buscar responsables...",
                 }}
                 minHeight="500px"
               />

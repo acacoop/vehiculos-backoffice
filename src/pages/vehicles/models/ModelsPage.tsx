@@ -4,7 +4,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getVehicleModels } from "../../../services/vehicleModels";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import type {
@@ -26,7 +26,7 @@ const columns: TableColumn<VehicleModel>[] = [
   },
   {
     field: "vehicleType",
-    headerName: "Tipo de Vehículo",
+    headerName: "Tipo de vehículo",
     minWidth: 150,
   },
 ];
@@ -46,7 +46,7 @@ export default function ModelsPage() {
           response.data.map((brand: VehicleBrand) => ({
             label: brand.name,
             value: brand.id,
-          }))
+          })),
         );
       }
     };
@@ -71,9 +71,9 @@ export default function ModelsPage() {
           definitions: filterDefinitions,
         }}
         header={{
-          title: "Modelos de Vehículos",
+          title: "Modelos de vehículos",
           addButton: {
-            text: "+ Nuevo Modelo",
+            text: "+ Nuevo modelo",
             onClick: () => navigate("/vehicles/models/new"),
           },
         }}

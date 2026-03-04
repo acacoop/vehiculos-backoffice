@@ -16,7 +16,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -128,13 +128,13 @@ export default function ResponsiblePage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const startDate = formState.startDate
-      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
-      : inputDateToISO(toInputDate(new Date()));
+      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
+      : inputDateToAPI(toInputDate(new Date()));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
 
     executeSave(
       `¿Está seguro que desea ${actionText} este responsable de vehículo?`,
@@ -208,7 +208,7 @@ export default function ResponsiblePage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha Desde",
+          label: "Fecha desde",
           required: true,
         },
         {
@@ -219,7 +219,7 @@ export default function ResponsiblePage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha Hasta",
+          label: "Fecha hasta",
           show: !isIndefinite,
           min: formState.startDate
             ? toInputDate(new Date(formState.startDate))
@@ -244,7 +244,7 @@ export default function ResponsiblePage() {
   return (
     <div>
       <Form
-        title={isNew ? "Nuevo Responsable" : "Editar Responsable"}
+        title={isNew ? "Nuevo responsable" : "Editar responsable"}
         sections={sections}
         modeConfig={{
           isNew,

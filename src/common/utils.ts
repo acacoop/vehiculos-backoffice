@@ -55,10 +55,13 @@ import { COLORS } from "./colors";
 import type { QuarterlyControl } from "../types/quarterlyControl";
 
 export function getQuarterlyControlStatus(control: QuarterlyControl) {
-  // If filled, check for failures
+  // If filled, check for failures and pending items
   if (control.filledAt) {
     const rejectedCount = control.items.filter(
       (i) => i.status === BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.RECHAZADO,
+    ).length;
+    const pendingCount = control.items.filter(
+      (i) => i.status === BACKEND_QUARTERLY_CONTROL_ITEM_STATUS.PENDIENTE,
     ).length;
 
     if (rejectedCount > 0) {
@@ -67,6 +70,16 @@ export function getQuarterlyControlStatus(control: QuarterlyControl) {
         status: QUARTERLY_CONTROL_STATUS.WITH_FAILURES,
         label: `${QUARTERLY_CONTROL_STATUS.WITH_FAILURES} (${rejectedCount}/${totalItems})`,
         color: COLORS.error,
+      };
+    }
+
+    if (pendingCount > 0) {
+      const totalItems = control.items.length;
+      const completedCount = totalItems - pendingCount;
+      return {
+        status: QUARTERLY_CONTROL_STATUS.INCOMPLETE,
+        label: `${QUARTERLY_CONTROL_STATUS.INCOMPLETE} (${completedCount}/${totalItems})`,
+        color: COLORS.warning,
       };
     }
 

@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { TableSelector } from "../../../components/TableSelector";
 import {
   getVehicleBrandById,
@@ -50,7 +50,7 @@ const modelColumns: TableColumn<VehicleModel>[] = [
   },
   {
     field: "vehicleType",
-    headerName: "Tipo de Vehículo",
+    headerName: "Tipo de vehículo",
     minWidth: 150,
   },
 ];
@@ -175,7 +175,7 @@ export default function BrandPage() {
   const sections: FormSection[] = [
     {
       type: "fields",
-      title: "Información de la Marca",
+      title: "Información de la marca",
       layout: "vertical",
       fields: [
         {
@@ -196,7 +196,7 @@ export default function BrandPage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nueva Marca" : "Editar Marca"}
+        title={isNew ? "Nueva marca" : "Editar marca"}
         sections={sections}
         modeConfig={{
           isNew,
@@ -221,9 +221,9 @@ export default function BrandPage() {
                   getRows={getModelsByBrand}
                   columns={modelColumns}
                   header={{
-                    title: "Modelos de esta Marca",
+                    title: "Modelos de esta marca",
                     addButton: {
-                      text: "+ Nuevo Modelo",
+                      text: "+ Nuevo modelo",
                       onClick: () =>
                         goToWithData("/vehicles/models/new", {
                           brand: formState,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { Table, type TableColumn } from "../../components/Table/table";
+import { Table, type TableColumn } from "../../components/Table";
 import { Form, type FormSection } from "../../components/Form";
 import { usePageState } from "../../hooks";
 import {
@@ -11,17 +11,23 @@ import {
 } from "../../services/quarterlyControls";
 import type { QuarterlyControl } from "../../types/quarterlyControl";
 import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
-import type { Vehicle } from "../../types/vehicle";
 import {
   COLORS,
   BACKEND_TO_UI_QUARTERLY_CONTROL_STATUS,
   BACKEND_QUARTERLY_CONTROL_ITEM_STATUS,
 } from "../../common";
-import { VehicleEntitySearch } from "../../components/EntitySearch/EntitySearch";
+import {
+  VehicleEntitySearch,
+  VehicleKilometersLogEntitySearch,
+} from "../../components/EntitySearch/EntitySearch";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { getQuarterlyControlItems } from "../../services/quarterlyControlItems";
+
+type QuarterlyControlFormData = Partial<QuarterlyControl> & {
+  kilometers?: number;
+};
 
 export default function QuarterlyControlPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +36,11 @@ export default function QuarterlyControlPage() {
   const isNew = location.pathname.endsWith("/new");
 
   const [control, setControl] = useState<QuarterlyControl | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<QuarterlyControlFormData>({
     year: new Date().getFullYear(),
-    quarter: 1 as 1 | 2 | 3 | 4,
+    quarter: 1,
     intendedDeliveryDate: "",
+    kilometersLog: null,
   });
 
   const {
@@ -67,19 +73,16 @@ export default function QuarterlyControlPage() {
 
       if (controlRes.success && controlRes.data) {
         setControl(controlRes.data);
-        if (controlRes.data.vehicle) {
-          setVehicle(controlRes.data.vehicle);
-        }
         const loadedFormData = {
           year: controlRes.data.year,
           quarter: controlRes.data.quarter,
           intendedDeliveryDate: controlRes.data.intendedDeliveryDate,
+          vehicle: controlRes.data.vehicle || null,
+          kilometersLog: controlRes.data.kilometersLog || null,
+          kilometers: controlRes.data.kilometersLog?.kilometers,
         };
         setFormData(loadedFormData);
-        setOriginalData({
-          formData: loadedFormData,
-          vehicle: controlRes.data.vehicle || null,
-        });
+        setOriginalData(loadedFormData);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,19 +96,15 @@ export default function QuarterlyControlPage() {
     if (isNew) {
       goTo("/quarterly-controls");
     } else {
-      const original = cancelEdit<{
-        formData: typeof formData;
-        vehicle: Vehicle | null;
-      }>();
+      const original = cancelEdit<QuarterlyControlFormData>();
       if (original) {
-        setFormData(original.formData);
-        setVehicle(original.vehicle);
+        setFormData(original);
       }
     }
   };
 
   const handleSave = () => {
-    if (!vehicle) {
+    if (!formData.vehicle) {
       showError("Debe seleccionar un vehículo");
       return;
     }
@@ -121,10 +120,11 @@ export default function QuarterlyControlPage() {
       `¿Está seguro que desea ${actionText} este control trimestral?`,
       () => {
         const payload = {
-          vehicleId: vehicle.id,
-          year: formData.year,
-          quarter: formData.quarter,
-          intendedDeliveryDate: formData.intendedDeliveryDate,
+          vehicleId: formData.vehicle!.id,
+          year: formData.year!,
+          quarter: formData.quarter!,
+          intendedDeliveryDate: formData.intendedDeliveryDate!,
+          kilometers: formData.kilometers,
         };
 
         return isNew
@@ -204,21 +204,23 @@ export default function QuarterlyControlPage() {
       type: "entity",
       render: ({ disabled }) => (
         <VehicleEntitySearch
-          entity={vehicle}
-          onEntityChange={setVehicle}
+          entity={formData.vehicle || null}
+          onEntityChange={(vehicle) =>
+            setFormData((prev) => ({ ...prev, vehicle: vehicle || undefined }))
+          }
           disabled={disabled || !isNew}
         />
       ),
     },
     {
-      title: "Información del Control Trimestral",
+      title: "Información del control trimestral",
       type: "fields",
       layout: "grid",
       columns: 2,
       fields: [
         {
           type: "number",
-          value: formData.year,
+          value: formData.year!,
           key: "year",
           label: "Año",
           onChange: (value: number) =>
@@ -227,7 +229,7 @@ export default function QuarterlyControlPage() {
         },
         {
           type: "select",
-          value: formData.quarter.toString(),
+          value: formData.quarter!.toString(),
           key: "quarter",
           label: "Trimestre",
           options: [
@@ -245,9 +247,9 @@ export default function QuarterlyControlPage() {
         },
         {
           type: "date",
-          value: formData.intendedDeliveryDate,
+          value: formData.intendedDeliveryDate!,
           key: "intendedDeliveryDate",
-          label: "Fecha de Entrega Prevista",
+          label: "Fecha de entrega prevista",
           onChange: (value: string) =>
             setFormData((prev) => ({
               ...prev,
@@ -261,7 +263,7 @@ export default function QuarterlyControlPage() {
     ...(!isNew
       ? [
           {
-            title: "Estado del Control",
+            title: "Estado del control",
             type: "fields" as const,
             layout: "grid" as const,
             columns: 2,
@@ -282,7 +284,57 @@ export default function QuarterlyControlPage() {
                 key: "filledAt",
                 label: "Fecha de completado",
               },
+              ...(!isEditing && !formData.kilometersLog
+                ? [
+                    {
+                      type: "display" as const,
+                      value: "No registrado",
+                      key: "kilometers",
+                      label: "Kilómetros",
+                    },
+                  ]
+                : []),
             ],
+          },
+        ]
+      : []),
+    ...(isNew || isEditing
+      ? [
+          {
+            title: "Kilómetros",
+            type: "fields" as const,
+            layout: "grid" as const,
+            columns: 1,
+            fields: [
+              {
+                type: "number" as const,
+                value: formData.kilometers || 0,
+                key: "kilometers",
+                label: "Kilómetros",
+                onChange: (value: number) =>
+                  setFormData((prev) => ({ ...prev, kilometers: value })),
+                required: false,
+                min: 0,
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(!isNew && !isEditing && formData.kilometersLog
+      ? [
+          {
+            type: "entity" as const,
+            render: ({ disabled }: { disabled: boolean }) => (
+              <VehicleKilometersLogEntitySearch
+                entity={formData.kilometersLog || null}
+                onEntityChange={(kilometersLog) =>
+                  setFormData((prev) => ({ ...prev, kilometersLog }))
+                }
+                disabled={disabled}
+                enableCreate={false}
+                enableNavigate={true}
+              />
+            ),
           },
         ]
       : []),
@@ -291,7 +343,7 @@ export default function QuarterlyControlPage() {
   return (
     <div>
       <Form
-        title={isNew ? "Nuevo Control Trimestral" : "Editar Control Trimestral"}
+        title={isNew ? "Nuevo control trimestral" : "Editar control trimestral"}
         sections={sections}
         modeConfig={{
           isNew,
@@ -320,7 +372,7 @@ export default function QuarterlyControlPage() {
             }
             actionColumn={itemActionColumn}
             header={{
-              title: "Items del Control",
+              title: "Ítems del control",
             }}
           />
         </div>

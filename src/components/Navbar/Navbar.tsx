@@ -22,6 +22,7 @@ import {
   ChartBar,
   Menu,
   LogOut,
+  AlertTriangle,
 } from "lucide-react";
 
 function Navbar() {
@@ -35,12 +36,12 @@ function Navbar() {
       title: "General",
       items: [
         { icon: LayoutDashboard, label: "Dashboard", to: "/home" },
-        { icon: UserIcon, label: "Usuarios", to: "/users" },
-        { icon: Car, label: "Vehículos", to: "/vehicles" },
+        { icon: UserIcon, label: "Empleados", to: "/users" },
+        { icon: Car, label: "Flota de vehículos", to: "/vehicles" },
       ],
     },
     {
-      title: "Vehículos",
+      title: "Gestión de vehículos",
       items: [
         {
           icon: ClipboardList,
@@ -59,7 +60,7 @@ function Navbar() {
         },
         {
           icon: Gauge,
-          label: "Registros de Kilometraje",
+          label: "Registros de kilometraje",
           to: "/vehicles/kilometersLogs",
         },
       ],
@@ -84,12 +85,12 @@ function Navbar() {
         },
         {
           icon: FileText,
-          label: "Registros",
+          label: "Registros de mantenimiento",
           to: "/maintenance/records",
         },
         {
           icon: ClipboardList,
-          label: "Controles Trimestrales",
+          label: "Controles trimestrales",
           to: "/quarterly-controls",
         },
       ],
@@ -103,7 +104,10 @@ function Navbar() {
     },
     {
       title: "Informes",
-      items: [{ icon: ChartBar, label: "Métricas", to: "/metrics" }],
+      items: [
+        { icon: ChartBar, label: "Métricas", to: "/metrics" },
+        { icon: AlertTriangle, label: "Riesgos", to: "/risks" },
+      ],
     },
   ];
 

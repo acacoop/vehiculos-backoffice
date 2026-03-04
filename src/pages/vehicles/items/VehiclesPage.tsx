@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getVehicles } from "../../../services/vehicles";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import { FUEL_TYPE_OPTIONS } from "../../../common";
@@ -14,11 +14,17 @@ const columns: TableColumn<Vehicle>[] = [
   { field: "model.brand.name", headerName: "Marca", flex: 1 },
   { field: "model.name", headerName: "Modelo", flex: 1 },
   { field: "year", headerName: "Año", flex: 1 },
+  {
+    field: "registrationDate",
+    headerName: "Fecha de alta",
+    flex: 1,
+    type: "date",
+  },
 ];
 
 // Función de búsqueda para el filtro de marcas
 const searchBrands = async (
-  term: string
+  term: string,
 ): Promise<{ label: string; value: string }[]> => {
   const response = await getVehicleBrands({ search: term });
   if (response.success && response.data) {
@@ -71,6 +77,16 @@ export default function VehiclesPage() {
       field: "maxKilometers",
       label: "Km hasta",
       placeholder: "Ej: 100000",
+    },
+    {
+      type: "date",
+      field: "registrationDateFrom",
+      label: "Alta desde",
+    },
+    {
+      type: "date",
+      field: "registrationDateTo",
+      label: "Alta hasta",
     },
   ];
 

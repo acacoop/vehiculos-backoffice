@@ -3,7 +3,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../../components/Table/table";
+} from "../../../components/Table";
 import { getAssignments } from "../../../services/assignments";
 import type {
   Assignment,
@@ -32,13 +32,13 @@ const columns: TableColumn<Assignment>[] = [
   },
   {
     field: "startDate",
-    headerName: "Fecha Inicio",
+    headerName: "Fecha inicio",
     minWidth: 130,
     transform: (value) => (value ? formatDate(value) : "-"),
   },
   {
     field: "endDate",
-    headerName: "Fecha Fin",
+    headerName: "Fecha fin",
     minWidth: 130,
     transform: (value) => (value ? formatDate(value) : "Sin fecha fin"),
   },
@@ -85,9 +85,9 @@ export default function AssignmentsPage() {
           definitions: filterDefinitions,
         }}
         header={{
-          title: "Gestión de Asignaciones",
+          title: "Gestión de asignaciones",
           addButton: {
-            text: "+ Agregar Asignación",
+            text: "+ Agregar asignación",
             onClick: () => navigate("/vehicles/assignments/new"),
           },
         }}

@@ -2,7 +2,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
-import { toInputDate, inputDateToISO } from "../../../common/date";
+import { toInputDate, inputDateToAPI } from "../../../common/date";
 import {
   createAssignment,
   getAssignmentById,
@@ -24,7 +24,9 @@ export default function VehicleAssignmentPage() {
   const isNew = location.pathname.endsWith("/new");
 
   // Main form state (entity data)
-  const [formState, setFormState] = useState<Partial<Assignment>>({});
+  const [formState, setFormState] = useState<Partial<Assignment>>({
+    startDate: toInputDate(new Date()),
+  });
 
   // UI-only checkbox state
   const [isIndefinite, setIsIndefinite] = useState(true);
@@ -123,13 +125,13 @@ export default function VehicleAssignmentPage() {
     const actionText = isNew ? "crear" : "actualizar";
 
     const startDate = formState.startDate
-      ? inputDateToISO(toInputDate(new Date(formState.startDate)))
-      : inputDateToISO(toInputDate(new Date()));
+      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
+      : inputDateToAPI(toInputDate(new Date()));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToISO(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta asignación?`,
@@ -212,7 +214,7 @@ export default function VehicleAssignmentPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha Inicio",
+          label: "Fecha inicio",
           required: true,
         },
         {
@@ -223,7 +225,7 @@ export default function VehicleAssignmentPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha Fin",
+          label: "Fecha fin",
           show: !isIndefinite,
           min: formState.startDate
             ? toInputDate(new Date(formState.startDate))
@@ -244,7 +246,7 @@ export default function VehicleAssignmentPage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nueva Asignación" : "Editar Asignación"}
+        title={isNew ? "Nueva asignación" : "Editar asignación"}
         sections={sections}
         modeConfig={{
           isNew,

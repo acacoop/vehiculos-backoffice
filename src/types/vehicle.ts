@@ -10,6 +10,7 @@ export interface Vehicle {
   engineNumber?: string;
   transmission?: string;
   fuelType?: string;
+  registrationDate: string;
 }
 
 export interface VehicleInput {
@@ -20,6 +21,7 @@ export interface VehicleInput {
   engineNumber?: string;
   transmission?: string;
   fuelType?: string;
+  registrationDate: string;
 }
 
 export interface VehicleFilterParams extends FilterParams {
@@ -33,4 +35,7 @@ export interface VehicleFilterParams extends FilterParams {
   fuelType?: string;
   minKilometers?: string;
   maxKilometers?: string;
+  hasNoKilometers?: string;
+  registrationDateFrom?: string;
+  registrationDateTo?: string;
 }

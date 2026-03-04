@@ -12,6 +12,7 @@ import "./App.css";
 import { LoginPage } from "./pages/auth";
 import { HomePage } from "./pages/home";
 import MetricsPage from "./pages/metrics/MetricsPage";
+import { RisksPage } from "./pages/risks";
 
 import MaintenanceCategoriesPage from "./pages/maintenance/categories/CategoriesPage";
 import MaintenanceCategoryPage from "./pages/maintenance/categories/CategoryPage";
@@ -98,6 +99,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/metrics" element={<MetricsPage />} />
+          <Route path="/risks" element={<RisksPage />} />
 
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:id" element={<UserPage />} />

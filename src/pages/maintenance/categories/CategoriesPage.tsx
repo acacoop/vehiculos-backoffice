@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Table, type TableColumn } from "../../../components/Table/table";
+import { Table, type TableColumn } from "../../../components/Table";
 import { getMaintenanceCategories } from "../../../services/categories";
 import type { Category } from "../../../types/category";
 
@@ -20,9 +20,9 @@ export default function CategoriesPage() {
         getRows={getMaintenanceCategories}
         columns={columns}
         header={{
-          title: "Categorías de Mantenimiento",
+          title: "Categorías de mantenimiento",
           addButton: {
-            text: "+ Nueva Categoría",
+            text: "+ Nueva categoría",
             onClick: () => navigate("/maintenance/categories/new"),
           },
         }}

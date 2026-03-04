@@ -223,6 +223,7 @@ export default function MetricsPage() {
     handleBrandClick,
     handleFuelTypeClick,
     handleReservationsClick,
+    handleQuarterlyControlsClick,
   } = useMetricsNavigation();
 
   return (
@@ -235,7 +236,7 @@ export default function MetricsPage() {
         <h2 className="section-title">Vehículos</h2>
         <div className="charts-grid charts-grid--2-cols">
           <Chart<Bucket, KilometersParams>
-            title="Vehículos por Kilómetros"
+            title="Vehículos por kilómetros"
             subtitle="Click en una barra para ver vehículos"
             footer={(meta) => (
               <span>
@@ -255,7 +256,7 @@ export default function MetricsPage() {
           />
 
           <Chart<Bucket, AgeParams>
-            title="Vehículos por Antigüedad"
+            title="Vehículos por antigüedad"
             subtitle="Click en una barra para ver vehículos"
             footer={<span>Agrupados por años de antigüedad</span>}
             type="histogram"
@@ -270,7 +271,7 @@ export default function MetricsPage() {
           />
 
           <Chart<DistributionItem, DistributionParams>
-            title="Vehículos por Marca"
+            title="Vehículos por marca"
             subtitle="Click para ver vehículos de la marca"
             footer={<span>Distribución por marca</span>}
             type="bar"
@@ -285,7 +286,7 @@ export default function MetricsPage() {
           />
 
           <Chart<DistributionItem, DistributionParams>
-            title="Vehículos por Combustible"
+            title="Vehículos por combustible"
             subtitle="Click para filtrar por tipo"
             footer={<span>Distribución por tipo</span>}
             type="pie"
@@ -303,10 +304,10 @@ export default function MetricsPage() {
       </section>
 
       <section className="metrics-section">
-        <h2 className="section-title">Reservas y Mantenimientos</h2>
+        <h2 className="section-title">Reservas y mantenimientos</h2>
         <div className="charts-grid">
           <Chart<TimelineItem, TimelineParams>
-            title="Reservas por Mes"
+            title="Reservas por mes"
             fullWidth
             footer={(meta) => (
               <span>
@@ -326,7 +327,7 @@ export default function MetricsPage() {
           />
 
           <Chart<TimelineItem, TimelineParams>
-            title="Registros de Mantenimiento"
+            title="Registros de mantenimiento"
             fullWidth
             footer={(meta) => (
               <span>
@@ -346,10 +347,11 @@ export default function MetricsPage() {
       </section>
 
       <section className="metrics-section">
-        <h2 className="section-title">Controles Trimestrales</h2>
+        <h2 className="section-title">Controles trimestrales</h2>
         <div className="charts-grid">
           <Chart<QuarterlyControlMetric, QuarterlyParams>
-            title="Estado de Controles por Trimestre"
+            title="Estado de controles por trimestre"
+            subtitle="Click para ver controles"
             fullWidth
             footer={<span>Estado por trimestre</span>}
             type="bar"
@@ -381,15 +383,16 @@ export default function MetricsPage() {
               ],
               showLegend: true,
             }}
+            onElementClick={handleQuarterlyControlsClick}
           />
         </div>
       </section>
 
       <section className="metrics-section">
-        <h2 className="section-title">Personal Asignado</h2>
+        <h2 className="section-title">Personal asignado</h2>
         <div className="charts-grid charts-grid--2-cols">
           <Chart<TimelineItem, TimelineParams>
-            title="Conductores Asignados"
+            title="Conductores asignados"
             footer={(meta) => (
               <span>
                 <b>{meta.total as number}</b> conductores activos
@@ -407,7 +410,7 @@ export default function MetricsPage() {
           />
 
           <Chart<TimelineItem, TimelineParams>
-            title="Responsables de Vehículos"
+            title="Responsables de vehículos"
             footer={(meta) => (
               <span>
                 <b>{meta.total as number}</b> responsables activos

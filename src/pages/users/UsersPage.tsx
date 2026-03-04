@@ -2,7 +2,7 @@ import {
   Table,
   type TableColumn,
   type FilterDefinition,
-} from "../../components/Table/table";
+} from "../../components/Table";
 import { getUsers } from "../../services/users";
 import type { User, UserFilterParams } from "../../types/user";
 
@@ -55,7 +55,7 @@ export default function UsersPage() {
         definitions: filterDefinitions,
       }}
       header={{
-        title: "Gestión de Usuarios",
+        title: "Gestión de usuarios",
       }}
       actionColumn={{
         route: "/users",
