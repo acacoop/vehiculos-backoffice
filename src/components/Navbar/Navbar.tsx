@@ -60,7 +60,7 @@ function Navbar() {
         },
         {
           icon: Gauge,
-          label: "Registros de Kilometraje",
+          label: "Registros de kilometraje",
           to: "/vehicles/kilometersLogs",
         },
       ],
@@ -85,12 +85,12 @@ function Navbar() {
         },
         {
           icon: FileText,
-          label: "Registros",
+          label: "Registros de mantenimiento",
           to: "/maintenance/records",
         },
         {
           icon: ClipboardList,
-          label: "Controles Trimestrales",
+          label: "Controles trimestrales",
           to: "/quarterly-controls",
         },
       ],

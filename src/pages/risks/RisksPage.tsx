@@ -185,8 +185,8 @@ const overdueQuarterlyControlsColumns: TableColumn<OverdueQuarterlyControl>[] =
         return pending === 0
           ? COLORS.success
           : pending === row.totalItemsCount
-          ? COLORS.error
-          : COLORS.warning;
+            ? COLORS.error
+            : COLORS.warning;
       },
     },
   ];
