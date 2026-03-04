@@ -746,11 +746,11 @@ export function QuarterlyControlEntitySearch({
       title="Datos del control trimestral"
       changeButtonText="Cambiar control"
       disabled={disabled}
-      route="/maintenance/checklists"
+      route="/quarterly-controls"
       enableCreate={enableCreate}
       enableNavigate={enableNavigate}
-      createButtonText="Crear checklist"
-      navigateButtonText="Ver checklist"
+      createButtonText="Crear control trimestral"
+      navigateButtonText="Ver control trimestral"
       getFormData={getFormData}
       contextScope={contextScope}
     />
