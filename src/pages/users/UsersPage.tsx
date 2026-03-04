@@ -55,7 +55,7 @@ export default function UsersPage() {
         definitions: filterDefinitions,
       }}
       header={{
-        title: "Gestión de Usuarios",
+        title: "Gestión de usuarios",
       }}
       actionColumn={{
         route: "/users",

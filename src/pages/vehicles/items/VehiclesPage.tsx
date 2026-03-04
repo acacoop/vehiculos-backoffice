@@ -16,7 +16,7 @@ const columns: TableColumn<Vehicle>[] = [
   { field: "year", headerName: "Año", flex: 1 },
   {
     field: "registrationDate",
-    headerName: "Fecha de Alta",
+    headerName: "Fecha de alta",
     flex: 1,
     type: "date",
   },

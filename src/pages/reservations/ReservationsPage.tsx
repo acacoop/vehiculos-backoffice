@@ -31,13 +31,13 @@ const columns: TableColumn<Reservation>[] = [
   },
   {
     field: "startDate",
-    headerName: "Fecha Inicio",
+    headerName: "Fecha inicio",
     minWidth: 180,
     type: "datetime",
   },
   {
     field: "endDate",
-    headerName: "Fecha Fin",
+    headerName: "Fecha fin",
     minWidth: 180,
     type: "datetime",
   },
@@ -70,7 +70,7 @@ export default function ReservationsPage() {
         header={{
           title: "Reservas",
           addButton: {
-            text: "+ Nueva Reserva",
+            text: "+ Nueva reserva",
             onClick: () => navigate("/reservations/new"),
           },
         }}

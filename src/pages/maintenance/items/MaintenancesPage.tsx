@@ -42,7 +42,7 @@ export default function MaintenancesPage() {
         header={{
           title: "Mantenimientos",
           addButton: {
-            text: "+ Nuevo Mantenimiento",
+            text: "+ Nuevo mantenimiento",
             onClick: () => navigate("/maintenance/items/new"),
           },
         }}

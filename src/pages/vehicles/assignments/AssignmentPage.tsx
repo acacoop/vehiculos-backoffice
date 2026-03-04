@@ -214,7 +214,7 @@ export default function VehicleAssignmentPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha Inicio",
+          label: "Fecha inicio",
           required: true,
         },
         {
@@ -225,7 +225,7 @@ export default function VehicleAssignmentPage() {
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha Fin",
+          label: "Fecha fin",
           show: !isIndefinite,
           min: formState.startDate
             ? toInputDate(new Date(formState.startDate))
@@ -246,7 +246,7 @@ export default function VehicleAssignmentPage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nueva Asignación" : "Editar Asignación"}
+        title={isNew ? "Nueva asignación" : "Editar asignación"}
         sections={sections}
         modeConfig={{
           isNew,

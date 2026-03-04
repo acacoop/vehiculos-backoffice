@@ -213,7 +213,7 @@ export default function ModelPage() {
     },
     {
       type: "fields",
-      title: "Información del Modelo",
+      title: "Información del modelo",
       layout: "vertical",
       fields: [
         {
@@ -230,7 +230,7 @@ export default function ModelPage() {
         {
           type: "select",
           key: "vehicleType",
-          label: "Tipo de Vehículo",
+          label: "Tipo de vehículo",
           value: formState.vehicleType || "",
           onChange: (value) =>
             setFormState((prev) => ({ ...prev, vehicleType: value })),
@@ -246,7 +246,7 @@ export default function ModelPage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nuevo Modelo" : "Editar Modelo"}
+        title={isNew ? "Nuevo modelo" : "Editar modelo"}
         sections={sections}
         modeConfig={{
           isNew,

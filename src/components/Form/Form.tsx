@@ -474,7 +474,7 @@ const Form: React.FC<FormProps> = ({
     // Textos con defaults
     const t = {
       create: texts.create || `Crear ${entityName}`.trim(),
-      save: texts.save || "Guardar Cambios",
+      save: texts.save || "Guardar cambios",
       saving: texts.saving || "Guardando...",
       cancel: texts.cancel || "Cancelar",
       edit: texts.edit || "Editar",

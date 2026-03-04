@@ -170,13 +170,13 @@ export default function VehiclesPage() {
     { field: "user.firstName", headerName: "Nombre", minWidth: 150 },
     {
       field: "startDate",
-      headerName: "Fecha Desde",
+      headerName: "Fecha desde",
       minWidth: 130,
       type: "date",
     },
     {
       field: "endDate",
-      headerName: "Fecha Hasta",
+      headerName: "Fecha hasta",
       minWidth: 130,
       type: "enddate",
     },
@@ -384,7 +384,7 @@ export default function VehiclesPage() {
     },
     {
       type: "fields",
-      title: "Ficha Técnica",
+      title: "Ficha técnica",
       layout: "grid",
       fields: [
         {
@@ -442,7 +442,7 @@ export default function VehiclesPage() {
   return (
     <div className="container">
       <Form
-        title="Detalle del Vehículo"
+        title="Detalle del vehículo"
         sections={vehicleInfoSections}
         modeConfig={{
           isNew,
@@ -477,7 +477,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Asignaciones",
                     addButton: {
-                      text: "+ Agregar Asignación",
+                      text: "+ Agregar asignación",
                       onClick: () =>
                         goToWithData("/vehicles/assignments/new", { vehicle }),
                     },
@@ -509,7 +509,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Responsables",
                     addButton: {
-                      text: "+ Agregar Responsable",
+                      text: "+ Agregar responsable",
                       onClick: () =>
                         goToWithData("/vehicles/responsibles/new", { vehicle }),
                     },
@@ -542,9 +542,9 @@ export default function VehiclesPage() {
                   }
                   columns={kilometersColumns}
                   header={{
-                    title: "Historial de Kilometraje",
+                    title: "Historial de kilometraje",
                     addButton: {
-                      text: "+ Nuevo Registro",
+                      text: "+ Nuevo registro",
                       onClick: () =>
                         goToWithData("/vehicles/kilometersLogs/new", {
                           vehicle,
@@ -575,9 +575,9 @@ export default function VehiclesPage() {
                   }
                   columns={maintenanceRecordColumns}
                   header={{
-                    title: "Registro de Mantenimientos",
+                    title: "Registro de mantenimientos",
                     addButton: {
-                      text: "+ Nuevo Registro",
+                      text: "+ Nuevo registro",
                       onClick: () =>
                         goToWithData("/maintenance/records/new", { vehicle }),
                     },
@@ -609,7 +609,7 @@ export default function VehiclesPage() {
                   header={{
                     title: "Reservas",
                     addButton: {
-                      text: "+ Nueva Reserva",
+                      text: "+ Nueva reserva",
                       onClick: () =>
                         goToWithData("/reservations/new", { vehicle }),
                     },
@@ -639,7 +639,7 @@ export default function VehiclesPage() {
                   }
                   columns={quarterlyControlColumns}
                   header={{
-                    title: "Controles Trimestrales",
+                    title: "Controles trimestrales",
                   }}
                   actionColumn={{
                     route: "/quarterly-controls",

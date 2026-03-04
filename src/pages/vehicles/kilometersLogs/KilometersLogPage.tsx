@@ -184,7 +184,7 @@ export default function KilometersLogPage() {
     },
     {
       type: "fields",
-      title: "Detalles del Registro",
+      title: "Detalles del registro",
       layout: "vertical",
       fields: [
         {
@@ -221,8 +221,8 @@ export default function KilometersLogPage() {
       <Form
         title={
           isNew
-            ? "Nuevo Registro de Kilometraje"
-            : "Editar Registro de Kilometraje"
+            ? "Nuevo registro de kilometraje"
+            : "Editar registro de kilometraje"
         }
         sections={sections}
         modeConfig={{

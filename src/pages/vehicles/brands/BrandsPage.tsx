@@ -21,9 +21,9 @@ export default function BrandsPage() {
         getRows={getVehicleBrands}
         columns={columns}
         header={{
-          title: "Marcas de Vehículos",
+          title: "Marcas de vehículos",
           addButton: {
-            text: "+ Nueva Marca",
+            text: "+ Nueva marca",
             onClick: () => navigate("/vehicles/brands/new"),
           },
         }}

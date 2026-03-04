@@ -164,7 +164,7 @@ export default function MaintenancePage() {
   const sections: FormSection[] = [
     {
       type: "fields",
-      title: "Información del Mantenimiento",
+      title: "Información del mantenimiento",
       layout: "vertical",
       fields: [
         {
@@ -260,7 +260,7 @@ export default function MaintenancePage() {
     },
     {
       type: "fields",
-      title: "Detalles Adicionales",
+      title: "Detalles adicionales",
       layout: "vertical",
       fields: [
         {
@@ -290,7 +290,7 @@ export default function MaintenancePage() {
   return (
     <div className="container">
       <Form
-        title={isNew ? "Nuevo Mantenimiento" : "Editar Mantenimiento"}
+        title={isNew ? "Nuevo mantenimiento" : "Editar mantenimiento"}
         sections={sections}
         modeConfig={{
           isNew,

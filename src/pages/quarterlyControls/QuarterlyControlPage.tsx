@@ -213,7 +213,7 @@ export default function QuarterlyControlPage() {
       ),
     },
     {
-      title: "Información del Control Trimestral",
+      title: "Información del control trimestral",
       type: "fields",
       layout: "grid",
       columns: 2,
@@ -249,7 +249,7 @@ export default function QuarterlyControlPage() {
           type: "date",
           value: formData.intendedDeliveryDate!,
           key: "intendedDeliveryDate",
-          label: "Fecha de Entrega Prevista",
+          label: "Fecha de entrega prevista",
           onChange: (value: string) =>
             setFormData((prev) => ({
               ...prev,
@@ -263,7 +263,7 @@ export default function QuarterlyControlPage() {
     ...(!isNew
       ? [
           {
-            title: "Estado del Control",
+            title: "Estado del control",
             type: "fields" as const,
             layout: "grid" as const,
             columns: 2,
@@ -343,7 +343,7 @@ export default function QuarterlyControlPage() {
   return (
     <div>
       <Form
-        title={isNew ? "Nuevo Control Trimestral" : "Editar Control Trimestral"}
+        title={isNew ? "Nuevo control trimestral" : "Editar control trimestral"}
         sections={sections}
         modeConfig={{
           isNew,
@@ -372,7 +372,7 @@ export default function QuarterlyControlPage() {
             }
             actionColumn={itemActionColumn}
             header={{
-              title: "Items del Control",
+              title: "Ítems del control",
             }}
           />
         </div>

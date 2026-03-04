@@ -118,9 +118,9 @@ export default function QuarterlyControlsPage() {
           placeholder: "Buscar controles...",
         }}
         header={{
-          title: "Controles Trimestrales",
+          title: "Controles trimestrales",
           addButton: {
-            text: "+ Nuevo Control",
+            text: "+ Nuevo control",
             onClick: () => navigate("/quarterly-controls/new"),
           },
         }}
