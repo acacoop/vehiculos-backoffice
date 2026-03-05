@@ -14,6 +14,7 @@ const columns: TableColumn<VehicleResponsible>[] = [
   { field: "user.cuit", headerName: "CUIT", minWidth: 120 },
   { field: "user.firstName", headerName: "Nombre", minWidth: 150 },
   { field: "user.lastName", headerName: "Apellido", minWidth: 150 },
+  { field: "ceco", headerName: "CECO", minWidth: 100 },
   { field: "vehicle.model.brand.name", headerName: "Marca", minWidth: 140 },
   { field: "vehicle.model.name", headerName: "Modelo", minWidth: 140 },
   { field: "vehicle.licensePlate", headerName: "Patente", minWidth: 120 },
@@ -44,6 +45,11 @@ const filterDefinitions: FilterDefinition<VehicleResponsibleFilterParams>[] = [
     type: "date",
     field: "date",
     label: "Fecha",
+  },
+  {
+    type: "text",
+    field: "ceco",
+    label: "CECO",
   },
 ];
 

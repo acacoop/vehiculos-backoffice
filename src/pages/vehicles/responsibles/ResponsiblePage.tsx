@@ -120,6 +120,16 @@ export default function ResponsiblePage() {
       return;
     }
 
+    if (!formState.ceco) {
+      showError("El CECO es obligatorio");
+      return;
+    }
+
+    if (formState.ceco.length !== 8) {
+      showError("El CECO debe tener exactamente 8 caracteres");
+      return;
+    }
+
     if (!isIndefinite && !formState.endDate) {
       showError("La fecha de fin es obligatoria si no es indefinida");
       return;
@@ -143,12 +153,14 @@ export default function ResponsiblePage() {
           ? createVehicleResponsible({
               userId: formState.user!.id,
               vehicleId: formState.vehicle!.id,
+              ceco: formState.ceco!,
               startDate,
               endDate,
             })
           : updateVehicleResponsible(id!, {
               userId: formState.user!.id,
               vehicleId: formState.vehicle!.id,
+              ceco: formState.ceco!,
               startDate,
               endDate,
             }),
@@ -194,6 +206,26 @@ export default function ResponsiblePage() {
           getFormData={getFormData}
         />
       ),
+    },
+    {
+      type: "fields",
+      title: "CECO",
+      layout: "grid",
+      fields: [
+        {
+          type: "text",
+          value: formState.ceco || "",
+          onChange: (value: string) => {
+            // Solo permitir números y máximo 8 caracteres
+            const numericValue = value.replace(/\D/g, "").slice(0, 8);
+            setFormState((prev) => ({ ...prev, ceco: numericValue }));
+          },
+          key: "ceco",
+          label: "CECO (8 dígitos)",
+          required: true,
+          placeholder: "12345678",
+        },
+      ],
     },
     {
       type: "fields",
