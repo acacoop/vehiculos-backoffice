@@ -17,10 +17,8 @@ import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import type { Reservation } from "../../types/reservation";
 import {
-  toInputDate,
-  toInputTime,
-  inputsToDate,
-  dateToISO,
+  toInputDateTimeSafe,
+  inputDateTimeToAPI,
   parseDate,
 } from "../../common/date";
 
@@ -124,8 +122,8 @@ export default function ReservationPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = dateToISO(parseDate(formState.startDate!)!);
-    const endDate = dateToISO(parseDate(formState.endDate!)!);
+    const startDate = inputDateTimeToAPI(formState.startDate!);
+    const endDate = inputDateTimeToAPI(formState.endDate!);
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta reserva?`,
@@ -156,12 +154,6 @@ export default function ReservationPage() {
       "Reserva eliminada con éxito",
     );
   };
-
-  // Helper to get current dates as Date objects
-  const getStartDate = () =>
-    parseDate(formState.startDate!) ?? new Date();
-  const getEndDate = () =>
-    parseDate(formState.endDate!) ?? new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 
   const sections: FormSection[] = [
     {
@@ -195,61 +187,31 @@ export default function ReservationPage() {
       columns: 2,
       fields: [
         {
-          type: "date",
-          value: toInputDate(getStartDate()),
-          onChange: (dateValue: string) => {
-            const timeStr = toInputTime(getStartDate());
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
+          onChange: (value: string) => {
             setFormState((prev) => ({
               ...prev,
-              startDate: inputsToDate(dateValue, timeStr).toISOString(),
+              startDate: value,
             }));
           },
           key: "startDate",
-          label: "Fecha Inicio",
+          label: "Fecha y hora inicio",
           required: true,
         },
         {
-          type: "time",
-          value: toInputTime(getStartDate()),
-          onChange: (timeValue: string) => {
-            const dateStr = toInputDate(getStartDate());
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
+          onChange: (value: string) => {
             setFormState((prev) => ({
               ...prev,
-              startDate: inputsToDate(dateStr, timeValue).toISOString(),
-            }));
-          },
-          key: "startTime",
-          label: "Hora Inicio",
-          required: true,
-        },
-        {
-          type: "date",
-          value: toInputDate(getEndDate()),
-          onChange: (dateValue: string) => {
-            const timeStr = toInputTime(getEndDate());
-            setFormState((prev) => ({
-              ...prev,
-              endDate: inputsToDate(dateValue, timeStr).toISOString(),
+              endDate: value,
             }));
           },
           key: "endDate",
-          label: "Fecha Fin",
+          label: "Fecha y hora fin",
           required: true,
-          min: toInputDate(getStartDate()),
-        },
-        {
-          type: "time",
-          value: toInputTime(getEndDate()),
-          onChange: (timeValue: string) => {
-            const dateStr = toInputDate(getEndDate());
-            setFormState((prev) => ({
-              ...prev,
-              endDate: inputsToDate(dateStr, timeValue).toISOString(),
-            }));
-          },
-          key: "endTime",
-          label: "Hora Fin",
-          required: true,
+          min: toInputDateTimeSafe(formState.startDate),
         },
       ],
     },

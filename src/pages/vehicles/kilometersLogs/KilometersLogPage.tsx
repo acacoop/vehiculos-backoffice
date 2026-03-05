@@ -16,7 +16,11 @@ import {
   deleteVehicleKilometersLog,
 } from "../../../services/kilometers";
 import type { VehicleKilometersLog } from "../../../types/kilometer";
-import { toInputDateSafe, inputDateToAPI, parseDate } from "../../../common/date";
+import {
+  toInputDateTimeSafe,
+  inputDateTimeToAPI,
+  parseDate,
+} from "../../../common/date";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -130,7 +134,7 @@ export default function KilometersLogPage() {
     const payload = {
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToAPI(toInputDateSafe(formState.date)),
+      date: inputDateTimeToAPI(formState.date!),
       kilometers: formState.kilometers!,
     };
 
@@ -189,12 +193,12 @@ export default function KilometersLogPage() {
       layout: "vertical",
       fields: [
         {
-          type: "date",
-          value: toInputDateSafe(formState.date),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.date),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, date: value })),
           key: "date",
-          label: "Fecha de Registro",
+          label: "Fecha y hora de Registro",
           required: true,
         },
         {

@@ -16,7 +16,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
-import { toInputDateSafe, inputDateToAPI } from "../../../common/date";
+import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -127,12 +127,12 @@ export default function ResponsiblePage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = inputDateToAPI(toInputDateSafe(formState.startDate));
+    const startDate = inputDateTimeToAPI(formState.startDate!);
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToAPI(toInputDateSafe(formState.endDate));
+        : inputDateTimeToAPI(formState.endDate);
 
     executeSave(
       `¿Está seguro que desea ${actionText} este responsable de vehículo?`,
@@ -199,23 +199,23 @@ export default function ResponsiblePage() {
       layout: "grid",
       fields: [
         {
-          type: "date",
-          value: toInputDateSafe(formState.startDate),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha desde",
+          label: "Fecha y hora desde",
           required: true,
         },
         {
-          type: "date",
-          value: toInputDateSafe(formState.endDate),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha hasta",
+          label: "Fecha y hora hasta",
           show: !isIndefinite,
-          min: toInputDateSafe(formState.startDate),
+          min: toInputDateTimeSafe(formState.startDate),
         },
         {
           type: "checkbox",

@@ -9,11 +9,8 @@ export {
   formatEndDate,
   formatRelativeDate,
   parseDate,
-  inputDateToAPI,
-  toInputDate,
-  toInputDateSafe,
-  toInputTime,
-  inputsToDate,
+  inputDateTimeToAPI,
+  toInputDateTimeSafe,
   dateToISO,
 } from "./date";
 
