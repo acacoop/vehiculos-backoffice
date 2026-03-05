@@ -21,6 +21,7 @@ import {
   toInputTime,
   inputsToDate,
   dateToISO,
+  parseDate,
 } from "../../common/date";
 
 export default function ReservationPage() {
@@ -108,9 +109,9 @@ export default function ReservationPage() {
       return false;
     }
 
-    const startDate = new Date(formState.startDate);
-    const endDate = new Date(formState.endDate);
-    if (endDate <= startDate) {
+    const startDate = parseDate(formState.startDate);
+    const endDate = parseDate(formState.endDate);
+    if (!startDate || !endDate || endDate <= startDate) {
       showError("La fecha de fin debe ser posterior a la fecha de inicio");
       return false;
     }
@@ -123,8 +124,8 @@ export default function ReservationPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = dateToISO(new Date(formState.startDate!));
-    const endDate = dateToISO(new Date(formState.endDate!));
+    const startDate = dateToISO(parseDate(formState.startDate!)!);
+    const endDate = dateToISO(parseDate(formState.endDate!)!);
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta reserva?`,
@@ -158,11 +159,9 @@ export default function ReservationPage() {
 
   // Helper to get current dates as Date objects
   const getStartDate = () =>
-    formState.startDate ? new Date(formState.startDate) : new Date();
+    parseDate(formState.startDate!) ?? new Date();
   const getEndDate = () =>
-    formState.endDate
-      ? new Date(formState.endDate)
-      : new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+    parseDate(formState.endDate!) ?? new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 
   const sections: FormSection[] = [
     {

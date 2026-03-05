@@ -16,7 +16,7 @@ import {
   deleteVehicleKilometersLog,
 } from "../../../services/kilometers";
 import type { VehicleKilometersLog } from "../../../types/kilometer";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import { toInputDateSafe, inputDateToAPI, parseDate } from "../../../common/date";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -107,8 +107,9 @@ export default function KilometersLogPage() {
     }
 
     const today = new Date();
-    const formDate = new Date(formState.date);
-    if (formDate > today) {
+    today.setHours(23, 59, 59, 999); // Allow today's date
+    const formDate = parseDate(formState.date);
+    if (formDate && formDate > today) {
       showError("La fecha de registro no puede ser futura");
       return false;
     }
@@ -129,7 +130,7 @@ export default function KilometersLogPage() {
     const payload = {
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
+      date: inputDateToAPI(toInputDateSafe(formState.date)),
       kilometers: formState.kilometers!,
     };
 
@@ -189,9 +190,7 @@ export default function KilometersLogPage() {
       fields: [
         {
           type: "date",
-          value: formState.date
-            ? toInputDate(new Date(formState.date))
-            : toInputDate(new Date()),
+          value: toInputDateSafe(formState.date),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, date: value })),
           key: "date",

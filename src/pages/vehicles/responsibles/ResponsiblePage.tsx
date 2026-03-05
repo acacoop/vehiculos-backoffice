@@ -16,7 +16,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import { toInputDateSafe, inputDateToAPI } from "../../../common/date";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -127,14 +127,12 @@ export default function ResponsiblePage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = formState.startDate
-      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
-      : inputDateToAPI(toInputDate(new Date()));
+    const startDate = inputDateToAPI(toInputDateSafe(formState.startDate));
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
+        : inputDateToAPI(toInputDateSafe(formState.endDate));
 
     executeSave(
       `¿Está seguro que desea ${actionText} este responsable de vehículo?`,
@@ -202,9 +200,7 @@ export default function ResponsiblePage() {
       fields: [
         {
           type: "date",
-          value: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : toInputDate(new Date()),
+          value: toInputDateSafe(formState.startDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
@@ -213,17 +209,13 @@ export default function ResponsiblePage() {
         },
         {
           type: "date",
-          value: formState.endDate
-            ? toInputDate(new Date(formState.endDate))
-            : toInputDate(new Date()),
+          value: toInputDateSafe(formState.endDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
           label: "Fecha hasta",
           show: !isIndefinite,
-          min: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : undefined,
+          min: toInputDateSafe(formState.startDate),
         },
         {
           type: "checkbox",

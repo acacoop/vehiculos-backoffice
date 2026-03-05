@@ -19,7 +19,7 @@ import {
 } from "../../../services/maintenanceRecords";
 
 import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
-import { inputDateToAPI, toInputDate } from "../../../common/date";
+import { inputDateToAPI, toInputDateSafe } from "../../../common/date";
 
 // Extended form state with local kilometers field for editing
 interface FormState extends Partial<MaintenanceRecord> {
@@ -33,7 +33,7 @@ export default function MaintenanceRecordRegisterPage() {
 
   // Main form state (entity data with local kilometers field)
   const [formState, setFormState] = useState<FormState>({
-    date: toInputDate(new Date()),
+    date: toInputDateSafe(undefined),
   });
 
   // Handler for initial data - extract kilometers from kilometersLog
@@ -140,7 +140,7 @@ export default function MaintenanceRecordRegisterPage() {
       maintenanceId: formState.maintenance!.id,
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
+      date: inputDateToAPI(toInputDateSafe(formState.date)),
       kilometers: formState.kilometers!,
       notes: formState.notes || "",
     };
@@ -235,9 +235,7 @@ export default function MaintenanceRecordRegisterPage() {
       fields: [
         {
           type: "date",
-          value: formState.date
-            ? toInputDate(new Date(formState.date))
-            : toInputDate(new Date()),
+          value: toInputDateSafe(formState.date),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, date: value })),
           key: "date",

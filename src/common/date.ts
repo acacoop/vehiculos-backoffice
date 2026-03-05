@@ -134,6 +134,40 @@ export function toInputDate(date: Date): string {
 }
 
 /**
+ * Safely converts a string or Date to "YYYY-MM-DD" format for <input type="date">
+ * Handles timezone issues by treating date-only strings (YYYY-MM-DD) as-is,
+ * and properly parsing ISO strings and Date objects.
+ * @example toInputDateSafe("2024-01-15") => "2024-01-15"
+ * @example toInputDateSafe(new Date()) => "2024-01-15"
+ * @example toInputDateSafe("2024-01-15T00:00:00.000Z") => "2024-01-15" (local)
+ */
+export function toInputDateSafe(value: string | Date | null | undefined): string {
+  // If null/undefined, return today's date
+  if (!value) {
+    return toInputDate(new Date());
+  }
+
+  // If already a Date object
+  if (value instanceof Date) {
+    return toInputDate(value);
+  }
+
+  // If it's already in YYYY-MM-DD format, return as-is (no conversion needed)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  // For ISO strings or other formats, parse properly to avoid timezone issues
+  const parsed = parseDate(value);
+  if (parsed) {
+    return toInputDate(parsed);
+  }
+
+  // Fallback to today
+  return toInputDate(new Date());
+}
+
+/**
  * Converts a Date to "HH:MM" format for <input type="time">
  * @example toInputTime(new Date("2024-01-15T14:30")) => "14:30"
  */
