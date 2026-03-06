@@ -281,9 +281,11 @@ export default function Document({
 
               {hasExpiration && (
                 <div className="document-form-group">
-                  <label htmlFor="expiration">Fecha de Vencimiento</label>
+                  <label htmlFor="expiration">
+                    Fecha y hora de Vencimiento
+                  </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="expiration"
                     value={newExpirationDate}
                     onChange={(e) => setNewExpirationDate(e.target.value)}

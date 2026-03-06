@@ -16,7 +16,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -120,6 +120,16 @@ export default function ResponsiblePage() {
       return;
     }
 
+    if (!formState.ceco) {
+      showError("El CECO es obligatorio");
+      return;
+    }
+
+    if (formState.ceco.length !== 8) {
+      showError("El CECO debe tener exactamente 8 caracteres");
+      return;
+    }
+
     if (!isIndefinite && !formState.endDate) {
       showError("La fecha de fin es obligatoria si no es indefinida");
       return;
@@ -127,14 +137,12 @@ export default function ResponsiblePage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = formState.startDate
-      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
-      : inputDateToAPI(toInputDate(new Date()));
+    const startDate = inputDateTimeToAPI(formState.startDate!);
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
+        : inputDateTimeToAPI(formState.endDate);
 
     executeSave(
       `¿Está seguro que desea ${actionText} este responsable de vehículo?`,
@@ -143,12 +151,14 @@ export default function ResponsiblePage() {
           ? createVehicleResponsible({
               userId: formState.user!.id,
               vehicleId: formState.vehicle!.id,
+              ceco: formState.ceco!,
               startDate,
               endDate,
             })
           : updateVehicleResponsible(id!, {
               userId: formState.user!.id,
               vehicleId: formState.vehicle!.id,
+              ceco: formState.ceco!,
               startDate,
               endDate,
             }),
@@ -197,33 +207,47 @@ export default function ResponsiblePage() {
     },
     {
       type: "fields",
+      title: "CECO",
+      layout: "grid",
+      fields: [
+        {
+          type: "text",
+          value: formState.ceco || "",
+          onChange: (value: string) => {
+            // Solo permitir números y máximo 8 caracteres
+            const numericValue = value.replace(/\D/g, "").slice(0, 8);
+            setFormState((prev) => ({ ...prev, ceco: numericValue }));
+          },
+          key: "ceco",
+          label: "CECO (8 dígitos)",
+          required: true,
+          placeholder: "12345678",
+        },
+      ],
+    },
+    {
+      type: "fields",
       title: "Período",
       layout: "grid",
       fields: [
         {
-          type: "date",
-          value: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha desde",
+          label: "Fecha y hora desde",
           required: true,
         },
         {
-          type: "date",
-          value: formState.endDate
-            ? toInputDate(new Date(formState.endDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha hasta",
+          label: "Fecha y hora hasta",
           show: !isIndefinite,
-          min: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : undefined,
+          min: toInputDateTimeSafe(formState.startDate),
         },
         {
           type: "checkbox",
