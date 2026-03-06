@@ -359,7 +359,7 @@ export default function VehiclesPage() {
           required: true,
         },
         {
-          type: "date",
+          type: "datetime",
           value: vehicle.registrationDate,
           onChange: (value: string) =>
             setVehicle({ ...vehicle, registrationDate: value }),

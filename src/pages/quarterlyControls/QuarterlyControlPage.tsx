@@ -246,7 +246,7 @@ export default function QuarterlyControlPage() {
           required: true,
         },
         {
-          type: "date",
+          type: "datetime",
           value: formData.intendedDeliveryDate!,
           key: "intendedDeliveryDate",
           label: "Fecha de entrega prevista",
