@@ -11,13 +11,31 @@ import type {
 } from "../../../types/vehicleResponsible";
 
 const columns: TableColumn<VehicleResponsible>[] = [
-  { field: "user.cuit", headerName: "CUIT", minWidth: 120 },
-  { field: "user.firstName", headerName: "Nombre", minWidth: 150 },
-  { field: "user.lastName", headerName: "Apellido", minWidth: 150 },
+  {
+    field: "user",
+    headerName: "Usuario",
+    minWidth: 220,
+    transform: (_value, row) => {
+      const user = row.user;
+      if (user) {
+        return `${user.firstName} ${user.lastName} (${user.cuit})`;
+      }
+      return "N/A";
+    },
+  },
+  {
+    field: "vehicle",
+    headerName: "Vehículo",
+    minWidth: 220,
+    transform: (_value, row) => {
+      const vehicle = row.vehicle;
+      if (vehicle && vehicle.model && vehicle.model.brand) {
+        return `${vehicle.model.brand.name} ${vehicle.model.name} (${vehicle.licensePlate})`;
+      }
+      return "N/A";
+    },
+  },
   { field: "ceco", headerName: "CECO", minWidth: 100 },
-  { field: "vehicle.model.brand.name", headerName: "Marca", minWidth: 140 },
-  { field: "vehicle.model.name", headerName: "Modelo", minWidth: 140 },
-  { field: "vehicle.licensePlate", headerName: "Patente", minWidth: 120 },
   {
     field: "startDate",
     headerName: "Fecha inicio",
