@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -22,7 +23,7 @@ import type {
 } from "../../../types/vehicleModel";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { ApiFindOptions } from "../../../services/common";
-import { Layers, Car } from "lucide-react";
+import { Layers, Car, ArrowLeftFromLine } from "lucide-react";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -195,6 +196,18 @@ export default function BrandPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Marcas", href: "/vehicles/brands" },
+          { label: isNew ? "Nueva marca" : formState.name || "Editar marca" },
+        ]}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/vehicles/brands",
+        }}
+      />
       <Form
         title={isNew ? "Nueva marca" : "Editar marca"}
         sections={sections}

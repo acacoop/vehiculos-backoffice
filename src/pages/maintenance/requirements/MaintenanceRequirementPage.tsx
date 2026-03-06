@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { usePageState } from "../../../hooks";
@@ -19,6 +20,7 @@ import {
   getMaintenanceRequirementById,
   updateMaintenanceRequirement,
 } from "../../../services/maintenaceRequirements";
+import { ArrowLeftFromLine } from "lucide-react";
 
 export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
@@ -369,6 +371,18 @@ export default function MaintenanceRequirementPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Requerimientos", href: "/maintenance/requirements" },
+          { label: isNew ? "Nuevo requerimiento" : "Editar requerimiento" },
+        ]}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/maintenance/requirements",
+        }}
+      />
       <Form
         title={
           isNew

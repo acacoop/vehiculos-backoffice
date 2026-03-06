@@ -13,6 +13,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@acacoop/react-components-library": "^0.4.0",
     "@azure/msal-browser": "^4.21.0",
     "@azure/msal-react": "^3.0.19",
     "@emotion/react": "^11.14.0",
