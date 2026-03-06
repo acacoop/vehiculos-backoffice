@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import Form from "../../../components/Form/Form";
 import type { FormSection } from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
@@ -24,7 +25,7 @@ import type {
   MaintenanceRequirementFilterParams,
 } from "../../../types/maintenanceRequirement";
 import type { ApiFindOptions } from "../../../services/common";
-import { Car, Wrench } from "lucide-react";
+import { Car, Wrench, ArrowLeftFromLine } from "lucide-react";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -245,6 +246,18 @@ export default function ModelPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Modelos", href: "/vehicles/models" },
+          { label: isNew ? "Nuevo modelo" : formState.name || "Editar modelo" },
+        ]}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/vehicles/models",
+        }}
+      />
       <Form
         title={isNew ? "Nuevo modelo" : "Editar modelo"}
         sections={sections}

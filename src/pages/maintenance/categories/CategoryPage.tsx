@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { Table, type TableColumn } from "../../../components/Table";
 import {
@@ -19,6 +20,7 @@ import type {
 } from "../../../types/maintenance";
 import type { Category } from "../../../types/category";
 import type { ApiFindOptions } from "../../../services/common";
+import { ArrowLeftFromLine } from "lucide-react";
 
 const maintenanceColumns: TableColumn<Maintenance>[] = [
   {
@@ -169,6 +171,22 @@ export default function CategoryPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Categorías", href: "/maintenance/categories" },
+          {
+            label: isNew
+              ? "Nueva categoría"
+              : formState.name || "Editar categoría",
+          },
+        ]}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/maintenance/categories",
+        }}
+      />
       <Form
         title={isNew ? "Nueva categoría" : "Editar categoría"}
         sections={sections}

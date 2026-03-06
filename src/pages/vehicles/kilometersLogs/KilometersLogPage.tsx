@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -21,6 +22,7 @@ import {
   inputDateTimeToAPI,
   parseDate,
 } from "../../../common/date";
+import { ArrowLeftFromLine } from "lucide-react";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -220,7 +222,19 @@ export default function KilometersLogPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Kilometraje", href: "/vehicles/kilometersLogs" },
+          { label: isNew ? "Nuevo registro" : "Editar registro" },
+        ]}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/vehicles/kilometersLogs",
+        }}
+      />
       <Form
         title={
           isNew

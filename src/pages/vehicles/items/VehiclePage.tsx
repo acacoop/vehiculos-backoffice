@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
@@ -37,6 +38,7 @@ import {
   Wrench,
   CalendarDays,
   ClipboardCheck,
+  ArrowLeftFromLine,
 } from "lucide-react";
 
 const emptyVehicle: Partial<Vehicle> = {
@@ -439,8 +441,24 @@ export default function VehiclesPage() {
     return <LoadingSpinner message="Cargando vehículo..." />;
   }
 
+  const vehicleLabel = vehicle.licensePlate || "Nuevo vehículo";
+
+  const breadcrumbItems = [
+    { label: "Inicio", href: "/" },
+    { label: "Vehículos", href: "/vehicles" },
+    { label: vehicleLabel },
+  ];
+
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        backButton={{
+          icon: <ArrowLeftFromLine size={16} />,
+          text: "Volver",
+          href: "/vehicles",
+        }}
+      />
       <Form
         title="Detalle del vehículo"
         sections={vehicleInfoSections}
