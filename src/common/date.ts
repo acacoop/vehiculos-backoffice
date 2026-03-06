@@ -1,31 +1,9 @@
-// ============================================================================
-// DISPLAY FORMATTING - For showing dates to users
-// ============================================================================
-
-/**
- * Parses a date string handling timezone issues.
- * For date-only strings (YYYY-MM-DD), treats them as local dates to avoid UTC shift.
- * For full ISO strings with time, parses normally.
- */
 export function parseDate(value: string | Date): Date | null {
   if (value instanceof Date) return value;
-
-  // Check if it's a date-only string (YYYY-MM-DD)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    // Parse as local date by adding time component without Z
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  }
-
-  // For full datetime strings, parse normally
   const date = new Date(value);
   return isNaN(date.getTime()) ? null : date;
 }
 
-/**
- * Formats a date to DD/MM/YYYY
- * @example formatDate("2024-01-15") => "15/01/2024"
- */
 export function formatDate(value: unknown, fallback = "Sin fecha"): string {
   if (!value) return fallback;
 
@@ -43,10 +21,6 @@ export function formatDate(value: unknown, fallback = "Sin fecha"): string {
   }
 }
 
-/**
- * Formats a datetime to DD/MM/YYYY HH:MM
- * @example formatDateTime("2024-01-15T14:30:00Z") => "15/01/2024 14:30"
- */
 export function formatDateTime(value: unknown, fallback = "Sin fecha"): string {
   if (!value) return fallback;
 
@@ -70,10 +44,6 @@ export function formatDateTime(value: unknown, fallback = "Sin fecha"): string {
   }
 }
 
-/**
- * Formats end dates, showing "Indefinida" for null/empty values
- * @example formatEndDate(null) => "Indefinida"
- */
 export function formatEndDate(value: unknown): string {
   if (!value || (typeof value === "string" && value.trim() === "")) {
     return "Indefinida";
@@ -81,10 +51,6 @@ export function formatEndDate(value: unknown): string {
   return formatDate(value, "Indefinida");
 }
 
-/**
- * Formats a date as relative time: "Hoy", "Ayer", "Hace 3 días", etc.
- * @example formatRelativeDate(new Date()) => "Hoy"
- */
 export function formatRelativeDate(
   value: unknown,
   fallback = "Sin fecha",
@@ -96,7 +62,6 @@ export function formatRelativeDate(
     if (!date) return fallback;
 
     const now = new Date();
-    // Compare dates at midnight to avoid time-of-day issues
     const dateOnly = new Date(
       date.getFullYear(),
       date.getMonth(),
@@ -118,97 +83,51 @@ export function formatRelativeDate(
   }
 }
 
-// ============================================================================
-// FORM INPUTS - For working with <input type="date"> and <input type="time">
-// ============================================================================
-
-/**
- * Converts a Date to "YYYY-MM-DD" format for <input type="date">
- * @example toInputDate(new Date("2024-01-15")) => "2024-01-15"
- */
-export function toInputDate(date: Date): string {
+export function toInputDateTime(date: Date): string {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Converts a Date to "HH:MM" format for <input type="time">
- * @example toInputTime(new Date("2024-01-15T14:30")) => "14:30"
- */
-export function toInputTime(date: Date): string {
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-/**
- * Creates a Date from "YYYY-MM-DD" and "HH:MM" input values
- * @example inputsToDate("2024-01-15", "14:30") => Date object
- */
-export function inputsToDate(dateStr: string, timeStr: string): Date {
-  return new Date(`${dateStr}T${timeStr}`);
+export function toInputDateTimeSafe(
+  value: string | Date | null | undefined,
+): string {
+  if (!value) return toInputDateTime(new Date());
+  if (value instanceof Date) return toInputDateTime(value);
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return value;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00`;
+
+  const parsed = parseDate(value);
+  return parsed ? toInputDateTime(parsed) : toInputDateTime(new Date());
 }
 
-// ============================================================================
-// API COMMUNICATION - For sending/receiving dates to/from backend
-// ============================================================================
-
-/**
- * Converts a Date to ISO string for API requests
- * @example dateToISO(new Date("2024-01-15T14:30")) => "2024-01-15T14:30:00.000Z"
- */
 export function dateToISO(date: Date): string {
   return date.toISOString();
 }
 
-/**
- * Converts "YYYY-MM-DD" input to date string for API requests.
- * Returns the date as-is (YYYY-MM-DD format) to avoid timezone conversion issues.
- * @example inputDateToAPI("2024-01-15") => "2024-01-15"
- */
-export function inputDateToAPI(dateStr: string): string {
-  // Validate format and return as-is
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return dateStr;
+export function inputDateTimeToAPI(datetimeStr: string): string {
+  if (datetimeStr.includes("Z") || /\+\d{2}:\d{2}$/.test(datetimeStr)) {
+    return datetimeStr;
   }
-  // If it's a full ISO string, extract just the date part
-  if (dateStr.includes("T")) {
-    return dateStr.split("T")[0];
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(datetimeStr)) {
+    return new Date(datetimeStr).toISOString();
   }
-  return dateStr;
+
+  return new Date(datetimeStr).toISOString();
 }
 
-// ============================================================================
-// UTILITIES - Helper functions
-// ============================================================================
-
-/**
- * Checks if a period is currently active
- * @example isActive("2024-01-01", "2024-12-31") => true if today is within range
- */
 export function isActive(
   startDate: string | null | undefined,
   endDate: string | null | undefined,
 ): boolean {
   const now = new Date();
-  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  if (startDate) {
-    const start = parseDate(startDate);
-    if (start && start > todayOnly) return false;
-  }
-
-  if (endDate) {
-    const end = parseDate(endDate);
-    if (end) {
-      // End date is inclusive - add 1 day and compare
-      const endPlusOne = new Date(end);
-      endPlusOne.setDate(endPlusOne.getDate() + 1);
-      return todayOnly < endPlusOne;
-    }
-  }
-
+  const start = startDate ? parseDate(startDate) : null;
+  const end = endDate ? parseDate(endDate) : null;
+  if (start && now < start) return false;
+  if (end && now >= end) return false;
   return true;
 }

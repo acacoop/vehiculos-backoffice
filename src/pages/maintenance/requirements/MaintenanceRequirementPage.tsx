@@ -5,7 +5,7 @@ import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { usePageState } from "../../../hooks";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
 import {
   VehicleModelEntitySearch,
   MaintenanceEntitySearch,
@@ -170,14 +170,12 @@ export default function MaintenanceRequirementPage() {
       return;
     }
 
-    const startDate = formState.startDate
-      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
-      : inputDateToAPI(toInputDate(new Date()));
+    const startDate = inputDateTimeToAPI(formState.startDate!);
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
+        : inputDateTimeToAPI(formState.endDate);
 
     const actionText = isNew ? "crear" : "actualizar";
     executeSave(
@@ -312,29 +310,23 @@ export default function MaintenanceRequirementPage() {
       layout: "grid",
       fields: [
         {
-          type: "date",
-          value: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha desde",
+          label: "Fecha y hora desde",
           required: true,
         },
         {
-          type: "date",
-          value: formState.endDate
-            ? toInputDate(new Date(formState.endDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha hasta",
+          label: "Fecha y hora hasta",
           show: !isIndefinite,
-          min: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : undefined,
+          min: toInputDateTimeSafe(formState.startDate),
         },
         {
           type: "checkbox",
