@@ -1,4 +1,5 @@
 import { Chart, type ChartFilter } from "../../components/Charts";
+import { PageHeader } from "../../components/PageHeader";
 import {
   getVehiclesByKilometers,
   getVehiclesByAge,
@@ -228,6 +229,12 @@ export default function MetricsPage() {
 
   return (
     <div className="metrics-container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Métricas" },
+        ]}
+      />
       <div className="header-metrics">
         <h1 className="title">Métricas</h1>
       </div>

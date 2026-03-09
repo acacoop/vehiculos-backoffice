@@ -1,6 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Breadcrumbs, Button } from "@acacoop/react-components-library";
+import { Link } from "react-router-dom";
+import { Breadcrumbs, Button, COLORS } from "@acacoop/react-components-library";
 import type { ReactNode } from "react";
+import { useNavigation } from "../../contexts";
 import "./PageHeader.css";
 
 export interface BreadcrumbItem {
@@ -11,6 +12,7 @@ export interface BreadcrumbItem {
 export interface BackButtonConfig {
   icon?: ReactNode;
   text?: string;
+  /** Ruta de fallback si no hay historial de navegación */
   href?: string;
   onClick?: () => void;
 }
@@ -24,13 +26,14 @@ export default function PageHeader({
   breadcrumbItems,
   backButton,
 }: PageHeaderProps) {
-  const navigate = useNavigate();
+  const { goBack } = useNavigation();
 
   const handleBackClick = () => {
     if (backButton?.onClick) {
       backButton.onClick();
-    } else if (backButton?.href) {
-      navigate(backButton.href);
+    } else {
+      // Usa el historial de navegación, con href como fallback
+      goBack(backButton?.href);
     }
   };
 
@@ -39,6 +42,8 @@ export default function PageHeader({
       <Breadcrumbs
         items={breadcrumbItems}
         size="lg"
+        activeColor={COLORS.primary}
+        hoverColor={COLORS.secondary}
         linkComponent={({
           href,
           children,

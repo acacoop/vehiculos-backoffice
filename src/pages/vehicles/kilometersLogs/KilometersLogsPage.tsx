@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -72,6 +73,12 @@ export default function KilometersLogsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Kilometraje" },
+        ]}
+      />
       <Table<KilometersFilterParams, VehicleKilometersLog>
         getRows={getVehicleKilometersLogs}
         columns={columns}

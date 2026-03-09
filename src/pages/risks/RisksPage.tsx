@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Car, Wrench, CalendarX, AlertTriangle, Gauge } from "lucide-react";
+import { PageHeader } from "../../components/PageHeader";
 import { StatCardsGrid, type StatCardData } from "../../components/StatCard";
 import { TableSelector } from "../../components/TableSelector";
 import {
@@ -341,6 +342,12 @@ export default function RisksPage() {
 
   return (
     <div className="risks-container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Riesgos" },
+        ]}
+      />
       <div className="header-risks">
         <h1 className="title">Riesgos</h1>
       </div>

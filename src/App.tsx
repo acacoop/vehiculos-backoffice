@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
+import { NavigationProvider } from "./contexts";
 import "./App.css";
 
 import { LoginPage } from "./pages/auth";
@@ -92,8 +93,9 @@ function ProtectedRoute() {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
+      <NavigationProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
 
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
@@ -225,6 +227,7 @@ function App() {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>
+      </NavigationProvider>
     </Router>
   );
 }

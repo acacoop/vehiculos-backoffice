@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -78,6 +79,12 @@ export default function AssignmentsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Asignaciones" },
+        ]}
+      />
       <Table<AssignmentFilterParams, Assignment>
         getRows={getAssignments}
         columns={columns}

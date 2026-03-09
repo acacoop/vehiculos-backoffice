@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Table } from "../../../components/Table";
 import type { TableColumn } from "../../../components/Table";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
@@ -17,6 +18,12 @@ export default function BrandsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Marcas" },
+        ]}
+      />
       <Table
         getRows={getVehicleBrands}
         columns={columns}

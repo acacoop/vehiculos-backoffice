@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -100,6 +101,12 @@ export default function MaintenanceRecordsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Registros de mantenimiento" },
+        ]}
+      />
       <Table<MaintenanceRecordFilterParams, MaintenanceRecord>
         getRows={(options) => getMaintenanceRecords(options)}
         columns={columns}

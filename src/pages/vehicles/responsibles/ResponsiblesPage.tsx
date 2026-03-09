@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -75,7 +76,13 @@ export default function ResponsiblesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="responsibles-page">
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Responsables" },
+        ]}
+      />
       <Table<VehicleResponsibleFilterParams, VehicleResponsible>
         getRows={getVehicleResponsibles}
         columns={columns}

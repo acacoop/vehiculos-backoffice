@@ -1,3 +1,4 @@
+import { PageHeader } from "../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -48,7 +49,14 @@ const filterDefinitions: FilterDefinition<UserFilterParams>[] = [
 
 export default function UsersPage() {
   return (
-    <Table<UserFilterParams, User>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: "/" },
+          { label: "Usuarios" },
+        ]}
+      />
+      <Table<UserFilterParams, User>
       getRows={getUsers}
       columns={userColumns}
       filters={{
@@ -67,5 +75,6 @@ export default function UsersPage() {
       }}
       width={1200}
     />
+    </div>
   );
 }
