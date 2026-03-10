@@ -4,6 +4,7 @@ import { Table } from "../../../components/Table";
 import type { TableColumn } from "../../../components/Table";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<VehicleBrand>[] = [
   {
@@ -20,7 +21,7 @@ export default function BrandsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Marcas" },
         ]}
       />

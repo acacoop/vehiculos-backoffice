@@ -20,7 +20,7 @@ import {
   type BackendQuarterlyControlItemStatus,
 } from "../../common";
 import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../common";
 
 export default function QuarterlyControlItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -227,14 +227,13 @@ export default function QuarterlyControlItemPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Controles Trimestrales", href: "/quarterly-controls" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Controles Trimestrales", href: ROUTES.QUARTERLY_CONTROLS },
           { label: "Editar ítem" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/quarterly-controls",
+          fallbackHref: ROUTES.QUARTERLY_CONTROLS,
         }}
       />
       <Form

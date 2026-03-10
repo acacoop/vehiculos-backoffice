@@ -25,7 +25,8 @@ import type {
   MaintenanceRequirementFilterParams,
 } from "../../../types/maintenanceRequirement";
 import type { ApiFindOptions } from "../../../services/common";
-import { Car, Wrench, ArrowLeftFromLine } from "lucide-react";
+import { Car, Wrench } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -248,14 +249,13 @@ export default function ModelPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Modelos", href: "/vehicles/models" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Modelos", href: ROUTES.MODELS },
           { label: isNew ? "Nuevo modelo" : formState.name || "Editar modelo" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles/models",
+          fallbackHref: ROUTES.MODELS,
         }}
       />
       <Form

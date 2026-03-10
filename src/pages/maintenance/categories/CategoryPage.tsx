@@ -20,7 +20,7 @@ import type {
 } from "../../../types/maintenance";
 import type { Category } from "../../../types/category";
 import type { ApiFindOptions } from "../../../services/common";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 const maintenanceColumns: TableColumn<Maintenance>[] = [
   {
@@ -173,8 +173,8 @@ export default function CategoryPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Categorías", href: "/maintenance/categories" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Categorías", href: ROUTES.MAINTENANCE_CATEGORIES },
           {
             label: isNew
               ? "Nueva categoría"
@@ -182,9 +182,8 @@ export default function CategoryPage() {
           },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/maintenance/categories",
+          fallbackHref: ROUTES.MAINTENANCE_CATEGORIES,
         }}
       />
       <Form

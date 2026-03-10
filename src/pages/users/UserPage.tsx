@@ -22,7 +22,8 @@ import type {
   ReservationFilterParams,
 } from "../../types/reservation";
 import type { VehicleResponsibleFilterParams } from "../../types/vehicleResponsible";
-import { Car, CalendarDays, UserCheck, ArrowLeftFromLine } from "lucide-react";
+import { Car, CalendarDays, UserCheck } from "lucide-react";
+import { ROUTES } from "../../common";
 
 export default function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -125,8 +126,8 @@ export default function UserPage() {
       ? `${userData.firstName} ${userData.lastName}`
       : "Usuario";
   const breadcrumbItems = [
-    { label: "Inicio", href: "/" },
-    { label: "Usuarios", href: "/users" },
+    { label: "Inicio", href: ROUTES.HOME },
+    { label: "Usuarios", href: ROUTES.USERS },
     { label: userName },
   ];
 
@@ -205,9 +206,8 @@ export default function UserPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/users",
+          fallbackHref: ROUTES.USERS,
         }}
       />
 

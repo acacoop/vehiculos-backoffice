@@ -1,19 +1,18 @@
-import { Link } from "react-router-dom";
-import { Breadcrumbs, Button, COLORS } from "@acacoop/react-components-library";
-import type { ReactNode } from "react";
-import { useNavigation } from "../../contexts";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Breadcrumbs,
+  Button,
+  COLORS,
+  type BreadcrumbItem,
+} from "@acacoop/react-components-library";
+import { ArrowLeftFromLine } from "lucide-react";
+import { popPageContext, ROUTES } from "../../common";
 import "./PageHeader.css";
 
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-}
-
 export interface BackButtonConfig {
-  icon?: ReactNode;
   text?: string;
   /** Ruta de fallback si no hay historial de navegación */
-  href?: string;
+  fallbackHref?: string;
   onClick?: () => void;
 }
 
@@ -26,14 +25,21 @@ export default function PageHeader({
   breadcrumbItems,
   backButton,
 }: PageHeaderProps) {
-  const { goBack } = useNavigation();
+  const navigate = useNavigate();
 
   const handleBackClick = () => {
     if (backButton?.onClick) {
       backButton.onClick();
+      return;
+    }
+
+    // Usar el navigation stack existente
+    const context = popPageContext();
+    if (context) {
+      navigate(context.returnPath);
     } else {
-      // Usa el historial de navegación, con href como fallback
-      goBack(backButton?.href);
+      // Fallback a la ruta especificada o al inicio
+      navigate(backButton?.fallbackHref ?? ROUTES.HOME);
     }
   };
 
@@ -63,8 +69,8 @@ export default function PageHeader({
       />
       {backButton && (
         <Button variant="outline" onClick={handleBackClick}>
-          {backButton.icon}
-          {backButton.text || "Volver"}
+          <ArrowLeftFromLine size={16} />
+          {backButton.text ?? "Volver"}
         </Button>
       )}
     </div>

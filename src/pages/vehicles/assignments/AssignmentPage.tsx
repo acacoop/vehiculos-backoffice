@@ -18,7 +18,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Assignment, AssignmentInput } from "../../../types/assignment";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 export default function VehicleAssignmentPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -241,14 +241,13 @@ export default function VehicleAssignmentPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Asignaciones", href: "/vehicles/assignments" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Asignaciones", href: ROUTES.ASSIGNMENTS },
           { label: isNew ? "Nueva asignación" : "Editar asignación" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles/assignments",
+          fallbackHref: ROUTES.ASSIGNMENTS,
         }}
       />
       <Form

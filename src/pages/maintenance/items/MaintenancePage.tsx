@@ -13,7 +13,7 @@ import NotificationToast from "../../../components/NotificationToast/Notificatio
 import type { Maintenance } from "../../../types/maintenance";
 import { Form, type FormSection } from "../../../components/Form";
 import { MaintenanceCategoryEntitySearch } from "../../../components/EntitySearch/EntitySearch";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
@@ -293,8 +293,8 @@ export default function MaintenancePage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Mantenimientos", href: "/maintenance/items" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Mantenimientos", href: ROUTES.MAINTENANCE_ITEMS },
           {
             label: isNew
               ? "Nuevo mantenimiento"
@@ -302,9 +302,8 @@ export default function MaintenancePage() {
           },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/maintenance/items",
+          fallbackHref: ROUTES.MAINTENANCE_ITEMS,
         }}
       />
       <Form

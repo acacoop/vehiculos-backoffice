@@ -11,7 +11,7 @@ import type {
   AssignmentFilterParams,
 } from "../../../types/assignment";
 import { formatDate } from "../../../common/date";
-import { COLORS } from "../../../common/colors";
+import { COLORS, ROUTES } from "../../../common";
 
 const columns: TableColumn<Assignment>[] = [
   {
@@ -81,7 +81,7 @@ export default function AssignmentsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Asignaciones" },
         ]}
       />

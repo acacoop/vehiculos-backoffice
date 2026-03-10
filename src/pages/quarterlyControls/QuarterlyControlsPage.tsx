@@ -15,6 +15,7 @@ import {
   QUARTER_OPTIONS,
   YEAR_OPTIONS,
   formatDate,
+  ROUTES,
 } from "../../common";
 import { getQuarterlyControlStatus } from "../../common/utils";
 
@@ -109,7 +110,7 @@ export default function QuarterlyControlsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Controles Trimestrales" },
         ]}
       />

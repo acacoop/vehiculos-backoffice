@@ -18,7 +18,7 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
 import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -271,14 +271,13 @@ export default function ResponsiblePage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Responsables", href: "/vehicles/responsibles" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Responsables", href: ROUTES.RESPONSIBLES },
           { label: isNew ? "Nuevo responsable" : "Editar responsable" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles/responsibles",
+          fallbackHref: ROUTES.RESPONSIBLES,
         }}
       />
       <Form

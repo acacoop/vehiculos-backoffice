@@ -38,8 +38,8 @@ import {
   Wrench,
   CalendarDays,
   ClipboardCheck,
-  ArrowLeftFromLine,
 } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
@@ -444,8 +444,8 @@ export default function VehiclesPage() {
   const vehicleLabel = vehicle.licensePlate || "Nuevo vehículo";
 
   const breadcrumbItems = [
-    { label: "Inicio", href: "/" },
-    { label: "Vehículos", href: "/vehicles" },
+    { label: "Inicio", href: ROUTES.HOME },
+    { label: "Vehículos", href: ROUTES.VEHICLES },
     { label: vehicleLabel },
   ];
 
@@ -454,9 +454,8 @@ export default function VehiclesPage() {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles",
+          fallbackHref: ROUTES.VEHICLES,
         }}
       />
       <Form

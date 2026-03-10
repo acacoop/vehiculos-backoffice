@@ -22,7 +22,7 @@ import {
   inputDateTimeToAPI,
   parseDate,
 } from "../../common/date";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../common";
 
 export default function ReservationPage() {
   const { id } = useParams<{ id: string }>();
@@ -227,14 +227,13 @@ export default function ReservationPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Reservas", href: "/reservations" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Reservas", href: ROUTES.RESERVATIONS },
           { label: isNew ? "Nueva reserva" : "Editar reserva" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/reservations",
+          fallbackHref: ROUTES.RESERVATIONS,
         }}
       />
       <Form

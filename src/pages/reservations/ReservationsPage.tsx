@@ -10,6 +10,7 @@ import type {
   Reservation,
   ReservationFilterParams,
 } from "../../types/reservation";
+import { ROUTES } from "../../common";
 
 const columns: TableColumn<Reservation>[] = [
   {
@@ -64,7 +65,7 @@ export default function ReservationsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Reservas" },
         ]}
       />

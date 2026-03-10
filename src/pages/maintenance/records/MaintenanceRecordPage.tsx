@@ -21,7 +21,7 @@ import {
 
 import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
 import { inputDateTimeToAPI, toInputDateTimeSafe } from "../../../common/date";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 // Extended form state with local kilometers field for editing
 interface FormState extends Partial<MaintenanceRecord> {
@@ -280,14 +280,13 @@ export default function MaintenanceRecordRegisterPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Registros", href: "/maintenance/records" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Registros", href: ROUTES.MAINTENANCE_RECORDS },
           { label: isNew ? "Nuevo registro" : "Editar registro" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/maintenance/records",
+          fallbackHref: ROUTES.MAINTENANCE_RECORDS,
         }}
       />
       <Form

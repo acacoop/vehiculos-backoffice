@@ -10,6 +10,7 @@ import type {
   VehicleResponsible,
   VehicleResponsibleFilterParams,
 } from "../../../types/vehicleResponsible";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<VehicleResponsible>[] = [
   {
@@ -79,7 +80,7 @@ export default function ResponsiblesPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Responsables" },
         ]}
       />

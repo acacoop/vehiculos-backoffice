@@ -13,6 +13,7 @@ import type {
 import { getMaintenanceRecords } from "../../../services/maintenanceRecords";
 import { getMaintenances } from "../../../services/maintenances";
 import type { Maintenance } from "../../../types/maintenance";
+import { ROUTES } from "../../../common";
 
 export default function MaintenanceRecordsPage() {
   const navigate = useNavigate();
@@ -103,7 +104,7 @@ export default function MaintenanceRecordsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Registros de mantenimiento" },
         ]}
       />

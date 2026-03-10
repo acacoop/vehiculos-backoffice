@@ -8,6 +8,7 @@ import {
   type TableColumn,
   type FilterDefinition,
 } from "../../components/Table";
+import { ROUTES } from "../../common";
 import {
   getRisksSummary,
   getVehiclesWithoutResponsible,
@@ -344,7 +345,7 @@ export default function RisksPage() {
     <div className="risks-container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Riesgos" },
         ]}
       />

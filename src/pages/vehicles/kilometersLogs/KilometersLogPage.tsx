@@ -22,7 +22,7 @@ import {
   inputDateTimeToAPI,
   parseDate,
 } from "../../../common/date";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -225,14 +225,13 @@ export default function KilometersLogPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Kilometraje", href: "/vehicles/kilometersLogs" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Kilometraje", href: ROUTES.KILOMETERS_LOGS },
           { label: isNew ? "Nuevo registro" : "Editar registro" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles/kilometersLogs",
+          fallbackHref: ROUTES.KILOMETERS_LOGS,
         }}
       />
       <Form

@@ -20,7 +20,7 @@ import {
   getMaintenanceRequirementById,
   updateMaintenanceRequirement,
 } from "../../../services/maintenaceRequirements";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
@@ -373,14 +373,13 @@ export default function MaintenanceRequirementPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Requerimientos", href: "/maintenance/requirements" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Requerimientos", href: ROUTES.MAINTENANCE_REQUIREMENTS },
           { label: isNew ? "Nuevo requerimiento" : "Editar requerimiento" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/maintenance/requirements",
+          fallbackHref: ROUTES.MAINTENANCE_REQUIREMENTS,
         }}
       />
       <Form

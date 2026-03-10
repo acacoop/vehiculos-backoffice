@@ -3,6 +3,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { Table, type TableColumn } from "../../../components/Table";
 import { getMaintenances } from "../../../services/maintenances";
 import type { Maintenance } from "../../../types/maintenance";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<Maintenance>[] = [
   {
@@ -39,7 +40,7 @@ export default function MaintenancesPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Mantenimientos" },
         ]}
       />

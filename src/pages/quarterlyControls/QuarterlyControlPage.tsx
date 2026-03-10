@@ -25,7 +25,7 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { getQuarterlyControlItems } from "../../services/quarterlyControlItems";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ROUTES } from "../../common";
 
 type QuarterlyControlFormData = Partial<QuarterlyControl> & {
   kilometers?: number;
@@ -346,14 +346,13 @@ export default function QuarterlyControlPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Controles Trimestrales", href: "/quarterly-controls" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Controles Trimestrales", href: ROUTES.QUARTERLY_CONTROLS },
           { label: isNew ? "Nuevo control" : "Editar control" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/quarterly-controls",
+          fallbackHref: ROUTES.QUARTERLY_CONTROLS,
         }}
       />
       <Form

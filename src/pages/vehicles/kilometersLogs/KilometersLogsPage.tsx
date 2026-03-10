@@ -10,6 +10,7 @@ import type {
   KilometersFilterParams,
 } from "../../../types/kilometer";
 import { getVehicleKilometersLogs } from "../../../services/kilometers";
+import { ROUTES } from "../../../common";
 
 // Definición de filtros disponibles
 const filterDefinitions: FilterDefinition<KilometersFilterParams>[] = [
@@ -75,7 +76,7 @@ export default function KilometersLogsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Kilometraje" },
         ]}
       />

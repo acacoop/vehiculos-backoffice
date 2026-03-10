@@ -6,6 +6,7 @@ import {
 } from "../../components/Table";
 import { getUsers } from "../../services/users";
 import type { User, UserFilterParams } from "../../types/user";
+import { ROUTES } from "../../common";
 
 const userColumns: TableColumn<User>[] = [
   {
@@ -52,29 +53,29 @@ export default function UsersPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Usuarios" },
         ]}
       />
       <Table<UserFilterParams, User>
-      getRows={getUsers}
-      columns={userColumns}
-      filters={{
-        definitions: filterDefinitions,
-      }}
-      header={{
-        title: "Gestión de usuarios",
-      }}
-      actionColumn={{
-        route: "/users",
-        width: 80,
-      }}
-      search={{
-        enabled: true,
-        placeholder: "Buscar por nombre, apellido, email o CUIT",
-      }}
-      width={1200}
-    />
+        getRows={getUsers}
+        columns={userColumns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
+        header={{
+          title: "Gestión de usuarios",
+        }}
+        actionColumn={{
+          route: "/users",
+          width: 80,
+        }}
+        search={{
+          enabled: true,
+          placeholder: "Buscar por nombre, apellido, email o CUIT",
+        }}
+        width={1200}
+      />
     </div>
   );
 }

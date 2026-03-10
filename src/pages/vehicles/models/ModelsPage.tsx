@@ -13,6 +13,7 @@ import type {
   VehicleModelFilterParams,
 } from "../../../types/vehicleModel";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<VehicleModel>[] = [
   {
@@ -67,7 +68,7 @@ export default function ModelsPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: ROUTES.HOME },
           { label: "Modelos" },
         ]}
       />

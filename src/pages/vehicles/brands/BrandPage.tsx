@@ -23,7 +23,8 @@ import type {
 } from "../../../types/vehicleModel";
 import type { VehicleBrand } from "../../../types/vehicleBrand";
 import type { ApiFindOptions } from "../../../services/common";
-import { Layers, Car, ArrowLeftFromLine } from "lucide-react";
+import { Layers, Car } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 const vehicleColumns: TableColumn<Vehicle>[] = [
   {
@@ -198,14 +199,13 @@ export default function BrandPage() {
     <div className="container">
       <PageHeader
         breadcrumbItems={[
-          { label: "Inicio", href: "/" },
-          { label: "Marcas", href: "/vehicles/brands" },
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Marcas", href: ROUTES.BRANDS },
           { label: isNew ? "Nueva marca" : formState.name || "Editar marca" },
         ]}
         backButton={{
-          icon: <ArrowLeftFromLine size={16} />,
           text: "Volver",
-          href: "/vehicles/brands",
+          fallbackHref: ROUTES.BRANDS,
         }}
       />
       <Form
