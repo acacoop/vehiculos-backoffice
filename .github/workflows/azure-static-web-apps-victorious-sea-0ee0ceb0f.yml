@@ -18,6 +18,7 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_ENTRA_CLIENT_ID: ${{ vars.ENTRA_CLIENT_ID }}
           VITE_ENTRA_TENANT_ID: ${{ vars.ENTRA_TENANT_ID }}
           VITE_API_SCOPE: ${{ vars.API_SCOPE }}
