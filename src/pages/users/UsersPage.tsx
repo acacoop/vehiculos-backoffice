@@ -1,3 +1,4 @@
+import { PageHeader } from "../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -5,6 +6,7 @@ import {
 } from "../../components/Table";
 import { getUsers } from "../../services/users";
 import type { User, UserFilterParams } from "../../types/user";
+import { ROUTES } from "../../common";
 
 const userColumns: TableColumn<User>[] = [
   {
@@ -48,24 +50,32 @@ const filterDefinitions: FilterDefinition<UserFilterParams>[] = [
 
 export default function UsersPage() {
   return (
-    <Table<UserFilterParams, User>
-      getRows={getUsers}
-      columns={userColumns}
-      filters={{
-        definitions: filterDefinitions,
-      }}
-      header={{
-        title: "Gestión de usuarios",
-      }}
-      actionColumn={{
-        route: "/users",
-        width: 80,
-      }}
-      search={{
-        enabled: true,
-        placeholder: "Buscar por nombre, apellido, email o CUIT",
-      }}
-      width={1200}
-    />
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Usuarios" },
+        ]}
+      />
+      <Table<UserFilterParams, User>
+        getRows={getUsers}
+        columns={userColumns}
+        filters={{
+          definitions: filterDefinitions,
+        }}
+        header={{
+          title: "Gestión de usuarios",
+        }}
+        actionColumn={{
+          route: "/users",
+          width: 80,
+        }}
+        search={{
+          enabled: true,
+          placeholder: "Buscar por nombre, apellido, email o CUIT",
+        }}
+        width={1200}
+      />
+    </div>
   );
 }

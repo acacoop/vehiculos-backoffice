@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
@@ -17,6 +18,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Assignment, AssignmentInput } from "../../../types/assignment";
+import { ROUTES } from "../../../common";
 
 export default function VehicleAssignmentPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -237,6 +239,17 @@ export default function VehicleAssignmentPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Asignaciones", href: ROUTES.ASSIGNMENTS },
+          { label: isNew ? "Nueva asignación" : "Editar asignación" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.ASSIGNMENTS,
+        }}
+      />
       <Form
         title={isNew ? "Nueva asignación" : "Editar asignación"}
         sections={sections}

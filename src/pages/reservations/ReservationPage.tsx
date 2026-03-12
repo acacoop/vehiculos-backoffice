@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import { Form, type FormSection } from "../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../hooks";
@@ -21,6 +22,7 @@ import {
   inputDateTimeToAPI,
   parseDate,
 } from "../../common/date";
+import { ROUTES } from "../../common";
 
 export default function ReservationPage() {
   const { id } = useParams<{ id: string }>();
@@ -222,7 +224,18 @@ export default function ReservationPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Reservas", href: ROUTES.RESERVATIONS },
+          { label: isNew ? "Nueva reserva" : "Editar reserva" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.RESERVATIONS,
+        }}
+      />
       <Form
         title={isNew ? "Nueva reserva" : "Editar reserva"}
         sections={sections}

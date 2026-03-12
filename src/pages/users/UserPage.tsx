@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { Table } from "../../components/Table";
 import type { TableColumn } from "../../components/Table";
@@ -22,6 +23,7 @@ import type {
 } from "../../types/reservation";
 import type { VehicleResponsibleFilterParams } from "../../types/vehicleResponsible";
 import { Car, CalendarDays, UserCheck } from "lucide-react";
+import { ROUTES } from "../../common";
 
 export default function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -119,6 +121,16 @@ export default function UserPage() {
     return <LoadingSpinner message="Cargando datos del usuario..." />;
   }
 
+  const userName =
+    userData.firstName && userData.lastName
+      ? `${userData.firstName} ${userData.lastName}`
+      : "Usuario";
+  const breadcrumbItems = [
+    { label: "Inicio", href: ROUTES.HOME },
+    { label: "Usuarios", href: ROUTES.USERS },
+    { label: userName },
+  ];
+
   const handleStatusToggle = async (newState: boolean) => {
     if (!id) return;
 
@@ -191,6 +203,14 @@ export default function UserPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.USERS,
+        }}
+      />
+
       <Form title="Detalle del usuario" sections={userInfoSections} />
 
       <TableSelector
