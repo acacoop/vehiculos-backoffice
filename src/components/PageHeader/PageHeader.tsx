@@ -5,7 +5,7 @@ import {
   COLORS,
   type BreadcrumbItem,
 } from "@acacoop/react-components-library";
-import { ArrowLeftFromLine } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { popPageContext, ROUTES } from "../../common";
 import "./PageHeader.css";
 
@@ -68,8 +68,8 @@ export default function PageHeader({
         )}
       />
       {backButton && (
-        <Button variant="outline" onClick={handleBackClick}>
-          <ArrowLeftFromLine size={16} />
+        <Button size="sm" variant="outline" onClick={handleBackClick}>
+          <ArrowLeft size={16} />
           {backButton.text ?? "Volver"}
         </Button>
       )}
