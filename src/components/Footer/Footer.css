@@ -1,18 +1,146 @@
 .footer {
   background-color: var(--color-primary);
-  padding: 10px 0;
-  text-align: center;
   color: #ffffff;
-  border-top: 1px solid #e7e7e7;
-  bottom: 0;
   width: 100%;
   margin-top: 50px;
-  font-weight: bold;
 }
 
-.footer-content {
+.footer-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 32px;
+}
+
+.footer-section {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+}
+
+.footer-brand {
+  align-items: flex-start;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+  margin-bottom: 12px;
+}
+
+.footer-tagline {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.footer-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.footer-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.footer-contact-item a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.footer-contact-item a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.9;
+  transition:
+    opacity 0.2s ease,
+    padding-left 0.2s ease;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+  padding-left: 4px;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.footer-bottom p {
+  font-size: 13px;
+  margin: 4px 0;
+  opacity: 0.85;
+}
+
+.footer-credit {
+  font-size: 12px !important;
+  opacity: 0.7 !important;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+
+  .footer-brand {
+    align-items: center;
+  }
+
+  .footer-tagline {
+    max-width: 100%;
+  }
+
+  .footer-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .footer-contact-item {
+    justify-content: center;
+  }
+
+  .footer-links {
+    align-items: center;
+  }
+
+  .footer-links a:hover {
+    padding-left: 0;
+  }
 }

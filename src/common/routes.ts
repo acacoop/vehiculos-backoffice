@@ -77,6 +77,9 @@ export const ROUTES = {
   QUARTERLY_CONTROL_NEW: "/quarterly-controls/new",
   QUARTERLY_CONTROL_ITEM: (id: string | number) =>
     `/quarterly-controls/items/${id}`,
+
+  // Legal
+  PRIVACY_POLICY: "/privacy-policy",
 } as const;
 
 /**
