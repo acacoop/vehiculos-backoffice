@@ -95,7 +95,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomePage />} />
@@ -222,8 +222,6 @@ function App() {
           <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/reservations/new" element={<ReservationPage />} />
           <Route path="/reservations/:id" element={<ReservationPage />} />
-
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

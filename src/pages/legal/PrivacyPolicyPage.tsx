@@ -1,6 +1,4 @@
 import "./PrivacyPolicyPage.css";
-import { PageHeader } from "../../components/PageHeader";
-import { ROUTES } from "../../common";
 import { PolicySection } from "./PolicySection";
 import { ContactInfo } from "./ContactInfo";
 import { privacyPolicyData } from "./data";
@@ -22,14 +20,6 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="privacy-policy-page">
-      <PageHeader
-        breadcrumbItems={[
-          { label: "Inicio", href: ROUTES.HOME },
-          { label: "Políticas de Privacidad" },
-        ]}
-        backButton={{ fallbackHref: ROUTES.HOME }}
-      />
-
       <div className="privacy-policy-content">
         <div className="privacy-header-info">
           <p>

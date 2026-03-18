@@ -1,5 +1,11 @@
 export function parseDate(value: string | Date): Date | null {
   if (value instanceof Date) return value;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
   const date = new Date(value);
   return isNaN(date.getTime()) ? null : date;
 }
@@ -108,7 +114,13 @@ export function dateToISO(date: Date): string {
   return date.toISOString();
 }
 
-export function inputDateTimeToAPI(datetimeStr: string): string {
+export function inputDateTimeToAPI(
+  datetimeStr: string | null | undefined,
+): string {
+  if (!datetimeStr) {
+    return new Date().toISOString();
+  }
+
   if (datetimeStr.includes("Z") || /\+\d{2}:\d{2}$/.test(datetimeStr)) {
     return datetimeStr;
   }
@@ -125,9 +137,21 @@ export function isActive(
   endDate: string | null | undefined,
 ): boolean {
   const now = new Date();
-  const start = startDate ? parseDate(startDate) : null;
-  const end = endDate ? parseDate(endDate) : null;
-  if (start && now < start) return false;
-  if (end && now >= end) return false;
+  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (startDate) {
+    const start = parseDate(startDate);
+    if (start && start > todayOnly) return false;
+  }
+
+  if (endDate) {
+    const end = parseDate(endDate);
+    if (end) {
+      const endPlusOne = new Date(end);
+      endPlusOne.setDate(endPlusOne.getDate() + 1);
+      return todayOnly < endPlusOne;
+    }
+  }
+
   return true;
 }

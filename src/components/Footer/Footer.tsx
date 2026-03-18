@@ -5,6 +5,7 @@ import { Phone, MapPin } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const soporte = "https://acacoop.atlassian.net/servicedesk/customer/portals";
 
   return (
     <footer className="footer">
@@ -31,9 +32,8 @@ export default function Footer() {
         <div className="footer-section footer-links">
           <h4 className="footer-title">Enlaces</h4>
           <Link to="/home">Inicio</Link>
-          <Link to="/vehicles">Vehículos</Link>
-          <Link to="/reservations">Reservas</Link>
           <Link to="/privacy-policy">Políticas de privacidad</Link>
+          <Link to={soporte}>Soporte</Link>
         </div>
       </div>
 
