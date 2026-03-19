@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Table, type TableColumn } from "../../../components/Table";
 import type { MaintenanceRequirement } from "../../../types/maintenanceRequirement";
 import { getMaintenanceRequirements } from "../../../services/maintenaceRequirements";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<MaintenanceRequirement>[] = [
   {
@@ -49,6 +51,12 @@ export default function MaintenanceRequirementsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Requerimientos" },
+        ]}
+      />
       <Table
         getRows={getMaintenanceRequirements}
         columns={columns}

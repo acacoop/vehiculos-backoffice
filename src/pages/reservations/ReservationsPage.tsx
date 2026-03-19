@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -9,6 +10,7 @@ import type {
   Reservation,
   ReservationFilterParams,
 } from "../../types/reservation";
+import { ROUTES } from "../../common";
 
 const columns: TableColumn<Reservation>[] = [
   {
@@ -61,6 +63,12 @@ export default function ReservationsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Reservas" },
+        ]}
+      />
       <Table<ReservationFilterParams, Reservation>
         getRows={getReservations}
         columns={columns}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import Form from "../../../components/Form/Form";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { usePageState } from "../../../hooks";
@@ -19,6 +20,7 @@ import {
   getMaintenanceRequirementById,
   updateMaintenanceRequirement,
 } from "../../../services/maintenaceRequirements";
+import { ROUTES } from "../../../common";
 
 export default function MaintenanceRequirementPage() {
   const { id } = useParams<{ id: string }>();
@@ -369,6 +371,17 @@ export default function MaintenanceRequirementPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Requerimientos", href: ROUTES.MAINTENANCE_REQUIREMENTS },
+          { label: isNew ? "Nuevo requerimiento" : "Editar requerimiento" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.MAINTENANCE_REQUIREMENTS,
+        }}
+      />
       <Form
         title={
           isNew

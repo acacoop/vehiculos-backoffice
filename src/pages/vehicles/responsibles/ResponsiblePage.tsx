@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
@@ -17,6 +18,7 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { VehicleResponsible } from "../../../types/vehicleResponsible";
 import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
+import { ROUTES } from "../../../common";
 
 export default function ResponsiblePage() {
   const { id } = useParams<{ id: string }>();
@@ -266,7 +268,18 @@ export default function ResponsiblePage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Responsables", href: ROUTES.RESPONSIBLES },
+          { label: isNew ? "Nuevo responsable" : "Editar responsable" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.RESPONSIBLES,
+        }}
+      />
       <Form
         title={isNew ? "Nuevo responsable" : "Editar responsable"}
         sections={sections}

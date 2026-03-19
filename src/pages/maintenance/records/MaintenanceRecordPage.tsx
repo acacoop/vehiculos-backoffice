@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -20,6 +21,7 @@ import {
 
 import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
 import { inputDateTimeToAPI, toInputDateTimeSafe } from "../../../common/date";
+import { ROUTES } from "../../../common";
 
 // Extended form state with local kilometers field for editing
 interface FormState extends Partial<MaintenanceRecord> {
@@ -275,7 +277,18 @@ export default function MaintenanceRecordRegisterPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Registros", href: ROUTES.MAINTENANCE_RECORDS },
+          { label: isNew ? "Nuevo registro" : "Editar registro" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.MAINTENANCE_RECORDS,
+        }}
+      />
       <Form
         title={
           isNew

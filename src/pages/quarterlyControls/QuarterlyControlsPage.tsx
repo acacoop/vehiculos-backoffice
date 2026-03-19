@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -14,6 +15,7 @@ import {
   QUARTER_OPTIONS,
   YEAR_OPTIONS,
   formatDate,
+  ROUTES,
 } from "../../common";
 import { getQuarterlyControlStatus } from "../../common/utils";
 
@@ -105,7 +107,13 @@ export default function QuarterlyControlsPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Controles Trimestrales" },
+        ]}
+      />
       <Table<QuarterlyControlFilterParams, QuarterlyControl>
         columns={columns}
         getRows={getQuarterlyControls}

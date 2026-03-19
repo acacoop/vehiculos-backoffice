@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -6,7 +7,7 @@ import {
 } from "../../../components/Table";
 import { getVehicles } from "../../../services/vehicles";
 import { getVehicleBrands } from "../../../services/vehicleBrands";
-import { FUEL_TYPE_OPTIONS } from "../../../common";
+import { FUEL_TYPE_OPTIONS, ROUTES } from "../../../common";
 import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
 
 const columns: TableColumn<Vehicle>[] = [
@@ -92,6 +93,12 @@ export default function VehiclesPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Vehículos" },
+        ]}
+      />
       <Table<VehicleFilterParams, Vehicle>
         getRows={getVehicles}
         columns={columns}

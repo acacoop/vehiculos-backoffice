@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -9,6 +10,7 @@ import type {
   VehicleResponsible,
   VehicleResponsibleFilterParams,
 } from "../../../types/vehicleResponsible";
+import { ROUTES } from "../../../common";
 
 const columns: TableColumn<VehicleResponsible>[] = [
   {
@@ -75,7 +77,13 @@ export default function ResponsiblesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="responsibles-page">
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Responsables" },
+        ]}
+      />
       <Table<VehicleResponsibleFilterParams, VehicleResponsible>
         getRows={getVehicleResponsibles}
         columns={columns}
