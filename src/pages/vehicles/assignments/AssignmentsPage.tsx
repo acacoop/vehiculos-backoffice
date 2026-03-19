@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import {
   Table,
   type TableColumn,
@@ -10,7 +11,7 @@ import type {
   AssignmentFilterParams,
 } from "../../../types/assignment";
 import { formatDate } from "../../../common/date";
-import { COLORS } from "../../../common/colors";
+import { COLORS, ROUTES } from "../../../common";
 
 const columns: TableColumn<Assignment>[] = [
   {
@@ -78,6 +79,12 @@ export default function AssignmentsPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Asignaciones" },
+        ]}
+      />
       <Table<AssignmentFilterParams, Assignment>
         getRows={getAssignments}
         columns={columns}

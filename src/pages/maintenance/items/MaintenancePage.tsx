@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import {
   getMaintenanceById,
@@ -12,6 +13,7 @@ import NotificationToast from "../../../components/NotificationToast/Notificatio
 import type { Maintenance } from "../../../types/maintenance";
 import { Form, type FormSection } from "../../../components/Form";
 import { MaintenanceCategoryEntitySearch } from "../../../components/EntitySearch/EntitySearch";
+import { ROUTES } from "../../../common";
 
 export default function MaintenancePage() {
   const { id } = useParams<{ id: string }>();
@@ -289,6 +291,21 @@ export default function MaintenancePage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Mantenimientos", href: ROUTES.MAINTENANCE_ITEMS },
+          {
+            label: isNew
+              ? "Nuevo mantenimiento"
+              : formState.name || "Editar mantenimiento",
+          },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.MAINTENANCE_ITEMS,
+        }}
+      />
       <Form
         title={isNew ? "Nuevo mantenimiento" : "Editar mantenimiento"}
         sections={sections}

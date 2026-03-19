@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -19,7 +20,8 @@ import {
 } from "../../../services/maintenanceRecords";
 
 import type { MaintenanceRecord } from "../../../types/maintenanceRecord";
-import { inputDateToAPI, toInputDate } from "../../../common/date";
+import { inputDateTimeToAPI, toInputDateTimeSafe } from "../../../common/date";
+import { ROUTES } from "../../../common";
 
 // Extended form state with local kilometers field for editing
 interface FormState extends Partial<MaintenanceRecord> {
@@ -33,7 +35,7 @@ export default function MaintenanceRecordRegisterPage() {
 
   // Main form state (entity data with local kilometers field)
   const [formState, setFormState] = useState<FormState>({
-    date: toInputDate(new Date()),
+    date: toInputDateTimeSafe(undefined),
   });
 
   // Handler for initial data - extract kilometers from kilometersLog
@@ -140,7 +142,7 @@ export default function MaintenanceRecordRegisterPage() {
       maintenanceId: formState.maintenance!.id,
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
+      date: inputDateTimeToAPI(formState.date!),
       kilometers: formState.kilometers!,
       notes: formState.notes || "",
     };
@@ -234,14 +236,12 @@ export default function MaintenanceRecordRegisterPage() {
       layout: "vertical",
       fields: [
         {
-          type: "date",
-          value: formState.date
-            ? toInputDate(new Date(formState.date))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.date),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, date: value })),
           key: "date",
-          label: "Fecha",
+          label: "Fecha y hora",
           required: true,
         },
         // Show number input only in edit/create mode
@@ -277,7 +277,18 @@ export default function MaintenanceRecordRegisterPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Registros", href: ROUTES.MAINTENANCE_RECORDS },
+          { label: isNew ? "Nuevo registro" : "Editar registro" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.MAINTENANCE_RECORDS,
+        }}
+      />
       <Form
         title={
           isNew
