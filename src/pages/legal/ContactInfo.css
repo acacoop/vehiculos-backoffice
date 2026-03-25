@@ -1,0 +1,43 @@
+.contact-info-card {
+  background-color: var(--color-primary-light);
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin: 16px 0;
+  border-left: 4px solid var(--color-primary);
+}
+
+.contact-info-title {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.contact-info-name {
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.contact-info-item {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin: 6px 0;
+}
+
+.contact-info-item span {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.contact-info-item a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.contact-info-item a:hover {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}

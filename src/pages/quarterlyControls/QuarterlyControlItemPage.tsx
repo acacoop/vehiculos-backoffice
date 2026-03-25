@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
@@ -19,6 +20,7 @@ import {
   type BackendQuarterlyControlItemStatus,
 } from "../../common";
 import type { QuarterlyControlItem } from "../../types/quarterlyControlItem";
+import { ROUTES } from "../../common";
 
 export default function QuarterlyControlItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -222,7 +224,18 @@ export default function QuarterlyControlItemPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Controles Trimestrales", href: ROUTES.QUARTERLY_CONTROLS },
+          { label: "Editar ítem" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.QUARTERLY_CONTROLS,
+        }}
+      />
       <Form
         title="Editar ítem del control trimestral"
         sections={sections}

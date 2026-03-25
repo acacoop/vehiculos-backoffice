@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import { Form, type FormSection } from "../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../hooks";
@@ -17,11 +18,11 @@ import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import type { Reservation } from "../../types/reservation";
 import {
-  toInputDate,
-  toInputTime,
-  inputsToDate,
-  dateToISO,
+  toInputDateTimeSafe,
+  inputDateTimeToAPI,
+  parseDate,
 } from "../../common/date";
+import { ROUTES } from "../../common";
 
 export default function ReservationPage() {
   const { id } = useParams<{ id: string }>();
@@ -108,9 +109,9 @@ export default function ReservationPage() {
       return false;
     }
 
-    const startDate = new Date(formState.startDate);
-    const endDate = new Date(formState.endDate);
-    if (endDate <= startDate) {
+    const startDate = parseDate(formState.startDate);
+    const endDate = parseDate(formState.endDate);
+    if (!startDate || !endDate || endDate <= startDate) {
       showError("La fecha de fin debe ser posterior a la fecha de inicio");
       return false;
     }
@@ -123,8 +124,8 @@ export default function ReservationPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = dateToISO(new Date(formState.startDate!));
-    const endDate = dateToISO(new Date(formState.endDate!));
+    const startDate = inputDateTimeToAPI(formState.startDate!);
+    const endDate = inputDateTimeToAPI(formState.endDate!);
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta reserva?`,
@@ -155,14 +156,6 @@ export default function ReservationPage() {
       "Reserva eliminada con éxito",
     );
   };
-
-  // Helper to get current dates as Date objects
-  const getStartDate = () =>
-    formState.startDate ? new Date(formState.startDate) : new Date();
-  const getEndDate = () =>
-    formState.endDate
-      ? new Date(formState.endDate)
-      : new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 
   const sections: FormSection[] = [
     {
@@ -196,61 +189,31 @@ export default function ReservationPage() {
       columns: 2,
       fields: [
         {
-          type: "date",
-          value: toInputDate(getStartDate()),
-          onChange: (dateValue: string) => {
-            const timeStr = toInputTime(getStartDate());
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
+          onChange: (value: string) => {
             setFormState((prev) => ({
               ...prev,
-              startDate: inputsToDate(dateValue, timeStr).toISOString(),
+              startDate: value,
             }));
           },
           key: "startDate",
-          label: "Fecha Inicio",
+          label: "Fecha y hora inicio",
           required: true,
         },
         {
-          type: "time",
-          value: toInputTime(getStartDate()),
-          onChange: (timeValue: string) => {
-            const dateStr = toInputDate(getStartDate());
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
+          onChange: (value: string) => {
             setFormState((prev) => ({
               ...prev,
-              startDate: inputsToDate(dateStr, timeValue).toISOString(),
-            }));
-          },
-          key: "startTime",
-          label: "Hora Inicio",
-          required: true,
-        },
-        {
-          type: "date",
-          value: toInputDate(getEndDate()),
-          onChange: (dateValue: string) => {
-            const timeStr = toInputTime(getEndDate());
-            setFormState((prev) => ({
-              ...prev,
-              endDate: inputsToDate(dateValue, timeStr).toISOString(),
+              endDate: value,
             }));
           },
           key: "endDate",
-          label: "Fecha Fin",
+          label: "Fecha y hora fin",
           required: true,
-          min: toInputDate(getStartDate()),
-        },
-        {
-          type: "time",
-          value: toInputTime(getEndDate()),
-          onChange: (timeValue: string) => {
-            const dateStr = toInputDate(getEndDate());
-            setFormState((prev) => ({
-              ...prev,
-              endDate: inputsToDate(dateStr, timeValue).toISOString(),
-            }));
-          },
-          key: "endTime",
-          label: "Hora Fin",
-          required: true,
+          min: toInputDateTimeSafe(formState.startDate),
         },
       ],
     },
@@ -261,7 +224,18 @@ export default function ReservationPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Reservas", href: ROUTES.RESERVATIONS },
+          { label: isNew ? "Nueva reserva" : "Editar reserva" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.RESERVATIONS,
+        }}
+      />
       <Form
         title={isNew ? "Nueva reserva" : "Editar reserva"}
         sections={sections}

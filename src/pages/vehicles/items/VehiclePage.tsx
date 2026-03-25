@@ -1,4 +1,5 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState } from "react";
 import { usePageState } from "../../../hooks";
@@ -38,6 +39,7 @@ import {
   CalendarDays,
   ClipboardCheck,
 } from "lucide-react";
+import { ROUTES } from "../../../common";
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
@@ -359,7 +361,7 @@ export default function VehiclesPage() {
           required: true,
         },
         {
-          type: "date",
+          type: "datetime",
           value: vehicle.registrationDate,
           onChange: (value: string) =>
             setVehicle({ ...vehicle, registrationDate: value }),
@@ -439,8 +441,23 @@ export default function VehiclesPage() {
     return <LoadingSpinner message="Cargando vehículo..." />;
   }
 
+  const vehicleLabel = vehicle.licensePlate || "Nuevo vehículo";
+
+  const breadcrumbItems = [
+    { label: "Inicio", href: ROUTES.HOME },
+    { label: "Vehículos", href: ROUTES.VEHICLES },
+    { label: vehicleLabel },
+  ];
+
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={breadcrumbItems}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.VEHICLES,
+        }}
+      />
       <Form
         title="Detalle del vehículo"
         sections={vehicleInfoSections}

@@ -1,8 +1,9 @@
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import { Form, type FormSection } from "../../../components/Form";
 import { useEffect, useState, useCallback } from "react";
 import { usePageState } from "../../../hooks";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import { toInputDateTimeSafe, inputDateTimeToAPI } from "../../../common/date";
 import {
   createAssignment,
   getAssignmentById,
@@ -17,6 +18,7 @@ import {
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
 import type { Assignment, AssignmentInput } from "../../../types/assignment";
+import { ROUTES } from "../../../common";
 
 export default function VehicleAssignmentPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -25,7 +27,7 @@ export default function VehicleAssignmentPage() {
 
   // Main form state (entity data)
   const [formState, setFormState] = useState<Partial<Assignment>>({
-    startDate: toInputDate(new Date()),
+    startDate: toInputDateTimeSafe(undefined),
   });
 
   // UI-only checkbox state
@@ -124,14 +126,12 @@ export default function VehicleAssignmentPage() {
 
     const actionText = isNew ? "crear" : "actualizar";
 
-    const startDate = formState.startDate
-      ? inputDateToAPI(toInputDate(new Date(formState.startDate)))
-      : inputDateToAPI(toInputDate(new Date()));
+    const startDate = inputDateTimeToAPI(formState.startDate!);
 
     const endDate =
       isIndefinite || !formState.endDate
         ? null
-        : inputDateToAPI(toInputDate(new Date(formState.endDate)));
+        : inputDateTimeToAPI(formState.endDate);
 
     executeSave(
       `¿Está seguro que desea ${actionText} esta asignación?`,
@@ -207,29 +207,23 @@ export default function VehicleAssignmentPage() {
       layout: "grid",
       fields: [
         {
-          type: "date",
-          value: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.startDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, startDate: value })),
           key: "startDate",
-          label: "Fecha inicio",
+          label: "Fecha y hora inicio",
           required: true,
         },
         {
-          type: "date",
-          value: formState.endDate
-            ? toInputDate(new Date(formState.endDate))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.endDate),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, endDate: value })),
           key: "endDate",
-          label: "Fecha fin",
+          label: "Fecha y hora fin",
           show: !isIndefinite,
-          min: formState.startDate
-            ? toInputDate(new Date(formState.startDate))
-            : undefined,
+          min: toInputDateTimeSafe(formState.startDate),
         },
         {
           type: "checkbox",
@@ -245,6 +239,17 @@ export default function VehicleAssignmentPage() {
 
   return (
     <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Asignaciones", href: ROUTES.ASSIGNMENTS },
+          { label: isNew ? "Nueva asignación" : "Editar asignación" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.ASSIGNMENTS,
+        }}
+      />
       <Form
         title={isNew ? "Nueva asignación" : "Editar asignación"}
         sections={sections}

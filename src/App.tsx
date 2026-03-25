@@ -47,6 +47,7 @@ import {
   QuarterlyControlPage,
   QuarterlyControlItemPage,
 } from "./pages/quarterlyControls";
+import { PrivacyPolicyPage } from "./pages/legal";
 
 function ProtectedRoute() {
   const { inProgress } = useMsal();
@@ -94,7 +95,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomePage />} />

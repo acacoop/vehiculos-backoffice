@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { PageHeader } from "../../components/PageHeader";
 import { Table, type TableColumn } from "../../components/Table";
 import { Form, type FormSection } from "../../components/Form";
 import { usePageState } from "../../hooks";
@@ -24,6 +25,7 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../components/NotificationToast/NotificationToast";
 import { getQuarterlyControlItems } from "../../services/quarterlyControlItems";
+import { ROUTES } from "../../common";
 
 type QuarterlyControlFormData = Partial<QuarterlyControl> & {
   kilometers?: number;
@@ -246,7 +248,7 @@ export default function QuarterlyControlPage() {
           required: true,
         },
         {
-          type: "date",
+          type: "datetime",
           value: formData.intendedDeliveryDate!,
           key: "intendedDeliveryDate",
           label: "Fecha de entrega prevista",
@@ -341,7 +343,18 @@ export default function QuarterlyControlPage() {
   ];
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Controles Trimestrales", href: ROUTES.QUARTERLY_CONTROLS },
+          { label: isNew ? "Nuevo control" : "Editar control" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.QUARTERLY_CONTROLS,
+        }}
+      />
       <Form
         title={isNew ? "Nuevo control trimestral" : "Editar control trimestral"}
         sections={sections}

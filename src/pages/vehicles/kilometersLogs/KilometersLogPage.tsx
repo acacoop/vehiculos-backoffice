@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { PageHeader } from "../../../components/PageHeader";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import NotificationToast from "../../../components/NotificationToast/NotificationToast";
@@ -16,7 +17,12 @@ import {
   deleteVehicleKilometersLog,
 } from "../../../services/kilometers";
 import type { VehicleKilometersLog } from "../../../types/kilometer";
-import { toInputDate, inputDateToAPI } from "../../../common/date";
+import {
+  toInputDateTimeSafe,
+  inputDateTimeToAPI,
+  parseDate,
+} from "../../../common/date";
+import { ROUTES } from "../../../common";
 
 export default function KilometersLogPage() {
   const { id } = useParams<{ id: string }>();
@@ -107,8 +113,9 @@ export default function KilometersLogPage() {
     }
 
     const today = new Date();
-    const formDate = new Date(formState.date);
-    if (formDate > today) {
+    today.setHours(23, 59, 59, 999); // Allow today's date
+    const formDate = parseDate(formState.date);
+    if (formDate && formDate > today) {
       showError("La fecha de registro no puede ser futura");
       return false;
     }
@@ -129,7 +136,7 @@ export default function KilometersLogPage() {
     const payload = {
       vehicleId: formState.vehicle!.id,
       userId: formState.user!.id,
-      date: inputDateToAPI(toInputDate(new Date(formState.date!))),
+      date: inputDateTimeToAPI(formState.date!),
       kilometers: formState.kilometers!,
     };
 
@@ -188,14 +195,12 @@ export default function KilometersLogPage() {
       layout: "vertical",
       fields: [
         {
-          type: "date",
-          value: formState.date
-            ? toInputDate(new Date(formState.date))
-            : toInputDate(new Date()),
+          type: "datetime",
+          value: toInputDateTimeSafe(formState.date),
           onChange: (value: string) =>
             setFormState((prev) => ({ ...prev, date: value })),
           key: "date",
-          label: "Fecha de Registro",
+          label: "Fecha y hora de Registro",
           required: true,
         },
         {
@@ -217,7 +222,18 @@ export default function KilometersLogPage() {
   }
 
   return (
-    <div>
+    <div className="container">
+      <PageHeader
+        breadcrumbItems={[
+          { label: "Inicio", href: ROUTES.HOME },
+          { label: "Kilometraje", href: ROUTES.KILOMETERS_LOGS },
+          { label: isNew ? "Nuevo registro" : "Editar registro" },
+        ]}
+        backButton={{
+          text: "Volver",
+          fallbackHref: ROUTES.KILOMETERS_LOGS,
+        }}
+      />
       <Form
         title={
           isNew

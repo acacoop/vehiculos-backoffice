@@ -31,21 +31,12 @@ export interface NumberField extends BaseField {
   max?: number;
 }
 
-export interface DateField extends BaseField {
-  type: "date";
+export interface DateTimeField extends BaseField {
+  type: "datetime";
   value: string | undefined;
   onChange: (value: string) => void;
   min?: string;
   max?: string;
-}
-
-export interface TimeField extends BaseField {
-  type: "time";
-  value: string | undefined;
-  onChange: (value: string) => void;
-  min?: string;
-  max?: string;
-  step?: number;
 }
 
 export interface TextAreaField extends BaseField {
@@ -91,8 +82,7 @@ export interface DisplayField extends BaseField {
 export type FormField =
   | TextField
   | NumberField
-  | DateField
-  | TimeField
+  | DateTimeField
   | TextAreaField
   | SelectField
   | CheckboxField
@@ -314,8 +304,8 @@ const Form: React.FC<FormProps> = ({
       );
     }
 
-    // ========== DATE INPUT ==========
-    if (field.type === "date") {
+    // ========== DATETIME INPUT ==========
+    if (field.type === "datetime") {
       return (
         <div key={field.key} className={baseClassName} style={spanStyle}>
           <label className="form-label" htmlFor={field.key}>
@@ -324,35 +314,11 @@ const Form: React.FC<FormProps> = ({
           </label>
           <input
             id={field.key}
-            type="date"
+            type="datetime-local"
             className="form-input"
             value={field.value ?? ""}
             min={field.min}
             max={field.max}
-            onChange={(e) => field.onChange(e.target.value)}
-            disabled={isDisabled}
-            required={field.required}
-          />
-        </div>
-      );
-    }
-
-    // ========== TIME INPUT ==========
-    if (field.type === "time") {
-      return (
-        <div key={field.key} className={baseClassName}>
-          <label className="form-label" htmlFor={field.key}>
-            {field.label}{" "}
-            {field.required && <span className="required">*</span>}
-          </label>
-          <input
-            id={field.key}
-            type="time"
-            className="form-input"
-            value={field.value ?? ""}
-            min={field.min}
-            max={field.max}
-            step={field.step}
             onChange={(e) => field.onChange(e.target.value)}
             disabled={isDisabled}
             required={field.required}

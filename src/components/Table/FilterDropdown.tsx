@@ -248,7 +248,7 @@ export function FilterDropdown<TFilters extends FilterParams>({
 
               {selectedFilter.type === "date" && (
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={filterValue}
                   onChange={(e) => setFilterValue(e.target.value)}
                   onKeyDown={handleKeyDown}
