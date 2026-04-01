@@ -43,7 +43,7 @@ import { ROUTES } from "../../../common";
 
 const emptyVehicle: Partial<Vehicle> = {
   year: new Date().getFullYear(),
-  registrationDate: new Date().toISOString().split("T")[0],
+  registrationDate: new Date().toISOString().slice(0, 16),
 };
 
 export default function VehiclesPage() {
@@ -152,7 +152,7 @@ export default function VehiclesPage() {
           engineNumber: vehicle.engineNumber || undefined,
           transmission: vehicle.transmission || undefined,
           fuelType: vehicle.fuelType || undefined,
-          registrationDate: vehicle.registrationDate!,
+          registrationDate: vehicle.registrationDate!.split("T")[0],
         };
 
         return isNew ? createVehicle(payload) : updateVehicle(id!, payload);
