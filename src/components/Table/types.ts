@@ -8,38 +8,44 @@ interface BaseFilterDefinition<TFilters> {
   label: string;
 }
 
-export interface SelectFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface SelectFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "select";
   options: { label: string; value: string }[];
 }
 
-export interface TextFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface TextFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "text";
   placeholder?: string;
 }
 
-export interface NumberFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface NumberFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "number";
   placeholder?: string;
 }
 
-export interface DateFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface DateFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "date";
 }
 
-export interface BooleanFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface BooleanFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "boolean";
   trueLabel?: string;
   falseLabel?: string;
 }
 
-export interface SearchFilterDefinition<TFilters>
-  extends BaseFilterDefinition<TFilters> {
+export interface SearchFilterDefinition<
+  TFilters,
+> extends BaseFilterDefinition<TFilters> {
   type: "search";
   /** Función de búsqueda que retorna opciones filtradas */
   searchFn: (term: string) => Promise<{ label: string; value: string }[]>;

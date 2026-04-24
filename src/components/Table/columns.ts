@@ -40,8 +40,8 @@ export function createGridColumn<T extends GridValidRowModel>(
           const transformedValue = column.transform
             ? column.transform(rawValue, params.row)
             : boolValue
-            ? "Activo"
-            : "Inactivo";
+              ? "Activo"
+              : "Inactivo";
 
           return createElement(Chip, {
             label: transformedValue,

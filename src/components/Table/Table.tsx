@@ -201,12 +201,15 @@ export function Table<
           : undefined;
 
         // Transform sortModel to backend sorting params
-        const sortingParams = sortModel.length > 0
-          ? {
-              sortBy: columns.find((col) => col.field === sortModel[0].field)?.sortField ?? sortModel[0].field,
-              sortOrder: sortModel[0].sort ?? undefined,
-            }
-          : undefined;
+        const sortingParams =
+          sortModel.length > 0
+            ? {
+                sortBy:
+                  columns.find((col) => col.field === sortModel[0].field)
+                    ?.sortField ?? sortModel[0].field,
+                sortOrder: sortModel[0].sort ?? undefined,
+              }
+            : undefined;
 
         const response = await getRows({
           pagination: { limit: pageSize, offset },

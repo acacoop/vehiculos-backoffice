@@ -11,7 +11,7 @@ import type {
 
 export type SortParams = {
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 };
 
 export type ApiFindOptions<TFilters extends FilterParams> = {
