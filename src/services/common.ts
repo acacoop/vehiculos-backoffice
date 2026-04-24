@@ -9,10 +9,16 @@ import type {
   PaginationData,
 } from "../types/common";
 
+export type SortParams = {
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
 export type ApiFindOptions<TFilters extends FilterParams> = {
   pagination?: PaginationParams;
   search?: string;
   filters?: TFilters;
+  sorting?: SortParams;
 };
 
 export type ParamConfig = {
@@ -39,6 +45,17 @@ const addApiFindOptions = <TFilters extends FilterParams>(
 
   if (options.filters) {
     addGeneralFilters(usp, options.filters, paramsConfig);
+  }
+
+  addSortingParams(usp, options.sorting);
+};
+
+const addSortingParams = (usp: URLSearchParams, sorting?: SortParams) => {
+  if (sorting?.sortBy) {
+    usp.set("sortBy", sorting.sortBy);
+    if (sorting.sortOrder) {
+      usp.set("sortOrder", sorting.sortOrder);
+    }
   }
 };
 

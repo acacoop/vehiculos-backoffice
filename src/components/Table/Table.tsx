@@ -4,6 +4,7 @@ import {
   type GridColDef,
   type GridValidRowModel,
   type GridRenderCellParams,
+  type GridSortModel,
 } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -43,6 +44,7 @@ export function Table<
   const [rowCount, setRowCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sortModel, setSortModel] = useState<GridSortModel>([]);
 
   // Serializar searchParams para detectar cambios en la URL
   const searchParamsKey = searchParams.toString();
@@ -198,6 +200,14 @@ export function Table<
             ) as TFilters)
           : undefined;
 
+        // Transform sortModel to backend sorting params
+        const sortingParams = sortModel.length > 0
+          ? {
+              sortBy: columns.find((col) => col.field === sortModel[0].field)?.sortField ?? sortModel[0].field,
+              sortOrder: sortModel[0].sort ?? undefined,
+            }
+          : undefined;
+
         const response = await getRows({
           pagination: { limit: pageSize, offset },
           search:
@@ -206,6 +216,7 @@ export function Table<
             cleanedFilters && Object.keys(cleanedFilters).length > 0
               ? cleanedFilters
               : undefined,
+          sorting: sortingParams,
         });
 
         if (response.success) {
@@ -222,7 +233,7 @@ export function Table<
         setLoading(false);
       }
     },
-    [getRows, search?.enabled, filterValues],
+    [getRows, search?.enabled, filterValues, sortModel, columns],
   );
 
   useEffect(() => {
@@ -244,6 +255,7 @@ export function Table<
     debouncedSearch,
     fetchData,
     filterValues,
+    sortModel,
   ]);
 
   const handlePaginationChange = useCallback(
@@ -273,6 +285,17 @@ export function Table<
       }
     },
     [search?.enabled, searchTerm, paginationModel],
+  );
+
+  const handleSortModelChange = useCallback(
+    (model: GridSortModel) => {
+      setSortModel(model);
+      // Reset to first page when sort changes
+      if (paginationModel.page !== 0) {
+        setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      }
+    },
+    [paginationModel.page],
   );
 
   // Build final columns with action column if needed
@@ -501,6 +524,9 @@ export function Table<
           pagination
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
+          sortModel={sortModel}
+          onSortModelChange={handleSortModelChange}
           rowCount={rowCount}
           paginationModel={paginationModel}
           onPaginationModelChange={handlePaginationChange}

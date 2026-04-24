@@ -77,6 +77,8 @@ export interface TableColumn<T extends GridValidRowModel> {
   transform?: (value: string, row: T) => string;
   color?: (value: string, row: T) => string;
   map?: Record<string, string>; // For map type: provides backend->UI label mapping
+  sortable?: boolean;
+  sortField?: string; // Backend field name for sorting (defaults to field)
 }
 
 // ============ TABLE CONFIG TYPES ============

@@ -25,7 +25,7 @@ export function createGridColumn<T extends GridValidRowModel>(
     flex: column.flex ?? 1,
     disableColumnMenu: true,
     disableReorder: true,
-    sortable: false,
+    sortable: column.sortable ?? false,
   };
 
   // Handle different column types
