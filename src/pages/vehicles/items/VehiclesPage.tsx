@@ -11,15 +11,16 @@ import { FUEL_TYPE_OPTIONS, ROUTES } from "../../../common";
 import type { Vehicle, VehicleFilterParams } from "../../../types/vehicle";
 
 const columns: TableColumn<Vehicle>[] = [
-  { field: "licensePlate", headerName: "Patente", flex: 1 },
+  { field: "licensePlate", headerName: "Patente", flex: 1, sortable: true },
   { field: "model.brand.name", headerName: "Marca", flex: 1 },
   { field: "model.name", headerName: "Modelo", flex: 1 },
-  { field: "year", headerName: "Año", flex: 1 },
+  { field: "year", headerName: "Año", flex: 1, sortable: true },
   {
     field: "registrationDate",
     headerName: "Fecha de alta",
     flex: 1,
     type: "date",
+    sortable: true,
   },
 ];
 

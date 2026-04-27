@@ -25,7 +25,7 @@ export function createGridColumn<T extends GridValidRowModel>(
     flex: column.flex ?? 1,
     disableColumnMenu: true,
     disableReorder: true,
-    sortable: false,
+    sortable: column.sortable ?? false,
   };
 
   // Handle different column types
@@ -40,8 +40,8 @@ export function createGridColumn<T extends GridValidRowModel>(
           const transformedValue = column.transform
             ? column.transform(rawValue, params.row)
             : boolValue
-            ? "Activo"
-            : "Inactivo";
+              ? "Activo"
+              : "Inactivo";
 
           return createElement(Chip, {
             label: transformedValue,
