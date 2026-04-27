@@ -125,7 +125,7 @@ export default function QuarterlyControlPage() {
           vehicleId: formData.vehicle!.id,
           year: formData.year!,
           quarter: formData.quarter!,
-          intendedDeliveryDate: formData.intendedDeliveryDate!,
+          intendedDeliveryDate: new Date(formData.intendedDeliveryDate!).toISOString(),
           kilometers: formData.kilometers,
         };
 
